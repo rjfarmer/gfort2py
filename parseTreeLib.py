@@ -1,8 +1,83 @@
 import ctypes
 import numpy as np
 
+class fctype(object):
+	#######################################################################
+	# ctype handling
+	#######################################################################
+	
+	def mangle_name(mod,name):
+		return "__"+mod+'_MOD_'+name
+	
+	def get_ctype_int(size):
+		res=None
+		size=int(size)
+		if size==ctypes.sizeof(ctypes.c_int):
+			res='c_int'
+		elif size==ctypes.sizeof(ctypes.c_int16):
+			res='c_int16'
+		elif size==ctypes.sizeof(ctypes.c_int32):
+			res='c_int32'
+		elif size==ctypes.sizeof(ctypes.c_int64):
+			res='c_int64'
+		else:
+			raise ValueError("Cant find suitable int for size "+size)	
+		return res
+		
+	def get_ctype_float(size):
+		res=None
+		size=int(size)
+		if size==ctypes.sizeof(ctypes.c_float):
+			res='c_float'
+		elif size==ctypes.sizeof(ctypes.c_double):
+			res='c_double'
+		elif size==ctypes.sizeof(ctypes.c_long):
+			res='c_long'
+		elif size==ctypes.sizeof(ctypes.c_longdouble):
+			res='c_longdouble'
+		elif size==ctypes.sizeof(ctypes.c_longlong):
+			res='c_long'
+		else:
+			raise ValueError("Cant find suitable float for size"+size)
+	
+		return res
+		
+	def get_ctype_bool(size):
+		return 'c_bool'	
+	
+	def get_ctype_str(size):
+		return 'c_char_p'	
+	
+	def map_to_scalar_ctype(var):
+		"""
+		gets the approitate ctype for a variable
+		
+		Returns:
+			String
+		"""
+		typ=var['type_spec']['type']
+		size=var['type_spec']['size']
+	
+		res=None
+		if typ=='int':
+			res=get_ctype_int(size)
+		elif typ=='float':
+			res=get_ctype_float(size)	
+		elif typ=='char':
+			res=get_ctype_str(size)
+		elif typ=='bool':
+			res=get_ctype_bool(size)
+		elif typ=='struct':
+			raise ValueError("Should of called map_to_struct_ctype")
+		else:
+			raise ValueError("Not supported ctype "+var['name']+' '+str(typ)+' '+str(size))
+		
+		return res
+
+
+
 class fVariable(object):
-	def __init__(self,name,lib,ctype)
+	def __init__(self,**kwargs)
 		self.ctype=getattr(ctypes,ctype)
 		self.value=None
 		self.lib=lib

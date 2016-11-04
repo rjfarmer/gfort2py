@@ -92,3 +92,4 @@ ENV/
 *.mod
 *.o
 *.fpy
+*.pickle

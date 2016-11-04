@@ -1,4 +1,6 @@
 import ctypes
+import pickle
+import sys
 
 def get_symtrees(filename):
 	with open(filename,'r') as f:
@@ -58,7 +60,7 @@ def split_brackets(value):
 def parse_data_block(data):
 	'''
 	Split a top level block, i.e something that was at 0 identation,
-	into its symtree ( list of dicts containinf info on varaibles and functions
+	into its symtree ( list of dicts containing info on variables and functions
 	
 	'''
 	dout=[]
@@ -97,8 +99,8 @@ def parse_type_spec(spec):
 	'''
 	Determine the variable type and byte size 
 	
-	InputL
-	      type spec : (INTEGER 4)
+	Input:
+	      "type spec : (INTEGER 4)"
 
 	Returns:
 		{'type':'int',size:'4'}
@@ -129,7 +131,7 @@ def parse_type_spec(spec):
 	
 def parse_value(value):
 	"""
-	Determine values for parameters, arrays start are enclosed in (/ /)
+	Determine values for parameters, rembering that arrays are enclosed in (/ /)
 	"""
 	if '(/' in value:
 		#Array
@@ -288,113 +290,30 @@ def get_func_arg_order(func_name,symtree_head):
 	for j in symtree_head:
 		if func_name == j['name']:
 			return j['Formal arglist'].split()
-
-
-#######################################################################
-# ctype handling
-#######################################################################
-
-def mangle_name(mod,name):
-	return "__"+mod+'_MOD_'+name
-
-def get_ctype_int(size):
-	res=None
-	size=int(size)
-	if size==ctypes.sizeof(ctypes.c_int):
-		res='c_int'
-	elif size==ctypes.sizeof(ctypes.c_int16):
-		res='c_int16'
-	elif size==ctypes.sizeof(ctypes.c_int32):
-		res='c_int32'
-	elif size==ctypes.sizeof(ctypes.c_int64):
-		res='c_int64'
-	else:
-		raise ValueError("Cant find suitable int for size "+size)	
-	return res
-	
-def get_ctype_float(size):
-	res=None
-	size=int(size)
-	if size==ctypes.sizeof(ctypes.c_float):
-		res='c_float'
-	elif size==ctypes.sizeof(ctypes.c_double):
-		res='c_double'
-	elif size==ctypes.sizeof(ctypes.c_long):
-		res='c_long'
-	elif size==ctypes.sizeof(ctypes.c_longdouble):
-		res='c_longdouble'
-	elif size==ctypes.sizeof(ctypes.c_longlong):
-		res='c_long'
-	else:
-		raise ValueError("Cant find suitable float for size"+size)
-
-	return res
-	
-def get_ctype_bool(size):
-	return 'c_bool'	
-
-def get_ctype_str(size):
-	return 'c_char_p'	
-
-def map_to_scalar_ctype(var):
-	"""
-	gets the approitate ctype for a variable
-	
-	Returns:
-		String
-	"""
-	typ=var['type_spec']['type']
-	size=var['type_spec']['size']
-
-	res=None
-	if typ=='int':
-		res=get_ctype_int(size)
-	elif typ=='float':
-		res=get_ctype_float(size)	
-	elif typ=='char':
-		res=get_ctype_str(size)
-	elif typ=='bool':
-		res=get_ctype_bool(size)
-	elif typ=='struct':
-		raise ValueError("Should of called map_to_struct_ctype")
-	else:
-		raise ValueError("Not supported ctype "+var['name']+' '+str(typ)+' '+str(size))
-	
-	return res
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 #######################################################
 
 if __name__ == '__main__':
-	#Compile code with -fdump-fortran-original and pipe output to file.fpy
-	filename='./test_mod.fpy'
-	
-	symtrees=get_symtrees(filename)
-	
-	module_name=symtrees[0][0]
-	mod_vars=get_vars(symtrees[0][1])
-	struct_defs=get_struct_defs(symtrees[0][1])
-	mod_funcs=get_funcs(symtrees)			
+	lib_name=sys.argv[1]
+	with open(lib_name,'wb') as f:
+		pickle.dump(len(sys.argv[2:]),f)
+		for filename in sys.argv[2:]:
+			#Compile code with -fdump-fortran-original and pipe output to file.fpy
+			#filename='./test_mod.fpy'	
 
+			symtrees=get_symtrees(filename)
+			module_name=symtrees[0][0]
+			mod_vars=get_vars(symtrees[0][1])
+			struct_defs=get_struct_defs(symtrees[0][1])
+			mod_funcs=get_funcs(symtrees)
+			
+			to_pickle={}
+			to_pickle['module_name']=module_name
+			to_pickle['filename']=filename
+			to_pickle['mod_vars']=mod_vars
+			to_pickle['struct_defs']=struct_defs
+			to_pickle['mod_funcs']=mod_funcs
+			pickle.dump(to_pickle,f)
 
 
 	
