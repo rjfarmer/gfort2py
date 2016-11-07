@@ -5,7 +5,7 @@ call
 ````bash
 gfort2py -c test_mod.f90
 
-ipython3 parseTree.py output_name.pickle *.fpy
+ipython3 parseTree.py output_name.flib *.fpy
 ````
 
 ....

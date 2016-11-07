@@ -1,15 +1,17 @@
 import ctypes
 import numpy as np
+import pickle
 
-class fctype(object):
+
+class fCtype(object):
 	#######################################################################
 	# ctype handling
 	#######################################################################
 	
-	def mangle_name(mod,name):
+	def mangle_name(self,mod,name):
 		return "__"+mod+'_MOD_'+name
 	
-	def get_ctype_int(size):
+	def get_ctype_int(self,size):
 		res=None
 		size=int(size)
 		if size==ctypes.sizeof(ctypes.c_int):
@@ -24,7 +26,7 @@ class fctype(object):
 			raise ValueError("Cant find suitable int for size "+size)	
 		return res
 		
-	def get_ctype_float(size):
+	def get_ctype_float(self,size):
 		res=None
 		size=int(size)
 		if size==ctypes.sizeof(ctypes.c_float):
@@ -42,13 +44,13 @@ class fctype(object):
 	
 		return res
 		
-	def get_ctype_bool(size):
+	def get_ctype_bool(self,size):
 		return 'c_bool'	
 	
-	def get_ctype_str(size):
+	def get_ctype_str(self,size):
 		return 'c_char_p'	
 	
-	def map_to_scalar_ctype(var):
+	def map_to_scalar_ctype(self,var):
 		"""
 		gets the approitate ctype for a variable
 		
@@ -74,24 +76,85 @@ class fctype(object):
 		
 		return res
 
+class fDerivedType(fCtype):
+	def __init__(self,var,module,lib):
+		
 
 
-class fVariable(object):
-	def __init__(self,**kwargs)
-		self.ctype=getattr(ctypes,ctype)
-		self.value=None
+
+class fScalarVariable(fCtype):
+	def __init__(self,var,module,lib):
+		self.name=var['name']
+		self.is_param=var['param']
+		self.value=var['value']
+		ctype_=self.map_to_scalar_ctype(var)
+		self.ctype=getattr(ctypes,ctype_)
 		self.lib=lib
-		self.name=name
 			
-	def set(self,val):
-		pass
+	def set(self,value):
+		if not self.is_param:
+			res=self.ctype.in_dll(self.lib,self.name)
+			res.value=value
+		else:
+			raise AttributeError("Can't alter a parameter")
 		
 	def get(self):
-		res=self.ctype.in_dll(self.lib,name)
-		return res.value
+		if not self.is_param:
+			res=self.ctype.in_dll(self.lib,self.name)
+			value=res.value
+		else:
+			value=self.value
+		
+		return value
 		
 	def __str__(self):
-		print(self.value)
+		return str(self.value)
+
+
+
+filename='test_mod.flib'
+with open(filename,'rb') as f:
+	num_mods=pickle.load(f)
+	data=[]
+	for i in range(num_mods):
+		data.append(pickle.load(f))
+
+x=data[0]
+
+lib=True
+
+list_vars=[]
+
+for i in x['mod_vars']:
+	if not i['array'] and not i['struct']:
+		list_vars.append(fScalarVariable(var=i,module=x['module_name'],lib=lib))
+	
+	if i['struct'] and not i['array']:
+		pass
+		
+	if i['array'] and not i['struct']:
+		pass
+		
+	if i['struct'] and i['array']:
+		pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		
 class fFunction(object):
 	def __init__(self,name,lib,args,res):
