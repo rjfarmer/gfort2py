@@ -1,9 +1,6 @@
-import ctypes
-import pickle
-import sys
 import gzip
 
-def split_brackets(value):
+def split_brackets(value,remove_b=False):
 	'''
 	Split a string based on pairs of brackets, nested brackest are not split
 	
@@ -26,7 +23,10 @@ def split_brackets(value):
 		if i==')':
 			count=count-1
 		if start and count==0:
-			res.append(token)
+			if remove_b:
+				res.append(token[1:-1])
+			else:
+				res.append(token)
 			start=False
 			token=''
 	return res
@@ -41,7 +41,7 @@ def object_names(data):
 		if not name.startswith('__'):
 			mod.append({})
 			mod[-1]['name']=name
-			mod[-1]['ambigous']=y[i+1]
+			mod[-1]['ambiguous']=y[i+1]
 			mod[-1]['num']=int(y[i+2].replace(')',''))
 	return mod
 
@@ -76,13 +76,17 @@ def get_all_objects(data):
 			if start and count==0:
 				start=False
 				break
-		res[-1]['attr']=token
+		res[-1]['attr']=split_brackets(token[1:-1],remove_b=True)
 		i=i+5+count2
 	return res
 	
 def load_data(filename):
-	with gzip.open(filename) as f:
-		x=f.read()
+	try:
+		with gzip.open(filename) as f:
+			x=f.read()
+	except OSError as e:
+		e.args=[filename+" is not a valid .mod file"]
+		raise
 	x=x.decode()
 	mod_data=get_mod_data(x)
 	x=x.replace('\n',' ')
@@ -104,8 +108,14 @@ def get_mod_data(x):
 	
 
 if __name__=='__main__':
+	#filename='/media/data/mesa/mesa/dev/star/make/star_lib.mod'
 	filename='tester.mod'
 	data,mod_data=load_data(filename)
 	object_head=object_names(data)
 	object_all=get_all_objects(data)
-	
+	#Maps function attributes to the names
+	for i in object_all:
+		for j in object_head:
+			if i['num']==j['num']:
+				#merge dicts
+				j.update(i)
