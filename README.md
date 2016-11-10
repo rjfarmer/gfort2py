@@ -1,12 +1,9 @@
 # gfort2py
-Library to allow calling fortran code from python
+Library to allow calling fortran code from python.
 
-call
-````bash
-gfort2py -c test_mod.f90
-
-ipython3 parseTree.py output_name.flib *.fpy
-````
+Compile code normnally (parsing -shared -fPIC to make a shared library
+at the end) then point parseMod.py at the .mod files. No changes in the
+source code are expected to be needed.
 
 ....
 
