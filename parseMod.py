@@ -46,9 +46,9 @@ def object_names(data):
 	return mod
 
 def get_all_objects(data):
-	#Remove opening and closiung bracket
+	#Remove opening and closing bracket
 	dsplit=data[-2][1:-1].split(' ')
-	#Pattern is 4 terms then look for matching closed bracket
+	#Pattern is 4 terms then look for matching set of open/close brackets
 	res=[]
 	i=0
 	while True:
@@ -81,18 +81,31 @@ def get_all_objects(data):
 	return res
 	
 def load_data(filename):
-	f=gzip.open(filename)
-	x=f.read()
-	f.close()
-	
-	x=x.decode().replace('\n',' ')
-	
+	with gzip.open(filename) as f:
+		x=f.read()
+	x=x.decode()
+	mod_data=get_mod_data(x)
+	x=x.replace('\n',' ')
 	data=split_brackets(x)
-	return data
+	return data,mod_data
+	
+def get_mod_data(x):
+	header=x.split('\n')[0]
+	res={}
+	if 'GFORTRAN' not in header:
+		raise AttributeError('Not a gfortran mod file')
+	res['version']=int(header.split("'")[1])
+	res['orig_file']=header.split()[-1]
+	
+	if not res['version']==14:
+		raise AttributeError('Unsupported mod file version')
+	
+	return res
+	
 
 if __name__=='__main__':
 	filename='tester.mod'
-	data=load_data(filename)
+	data,mod_data=load_data(filename)
 	object_head=object_names(data)
 	object_all=get_all_objects(data)
 	
