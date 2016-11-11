@@ -33,7 +33,7 @@ def split_brackets(value,remove_b=False):
 
 #Mix of function names, module variables, parameters and possible 
 #fortran intrinsic functions
-def object_names(data):
+def parse_object_names(data):
 	y=data[-1].split()
 	mod=[]
 	for i in range(0,len(y),3):
@@ -45,7 +45,7 @@ def object_names(data):
 			mod[-1]['num']=int(y[i+2].replace(')',''))
 	return mod
 
-def get_all_objects(data):
+def parse_all_objects(data):
 	#Remove opening and closing bracket
 	dsplit=data[-2][1:-1].split(' ')
 	#Pattern is 4 terms then look for matching set of open/close brackets
@@ -106,16 +106,25 @@ def get_mod_data(x):
 	
 	return res
 	
-
-if __name__=='__main__':
-	#filename='/media/data/mesa/mesa/dev/star/make/star_lib.mod'
-	filename='tester.mod'
-	data,mod_data=load_data(filename)
-	object_head=object_names(data)
-	object_all=get_all_objects(data)
+def find_key_val(list_dicts,key,value):
+	for i in list_dicts:
+		if i[key]==value:
+			print(i)
+			
+def get_all_objects(data):
+	object_head=parse_object_names(data)
+	object_all=parse_all_objects(data)
 	#Maps function attributes to the names
 	for i in object_all:
 		for j in object_head:
 			if i['num']==j['num']:
 				#merge dicts
 				j.update(i)
+	return object_head
+
+if __name__=='__main__':
+	#filename='/media/data/mesa/mesa/dev/star/make/star_lib.mod'
+	filename='tester.mod'
+	data,mod_data=load_data(filename)
+	obj_all=get_all_objects(data)
+
