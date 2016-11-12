@@ -1,5 +1,6 @@
 import gzip
 
+
 def split_brackets(value,remove_b=False):
 	'''
 	Split a string based on pairs of brackets, nested brackest are not split
@@ -42,7 +43,8 @@ def parse_object_names(data):
 			mod.append({})
 			mod[-1]['name']=name
 			mod[-1]['ambiguous']=y[i+1]
-			mod[-1]['num']=int(y[i+2].replace(')',''))
+			mod[-1]['num']=y[i+2].replace(')','')
+			mod[-1]['args']=[]
 	return mod
 
 def parse_all_objects(data):
@@ -55,12 +57,12 @@ def parse_all_objects(data):
 		if i >= len(dsplit)-1:
 			break
 		res.append({})
-		res[-1]['num']=int(dsplit[i].replace("'",''))
+		res[-1]['num']=dsplit[i].replace("'",'')
 		res[-1]['name']=dsplit[i+1].replace("'",'')
 		#if module varaible then is the module name else its an empty string
 		res[-1]['module_name']=dsplit[i+2].replace("'",'')
 		res[-1]['term2']=dsplit[i+3].replace("'",'')
-		res[-1]['parent_num']=int(dsplit[i+4].replace("'",''))
+		res[-1]['parent_num']=dsplit[i+4].replace("'",'')
 		#Look for an open and closed bracket pair
 		token=''
 		start=False
@@ -111,20 +113,79 @@ def find_key_val(list_dicts,key,value):
 		if i[key]==value:
 			print(i)
 			
-def get_all_objects(data):
+def clean_list(l,idx):
+	return [i for j, i in enumerate(l) if j not in idx]
+			
+def get_all_head_objects(data):
 	object_head=parse_object_names(data)
 	object_all=parse_all_objects(data)
 	#Maps function attributes to the names
-	for i in object_all:
+	for idx,i in enumerate(object_all):
 		for j in object_head:
 			if i['num']==j['num']:
 				#merge dicts
 				j.update(i)
-	return object_head
+				j['arg_nums']=j['attr'][3].split()
+	
+	get_func_args(object_head,object_all)
+				
+	return object_head,object_all
+	
+def get_func_args(object_head,object_all):
+	ind=[]
+	for idx,i in enumerate(object_all):
+		for j in object_head:
+			if i['num'] in j['arg_nums']:
+				j['args'].append(i)
+				ind.append(idx)
+	
+def parse_type(obj):
+	attr=obj['attr'][2]
+	res=''
+	if 'INTEGER' in attr:
+		res='int'
+	elif 'REAL' in attr:
+		res='float'
+	elif 'DERIVED' in attr:
+		res='struct'
+	elif 'COMPLEX' in attr:
+		res='complex'
+	elif 'UNKNOWN' in attr:
+		res='void'
+	elif 'CHARACTER' in attr:
+		res='char'
+	elif 'LOGICAL' in attr:
+		res='bool'
+	else:
+		raise ValueError("Cant parse "+attr)
+	obj['ctype']=res
+	
+def parse_type_size(obj):
+	obj['csize']=obj['attr'][2].split()[1]
+	
+def get_type_spec(obj):
+	parse_type(obj)
+	parse_type_size(obj)
+	
+def get_obj_type(obj):
+	x=obj['attr'][0]
+	if 'DERIVED' in x:
+		x['is_derived']=True
+	if 'VARIABLE' in x:
+		x['is_var']=True
+	if 'SUBROUTINE' in x:
+		x['is_sub']=True
+	if 'FUNCTION' in x:
+		x['is_func']=True
+	if 'MODULE ' in x:
+		x['is_module']=True	
 
 if __name__=='__main__':
 	#filename='/media/data/mesa/mesa/dev/star/make/star_lib.mod'
 	filename='tester.mod'
 	data,mod_data=load_data(filename)
-	obj_all=get_all_objects(data)
+	obj_head_all,object_all=get_all_head_objects(data)
+
+	for i in obj_head_all:
+		get_type_spec(i)
 
