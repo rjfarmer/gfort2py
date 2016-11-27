@@ -63,6 +63,11 @@ module tester
       
       contains
       
+	real(dp) function test_structer(x)
+		type(struct_tester), intent(in) :: x
+      test_structer=1.d0
+   end function test_structer
+   
 	real(dp) function test_struct(x)
 		type(eos_general_info), intent(in) :: x
       test_struct=1.d0
@@ -210,5 +215,11 @@ module tester
       
       write(*,*) x
    end function test_complex
+   
+   complex function test_complex_dummy(x)
+      complex :: x
+      
+      write(*,*) x
+   end function test_complex_dummy
  
 end module tester
