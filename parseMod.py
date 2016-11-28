@@ -129,10 +129,10 @@ def get_all_head_objects(data):
 				#merge dicts
 				j.update(i)
 				j['arg_nums']=j['attr'][3].split()
-				break
 		parse_type(j)
 		parse_array(j)
 		parse_struct_types(j,object_head)
+		parse_derived_type_def(j,object_head)
 	
 	get_func_args(object_head,object_all)
 			
@@ -154,12 +154,31 @@ def process_func_arg(obj,object_head):
 	clean_dict_func_arg(obj)
 	return obj
 
+
+def parse_derived_type_def(obj,object_head):
+	#This should be the parent defintion of a derived type
+	if obj['parent_num'] != 1 and 'DERIVED' not in obj['attr'][0]:
+		return
+	
+	elem=split_brackets(obj['attr'][1])
+	obj['args']=[]
+	for i in elem:
+		j={}
+		x=split_brackets(i[1:-1])
+		j['name']=i.split()[1]
+		j['num']=i.split()[0].replace('(','')
+		print(i,[x[2],0,x[0],x[1]])
+		j['attr']=[x[2][1:-1],0,x[0][1:-1],0,x[1][1:-1]]
+		obj['args'].append(process_func_arg(j,object_head))
+		
+	clean_dict(obj,['attr','term2'])
+
 def parse_struct_types(obj,object_head):
 	if 'DERIVED' in obj['attr'][0]:
 	#This is the definition of the derived type not a variable of type derived type
 		return
 	for j in object_head:
-		if 'DERIVED' in obj['attr'][2] and 'DERIVED' in j['attr'][0] and obj['attr'][2].split()[1]==j['num']:
+		if 'DERIVED' in obj['attr'][2] and obj['attr'][2].split()[1]==j['num']:
 			obj['struct_type']=j['name']
 			break	
 
@@ -174,7 +193,7 @@ def clean_mod(obj):
 	clean_dict(obj,remove)
 	
 def clean_dict(obj,names):
-	for i in remove:
+	for i in names:
 		obj.pop(i,None)		
 	
 def parse_type(obj):
@@ -295,4 +314,4 @@ obj_head_all=get_all_head_objects(data)
 
 
 find_key_val(obj_head_all,'name','test_structer')
-obj_head_all[22]
+obj_head_all[17]
