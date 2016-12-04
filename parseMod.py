@@ -1,5 +1,7 @@
 import gzip
 import ctypes
+import os
+import pickle
 
 def split_brackets(value,remove_b=False):
 	'''
@@ -63,6 +65,7 @@ def parse_all_objects(data):
 		res[-1]['module_name']=dsplit[i+2].replace("'",'')
 		res[-1]['term2']=dsplit[i+3].replace("'",'')
 		res[-1]['parent_num']=dsplit[i+4].replace("'",'')
+		res[-1]['mangled_name']=mangle_name(res[-1])
 		#Look for an open and closed bracket pair
 		token=''
 		start=False
@@ -167,7 +170,6 @@ def parse_derived_type_def(obj,object_head):
 		x=split_brackets(i[1:-1])
 		j['name']=i.split()[1]
 		j['num']=i.split()[0].replace('(','')
-		print(i,[x[2],0,x[0],x[1]])
 		j['attr']=[x[2][1:-1],0,x[0][1:-1],0,x[1][1:-1]]
 		obj['args'].append(process_func_arg(j,object_head))
 		
@@ -197,25 +199,30 @@ def clean_dict(obj,names):
 		obj.pop(i,None)		
 	
 def parse_type(obj):
+	get_param_val(obj)
 	attr=obj['attr'][2]
 	obj['csize']=obj['attr'][2].split()[1]
 	if 'INTEGER' in attr:
 		obj['type']='int'
 		obj['ctype']=get_ctype_int(obj['csize'])
 	elif 'REAL' in attr:
-		obj['ctype']='float'
+		obj['type']='float'
 		obj['ctype']=get_ctype_float(obj['csize'])
 	elif 'DERIVED' in attr:
 		obj['ctype']='struct'
+		obj['type']='void'
 	elif 'COMPLEX' in attr:
-		obj['ctype']='complex'
+		obj['type']='void'
 		obj['ctype']=get_ctype_float(obj['csize'])
 	elif 'CHARACTER' in attr:
 		obj['ctype']='char'
+		obj['type']='str'
 	elif 'LOGICAL' in attr:
 		obj['ctype']='bool'
+		obj['type']='bool'
 	elif 'UNKNOWN' in attr:
 		obj['ctype']='void'
+		obj['type']='void'
 	else:
 		raise ValueError("Cant parse "+attr)
 	
@@ -231,7 +238,7 @@ def get_ctype_int(size):
 	elif size==ctypes.sizeof(ctypes.c_int64):
 		res='c_int64'
 	else:
-		raise ValueError("Cant find suitable int for size "+size)	
+		raise ValueError("Cant find suitable int for size "+str(size))	
 	return res
 	
 def get_ctype_float(size):
@@ -248,7 +255,7 @@ def get_ctype_float(size):
 	elif size==ctypes.sizeof(ctypes.c_longlong):
 		res='c_long'
 	else:
-		raise ValueError("Cant find suitable float for size "+size)
+		raise ValueError("Cant find suitable float for size "+str(size))
 
 	return res
 	
@@ -301,17 +308,30 @@ def mangle_name(obj):
 	return '__'+obj['module_name']+'_MOD_'+obj['name']
 	
 def get_param_val(obj):
-	res=''
 	if 'PARAMETER' in obj['attr'][0]:
-		res=obj['attr'][4].split()[-1].split('@')[0].replace("'",'')
-	return res
+		obj['param']=True
+		x=obj['attr'][4].split()[-1].replace("'",'')
+		if '@' in x:	
+			obj['value']=str(float(x.split('@')[0])*10**float(x.split('@')[1]))
+		else:
+			obj['value']=str(x)
 
 
-#filename='/media/data/mesa/mesa/dev/star/make/star_lib.mod'
-filename='tester.mod'
+#filename=os.path.expandvars('$MESA_DIR/star/make/star_lib.mod')
+filename='./tester.mod'
 data,mod_data=load_data(filename)
 obj_head_all=get_all_head_objects(data)
 
+#cleanup unneed entries
+for i in obj_head_all:
+	clean_dict(i,['num','parent_num','ambiguous','arg_nums','term2','attr'])
 
-find_key_val(obj_head_all,'name','test_structer')
-obj_head_all[17]
+#Save data
+outname=mod_data['orig_file'].split('.')[0]+'.fpy'
+
+version=1
+
+with open(outname,'wb') as f:
+	pickle.dump(version,f)
+	pickle.dump(mod_data,f)
+	pickle.dump(obj_head_all,f)

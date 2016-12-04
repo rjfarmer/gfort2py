@@ -1,180 +1,55 @@
 import ctypes
-import numpy as np
 import pickle
 
 
-class fCtype(object):
-	#######################################################################
-	# ctype handling
-	#######################################################################
-	
-	def mangle_name(self,mod,name):
-		return "__"+mod+'_MOD_'+name
-	
-	def get_ctype_int(self,size):
-		res=None
-		size=int(size)
-		if size==ctypes.sizeof(ctypes.c_int):
-			res='c_int'
-		elif size==ctypes.sizeof(ctypes.c_int16):
-			res='c_int16'
-		elif size==ctypes.sizeof(ctypes.c_int32):
-			res='c_int32'
-		elif size==ctypes.sizeof(ctypes.c_int64):
-			res='c_int64'
-		else:
-			raise ValueError("Cant find suitable int for size "+size)	
-		return res
-		
-	def get_ctype_float(self,size):
-		res=None
-		size=int(size)
-		if size==ctypes.sizeof(ctypes.c_float):
-			res='c_float'
-		elif size==ctypes.sizeof(ctypes.c_double):
-			res='c_double'
-		elif size==ctypes.sizeof(ctypes.c_long):
-			res='c_long'
-		elif size==ctypes.sizeof(ctypes.c_longdouble):
-			res='c_longdouble'
-		elif size==ctypes.sizeof(ctypes.c_longlong):
-			res='c_long'
-		else:
-			raise ValueError("Cant find suitable float for size"+size)
-	
-		return res
-		
-	def get_ctype_bool(self,size):
-		return 'c_bool'	
-	
-	def get_ctype_str(self,size):
-		return 'c_char_p'	
-	
-	def map_to_scalar_ctype(self,var):
-		"""
-		gets the approitate ctype for a variable
-		
-		Returns:
-			String
-		"""
-		typ=var['type_spec']['type']
-		size=var['type_spec']['size']
-	
-		res=None
-		if typ=='int':
-			res=get_ctype_int(size)
-		elif typ=='float':
-			res=get_ctype_float(size)	
-		elif typ=='char':
-			res=get_ctype_str(size)
-		elif typ=='bool':
-			res=get_ctype_bool(size)
-		elif typ=='struct':
-			raise ValueError("Should of called map_to_struct_ctype")
-		else:
-			raise ValueError("Not supported ctype "+var['name']+' '+str(typ)+' '+str(size))
-		
-		return res
 
-class fDerivedType(fCtype):
-	def __init__(self,var,module,lib):
-		
-
-
-
-class fScalarVariable(fCtype):
-	def __init__(self,var,module,lib):
-		self.name=var['name']
-		self.is_param=var['param']
-		self.value=var['value']
-		ctype_=self.map_to_scalar_ctype(var)
-		self.ctype=getattr(ctypes,ctype_)
+class fVar(object):
+	def __init__(self,lib,**kwargs):
+		self.name=kwargs['name']
+		self.mangled_name=kwargs['mangled_name']
+		try:
+			self.is_param=kwargs['param']
+		except KeyError:
+			self.is_param=False
+		try:		
+			self.value=kwargs['value']
+		except KeyError:
+			self.value=None
+		self.ctype_=kwargs['ctype']
+		self.ctype=getattr(ctypes,self.ctype_)
+		self.pytype=getattr(__builtin__,kwargs['type'])
 		self.lib=lib
+		self._args=kwargs
 			
 	def set(self,value):
 		if not self.is_param:
-			res=self.ctype.in_dll(self.lib,self.name)
-			res.value=value
+			res=self._get_from_lib()
+			res.value=self.pytype(value)
 		else:
 			raise AttributeError("Can't alter a parameter")
 		
 	def get(self):
 		if not self.is_param:
-			res=self.ctype.in_dll(self.lib,self.name)
+			res=self._get_from_lib()
 			value=res.value
 		else:
 			value=self.value
 		
-		return value
+		return self.pytype(value)
+		
+	def _get_from_lib(self):
+		try:
+			res=self.ctype.in_dll(self.lib,self.mangled_name)
+		except ValueError:
+			print("Cant find "+self.name)
+		return res
 		
 	def __str__(self):
 		return str(self.value)
-
-
-
-filename='test_mod.flib'
-with open(filename,'rb') as f:
-	num_mods=pickle.load(f)
-	data=[]
-	for i in range(num_mods):
-		data.append(pickle.load(f))
-
-x=data[0]
-
-lib=True
-
-list_vars=[]
-
-for i in x['mod_vars']:
-	if not i['array'] and not i['struct']:
-		list_vars.append(fScalarVariable(var=i,module=x['module_name'],lib=lib))
-	
-	if i['struct'] and not i['array']:
-		pass
 		
-	if i['array'] and not i['struct']:
-		pass
-		
-	if i['struct'] and i['array']:
-		pass
+	def __repr__(self):
+		return str(self._args)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		
-class fFunction(object):
-	def __init__(self,name,lib,args,res):
-		self.name=name
-		self.ctype_name=getattr(ctypes,self.name)
-		self.lib=lib	
-		self.args=args
-		self.ctype_args=[getattr(ctypes,x) for x in args]
-		self.res=getattr(ctypes,res)
-
-		self.ctype_name.argtypes=self.ctype_args
-		self.ctype_name.restype=self.res
-	
-
-	def __call__(self,*args):
-		#Do some arg handling?
-		res=self.ctype_name(*args)
-		return res.value
-		
-		
 #Handles defered shape array (ie dimension(:) (both allocatable and non-allocatable) 
 #gfortran passes them as structs
 #Arrays with fixed size (dimension(10)) as passed as pointers to first element
@@ -360,3 +235,30 @@ class fDeferedArray(object):
 			raise ValueError("Cant match ftype, got "+ftype)		
 		
 		return pytype,ctype
+
+
+
+libname='./test_mod.so'
+lib=ctypes.CDLL(libname)
+
+
+with open('test_mod.fpy','rb') as f:
+	version=pickle.load(f)
+	mod_data=pickle.load(f)
+	obj_all=pickle.load(f)
+
+
+yyint=fVar(lib,**obj_all[-1])
+
+yyint.get()
+yyint.set(5)
+yyint.get()
+
+real_param=fVar(lib,**obj_all[20])
+real_param.get()
+real_param.set(5)
+real_param.get()
+
+
+
+
