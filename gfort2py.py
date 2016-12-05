@@ -2,8 +2,41 @@ import ctypes
 import pickle
 
 
+class futils(object):
+	def _get_from_lib(self):
+		
+		if not hasattr(self.lib,name):
+			raise AttributeError("No variable attr ",name)
+		try:
+			res=self.ctype.in_dll(self.lib,self.mangled_name)
+		except ValueError,AttributeError:
+			print("Cant find "+self.name)
+		return res
 
-class fVar(object):
+	def _null_obj(self*args,**kwargs):
+		pass
+		
+	def _get_string_name(self):
+		""" Gets a string"""
+		res=self.get_from_lib()
+		base_address=ctypes.addressof(res)
+		return self._get_string_from_address(base_address)
+
+	def _get_string_from_address(self,ctype_address,debug=False):
+		out=''
+		i=0
+		while True:
+			x=ctypes.c_char.from_address(ctype_address+i)
+			if debug:
+				print(x.value,i,x.value==b'\x00')
+			if x.value == b'\x00':
+				break
+			else:
+				out=out+(x.value).decode()
+				i=i+1
+		return out	
+
+class fVar(futils):
 	def __init__(self,lib,**kwargs):
 		self.name=kwargs['name']
 		self.mangled_name=kwargs['mangled_name']
@@ -19,16 +52,16 @@ class fVar(object):
 		self.ctype=getattr(ctypes,self.ctype_)
 		self.pytype=getattr(__builtin__,kwargs['type'])
 		self.lib=lib
-		self._args=kwargs
+		self._kwargs=kwargs
 			
-	def set(self,value):
+	def set_var(self,value):
 		if not self.is_param:
 			res=self._get_from_lib()
 			res.value=self.pytype(value)
 		else:
 			raise AttributeError("Can't alter a parameter")
 		
-	def get(self):
+	def get_var(self):
 		if not self.is_param:
 			res=self._get_from_lib()
 			value=res.value
@@ -37,18 +70,11 @@ class fVar(object):
 		
 		return self.pytype(value)
 		
-	def _get_from_lib(self):
-		try:
-			res=self.ctype.in_dll(self.lib,self.mangled_name)
-		except ValueError:
-			print("Cant find "+self.name)
-		return res
-		
 	def __str__(self):
 		return str(self.value)
 		
 	def __repr__(self):
-		return str(self._args)
+		return str(self._kwargs)
 
 #Handles defered shape array (ie dimension(:) (both allocatable and non-allocatable) 
 #gfortran passes them as structs
@@ -237,6 +263,69 @@ class fDeferedArray(object):
 		return pytype,ctype
 
 
+
+class ffunc(futils):
+	def __init__(self,lib,**kwargs):
+		self.name=kwargs['name']
+		self.mangled_name=kwargs['mangled_name']
+
+		self.args=kwargs['args']
+		self._set_args()
+		
+		
+		self.lib=lib
+		self._kwargs=kwargs
+
+		if kwargs['ctype'] is not 'void':
+			self.ctype_=kwargs['ctype']
+			self.cres=getattr(ctypes,self.ctype_)
+			self.pyres=getattr(__builtin__,kwargs['type'])
+		else:
+			self.cres=None
+			self.pyres=self._null_obj
+
+	def _set_args(self):
+		self.arg_ctypes=[]
+		a=[]
+		for i in self.args:
+			a.append(self._convert_arg_2_fvar(i))
+			self.arg_ctypes.append(a[-1]['ctype'])
+		self.args=a
+
+	def _convert_arg_2_fvar(self,arg):
+		return fvar(*arg)
+
+	def _convert_in_args(self,*args):
+		pass
+		
+	def _convert_out_args(self,*args):
+		pass
+
+		
+	def call_func(self,*args):
+		
+		f=self._get_from_lib()
+		
+		#Return type
+		f.restype=self.cres
+		
+		f.argtypes=self.arg_ctypes
+		
+		#Call function
+		if len(self.args)>0:
+			in_args=self._convert_in_args(*args)
+			res_value=f(*in_args)
+			out_args=self._convert_out_args(*in_args)
+		else:
+			res_value=f()
+			
+		if self.pyres is not None:
+			res=self.pyres(res_value)
+		else:
+			#Set dict based on inout/out args
+			res=out_args
+
+		return res
 
 libname='./test_mod.so'
 lib=ctypes.CDLL(libname)
