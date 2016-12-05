@@ -2,18 +2,15 @@ import ctypes
 import pickle
 
 
-class futils(object):
+class fUtils(object):
 	def _get_from_lib(self):
-		
-		if not hasattr(self.lib,name):
-			raise AttributeError("No variable attr ",name)
 		try:
 			res=self.ctype.in_dll(self.lib,self.mangled_name)
-		except ValueError,AttributeError:
+		except (ValueError, AttributeError):
 			print("Cant find "+self.name)
 		return res
 
-	def _null_obj(self*args,**kwargs):
+	def _null_obj(self,*args,**kwargs):
 		pass
 		
 	def _get_string_name(self):
@@ -36,7 +33,7 @@ class futils(object):
 				i=i+1
 		return out	
 
-class fVar(futils):
+class fVar(fUtils):
 	def __init__(self,lib,**kwargs):
 		self.name=kwargs['name']
 		self.mangled_name=kwargs['mangled_name']
@@ -264,7 +261,7 @@ class fDeferedArray(object):
 
 
 
-class ffunc(futils):
+class fFunc(fUtils):
 	def __init__(self,lib,**kwargs):
 		self.name=kwargs['name']
 		self.mangled_name=kwargs['mangled_name']
@@ -292,8 +289,8 @@ class ffunc(futils):
 			self.arg_ctypes.append(a[-1]['ctype'])
 		self.args=a
 
-	def _convert_arg_2_fvar(self,arg):
-		return fvar(*arg)
+	def _convert_arg_2_fvar(self,*arg):
+		return fVar(*arg)
 
 	def _convert_in_args(self,*args):
 		pass
