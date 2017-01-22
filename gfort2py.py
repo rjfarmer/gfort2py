@@ -222,6 +222,15 @@ class fArray(object):
 
 		#Copy array data
 		self.array=np.reshape(arr,newshape=shape)	
+		
+	def pass2func(self,func_name):
+		self._build_desc()
+		self._build_array()
+		func=getattr(lib,func_name)
+		func.argtypes=[ctypes.POINTER(self._desc)]
+		func(self._array)
+
+		
 
 ##Handles defered shape array (ie dimension(:) (both allocatable and non-allocatable) 
 ##gfortran passes them as structs
@@ -409,8 +418,6 @@ class fArray(object):
 		
 		##return pytype,ctype
 
-
-
 class fFunc(fUtils):
 	def __init__(self,lib,**kwargs):
 		self.name=kwargs['name']
@@ -430,6 +437,8 @@ class fFunc(fUtils):
 		else:
 			self.cres=None
 			self.pyres=self._null_obj
+			
+		self.f=getattr(lib,self.mangled_name)
 
 	def _set_args(self):
 		self.arg_ctypes=[]

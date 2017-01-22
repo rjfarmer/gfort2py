@@ -221,5 +221,14 @@ module tester
       
       write(*,*) x
    end function test_complex_dummy
+   
+   subroutine print_array(x) 
+      real(dp),dimension(:),intent(in) :: x
+      
+      write(*,*) x
+      
+   end subroutine print_array
+      
+      
  
 end module tester
