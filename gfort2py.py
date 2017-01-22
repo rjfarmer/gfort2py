@@ -234,10 +234,11 @@ class fArray(object):
 		#When we have a fixed sized array as a module varaiable
 		x=self.get_from_lib(name)
 		address=ctypes.addressof(x)
+		sizeof=ctypes.sizeof(ctype)
 		a=[]
 		for i in range(size):
 			a.append(ctypes.ctype.from_address(address))
-			address=adress+ctypes.sizeof(ctype)
+			address=adress+sizeof
 		return np.array(a)
 	
 
