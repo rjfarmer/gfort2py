@@ -230,7 +230,16 @@ class fArray(object):
 		func.argtypes=[ctypes.POINTER(self._desc)]
 		func(self._array)
 
-		
+	def getFixedArray(self,name,ctype,size):
+		#When we have a fixed sized array as a module varaiable
+		x=self.get_from_lib(name)
+		address=ctypes.addressof(x)
+		a=[]
+		for i in range(size):
+			a.append(ctypes.ctype.from_address(address))
+			address=adress+ctypes.sizeof(ctype)
+		return np.array(a)
+	
 
 ##Handles defered shape array (ie dimension(:) (both allocatable and non-allocatable) 
 ##gfortran passes them as structs
