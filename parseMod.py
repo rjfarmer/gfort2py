@@ -2,6 +2,7 @@ import gzip
 import ctypes
 import os
 import pickle
+import sys
 
 def split_brackets(value,remove_b=False):
 	'''
@@ -317,21 +318,33 @@ def get_param_val(obj):
 			obj['value']=str(x)
 
 
-#filename=os.path.expandvars('$MESA_DIR/star/make/star_lib.mod')
-filename='./tester.mod'
-data,mod_data=load_data(filename)
-obj_head_all=get_all_head_objects(data)
 
-#cleanup unneed entries
-for i in obj_head_all:
-	clean_dict(i,['num','parent_num','ambiguous','arg_nums','term2','attr'])
 
-#Save data
-outname=mod_data['orig_file'].split('.')[0]+'.fpy'
+if len(sys.argv[1:])>0:
+	files=sys.argv[1:]
+else:
+	#files=[os.path.expandvars('$MESA_DIR/star/make/star_lib.mod')]
+	files=['./tester.mod']
 
-version=1
 
-with open(outname,'wb') as f:
-	pickle.dump(version,f)
-	pickle.dump(mod_data,f)
-	pickle.dump(obj_head_all,f)
+for filename in files
+	data,mod_data=load_data(filename)
+	obj_head_all=get_all_head_objects(data)
+	
+	#cleanup unneed entries
+	for i in obj_head_all:
+		clean_dict(i,['num','parent_num','ambiguous','arg_nums','term2','attr'])
+	
+	#Save data
+	outname=mod_data['orig_file'].split('.')[0]+'.fpy'
+	
+	version=1
+	
+	with open(outname,'wb') as f:
+		pickle.dump(version,f)
+		pickle.dump(mod_data,f)
+		pickle.dump(obj_head_all,f)
+	
+	data=0
+	mod_data=0
+	obj_head_all=0
