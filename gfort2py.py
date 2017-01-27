@@ -68,12 +68,19 @@ class fVar(fUtils):
 		
 		return self.pytype(value)
 		
-	def __str__(self):
-		return str(self.value)
+
+	def py2f_mod(self,x):
+		return self.ctype(x)
 		
-	def __repr__(self):
-		return str(self._kwargs)
-		
+	
+	def py2f_func(self,x):
+		return self.ctype(x),self.ctype
+	
+	def f2py_mod(self,x):
+		return self.pytype(x)
+	
+	def f2py_func(self,x):
+		return self.pytype(x)
 		
 class fArray(object):
 	#GCC constants
@@ -85,7 +92,7 @@ class fArray(object):
 	GFC_DTYPE_SIZE_SHIFT=6
 	
 	BT_UNKNOWN = 0
-	BT_INTEGER=BT_UNKNOWN+1
+	BT_INTEGER=BT_UNKNOWN+1 
 	BT_LOGICAL=BT_INTEGER+1
 	BT_REAL=BT_LOGICAL+1
 	BT_COMPLEX=BT_REAL+1
@@ -100,13 +107,45 @@ class fArray(object):
 	index_t = ctypes.c_int64
 	size_t = ctypes.c_int64
 	
-	def __init__(self,array):
-		self.array=array
-		self._dtype=self._get_dtype()
-		self._ftype,self._ctype=self._get_type()
-		self._ndim=self.array.ndim
+	"""
+	Need to handle four different cases
 	
-	def _get_desc(self,ndim):
+	python defines array and passes as an assumed shape array
+	python defines array and passes as pointer to first element
+	fortran returns an assumed shape array 
+	fortran returns a pointer to first element
+	
+	plus pointer versions?
+	
+	"""
+	
+	def __init__(self,array=None,**kwargs):
+		pass
+		
+	def _set_pyarray(self,array,assumed=True):
+		self.array=array
+		self.dtype=self._get_dtype()
+		self.ftype,self._ctype=self._get_type()
+		self.ndim=self.array.ndim
+		self.shape=self.array.shape
+		self.lbound=np.array([1]*self.ndim)
+		self.ubound=np.array(self.shape)
+	
+		if assumed:
+			self._desc=_build_desc()
+			self.ctype=ctypes.POINTER(self._desc)
+			self._build_array()
+		else:
+			self.ctype=ctypes.c_void_p
+			self._array(self.array.data_as(ctypes.c_void_p))
+	
+		
+	def _get_farray(self,assumed=True,**kwargs):
+		pass
+		
+	
+	
+	def _make_desc(self,ndim):
 		class descriptor(ctypes.Structure):
 			_fields_=[("stride",self.index_t),
 					("lbound",self.index_t),
@@ -155,10 +194,10 @@ class fArray(object):
 		
 	def _get_pytype(self,ftype,sizebytes):
 		if ftype==self.BT_INTEGER:
-			ctype=get_ctype_int(sizebytes)
+			ctype=gf.get_ctype_int(sizebytes)
 			pytype=int
 		elif ftype==self.BT_REAL:
-			ctype=get_ctype_float(sizebytes)
+			ctype=gf.get_ctype_float(sizebytes)
 			pytype=float
 		elif dtype==self.BT_LOGICAL:
 			pytype=np.bool
@@ -172,7 +211,7 @@ class fArray(object):
 		return pytype,ctype
 
 	def _build_desc(self):
-		self._desc=self._get_desc(self._ndim)
+		self._desc=self._make_desc(self._ndim)
 		
 		self._array=self._desc()
 		
@@ -227,207 +266,39 @@ class fArray(object):
 		self._build_desc()
 		self._build_array()
 		func=getattr(lib,func_name)
-		func.argtypes=[ctypes.POINTER(self._desc)]
+		func.argtypes=[self._ctype]
 		func(self._array)
 
 	def getFixedArray(self,name,ctype,size):
 		#When we have a fixed sized array as a module varaiable
 		x=self.get_from_lib(name)
 		address=ctypes.addressof(x)
-		sizeof=ctypes.sizeof(ctype)
+		sizeof=ctypes.sizeof(self.ctype)
 		a=[]
 		for i in range(size):
 			a.append(ctypes.ctype.from_address(address))
 			address=adress+sizeof
 		return np.array(a)
-	
+		
+	def _get_array(self,array_in):			
+		self.ndims,self.ftype,self.sizebytes=self._find_dtype(array_in.dtype)	
+			
+		shape=[]
+		stride=[]
+		for i in range(0,self.ndim):
+			shape.append((array_in.dims[i].ubound-
+						array_in.dims[i].lbound)+1)
+			stride.append(array_in.dims[0].stride*self.sizebytes)
+		
+		off=0
+		arr=[]
+		for i in range(np.product(shape)):
+				off=i*stride[0]
+				arr.append(ctype.from_address(array_in.base_addr+off).value)
 
-##Handles defered shape array (ie dimension(:) (both allocatable and non-allocatable) 
-##gfortran passes them as structs
-##Arrays with fixed size (dimension(10)) as passed as pointers to first element
-#class fDeferedArray(object):
-	##GCC constants
-	#GFC_MAX_DIMENSIONS=7
+		#Copy array data
+		self.array=np.reshape(arr,newshape=shape)
 	
-	#GFC_DTYPE_RANK_MASK=0x07
-	#GFC_DTYPE_TYPE_SHIFT=3
-	#GFC_DTYPE_TYPE_MASK=0x38
-	#GFC_DTYPE_SIZE_SHIFT=6
-	
-	#BT_UNKNOWN = 0
-	#BT_INTEGER=BT_UNKNOWN+1
-	#BT_LOGICAL=BT_INTEGER+1
-	#BT_REAL=BT_LOGICAL+1
-	#BT_COMPLEX=BT_REAL+1
-	#BT_DERIVED=BT_COMPLEX+1
-	#BT_CHARACTER=BT_DERIVED+1
-	#BT_CLASS=BT_CHARACTER+1
-	#BT_PROCEDURE=BT_CLASS+1
-	#BT_HOLLERITH=BT_PROCEDURE+1
-	#BT_VOID=BT_HOLLERITH+1
-	#BT_ASSUMED=BT_VOID+1	
-	
-	#index_t = ctypes.c_int64
-	#size_t = ctypes.c_int64
-	
-
-	#def __init__(self,array):
-		#self.array=array
-	
-	#def array2ctype(self):
-		##Used when python allocs the memory
-		#dtype=self._get_dtype()
-		#ftype,ctype=self._get_type()
-		#ndim=self.array.ndim
-		
-		#desc=self._get_desc(self.array.ndim)
-		
-		#result=desc()
-		
-		#result.base_addr=self.array.ctypes.data_as(ctypes.c_void_p)
-		
-		#result.offset=self.size_t(-1)
-		
-		#result.dtype=dtype
-				
-		#for i in range(0,ndim):
-			#result.dims[i].stride=self.index_t(self.array.strides[i]//ctypes.sizeof(ctype))
-			#result.dims[i].lbound=self.index_t(1)
-			#result.dims[i].ubound=self.index_t(self.array.shape[i])		
-				
-		##Must use the desc used to create result to pass to function.argtypes
-		#return result,desc
-		
-	##def array2ctypeEmpty(self,ndim=1):
-		###Used when fortran allocs the memoray
-		##dtype=self._get_dtype()
-		##ftype,ctype=self._get_type()
-		
-		##desc=self._get_desc(ndim)
-		
-		##result=desc()
-		
-		##result.base_addr=ctypes.c_void_p()
-		
-		##result.offset=self.size_t(-1)
-		
-		##result.dtype=0
-				
-		##for i in range(0,ndim):
-			##result.dims[i].stride=self.index_t(1)
-			##result.dims[i].lbound=self.index_t(1)
-			##result.dims[i].ubound=self.index_t(1)	
-				
-		###Must use the desc used to create result to pass to function.argtypes
-		##return result,desc
-	
-	##def _get_desc(self,ndim):
-		##class descriptor(ctypes.Structure):
-			##_fields_=[("stride",self.index_t),
-					##("lbound",self.index_t),
-					##("ubound",self.index_t)]
-		
-		##class defarray(ctypes.Structure):
-			##_fields_=[("base_addr",ctypes.c_void_p),
-					##("offset",self.size_t),
-					##("dtype",self.index_t),
-					##("dims",descriptor*ndim)]
-					
-		##return defarray
-	
-	##def _get_type(self):
-		##dtype=self.array.dtype.kind
-		##res1=self.BT_UNKNOWN
-		##res2=ctypes.c_int64
-		
-		##if dtype=='i':
-			##ftype=self.BT_INTEGER
-			##ctype=ctypes.c_int32
-		##elif dtype=='f':
-			##ftype=self.BT_REAL
-			##ctype=ctypes.c_double
-		##elif dtype=='b':
-			##ftype=self.BT_LOGICAL
-			##ctype=ctypes.c_bool
-		##elif dtype=='U' or dtype=='S':
-			##ftype=self.BT_CHARACTER
-			##ctype=ctypes.c_char
-		##else:
-			##raise ValueError("Cant match dtype, got "+dtype)
-		
-		##return ftype,ctype
-				
-	##def _get_dtype(self):
-		##ftype,ctype=self._get_type()
-		##dtype=self.array.ndim
-		##dtype=dtype|(ftype<<self.GFC_DTYPE_TYPE_SHIFT)
-		##dtype=dtype|(ctypes.sizeof(ctype)<<self.GFC_DTYPE_SIZE_SHIFT)
-		##return dtype
-		
-	#def ctype2array(self,carray=None):
-		#if carray is None:
-			##We passed the array so fortran filled our memory allready
-			#return self.array
-		
-		#self.carray=carray
-		##We didnt pass an array,fortran allocated it so we must make our own
-		#ndim,typ,sizebytes=self._find_dtype()
-		#pytype,ctype=self._get_pytype(typ,sizebytes)
-		
-		#shape=[]
-		#stride=[]
-		#for i in range(0,ndim):
-			#shape.append((self.carray.dims[i].ubound-
-						#self.carray.dims[i].lbound)+1)
-			#stride.append(self.carray.dims[0].stride*sizebytes)
-		
-		#off=0
-		#arr=[]
-		#for i in range(np.product(shape)):
-				#off=i*stride[0]
-				#arr.append(ctype.from_address(self.carray.base_addr+off).value)
-
-		##Copy array data
-		#self.array=np.reshape(arr,newshape=shape)
-		#return self.array
-		
-	##def _find_dtype(self):
-		##dtype=self.carray.dtype
-		##rank=dtype&self.GFC_DTYPE_RANK_MASK
-		##ty=(dtype&self.GFC_DTYPE_TYPE_MASK)>>self.GFC_DTYPE_TYPE_SHIFT
-		##sizebytes=dtype>>self.GFC_DTYPE_SIZE_SHIFT
-		##return rank,ty,sizebytes
-		
-	##def _get_pytype(self,ftype,sizebytes):
-		##if ftype==self.BT_INTEGER:
-			##if sizebytes==4:
-				##pytype=np.int32
-				##ctype=ctypes.c_int32
-			##elif sizebytes==8:
-				##pytype=np.int64
-				##ctype=ctypes.c_int64
-			##else:
-				##raise ValueError("Cant match ftype size, got "+ftype+" "+sizebytes)
-		##elif ftype==self.BT_REAL:
-			##if sizebytes==4:
-				##pytype=np.float32
-				##ctype=ctypes.c_float
-			##elif sizebytes==8:
-				##pytype=np.float64
-				##ctype=ctypes.c_double
-			##else:
-				##raise ValueError("Cant match ftype size, got "+ftype+" "+sizebytes)
-		##elif dtype==self.BT_LOGICAL:
-			##pytype=np.bool
-			##ctype=ctypes.c_bool
-		##elif ftype==self.BT_CHARACTER:
-			##pytype=np.char
-			##ctype=ctypes.c_char
-		##else:
-			##raise ValueError("Cant match ftype, got "+ftype)		
-		
-		##return pytype,ctype
-
 class fFunc(fUtils):
 	def __init__(self,lib,**kwargs):
 		self.name=kwargs['name']
@@ -493,26 +364,53 @@ class fFunc(fUtils):
 
 		return res
 
-libname='./test_mod.so'
-lib=ctypes.CDLL(libname)
 
+class fFort(object):
+	def __init__(self,libname,fpy):
+		self.lib=ctypes.CDLL(libname)
+		self.libname=libname
 
-with open('test_mod.fpy','rb') as f:
-	version=pickle.load(f)
-	mod_data=pickle.load(f)
-	obj_all=pickle.load(f)
+		with open(fpy,'rb') as f:
+			self.version=pickle.load(f)
+			self.mod_data=pickle.load(f)
+			self.obj_all=pickle.load(f)
 
+		for i in self.obj_all:
+			if i['type'] is not 'void':
+				#Variable
+				pass
+			elif i['ctype'] == 'void':
+				#DT
+				pass
+			else:
+				pass
+			
+				
+				
+		
+	def _init_var(self):
+		pass
+		
+	def _init_func(self):	
+		pass
+		
+	def init_array(self):
+		pass
+	
+	def init_dt(self):
+		pass
+		
+	def _call(self,name,*args):
+		pass
+		
+		
+	def _get_var(self,name):
+		pass
+		
+	def _set_var(self,name,value):
+		pass
 
-yyint=fVar(lib,**obj_all[-1])
-
-yyint.get()
-yyint.set(5)
-yyint.get()
-
-real_param=fVar(lib,**obj_all[20])
-real_param.get()
-real_param.set(5)
-real_param.get()
+x=fFort('./test_mod.so','test_mod.fpy')
 
 
 

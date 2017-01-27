@@ -9,6 +9,8 @@ module tester
       integer :: yyint
       real(dp) :: aaa(4)=(/1.0,2.0,3.0,4.0/)
       
+       real(dp),parameter :: param_array(4)=(/1.0,2.0,3.0,4.0/)
+      
       real(dp),allocatable,dimension(:) :: alloc_1
        real(dp),allocatable,dimension(:,:) :: alloc_2     
  
@@ -59,9 +61,22 @@ module tester
       
       type(eos_general_info) :: seos1,seos2
       type(eos_general_info),allocatable,dimension(:) :: seos1a
+      type(struct_tester) :: st1_test
       
+      
+      interface
+         integer function func_interface(a,b,c)
+            integer,intent(in) :: a,b,c
+         end function func_interface
+         
+         integer function func_interface2(a,b,c)
+            integer,intent(in) :: a,b,c
+         end function func_interface2
+         
+      end interface   
       
       contains
+      
       
 	real(dp) function test_structer(x)
 		type(struct_tester), intent(in) :: x
@@ -104,7 +119,7 @@ module tester
       
    end subroutine array_in
    
-   subroutine array_in_fixed(x)
+   subroutine array_in_fixed(x) 
       integer,dimension(1:9),intent(in) :: x
 !      integer,dimension(:),intent(in) :: x
       
@@ -230,5 +245,8 @@ module tester
    end subroutine print_array
       
       
+   integer function func_noargs()
+      func_noargs=5
+   end function func_noargs 
  
 end module tester

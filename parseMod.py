@@ -3,6 +3,15 @@ import ctypes
 import os
 import pickle
 import sys
+import re
+
+			
+def clean_list(l,idx):
+	return [i for j, i in enumerate(l) if j not in idx]
+	
+def mangle_name(obj):
+	return '__'+obj['module_name']+'_MOD_'+obj['name']
+	
 
 def split_brackets(value,remove_b=False):
 	'''
@@ -35,57 +44,12 @@ def split_brackets(value,remove_b=False):
 			token=''
 	return res
 
-#Mix of function names, module variables, parameters and possible 
-#fortran intrinsic functions
-def parse_object_names(data):
-	y=data[-1].split()
-	mod=[]
-	for i in range(0,len(y),3):
-		name=y[i].replace('(','').replace("'",'')
-		if not name.startswith('__'):
-			mod.append({})
-			mod[-1]['name']=name
-			mod[-1]['ambiguous']=y[i+1]
-			mod[-1]['num']=y[i+2].replace(')','')
-			mod[-1]['args']=[]
-	return mod
+def find_key_val(list_dicts,key,value):
+	for idx,i in enumerate(list_dicts):
+		if i[key]==value:
+			print(idx)
+			print(i)	
 
-def parse_all_objects(data):
-	#Remove opening and closing bracket
-	dsplit=data[-2][1:-1].split(' ')
-	#Pattern is 4 terms then look for matching set of open/close brackets
-	res=[]
-	i=0
-	while True:
-		if i >= len(dsplit)-1:
-			break
-		res.append({})
-		res[-1]['num']=dsplit[i].replace("'",'')
-		res[-1]['name']=dsplit[i+1].replace("'",'')
-		#if module variable then is the module name else its an empty string
-		res[-1]['module_name']=dsplit[i+2].replace("'",'')
-		res[-1]['term2']=dsplit[i+3].replace("'",'')
-		res[-1]['parent_num']=dsplit[i+4].replace("'",'')
-		res[-1]['mangled_name']=mangle_name(res[-1])
-		#Look for an open and closed bracket pair
-		token=''
-		start=False
-		count=0
-		count2=0
-		for j in dsplit[i+5:]:
-			count2=count2+1
-			count=count+j.count('(')-j.count(')')
-			if j.count('('):
-				start=True
-			if start:
-				token+=str(j)+' '
-			if start and count==0:
-				start=False
-				break
-		res[-1]['attr']=split_brackets(token[1:-1],remove_b=True)
-		i=i+5+count2
-	return res
-	
 def load_data(filename):
 	try:
 		with gzip.open(filename) as f:
@@ -111,124 +75,18 @@ def get_mod_data(x):
 		raise AttributeError('Unsupported mod file version')
 	
 	return res
-	
-def find_key_val(list_dicts,key,value):
-	for idx,i in enumerate(list_dicts):
-		if i[key]==value:
-			print(idx)
-			print(i)
-			
-def clean_list(l,idx):
-	return [i for j, i in enumerate(l) if j not in idx]
-	
-			
-def get_all_head_objects(data):
-	object_head=parse_object_names(data)
-	object_all=parse_all_objects(data)
-	#Maps function attributes to the names
-	for j in object_head:
-		for idx,i in enumerate(object_all):
-			#functions
-			if i['num']==j['num']:
-				#merge dicts
-				j.update(i)
-				j['arg_nums']=j['attr'][3].split()
-		parse_type(j)
-		parse_array(j)
-		parse_struct_types(j,object_head)
-		parse_derived_type_def(j,object_head)
-	
-	get_func_args(object_head,object_all)
-			
-	return object_head
-	
-def get_func_args(object_head,object_all):
-	ind=[]
-	for j in object_head:
-		for idx,i in enumerate(object_all):
-			if i['num'] in j['arg_nums']:
-				j['args'].append(process_func_arg(i,object_head))
-				ind.append(idx)
-	
-def process_func_arg(obj,object_head):
-	parse_type(obj)
-	parse_array(obj)
-	parse_dummy(obj)
-	parse_struct_types(obj,object_head)
-	clean_dict_func_arg(obj)
-	return obj
 
-
-def parse_derived_type_def(obj,object_head):
-	#This should be the parent defintion of a derived type
-	if obj['parent_num'] != 1 and 'DERIVED' not in obj['attr'][0]:
-		return
-	
-	elem=split_brackets(obj['attr'][1])
-	obj['args']=[]
-	for i in elem:
-		j={}
-		x=split_brackets(i[1:-1])
-		j['name']=i.split()[1]
-		j['num']=i.split()[0].replace('(','')
-		j['attr']=[x[2][1:-1],0,x[0][1:-1],0,x[1][1:-1]]
-		obj['args'].append(process_func_arg(j,object_head))
-		
-	clean_dict(obj,['attr','term2'])
-
-def parse_struct_types(obj,object_head):
-	if 'DERIVED' in obj['attr'][0]:
-	#This is the definition of the derived type not a variable of type derived type
-		return
-	for j in object_head:
-		if 'DERIVED' in obj['attr'][2] and obj['attr'][2].split()[1]==j['num']:
-			obj['struct_type']=j['name']
-			break	
-
-def clean_dict_func_arg(obj):
-	# remove uneeded entries from a function arg 
-	# (may need some of these if its not a func arg)
-	remove=['attr','term2','parent_num','module_name']
-	clean_dict(obj,remove)
-
-def clean_mod(obj):
-	remove=['attr','term2','parent_num','ambiguous']
-	clean_dict(obj,remove)
-	
-def clean_dict(obj,names):
-	for i in names:
-		obj.pop(i,None)		
-	
-def parse_type(obj):
-	get_param_val(obj)
-	attr=obj['attr'][2]
-	obj['csize']=obj['attr'][2].split()[1]
-	if 'INTEGER' in attr:
-		obj['type']='int'
-		obj['ctype']=get_ctype_int(obj['csize'])
-	elif 'REAL' in attr:
-		obj['type']='float'
-		obj['ctype']=get_ctype_float(obj['csize'])
-	elif 'DERIVED' in attr:
-		obj['ctype']='struct'
-		obj['type']='void'
-	elif 'COMPLEX' in attr:
-		obj['type']='void'
-		obj['ctype']=get_ctype_float(obj['csize'])
-	elif 'CHARACTER' in attr:
-		obj['ctype']='char'
-		obj['type']='str'
-	elif 'LOGICAL' in attr:
-		obj['ctype']='bool'
-		obj['type']='bool'
-	elif 'UNKNOWN' in attr:
-		obj['ctype']='void'
-		obj['type']='void'
-	else:
-		raise ValueError("Cant parse "+attr)
+def split_info(info):
+	#Cleanup brackets
+	if info[0:2]=="((":
+		info=info[1:]
+	#if info[-2:]==' )':
+		##extra bracket on final element in the orignal data
+		#info=info[:-1]
+	sp=split_brackets(info)
+	return sp
 	
 def get_ctype_int(size):
-	res=None
 	size=int(size)
 	if size==ctypes.sizeof(ctypes.c_int):
 		res='c_int'
@@ -238,12 +96,15 @@ def get_ctype_int(size):
 		res='c_int32'
 	elif size==ctypes.sizeof(ctypes.c_int64):
 		res='c_int64'
+	elif size==ctypes.sizeof(ctypes.c_byte):
+		res='c_byte'
+	elif size==ctypes.sizeof(ctypes.c_short):
+		res='c_short'		
 	else:
 		raise ValueError("Cant find suitable int for size "+str(size))	
 	return res
 	
 def get_ctype_float(size):
-	res=None
 	size=int(size)
 	if size==ctypes.sizeof(ctypes.c_float):
 		res='c_float'
@@ -257,94 +118,244 @@ def get_ctype_float(size):
 		res='c_long'
 	else:
 		raise ValueError("Cant find suitable float for size "+str(size))
+	return res
 
+
+def parse_type(info):
+	attr=info[2]
+	size=attr.split()[1]
+	if 'INTEGER' in attr:
+		pytype='int'
+		ctype=get_ctype_int(size)
+	elif 'REAL' in attr:
+		pytype='float'
+		ctype=get_ctype_float(size)
+	elif 'COMPLEX' in attr:
+		pytype='void'
+		ctype=get_ctype_float(size)
+	elif 'CHARACTER' in attr:
+		pytype='char'
+		ctype='str'
+	elif 'LOGICAL' in attr:
+		pytype='bool'
+		ctype='bool'
+	elif 'DERIVED' in attr:
+		pytype='void'
+		ctype='void'			
+	else:
+		raise ValueError("Cant parse "+attr)
+	return pytype,ctype
+	
+def parse_array(info):
+	d={}
+	if not 'DIMENSION' in info[0]:
+		return False
+	if 'ALLOCATABLE' in info[0]:
+		d['atype']='alloc'
+	elif 'POINTER' in info[0]:
+		d['atype']='pointer'
+	elif 'ASSUMED_SHAPE' in info[4]:
+		d['atype']='assumed'
+	elif 'CONSTANT' in info[4]:
+		d['bounds']=get_bounds(info)
+		d['atype']='explicit'
+	d['ndims']=get_ndims(info)
+	return d
+		
+def get_ndims(info):
+	x=info[4].replace("(","").strip()
+	return int(x.split()[0])
+	
+def get_bounds(info):
+	#Horrible but easier than splitting the nested brackets
+	return [int(x) for x in info[4].split("'")[1:-1:2]]	
+	
+	
+def get_param_val(info):
+	if 'PARAMETER' in info[0]:
+		x=info[4].split("'")[1::2]
+		if len(x)==1:
+			value=parse_single_param_val(x[0])
+		else:
+			#Dont do whole list as last element is array size
+			value=[]
+			for i in range(len(x)-1):
+				value.append(parse_single_param_val(x[i]))
+	return value
+			
+def parse_single_param_val(x):
+	if '@' in x:
+		sp=x.split('@')
+		value=str(float(sp[0])*10**float(sp[1]))
+	else:
+		value=str(x)
+	return value
+
+
+def parse_dummy(info):
+	value=False
+	attr=info[0]
+	if 'DUMMY' in attr:
+		if ' INOUT ' in attr or ' UNKNOWN-INTENT ' in attr:
+			value='inout'
+		elif ' OUT ' in attr:
+			value='out'
+		elif ' IN ' in attr:
+			value='in'
+	return value
+	
+def parse_optional(info):
+	if 'OPTIONAL' in info[0]:
+		return True
+	else:
+		return False
+		
+def parse_ext_func(info):
+	if 'EXTERNAL DUMMY' in info[0]:
+		return True
+	else:
+		return False
+	
+def parse_derived_type(info,dt_defs):
+	x=info[2]
+	if 'DERIVED' in x:
+		sx=x.split()
+		#Map id to parent derived type
+		return map_id_dt(int(sx[1]),dt_defs)
+	return False	
+	
+def map_id_dt(i,dt_defs):
+	for j in dt_defs:
+		if j['num']==i:
+			return j
+	raise ValueError("Cant find derived type "+str(i))
+			
+def split_list_dt(list_dt):
+	res=[]
+	for i in split_brackets(list_dt[1:-1],remove_b=True):
+		x=i.split("'")
+		res.append({'name':x[1],'module':x[3],'num':int(x[4].strip())})
 	return res
 	
-def parse_array(obj):
-	obj['array']=False
-	obj['ndims']=-1
-	obj['bounds']=[]
-	obj['atype']=None
-	if 'DIMENSION' not in obj['attr'][0]:
-		return
-	if 'ALLOCATABLE' in obj['attr'][0]:
-		obj['array']=True
-		obj['ndims']=get_ndims(obj)
-		obj['atype']='alloc'
-	elif 'POINTER' in obj['attr'][0]:
-		obj['array']=True
-		obj['ndims']=get_ndims(obj)
-		obj['atype']='pointer'
-	elif 'ASSUMED_SHAPE' in obj['attr'][4]:
-		obj['array']=True
-		obj['ndims']=get_ndims(obj)
-		obj['atype']='assumed'
-	elif 'CONSTANT' in obj['attr'][4]:
-		obj['array']=True
-		obj['ndims']=get_ndims(obj)
-		obj['bounds']=get_bounds(obj)
-		obj['atype']='explicit'
-		
-def get_ndims(obj):
-	return int(obj['attr'][4].split()[0])
+#################################
+
+#filename='./tester.mod'
+filename=os.path.expandvars('$MESA_DIR/star/make/star_lib.mod')
+
+data,mod_data=load_data(filename)
+
+header=data[-1][1:-1].replace("'","").split()
+
+names=[]
+num1=[]
+num2=[]
+
+for i in range(len(header)//3):
+	names.append(header[i*3])
+	num1.append(header[i*3+1])
+	num2.append(header[i*3+2])
+
+
+main_data=data[6]
+split_data=re.split("([0-9]+\s\'[a-zA-Z_][\w]*?\'.*?)",main_data)
+
+dt_defs=[]
+funcs=[]
+func_args=[]
+mod_vars=[]
+module=[]
+param=[]
+
+if split_data[0]=='(':
+	split_data.pop(0)
 	
-def get_bounds(obj):
-	#Horrible but easier than splitting the nested brackets
-	return [int(x) for x in obj['attr'][4].split("'")[1:-1:2]]
+for i,j in zip(split_data[0::2],split_data[1::2]):
+	#Skip intrinsic functions and interfaces
+	if "'(intrinsic)'" in j or 'ABSTRACT' in j:
+		continue
 	
-def parse_dummy(obj):
-	attr=obj['attr'][0]
-	
-	if 'DUMMY' in attr:
-		if 'INOUT' in attr or 'UNKNOWN-INTENT' in attr:
-			obj['inout']='inout'
-		elif 'OUT ' in attr:
-			obj['inout']='out'
-		elif 'IN ' in attr:
-			obj['inout']='in'
+	if j[1]=="(":
+		#These are the components of a derived type and allways come after the
+		#initial defintion of the derived type
+		sp=i.split()
+		dt_defs[-1]['args'].append({'num':int(sp[0]),'name':sp[1],'info':j})
+	else:
+		line=i+j
+		sp=line.split()
+		d={'num':int(sp[0]),
+					'name':sp[1].replace("'",""),
+					'module':sp[2].replace("'",""),
+					#'unknown':sp[3].replace("'",""),
+					'parent':int(sp[4]),
+					'info':' '.join(sp[5:])}
+
+		if 	d['parent']>1:
+			d['info']=split_info(d['info'])
+			func_args.append(d)	
+		elif 'DERIVED' in j:
+			d['args']=[]
+			dt_defs.append(d)
+		elif 'VARIABLE' in j:	
+			d['info']=split_info(d['info'])
+			mod_vars.append(d)
+		elif 'MODULE' in j:
+			d['info']=split_info(d['info'])
+			module.append(d)
+		elif 'PROCEDURE' in j:
+			d['info']=split_info(d['info'])
+			funcs.append(d)
+		elif 'PARAMETER' in j:
+			d['info']=split_info(d['info'])
+			param.append(d)
 		else:
-			obj['inout']=False
-
-def mangle_name(obj):
-	return '__'+obj['module_name']+'_MOD_'+obj['name']
+			print(d)
+			print(j)
+			raise ValueError("Can't match type")
 	
-def get_param_val(obj):
-	if 'PARAMETER' in obj['attr'][0]:
-		obj['param']=True
-		x=obj['attr'][4].split()[-1].replace("'",'')
-		if '@' in x:	
-			obj['value']=str(float(x.split('@')[0])*10**float(x.split('@')[1]))
-		else:
-			obj['value']=str(x)
-
-
-
-
-if len(sys.argv[1:])>0:
-	files=sys.argv[1:]
-else:
-	#files=[os.path.expandvars('$MESA_DIR/star/make/star_lib.mod')]
-	files=['./tester.mod']
-
-
-for filename in files
-	data,mod_data=load_data(filename)
-	obj_head_all=get_all_head_objects(data)
+for i in dt_defs:
+	i['info']=split_info(i['info'])	
 	
-	#cleanup unneed entries
-	for i in obj_head_all:
-		clean_dict(i,['num','parent_num','ambiguous','arg_nums','term2','attr'])
+#Process module variables
+for i in mod_vars:
+	#Get python and ctype
+	i['pytpe'],i['ctype']=parse_type(i['info'])	
+	#Handle arrays, i['array']==False if not an array
+	i['array']=parse_array(i['info'])
+	#Handle derived types:
+	i['dt']=parse_derived_type(i['info'],dt_defs)
+	#Dont need the info list anymore
+	i.pop('info',None)
+	#Or the numbers
+	i.pop('parent',None)
+	i.pop('num',None)
+
+
+#process parameters
+for i in param:
+	i['value']=get_param_val(i['info'])
+	#Dont need the info list anymore
+	i.pop('info',None)
+	#Or the numbers
+	i.pop('parent',None)
+	i.pop('num',None)
 	
-	#Save data
-	outname=mod_data['orig_file'].split('.')[0]+'.fpy'
 	
-	version=1
-	
-	with open(outname,'wb') as f:
-		pickle.dump(version,f)
-		pickle.dump(mod_data,f)
-		pickle.dump(obj_head_all,f)
-	
-	data=0
-	mod_data=0
-	obj_head_all=0
+#cleanup func_args
+for i in func_args:
+	#Get python and ctype
+	i['pytpe'],i['ctype']=parse_type(i['info'])	
+	#Handle arrays, i['array']==False if not an array
+	i['array']=parse_array(i['info'])
+	#Get Intents
+	i['intent']=parse_dummy(i['info'])	
+	#Is optional?
+	i['opt']=parse_optional(i['info'])	
+	#Is actualy a function being passed?
+	i['ext_func']=parse_ext_func(i['info'])	
+	#Handle derived types:
+	i['dt']=parse_derived_type(i['info'],dt_defs)	
+	#Dont need the info list anymore
+	i.pop('info',None)
+	i.pop('module',None)
+
+print(mod_vars)
