@@ -227,7 +227,7 @@ def parse_derived_type(info,dt_defs):
 def map_id_dt(i,dt_defs):
 	for j in dt_defs:
 		if j['num']==i:
-			return j
+			return j['name']
 	raise ValueError("Cant find derived type "+str(i))
 			
 def split_list_dt(list_dt):
@@ -239,8 +239,8 @@ def split_list_dt(list_dt):
 	
 #################################
 
-#filename='./tester.mod'
-filename=os.path.expandvars('$MESA_DIR/star/make/star_lib.mod')
+filename='./tester.mod'
+#filename=os.path.expandvars('$MESA_DIR/star/make/star_lib.mod')
 
 data,mod_data=load_data(filename)
 
@@ -288,7 +288,7 @@ for i,j in zip(split_data[0::2],split_data[1::2]):
 					#'unknown':sp[3].replace("'",""),
 					'parent':int(sp[4]),
 					'info':' '.join(sp[5:])}
-
+					
 		if 	d['parent']>1:
 			d['info']=split_info(d['info'])
 			func_args.append(d)	
@@ -298,15 +298,19 @@ for i,j in zip(split_data[0::2],split_data[1::2]):
 		elif 'VARIABLE' in j:	
 			d['info']=split_info(d['info'])
 			mod_vars.append(d)
-		elif 'MODULE' in j:
-			d['info']=split_info(d['info'])
-			module.append(d)
 		elif 'PROCEDURE' in j:
+			if 'UNKNOWN-PROC' in j:
+				#Lower case derived type definitions
+				continue
+			print(line)
 			d['info']=split_info(d['info'])
 			funcs.append(d)
 		elif 'PARAMETER' in j:
 			d['info']=split_info(d['info'])
 			param.append(d)
+		elif 'MODULE' in j:
+			d['info']=split_info(d['info'])
+			module.append(d)
 		else:
 			print(d)
 			print(j)
@@ -332,6 +336,7 @@ for i in mod_vars:
 
 #process parameters
 for i in param:
+	i['pytpe'],i['ctype']=parse_type(i['info'])	
 	i['value']=get_param_val(i['info'])
 	#Dont need the info list anymore
 	i.pop('info',None)
@@ -357,5 +362,3 @@ for i in func_args:
 	#Dont need the info list anymore
 	i.pop('info',None)
 	i.pop('module',None)
-
-print(mod_vars)
