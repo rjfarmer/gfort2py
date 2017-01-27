@@ -121,9 +121,14 @@ def get_ctype_float(size):
 	return res
 
 
-def parse_type(info):
-	attr=info[2]
-	size=attr.split()[1]
+def parse_type(info,dt=False):
+	if dt:
+		#Derived types have own format, must remove ( and space at start
+		attr=info[0][1:]
+		size=attr.strip().split()[1]
+	else:	
+		attr=info[2]
+		size=attr.split()[1]
 	if 'INTEGER' in attr:
 		pytype='int'
 		ctype=get_ctype_int(size)
@@ -146,29 +151,43 @@ def parse_type(info):
 		raise ValueError("Cant parse "+attr)
 	return pytype,ctype
 	
-def parse_array(info):
+def parse_array(info,dt=False):
 	d={}
-	if not 'DIMENSION' in info[0]:
+	if dt:
+		attr1=info[2]
+		attr2=info[1]
+	else:
+		attr1=info[0]
+		attr2=info[4]
+	
+	if not 'DIMENSION' in attr1:
 		return False
-	if 'ALLOCATABLE' in info[0]:
+	if 'ALLOCATABLE' in attr1:
 		d['atype']='alloc'
-	elif 'POINTER' in info[0]:
+	elif 'POINTER' in attr1:
 		d['atype']='pointer'
-	elif 'ASSUMED_SHAPE' in info[4]:
+	elif 'ASSUMED_SHAPE' in attr2:
 		d['atype']='assumed'
-	elif 'CONSTANT' in info[4]:
-		d['bounds']=get_bounds(info)
+	elif 'CONSTANT' in attr2:
+		d['bounds']=get_bounds(info,dt=dt)
 		d['atype']='explicit'
-	d['ndims']=get_ndims(info)
+	d['ndims']=get_ndims(info,dt=dt)
 	return d
 		
-def get_ndims(info):
-	x=info[4].replace("(","").strip()
+def get_ndims(info,dt=False):
+	if dt:
+		x=info[1].replace("(","").strip()
+	else:
+		x=info[4].replace("(","").strip()
 	return int(x.split()[0])
 	
-def get_bounds(info):
+def get_bounds(info,dt=False):
 	#Horrible but easier than splitting the nested brackets
-	return [int(x) for x in info[4].split("'")[1:-1:2]]	
+	if dt:
+		val=[int(x) for x in info[1].split("'")[1:-1:2]]
+	else:
+		val=[int(x) for x in info[4].split("'")[1:-1:2]]
+	return val	
 	
 	
 def get_param_val(info):
@@ -216,8 +235,11 @@ def parse_ext_func(info):
 	else:
 		return False
 	
-def parse_derived_type(info,dt_defs):
-	x=info[2]
+def parse_derived_type(info,dt_defs,dt=False):
+	if dt:
+		x=info[0]
+	else:
+		x=info[2]
 	if 'DERIVED' in x:
 		sx=x.split()
 		#Map id to parent derived type
@@ -292,17 +314,16 @@ for i,j in zip(split_data[0::2],split_data[1::2]):
 		if 	d['parent']>1:
 			d['info']=split_info(d['info'])
 			func_args.append(d)	
-		elif 'DERIVED' in j:
-			d['args']=[]
-			dt_defs.append(d)
 		elif 'VARIABLE' in j:	
 			d['info']=split_info(d['info'])
 			mod_vars.append(d)
+		elif 'DERIVED' in j:
+			d['args']=[]
+			dt_defs.append(d)
 		elif 'PROCEDURE' in j:
 			if 'UNKNOWN-PROC' in j:
 				#Lower case derived type definitions
 				continue
-			print(line)
 			d['info']=split_info(d['info'])
 			funcs.append(d)
 		elif 'PARAMETER' in j:
@@ -316,8 +337,22 @@ for i,j in zip(split_data[0::2],split_data[1::2]):
 			print(j)
 			raise ValueError("Can't match type")
 	
-for i in dt_defs:
-	i['info']=split_info(i['info'])	
+for j in dt_defs:
+	j['info']=split_info(j['info'])	
+	for i in j['args']:
+		i['info']=split_info(i['info'])	
+		#Get python and ctype
+		i['pytpe'],i['ctype']=parse_type(i['info'],dt=True)	
+		#Handle arrays, i['array']==False if not an array
+		i['array']=parse_array(i['info'],dt=True)
+		#Handle derived types:
+		i['dt']=parse_derived_type(i['info'],dt_defs,dt=True)
+		#Dont need the info list anymore
+		i.pop('info',None)
+		#Or the numbers
+		i.pop('parent',None)
+		i.pop('num',None)
+	j.pop('info',None)
 	
 #Process module variables
 for i in mod_vars:
