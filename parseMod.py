@@ -4,7 +4,6 @@ import os
 import pickle
 import sys
 import re
-
 			
 def clean_list(l,idx):
 	return [i for j, i in enumerate(l) if j not in idx]
@@ -146,6 +145,9 @@ def parse_type(info,dt=False):
 		ctype='bool'
 	elif 'DERIVED' in attr:
 		pytype='void'
+		ctype='void'
+	elif 'UNKNOWN' in attr:
+		pytype='void'
 		ctype='void'			
 	else:
 		raise ValueError("Cant parse "+attr)
@@ -258,6 +260,10 @@ def split_list_dt(list_dt):
 		x=i.split("'")
 		res.append({'name':x[1],'module':x[3],'num':int(x[4].strip())})
 	return res
+	
+def get_child_num(info):
+	x=info[3][1:-1]
+	return [int(y) for y in x.split()]
 	
 #################################
 
@@ -394,6 +400,41 @@ for i in func_args:
 	i['ext_func']=parse_ext_func(i['info'])	
 	#Handle derived types:
 	i['dt']=parse_derived_type(i['info'],dt_defs)	
+	#Its off by one
+	i['parent']=i['parent']-1
 	#Dont need the info list anymore
 	i.pop('info',None)
 	i.pop('module',None)
+
+#Process functions
+for i in funcs:
+	i['pytpe'],i['ctype']=parse_type(i['info'])	
+	i['arg_nums']=get_child_num(i['info'])
+	i['args']=[]
+	#Dont need the info list anymore
+	i.pop('info',None)
+	i.pop('module',None)
+	i.pop('parent',None)
+	
+	
+#Find when functions have no arguments
+#Do it this way to avoid loops over func and func_args at the same time
+no_args=[]
+for idx,i in enumerate(funcs):
+	if  len(i['arg_nums'])==0:
+		no_args.append(idx)
+	
+func_arg_par=[0]
+count=0
+for i in range(1,len(func_args)):
+	if count in no_args:
+		count=count+1
+	p=func_args[i]['parent']
+	if p is not func_args[i-1]['parent']:
+		count=count+1
+	#This is the index into funcs for each func_args
+	func_arg_par.append(count)
+	
+for idx,i in enumerate(func_args):
+	funcs[func_arg_par[idx]]['args'].append(i)	
+	
