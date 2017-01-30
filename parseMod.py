@@ -138,11 +138,11 @@ def parse_type(info,dt=False):
 		pytype='void'
 		ctype=get_ctype_float(size)
 	elif 'CHARACTER' in attr:
-		pytype='char'
-		ctype='str'
+		pytype='str'
+		ctype='c_char'
 	elif 'LOGICAL' in attr:
 		pytype='bool'
-		ctype='bool'
+		ctype='c_bool'
 	elif 'DERIVED' in attr:
 		pytype='void'
 		ctype='void'
@@ -237,7 +237,7 @@ def parse_ext_func(info):
 	else:
 		return False
 	
-def parse_derived_type(info,dt_defs,dt=False):
+def parse_derived_type(info,dt_names,dt=False):
 	if dt:
 		x=info[0]
 	else:
@@ -245,11 +245,11 @@ def parse_derived_type(info,dt_defs,dt=False):
 	if 'DERIVED' in x:
 		sx=x.split()
 		#Map id to parent derived type
-		return map_id_dt(int(sx[1]),dt_defs)
+		return map_id_dt(int(sx[1]),dt_names)
 	return False	
 	
-def map_id_dt(i,dt_defs):
-	for j in dt_defs:
+def map_id_dt(i,dt_names):
+	for j in dt_names:
 		if j['num']==i:
 			return j['name']
 	raise ValueError("Cant find derived type "+str(i))
@@ -265,176 +265,215 @@ def get_child_num(info):
 	x=info[3][1:-1]
 	return [int(y) for y in x.split()]
 	
-#################################
-
-filename='./tester.mod'
-#filename=os.path.expandvars('$MESA_DIR/star/make/star_lib.mod')
-
-data,mod_data=load_data(filename)
-
-header=data[-1][1:-1].replace("'","").split()
-
-names=[]
-num1=[]
-num2=[]
-
-for i in range(len(header)//3):
-	names.append(header[i*3])
-	num1.append(header[i*3+1])
-	num2.append(header[i*3+2])
-
-
-main_data=data[6]
-split_data=re.split("([0-9]+\s\'[a-zA-Z_][\w]*?\'.*?)",main_data)
-
-dt_defs=[]
-funcs=[]
-func_args=[]
-mod_vars=[]
-module=[]
-param=[]
-
-if split_data[0]=='(':
-	split_data.pop(0)
 	
-for i,j in zip(split_data[0::2],split_data[1::2]):
-	#Skip intrinsic functions and interfaces
-	if "'(intrinsic)'" in j or 'ABSTRACT' in j:
-		continue
+def processVar(obj,dt_names):
+	#Get python and ctype
+	obj['pytpe'],obj['ctype']=parse_type(obj['info'])	
+	#Handle arrays, obj['array']==False if not an array
+	obj['array']=parse_array(obj['info'])
+	#Handle derived types:
+	obj['dt']=parse_derived_type(obj['info'],dt_names)
+	#Dont need the info list anymore
+	obj.pop('info',None)
+	#Or the numbers
+	obj.pop('parent',None)
+	obj.pop('num',None)
+	return obj
 	
-	if j[1]=="(":
-		#These are the components of a derived type and allways come after the
-		#initial defintion of the derived type
-		sp=i.split()
-		dt_defs[-1]['args'].append({'num':int(sp[0]),'name':sp[1],'info':j})
-	else:
-		line=i+j
-		sp=line.split()
-		d={'num':int(sp[0]),
-					'name':sp[1].replace("'",""),
-					'module':sp[2].replace("'",""),
-					#'unknown':sp[3].replace("'",""),
-					'parent':int(sp[4]),
-					'info':' '.join(sp[5:])}
-					
-		if 	d['parent']>1:
-			d['info']=split_info(d['info'])
-			func_args.append(d)	
-		elif 'VARIABLE' in j:	
-			d['info']=split_info(d['info'])
-			mod_vars.append(d)
-		elif 'DERIVED' in j:
-			d['args']=[]
-			dt_defs.append(d)
-		elif 'PROCEDURE' in j:
-			if 'UNKNOWN-PROC' in j:
-				#Lower case derived type definitions
-				continue
-			d['info']=split_info(d['info'])
-			funcs.append(d)
-		elif 'PARAMETER' in j:
-			d['info']=split_info(d['info'])
-			param.append(d)
-		elif 'MODULE' in j:
-			d['info']=split_info(d['info'])
-			module.append(d)
-		else:
-			print(d)
-			print(j)
-			raise ValueError("Can't match type")
+def processParam(obj):
+	obj['pytpe'],obj['ctype']=parse_type(obj['info'])	
+	obj['value']=get_param_val(obj['info'])
+	#Dont need the info list anymore
+	obj.pop('info',None)
+	#Or the numbers
+	obj.pop('parent',None)
+	obj.pop('num',None)
+	return obj
 	
-for j in dt_defs:
-	j['info']=split_info(j['info'])	
-	for i in j['args']:
+def processFuncArg(obj,dt_names):
+	#Get python and ctype
+	obj['pytpe'],obj['ctype']=parse_type(obj['info'])	
+	#Handle arrays, obj['array']==False if not an array
+	obj['array']=parse_array(obj['info'])
+	#Get Intents
+	obj['intent']=parse_dummy(obj['info'])	
+	#Is optional?
+	obj['opt']=parse_optional(obj['info'])	
+	#Is actualy a function being passed?
+	obj['ext_func']=parse_ext_func(obj['info'])	
+	#Handle derived types:
+	obj['dt']=parse_derived_type(obj['info'],dt_names)	
+	#Its off by one
+	obj['parent']=obj['parent']-1
+	#Dont need the info list anymore
+	obj.pop('info',None)
+	obj.pop('module',None)
+	return obj
+	
+def processFunc(obj):
+	obj['pytpe'],obj['ctype']=parse_type(obj['info'])	
+	obj['arg_nums']=get_child_num(obj['info'])
+	obj['args']=[]
+	#Dont need the info list anymore
+	obj.pop('info',None)
+	obj.pop('module',None)
+	obj.pop('parent',None)
+	return obj
+	
+def processDT(obj,dt_names):
+	obj['info']=split_info(obj['info'])	
+	for i in obj['args']:
 		i['info']=split_info(i['info'])	
 		#Get python and ctype
 		i['pytpe'],i['ctype']=parse_type(i['info'],dt=True)	
 		#Handle arrays, i['array']==False if not an array
 		i['array']=parse_array(i['info'],dt=True)
 		#Handle derived types:
-		i['dt']=parse_derived_type(i['info'],dt_defs,dt=True)
+		i['dt']=parse_derived_type(i['info'],dt_names,dt=True)
 		#Dont need the info list anymore
 		i.pop('info',None)
 		#Or the numbers
 		i.pop('parent',None)
 		i.pop('num',None)
-	j.pop('info',None)
+	obj.pop('info',None)	
+	return obj
 	
-#Process module variables
-for i in mod_vars:
-	#Get python and ctype
-	i['pytpe'],i['ctype']=parse_type(i['info'])	
-	#Handle arrays, i['array']==False if not an array
-	i['array']=parse_array(i['info'])
-	#Handle derived types:
-	i['dt']=parse_derived_type(i['info'],dt_defs)
-	#Dont need the info list anymore
-	i.pop('info',None)
-	#Or the numbers
-	i.pop('parent',None)
-	i.pop('num',None)
-
-
-#process parameters
-for i in param:
-	i['pytpe'],i['ctype']=parse_type(i['info'])	
-	i['value']=get_param_val(i['info'])
-	#Dont need the info list anymore
-	i.pop('info',None)
-	#Or the numbers
-	i.pop('parent',None)
-	i.pop('num',None)
+def mapArgs2Func(funcs,func_args):
+	#Find when functions have no arguments
+	#Do it this way to avoid loops over func and func_args at the same time
+	no_args=[]
+	for idx,i in enumerate(funcs):
+		if  len(i['arg_nums'])==0:
+			no_args.append(idx)
+		
+	func_arg_par=[0]
+	count=0
+	for i in range(1,len(func_args)):
+		if count in no_args:
+			count=count+1
+		p=func_args[i]['parent']
+		if p is not func_args[i-1]['parent']:
+			count=count+1
+		#This is the index into funcs for each func_args
+		func_arg_par.append(count)
+		
+	for idx,i in enumerate(func_args):
+		funcs[func_arg_par[idx]]['args'].append(i)
+		
+	return funcs
 	
-	
-#cleanup func_args
-for i in func_args:
-	#Get python and ctype
-	i['pytpe'],i['ctype']=parse_type(i['info'])	
-	#Handle arrays, i['array']==False if not an array
-	i['array']=parse_array(i['info'])
-	#Get Intents
-	i['intent']=parse_dummy(i['info'])	
-	#Is optional?
-	i['opt']=parse_optional(i['info'])	
-	#Is actualy a function being passed?
-	i['ext_func']=parse_ext_func(i['info'])	
-	#Handle derived types:
-	i['dt']=parse_derived_type(i['info'],dt_defs)	
-	#Its off by one
-	i['parent']=i['parent']-1
-	#Dont need the info list anymore
-	i.pop('info',None)
-	i.pop('module',None)
-
-#Process functions
-for i in funcs:
-	i['pytpe'],i['ctype']=parse_type(i['info'])	
-	i['arg_nums']=get_child_num(i['info'])
-	i['args']=[]
-	#Dont need the info list anymore
-	i.pop('info',None)
-	i.pop('module',None)
-	i.pop('parent',None)
+def getDTNames(names):
+	x=names.split("'")[1:]
+	dt=[]
+	for i,j in zip(x[0::4],x[3::4]):
+		dt.append({'name':i,'num':int(j.replace("(","").replace(")",""))})
+	return dt
 	
 	
-#Find when functions have no arguments
-#Do it this way to avoid loops over func and func_args at the same time
-no_args=[]
-for idx,i in enumerate(funcs):
-	if  len(i['arg_nums'])==0:
-		no_args.append(idx)
+def doStuff(filename):
+	data,mod_data=load_data(filename)
 	
-func_arg_par=[0]
-count=0
-for i in range(1,len(func_args)):
-	if count in no_args:
-		count=count+1
-	p=func_args[i]['parent']
-	if p is not func_args[i-1]['parent']:
-		count=count+1
-	#This is the index into funcs for each func_args
-	func_arg_par.append(count)
+	header=data[-1][1:-1].replace("'","").split()
 	
-for idx,i in enumerate(func_args):
-	funcs[func_arg_par[idx]]['args'].append(i)	
+	names=[]
+	num1=[]
+	num2=[]
 	
+	for i in range(len(header)//3):
+		names.append(header[i*3])
+		num1.append(header[i*3+1])
+		num2.append(header[i*3+2])
+	
+	dt_names=getDTNames(data[2])
+	
+	main_data=data[6]
+	split_data=re.split("([0-9]+\s\'[a-zA-Z_][\w]*?\'.*?)",main_data)
+	
+	dt_defs=[]
+	funcs=[]
+	func_args=[]
+	mod_vars=[]
+	module=[]
+	param=[]
+	
+	if split_data[0]=='(':
+		split_data.pop(0)
+		
+	for i,j in zip(split_data[0::2],split_data[1::2]):
+		#Skip intrinsic functions and interfaces
+		if "'(intrinsic)'" in j or 'ABSTRACT' in j:
+			continue
+		
+		if j[1]=="(":
+			#These are the components of a derived type and allways come after the
+			#initial defintion of the derived type
+			sp=i.split()
+			dt_defs[-1]['args'].append({'num':int(sp[0]),'name':sp[1],'info':j})
+		else:
+			line=i+j
+			sp=line.split()
+			d={'num':int(sp[0]),
+						'name':sp[1].replace("'",""),
+						'module':sp[2].replace("'",""),
+						#'unknown':sp[3].replace("'",""),
+						'parent':int(sp[4]),
+						'info':' '.join(sp[5:])}
+						
+			if 	d['parent']>1:
+				d['info']=split_info(d['info'])
+				func_args.append(processFuncArg(d,dt_names))	
+			elif 'VARIABLE' in j:	
+				d['info']=split_info(d['info'])
+				mod_vars.append(processVar(d,dt_names))
+			elif 'DERIVED' in j:
+				#We dont call processDT as we still have to append the contents at the end
+				d['args']=[]
+				dt_defs.append(d)		
+			elif 'PROCEDURE' in j:
+				if 'UNKNOWN-PROC' in j:
+					#Lower case derived type definitions
+					continue
+				d['info']=split_info(d['info'])
+				funcs.append(processFunc(d))
+			elif 'PARAMETER' in j:
+				d['info']=split_info(d['info'])
+				param.append(processParam(d))
+			elif 'MODULE' in j:
+				d['info']=split_info(d['info'])
+				module.append(d)
+			else:
+				print(d)
+				print(j)
+				raise ValueError("Can't match type")
+	
+	#Handle DT's			
+	for j in dt_defs:
+		j=processDT(j,dt_names)
+		
+	#Map function arguments to functions
+	funcs=mapArgs2Func(funcs,func_args)
+	
+	return mod_data,mod_vars,param,funcs,dt_defs
+	
+def output(filename,*args):
+	with open(outname,'wb') as f:
+		for i in args:
+			pickle.dump(i,f)
+	
+	
+#################################
+version=1
+if __name__ == "__main__":
+	if len(sys.argv[1:])>0:
+		files=sys.argv[1:]
+	else:
+		#files=[os.path.expandvars('$MESA_DIR/star/make/star_lib.mod')]
+		files=['./tester.mod']
+	for filename in files:
+		#filename=os.path.expandvars('$MESA_DIR/star/make/star_lib.mod')
+		mod_data,mod_vars,param,funcs,dt_defs=doStuff(filename)
+		
+		outname=mod_data['orig_file'].split('.')[0]+'.fpy'
+		output(outname,version,mod_data,mod_vars,param,funcs,dt_defs)
+	
+			
