@@ -9,7 +9,7 @@ def clean_list(l,idx):
 	return [i for j, i in enumerate(l) if j not in idx]
 	
 def mangle_name(obj):
-	return '__'+obj['module_name']+'_MOD_'+obj['name']
+	return '__'+obj['module']+'_MOD_'+obj['name'].lower()
 	
 
 def split_brackets(value,remove_b=False):
@@ -335,6 +335,7 @@ def processDT(obj,dt_names):
 		#Or the numbers
 		i.pop('parent',None)
 		i.pop('num',None)
+		i.pop('mangle_name',None)
 	obj.pop('info',None)	
 	return obj
 	
@@ -419,6 +420,7 @@ def doStuff(filename):
 						'parent':int(sp[4]),
 						'info':' '.join(sp[5:])}
 						
+			d['mangled_name']=mangle_name(d)
 			if 	d['parent']>1:
 				d['info']=split_info(d['info'])
 				func_args.append(processFuncArg(d,dt_names))	

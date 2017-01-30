@@ -372,20 +372,13 @@ class fFort(object):
 
 		with open(fpy,'rb') as f:
 			self.version=pickle.load(f)
-			self.mod_data=pickle.load(f)
-			self.obj_all=pickle.load(f)
+			if self.version ==1:
+				self.mod_data=pickle.load(f)
+				self.mod_vars=pickle.load(f)
+				self.param=pickle.load(f)
+				self.funcs=pickle.load(f)
+				self.dt_defs=pickle.load(f)
 
-		for i in self.obj_all:
-			if i['type'] is not 'void':
-				#Variable
-				pass
-			elif i['ctype'] == 'void':
-				#DT
-				pass
-			else:
-				pass
-			
-				
 				
 		
 	def _init_var(self):
