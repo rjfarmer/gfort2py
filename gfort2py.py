@@ -300,6 +300,9 @@ class fFort(object):
 		for i in obj['args']:
 			self._init_var(i)
 			obj['argparse'].append(i['_ctype'])
+		obj['_call']=self._get_from_lib(obj)	
+		obj['_call'].argparse=obj['arrgparse']
+		obj['_call'].restype=obj['_ctype']
 		
 	def _init_array(self,obj):
 		
@@ -310,10 +313,24 @@ class fFort(object):
 		
 	def _init_array_dt(self,obj):
 		pass
+		
+	def _get_ctype(self,obj):
+		if 'intent' not in obj.keys():
+			obj['_ctype']=getattr(ctypes,obj['ctype'])
+		elif obj['intent']="in":
+			obj['_ctype']=getattr(ctypes,obj['ctype'])
+		elif obj['intent']="out" or obj['intent']="inout":
+			obj['_ctype']=ctypes.POINTER(getattr(ctypes,obj['ctype']))
 			
+	def _get_pytype(self,obj):
+		if obj['pytype']=='void'
+			obj['_pytype']=None
+		else:
+			obj['_pytype']=getattr(__builtin__,obj['pytype'])
+
 	def _init_var(self,obj):
-		obj['_ctype']=getattr(ctypes,obj['ctype'])
-		obj['_pytype']=getattr(__builtin__,obj['pytype'])
+		self._get_ctype(obj)
+		self._get_pytype(obj)
 		
 		if obj['array'] and obj['dt']
 			self._init_array_dt(obj)
@@ -349,7 +366,25 @@ class fFort(object):
 		
 
 	def _call(self,name,*args):
-		pass		
+		#find function in self._funcs		
+		for f in self._funcs:
+			if f['name']==name:
+				break
+
+		#Convert args to ctype versions
+		args_in=[]
+		for i,j in zip(*args,f['args'])
+			args_in.append(j['_ctype'](i))
+
+		#Call function
+		res=f['_call']()
+		
+		#Convert back any args that changed:
+		args_out=[]
+		for i,j in zip(args_in,f['args'])
+			args_out.append(j['_pytype'](i))
+			
+		return res,args_out		
 
 		
 	def _get_from_lib(self,obj):
