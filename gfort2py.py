@@ -1,86 +1,6 @@
 import ctypes
 import pickle
-import parseMod
-
-
-class fUtils(object):
-	def _get_from_lib(self):
-		try:
-			res=self.ctype.in_dll(self.lib,self.mangled_name)
-		except (ValueError, AttributeError):
-			print("Cant find "+self.name)
-		return res
-
-	def _null_obj(self,*args,**kwargs):
-		pass
-		
-	def _get_string_name(self):
-		""" Gets a string"""
-		res=self.get_from_lib()
-		base_address=ctypes.addressof(res)
-		return self._get_string_from_address(base_address)
-
-	def _get_string_from_address(self,ctype_address,debug=False):
-		out=''
-		i=0
-		while True:
-			x=ctypes.c_char.from_address(ctype_address+i)
-			if debug:
-				print(x.value,i,x.value==b'\x00')
-			if x.value == b'\x00':
-				break
-			else:
-				out=out+(x.value).decode()
-				i=i+1
-		return out	
-
-class fVar(fUtils):
-	def __init__(self,lib,**kwargs):
-		self.name=kwargs['name']
-		self.mangled_name=kwargs['mangled_name']
-		try:
-			self.is_param=kwargs['param']
-		except KeyError:
-			self.is_param=False
-		try:		
-			self.value=kwargs['value']
-		except KeyError:
-			self.value=None
-		self.ctype_=kwargs['ctype']
-		self.ctype=getattr(ctypes,self.ctype_)
-		self.pytype=getattr(__builtin__,kwargs['type'])
-		self.lib=lib
-		self._kwargs=kwargs
-			
-	def set_var(self,value):
-		if not self.is_param:
-			res=self._get_from_lib()
-			res.value=self.pytype(value)
-		else:
-			raise AttributeError("Can't alter a parameter")
-		
-	def get_var(self):
-		if not self.is_param:
-			res=self._get_from_lib()
-			value=res.value
-		else:
-			value=self.value
-		
-		return self.pytype(value)
-		
-
-	def py2f_mod(self,x):
-		return self.ctype(x)
-		
-	
-	def py2f_func(self,x):
-		return self.ctype(x),self.ctype
-	
-	def f2py_mod(self,x):
-		return self.pytype(x)
-	
-	def f2py_func(self,x):
-		return self.pytype(x)
+import parseMod as pm
 		
 class fArray(object):
 	#GCC constants
@@ -107,19 +27,7 @@ class fArray(object):
 	index_t = ctypes.c_int64
 	size_t = ctypes.c_int64
 	
-	"""
-	Need to handle four different cases
-	
-	python defines array and passes as an assumed shape array
-	python defines array and passes as pointer to first element
-	fortran returns an assumed shape array 
-	fortran returns a pointer to first element
-	
-	plus pointer versions?
-	
-	"""
-	
-	def __init__(self,array=None,**kwargs):
+	def __init__(self):
 		pass
 		
 	def _set_pyarray(self,array,assumed=True):
@@ -143,8 +51,6 @@ class fArray(object):
 	def _get_farray(self,assumed=True,**kwargs):
 		pass
 		
-	
-	
 	def _make_desc(self,ndim):
 		class descriptor(ctypes.Structure):
 			_fields_=[("stride",self.index_t),
@@ -194,10 +100,10 @@ class fArray(object):
 		
 	def _get_pytype(self,ftype,sizebytes):
 		if ftype==self.BT_INTEGER:
-			ctype=gf.get_ctype_int(sizebytes)
+			ctype=pm.get_ctype_int(sizebytes)
 			pytype=int
 		elif ftype==self.BT_REAL:
-			ctype=gf.get_ctype_float(sizebytes)
+			ctype=pm.get_ctype_float(sizebytes)
 			pytype=float
 		elif dtype==self.BT_LOGICAL:
 			pytype=np.bool
@@ -369,39 +275,109 @@ class fFort(object):
 	def __init__(self,libname,fpy):
 		self.lib=ctypes.CDLL(libname)
 		self.libname=libname
+		self.fpy=fpy
 
-		with open(fpy,'rb') as f:
+		with open(self.fpy,'rb') as f:
 			self.version=pickle.load(f)
 			if self.version ==1:
-				self.mod_data=pickle.load(f)
-				self.mod_vars=pickle.load(f)
-				self.param=pickle.load(f)
-				self.funcs=pickle.load(f)
-				self.dt_defs=pickle.load(f)
+				self._mod_data=pickle.load(f)
+				self._mod_vars=pickle.load(f)
+				self._param=pickle.load(f)
+				self._funcs=pickle.load(f)
+				self._dt_defs=pickle.load(f)
 
-				
+	def _init_mod_var(self):
+		for i in self._mod_vars:
+			self._init_var(i)
+			
+	def _init_param(self):
+		for i in self._param:
+			self._init_var(i)
 		
-	def _init_var(self):
-		pass
+	def _init_func(self,obj):
+		obj['arrgparse']=[]
+		self._init_var(i)
+		for i in obj['args']:
+			self._init_var(i)
+			obj['argparse'].append(i['_ctype'])
 		
-	def _init_func(self):	
-		pass
+	def _init_array(self,obj):
 		
-	def init_array(self):
-		pass
 	
-	def init_dt(self):
+	def _init_dt(self,obj):
+		for i in obj['args']:
+			self._init_var(i)
+		
+	def _init_array_dt(self,obj):
+		pass
+			
+	def _init_var(self,obj):
+		obj['_ctype']=getattr(ctypes,obj['ctype'])
+		obj['_pytype']=getattr(__builtin__,obj['pytype'])
+		
+		if obj['array'] and obj['dt']
+			self._init_array_dt(obj)
+		elif obj['array']:
+			self._init_array(obj)
+		elif obj['dt']:
+			self._init_dt(obj)
+		
+	def _set_var(self,obj,value):
+		res=self._get_from_lib(obj)
+		res.value=obj['_pytype'](value)
+
+	def _set_param(self,obj,value):
+		raise AttributeError("Can't alter a parameter")
+		
+	def _get_var(self,obj):
+		if obj['pytype'] is not 'str':
+			res=self._get_from_lib()
+			x=obj['_pytype'](res.value)
+		else:
+			x=self._get_string_by_name(obj)
+			
+		return x
+		
+	def _get_param(self,obj):
+		return obj['value']
+		
+	def _set_array(self,obj,value):
 		pass
 		
+	def _get_array(self,obj,array):
+		pass
+		
+
 	def _call(self,name,*args):
-		pass
+		pass		
+
 		
+	def _get_from_lib(self,obj):
+		try:
+			res=self.ctype.in_dll(self.lib,obj['mangled_name'])
+		except (ValueError, AttributeError):
+			print("Cant find "+obj['name'])
+		return res
 		
-	def _get_var(self,name):
-		pass
-		
-	def _set_var(self,name,value):
-		pass
+	def _get_string_by_name(self,obj):
+		""" Gets a string"""
+		res=self.get_from_lib(obj)
+		base_address=ctypes.addressof(res)
+		return self.__get_string_from_address(base_address)
+
+	def __get_string_from_address(self,ctype_address,debug=False):
+		out=''
+		i=0
+		while True:
+			x=ctypes.c_char.from_address(ctype_address+i)
+			if debug:
+				print(x.value,i,x.value==b'\x00')
+			if x.value == b'\x00':
+				break
+			else:
+				out=out+(x.value).decode()
+				i=i+1
+		return out	
 
 x=fFort('./test_mod.so','test_mod.fpy')
 
