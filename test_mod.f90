@@ -4,6 +4,7 @@ module tester
       integer, parameter :: dp2=dp+1
       real,parameter :: real_param=9
       integer :: xp=1
+      integer,pointer :: x_point
       
       real(dp) :: y
       integer :: yyint

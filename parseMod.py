@@ -231,6 +231,12 @@ def parse_optional(info):
 	else:
 		return False
 		
+def parse_pointer(info):
+	if 'POINTER' in info[0]:
+		return True
+	else:
+		return False		
+		
 def parse_ext_func(info):
 	if 'EXTERNAL DUMMY' in info[0]:
 		return True
@@ -268,11 +274,12 @@ def get_child_num(info):
 	
 def processVar(obj,dt_names):
 	#Get python and ctype
-	obj['pytpe'],obj['ctype']=parse_type(obj['info'])	
+	obj['pytype'],obj['ctype']=parse_type(obj['info'])	
 	#Handle arrays, obj['array']==False if not an array
 	obj['array']=parse_array(obj['info'])
 	#Handle derived types:
-	obj['dt']=parse_derived_type(obj['info'],dt_names)
+	obj['dt']=parse_derived_type(obj['info'],dt_names)	
+	obj['pointer']=parse_pointer(obj['info'])
 	#Dont need the info list anymore
 	obj.pop('info',None)
 	#Or the numbers
@@ -281,7 +288,7 @@ def processVar(obj,dt_names):
 	return obj
 	
 def processParam(obj):
-	obj['pytpe'],obj['ctype']=parse_type(obj['info'])	
+	obj['pytype'],obj['ctype']=parse_type(obj['info'])	
 	obj['value']=get_param_val(obj['info'])
 	#Dont need the info list anymore
 	obj.pop('info',None)
@@ -292,7 +299,7 @@ def processParam(obj):
 	
 def processFuncArg(obj,dt_names):
 	#Get python and ctype
-	obj['pytpe'],obj['ctype']=parse_type(obj['info'])	
+	obj['pytype'],obj['ctype']=parse_type(obj['info'])	
 	#Handle arrays, obj['array']==False if not an array
 	obj['array']=parse_array(obj['info'])
 	#Get Intents
@@ -302,7 +309,8 @@ def processFuncArg(obj,dt_names):
 	#Is actualy a function being passed?
 	obj['ext_func']=parse_ext_func(obj['info'])	
 	#Handle derived types:
-	obj['dt']=parse_derived_type(obj['info'],dt_names)	
+	obj['dt']=parse_derived_type(obj['info'],dt_names)
+	obj['pointer']=parse_pointer(obj['info'])
 	#Its off by one
 	obj['parent']=obj['parent']-1
 	#Dont need the info list anymore
@@ -311,7 +319,7 @@ def processFuncArg(obj,dt_names):
 	return obj
 	
 def processFunc(obj):
-	obj['pytpe'],obj['ctype']=parse_type(obj['info'])	
+	obj['pytype'],obj['ctype']=parse_type(obj['info'])	
 	obj['arg_nums']=get_child_num(obj['info'])
 	obj['args']=[]
 	#Dont need the info list anymore
@@ -325,11 +333,12 @@ def processDT(obj,dt_names):
 	for i in obj['args']:
 		i['info']=split_info(i['info'])	
 		#Get python and ctype
-		i['pytpe'],i['ctype']=parse_type(i['info'],dt=True)	
+		i['pytype'],i['ctype']=parse_type(i['info'],dt=True)	
 		#Handle arrays, i['array']==False if not an array
 		i['array']=parse_array(i['info'],dt=True)
 		#Handle derived types:
 		i['dt']=parse_derived_type(i['info'],dt_names,dt=True)
+		obj['pointer']=parse_pointer(obj['info'])
 		#Dont need the info list anymore
 		i.pop('info',None)
 		#Or the numbers
