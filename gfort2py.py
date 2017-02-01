@@ -111,8 +111,12 @@ class fFort(object):
 		return obj['value']
 		
 	#Module variables
-	def _set_array(self,obj,value):
-		pass
+	def _set_array(self,value,obj):
+		res=self._get_from_lib(obj)
+		if 'explicit' in obj['array']['atype']:
+			array=self._set_explicit_array(res,value,obj)
+		else:
+			pass
 		
 	def _get_array(self,obj):
 		res=self._get_from_lib(obj)
@@ -234,6 +238,19 @@ class fFort(object):
 				k=k+1
 		return np.reshape(array,newshape=shape)
 
+	def _set_explicit_array(self,res,value,obj):
+		shape=self._make_array_shape(obj)
+		array=[]
+		k=0
+		base_address=ctypes.addressof(res)
+		flatarray=value.flatten()
+		for i in range(len(shape)):
+			for j in range(shape[i]):
+				offset=base_address+k*ctypes.sizeof(obj['_ctype'])
+				obj['_ctype'].from_address(offset).value=flatarray[k]
+				k=k+1
+
+
 	def _make_array_shape(self,obj):
 		bounds=obj['array']['bounds']
 		shape=[]
@@ -351,8 +368,9 @@ x._mod_vars[0]
 
 
 x._init_var(x._mod_vars[0])
-x._get_array(x._mod_vars[0]) 
-
+print(x._get_array(x._mod_vars[0]))
+x._set_array(np.array([5,6,7,8]),x._mod_vars[0])
+print(x._get_array(x._mod_vars[0]))
 
 
 
