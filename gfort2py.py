@@ -170,7 +170,10 @@ class fFort(object):
 			
 
 	def _var_to_ctype(self,ctyp,value,obj):
-		ctyp.value=obj['_pytype'](value)
+		if obj['pytype'] == 'str':
+			self._set_char_str(ctyp,value,obj)
+		else:
+			ctyp.value=obj['_pytype'](value)
 
 	def _array_dt_to_ctype(self,value,obj):
 		pass
@@ -183,11 +186,10 @@ class fFort(object):
 		
 		
 	def _ctype_to_var(self,value,obj):
-		if obj['pytype'] is not 'str':
-			#x=self._var_to_ctype(value,obj)
-			x=obj['_pytype'](value.value)
-		else:
+		if obj['pytype'] == 'str':
 			x=self._get_string_by_name(value,obj)
+		else:
+			x=obj['_pytype'](value.value)
 		return x
 
 	def _ctype_to_array_dt(self,value,obj):
@@ -223,7 +225,7 @@ class fFort(object):
 				break
 			else:
 				out=out+(x.value).decode()
-				i=i+1
+				i=i+ctypes.sizeof(ctypes.c_char)
 		return out	
 		
 	def _get_explicit_array(self,res,obj):
@@ -239,8 +241,6 @@ class fFort(object):
 		return np.reshape(array,newshape=shape)
 
 	def _set_explicit_array(self,res,value,obj):
-		shape=self._make_array_shape(obj)
-		array=[]
 		k=0
 		base_address=ctypes.addressof(res)
 		flatarray=value.flatten()
@@ -249,6 +249,12 @@ class fFort(object):
 				offset=base_address+k*ctypes.sizeof(obj['_ctype'])
 				obj['_ctype'].from_address(offset).value=flatarray[k]
 				k=k+1
+
+	def _set_char_str(self,res,value,obj):
+		base_address=ctypes.addressof(res)
+		for j in range(obj['char_len']):
+			offset=base_address+j*ctypes.sizeof(ctypes.c_char)
+			obj['_ctype'].from_address(offset).value=value[j].encode()
 
 
 	def _make_array_shape(self,obj):
@@ -354,12 +360,12 @@ class fFort(object):
 x=fFort('./test_mod.so','test_mod.fpy')
 
 x._init_var(x._mod_vars[11])
-x._get_var(x._mod_vars[11])
-x._set_var(2,x._mod_vars[11])
-x._get_var(x._mod_vars[11]) 
+print(x._get_var(x._mod_vars[11]))
+x._set_var('abcdefgdet',x._mod_vars[11])
+print(x._get_var(x._mod_vars[11]))
 
 
-x._mod_vars[0]
+#x._mod_vars[0]
 
 #x._get_ctype(obj)
 
@@ -367,10 +373,10 @@ x._mod_vars[0]
 #obj['array']['_ctype']=obj['_ctype']
 
 
-x._init_var(x._mod_vars[0])
-print(x._get_array(x._mod_vars[0]))
-x._set_array(np.array([5,6,7,8]),x._mod_vars[0])
-print(x._get_array(x._mod_vars[0]))
+#x._init_var(x._mod_vars[0])
+#print(x._get_array(x._mod_vars[0]))
+#x._set_array(np.array([5,6,7,8]),x._mod_vars[0])
+#print(x._get_array(x._mod_vars[0]))
 
 
 

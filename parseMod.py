@@ -128,7 +128,10 @@ def parse_type(info,dt=False):
 	else:	
 		attr=info[2]
 		size=attr.split()[1]
-	if 'INTEGER' in attr:
+	if 'CHARACTER' in attr:
+		pytype='str'
+		ctype='c_char'
+	elif 'INTEGER' in attr:
 		pytype='int'
 		ctype=get_ctype_int(size)
 	elif 'REAL' in attr:
@@ -137,9 +140,6 @@ def parse_type(info,dt=False):
 	elif 'COMPLEX' in attr:
 		pytype='void'
 		ctype=get_ctype_float(size)
-	elif 'CHARACTER' in attr:
-		pytype='str'
-		ctype='c_char'
 	elif 'LOGICAL' in attr:
 		pytype='bool'
 		ctype='c_bool'
@@ -254,6 +254,19 @@ def parse_derived_type(info,dt_names,dt=False):
 		return map_id_dt(int(sx[1]),dt_names)
 	return False	
 	
+def parse_character(info,dt=False):
+	if dt:
+		attr=info[0][1:]
+	else:	
+		attr=info[2]
+	if 'CHARACTER' in attr:	
+		if "'" in attr:
+			return int(attr.split("'")[1])
+		else:
+			return -1
+	else: 
+		return None
+	
 def map_id_dt(i,dt_names):
 	for j in dt_names:
 		if j['num']==i:
@@ -280,6 +293,7 @@ def processVar(obj,dt_names):
 	#Handle derived types:
 	obj['dt']=parse_derived_type(obj['info'],dt_names)	
 	obj['pointer']=parse_pointer(obj['info'])
+	obj['char_len']=parse_character(obj['info'])
 	#Dont need the info list anymore
 	obj.pop('info',None)
 	#Or the numbers
@@ -311,10 +325,11 @@ def processFuncArg(obj,dt_names):
 	#Handle derived types:
 	obj['dt']=parse_derived_type(obj['info'],dt_names)
 	obj['pointer']=parse_pointer(obj['info'])
+	obj['char_len']=parse_character(obj['info'])
 	#Its off by one
 	obj['parent']=obj['parent']-1
 	#Dont need the info list anymore
-	obj.pop('info',None)
+	#obj.pop('info',None)
 	obj.pop('module',None)
 	return obj
 	
@@ -339,6 +354,7 @@ def processDT(obj,dt_names):
 		#Handle derived types:
 		i['dt']=parse_derived_type(i['info'],dt_names,dt=True)
 		obj['pointer']=parse_pointer(obj['info'])
+		obj['char_len']=parse_character(obj['info'],dt=True)
 		#Dont need the info list anymore
 		i.pop('info',None)
 		#Or the numbers
@@ -486,5 +502,4 @@ if __name__ == "__main__":
 		
 		outname=mod_data['orig_file'].split('.')[0]+'.fpy'
 		output(outname,version,mod_data,mod_vars,param,funcs,dt_defs)
-	
 			

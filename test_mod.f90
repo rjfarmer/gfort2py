@@ -11,6 +11,9 @@ module tester
       real(dp) :: aaa(4)=(/1.0,2.0,3.0,4.0/)
       
        real(dp),parameter :: param_array(4)=(/1.0,2.0,3.0,4.0/)
+       
+       character(len=10) :: x_str='1234567890'
+       character :: x_str2
       
       real(dp),allocatable,dimension(:) :: alloc_1
        real(dp),allocatable,dimension(:,:) :: alloc_2     
