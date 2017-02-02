@@ -3,6 +3,11 @@ import pickle
 import parseMod as pm
 import numpy as np
 		
+def find_key_val(list_dicts,key,value):
+	for idx,i in enumerate(list_dicts):
+		if i[key]==value:
+			return idx		
+		
 class fFort(object):
 	_GFC_MAX_DIMENSIONS=7
 	
@@ -241,6 +246,7 @@ class fFort(object):
 		return np.reshape(array,newshape=shape)
 
 	def _set_explicit_array(self,res,value,obj):
+		shape=self._make_array_shape(obj)
 		k=0
 		base_address=ctypes.addressof(res)
 		flatarray=value.flatten()
@@ -359,24 +365,23 @@ class fFort(object):
 
 x=fFort('./test_mod.so','test_mod.fpy')
 
-x._init_var(x._mod_vars[11])
-print(x._get_var(x._mod_vars[11]))
-x._set_var('abcdefgdet',x._mod_vars[11])
-print(x._get_var(x._mod_vars[11]))
+num=find_key_val(x._mod_vars,'name','x_str')
+x._init_var(x._mod_vars[num])
+print(x._get_var(x._mod_vars[num]))
+x._set_var('abcdefgdet',x._mod_vars[num])
+print(x._get_var(x._mod_vars[num]))
 
+num=find_key_val(x._mod_vars,'name','xp')
+x._init_var(x._mod_vars[num])
+print(x._get_var(x._mod_vars[num]))
+x._set_var(2,x._mod_vars[num])
+print(x._get_var(x._mod_vars[num]))
 
-#x._mod_vars[0]
-
-#x._get_ctype(obj)
-
-#x._get_pytype(obj)
-#obj['array']['_ctype']=obj['_ctype']
-
-
-#x._init_var(x._mod_vars[0])
-#print(x._get_array(x._mod_vars[0]))
-#x._set_array(np.array([5,6,7,8]),x._mod_vars[0])
-#print(x._get_array(x._mod_vars[0]))
+num=find_key_val(x._mod_vars,'name','aaa')
+x._init_var(x._mod_vars[num])
+print(x._get_array(x._mod_vars[num]))
+x._set_array(np.array([5,6,7,8]),x._mod_vars[num])
+print(x._get_array(x._mod_vars[num]))
 
 
 
