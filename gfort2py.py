@@ -10,15 +10,60 @@ def find_key_val(list_dicts,key,value):
 			return idx		
 			
 			
-class fVar(object):
-	def __init__(self,attr):
-		pass
+#class fUtils(object):
+	#pass
+			
+#class fVar(fUtils):
+	#def __init__(self,attr):
+		#pass
 		
-
-	def from_param(self,x):
-		return self.ctype(x)
+	#def from_param(self,x):
+		#return self.ctype(x)
 		
+		
+#class fStr(fVar):
+	#def __init__(self,attr):
+		#self.ctype=ctypes.c_char_p
 	
+	
+##Inheriet from object or maybe fVar?
+#class fExplicitArray(fVar):
+	#def __init__(self,attr):
+		#pass
+	
+#class fDummyArray(fVar):
+	#_GFC_MAX_DIMENSIONS=7
+	
+	#_GFC_DTYPE_RANK_MASK=0x07
+	#_GFC_DTYPE_TYPE_SHIFT=3
+	#_GFC_DTYPE_TYPE_MASK=0x38
+	#_GFC_DTYPE_SIZE_SHIFT=6
+	
+	#_BT_UNKNOWN = 0
+	#_BT_INTEGER=_BT_UNKNOWN+1 
+	#_BT_LOGICAL=_BT_INTEGER+1
+	#_BT_REAL=_BT_LOGICAL+1
+	#_BT_COMPLEX=_BT_REAL+1
+	#_BT_DERIVED=_BT_COMPLEX+1
+	#_BT_CHARACTER=_BT_DERIVED+1
+	#_BT_CLASS=_BT_CHARACTER+1
+	#_BT_PROCEDURE=_BT_CLASS+1
+	#_BT_HOLLERITH=_BT_PROCEDURE+1
+	#_BT_VOID=_BT_HOLLERITH+1
+	#_BT_ASSUMED=_BT_VOID+1	
+	
+	#_index_t = ctypes.c_int64
+	#_size_t = ctypes.c_int64
+	#def __init__(self,attr):
+		#pass
+	
+#class fDerivedType(fVar):	
+	#def __init__(self,attr):
+		#pass
+	
+#class fFunc(fVar):
+	#def __init__(self,attr):
+		#pass
 			
 		
 class fFort(object):
@@ -69,13 +114,13 @@ class fFort(object):
 			self._init_var(i)
 		
 	def _init_func(self,obj):
-		obj['arrgparse']=[]
-		self._init_var(i)
+		obj['argparse']=[]
+		self._init_var(obj)
 		for i in obj['args']:
 			self._init_var(i)
 			obj['argparse'].append(i['_ctype'])
 		obj['_call']=self._get_from_lib(obj)	
-		obj['_call'].argparse=obj['arrgparse']
+		obj['_call'].argparse=obj['argparse']
 		obj['_call'].restype=obj['_ctype']
 		
 	def _init_array(self,obj):
@@ -107,12 +152,20 @@ class fFort(object):
 		self._get_ctype(obj)
 		self._get_pytype(obj)
 		
-		if obj['array'] and obj['dt']:
-			self._init_array_dt(obj)
-		elif obj['array']:
-			self._init_array(obj)
-		elif obj['dt']:
-			self._init_dt(obj)
+		if 'array' in obj.keys() and 'dt' in obj.keys():
+			if obj['array'] and obj['dt']:
+					self._init_array_dt(obj)
+					return
+					
+		if 'array' in obj.keys():
+			if obj['array']:
+				self._init_array(obj)
+				return
+				
+		if 'dt' in obj.keys():
+			if obj['dt']:
+				self._init_dt(obj)
+				return
 		
 	def _set_var(self,value,obj):
 		res=self._get_from_lib(obj)
@@ -154,6 +207,8 @@ class fFort(object):
 		args_in=[]
 		for i,j in zip(*args,f['args']):
 			args_in.append(self.arg_to_ctype(i,j))
+
+		
 
 		#Call function
 		res=f['_call']()
@@ -307,16 +362,16 @@ class fFort(object):
 					
 		return defarray	
 		
-	def _make_dt_ctype(self,obj,dt_defs)
+	def _make_dt_ctype(self,obj,dt_defs):
 		class dt(ctypes.Structure):
-			def __init__(self,lnames,lctypes)
+			def __init__(self,lnames,lctypes):
 				self._fields_=[]
 				for k in obj['args']:
 					for i,j in zip():
 						if k['dt']:
 							#Match to the list of dt's
 							for l in dt_defs:
-								if k['name']==l['name']
+								if k['name']==l['name']:
 									c=ctypes.POINTER(self._make_dt_ctype(l))
 						else:
 							c=k['_ctype']
@@ -413,4 +468,6 @@ x._set_array(np.array([5,6,7,8]),x._mod_vars[num])
 print(x._get_array(x._mod_vars[num]))
 
 
-
+num=find_key_val(x._funcs,'name','func_noargs')
+#x._init_func(x._funcs[num])
+#x._call(x._funcs[num])

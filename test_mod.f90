@@ -251,6 +251,7 @@ module tester
       
    integer function func_noargs()
       func_noargs=5
+      write(*,*) func_noargs
    end function func_noargs 
  
 end module tester

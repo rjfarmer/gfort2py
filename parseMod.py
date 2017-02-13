@@ -4,7 +4,7 @@ import os
 import pickle
 import sys
 import re
-
+import subprocess
 			
 def clean_list(l,idx):
 	return [i for j, i in enumerate(l) if j not in idx]
@@ -60,7 +60,7 @@ def load_data(filename):
 	return parse_input(x,filename)
 	
 def hash_file(filename):
-	p=os.subprocess.call(["md5sum",filename]
+	p=subprocess.check_output(["md5sum",filename])
 	return p.decode().split()[0]
 	
 def parse_input(x,filename):
@@ -335,7 +335,7 @@ def processFuncArg(obj,dt_names):
 	#Its off by one
 	obj['parent']=obj['parent']-1
 	#Dont need the info list anymore
-	#obj.pop('info',None)
+	obj.pop('info',None)
 	obj.pop('module',None)
 	return obj
 	
@@ -489,7 +489,7 @@ def doStuff(filename):
 	return mod_data,mod_vars,param,funcs,dt_defs
 	
 def output(filename,*args):
-	with open(outname,'wb') as f:
+	with open(filename,'wb') as f:
 		for i in args:
 			pickle.dump(i,f)
 	
