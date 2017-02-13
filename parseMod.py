@@ -4,6 +4,7 @@ import os
 import pickle
 import sys
 import re
+
 			
 def clean_list(l,idx):
 	return [i for j, i in enumerate(l) if j not in idx]
@@ -56,15 +57,17 @@ def load_data(filename):
 	except OSError as e:
 		e.args=[filename+" is not a valid .mod file"]
 		raise
-	x=x.decode()
-	mod_data=get_mod_data(x)
-	x=x.replace('\n',' ')
-	data=split_brackets(x)
-	return data,mod_data
+	return parse_input(x,filename)
 	
-def get_mod_data(x):
-	header=x.split('\n')[0]
+def hash_file(filename):
+	p=os.subprocess.call(["md5sum",filename]
+	return p.decode().split()[0]
+	
+def parse_input(x,filename):
 	res={}
+	x=x.decode()
+	x=x.replace('\n',' ')
+	header=x.split('\n')[0]
 	if 'GFORTRAN' not in header:
 		raise AttributeError('Not a gfortran mod file')
 	res['version']=int(header.split("'")[1])
@@ -73,7 +76,10 @@ def get_mod_data(x):
 	if not res['version']==14:
 		raise AttributeError('Unsupported mod file version')
 	
-	return res
+	res['checksum']=hash_file(filename)
+	
+	data=split_brackets(x)
+	return data,res
 
 def split_info(info):
 	#Cleanup brackets
@@ -488,6 +494,11 @@ def output(filename,*args):
 			pickle.dump(i,f)
 	
 	
+def run_and_save(filename):
+	mod_data,mod_vars,param,funcs,dt_defs=doStuff(filename)
+	outname=mod_data['orig_file'].split('.')[0]+'.fpy'
+	output(outname,version,mod_data,mod_vars,param,funcs,dt_defs)
+	
 #################################
 version=1
 if __name__ == "__main__":
@@ -498,8 +509,5 @@ if __name__ == "__main__":
 		files=['./tester.mod']
 	for filename in files:
 		#filename=os.path.expandvars('$MESA_DIR/star/make/star_lib.mod')
-		mod_data,mod_vars,param,funcs,dt_defs=doStuff(filename)
-		
-		outname=mod_data['orig_file'].split('.')[0]+'.fpy'
-		output(outname,version,mod_data,mod_vars,param,funcs,dt_defs)
+		run_and_save(filename)
 			

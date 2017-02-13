@@ -2,11 +2,24 @@ import ctypes
 import pickle
 import parseMod as pm
 import numpy as np
+
 		
 def find_key_val(list_dicts,key,value):
 	for idx,i in enumerate(list_dicts):
 		if i[key]==value:
 			return idx		
+			
+			
+class fVar(object):
+	def __init__(self,attr):
+		pass
+		
+
+	def from_param(self,x):
+		return self.ctype(x)
+		
+	
+			
 		
 class fFort(object):
 	_GFC_MAX_DIMENSIONS=7
