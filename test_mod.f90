@@ -3,6 +3,7 @@ module tester
       
       ! Parameters
       integer, parameter :: dp = selected_real_kind(p=15)
+      integer, parameter :: qp = selected_real_kind(p=31)
       integer, parameter :: lp = selected_int_kind(8)
       
       integer, parameter      :: const_int=1
@@ -11,6 +12,7 @@ module tester
       
       real, parameter     :: const_real=1.0
       real(dp), parameter :: const_real_dp=1.0_dp
+      real(qp), parameter :: const_real_qp=1.0_qp
       
       character(len=10),parameter :: const_str='1234567890'
       
@@ -24,18 +26,21 @@ module tester
       integer(lp)       :: a_int_lp
       real              :: a_real
       real(dp)          :: a_real_dp
+      real(qp)          :: a_real_qp
       character(len=10) :: a_str
       
       integer,pointer            :: a_int_point
       integer(lp),pointer        :: a_int_lp_point
       real,pointer               :: a_real_point
       real(dp),pointer           :: a_real_dp_point
+      real(qp),pointer           :: a_real_qp_point
       character(len=10),pointer  :: a_str_point
       
       integer,target            :: a_int_target
       integer(lp),target        :: a_int_lp_target
       real,target               :: a_real_target
       real(dp),target           :: a_real_dp_target
+      real(qp),target           :: a_real_qp_target
       character(len=10),target  :: a_str_target
       
       
@@ -169,5 +174,27 @@ module tester
       TYPE(s_struct_nested_2),dimension(2),  target :: h_struct_target_1d
       TYPE(s_struct_nested_2),dimension(2,2),target :: h_struct_target_2d
 
+
+      contains
+      
+      
+      subroutine sub_no_args()
+         write(*,*) 1
+      end subroutine sub_no_args
+      
+      integer function func_int_no_args()
+         func_int_no_args=2
+         write(*,*) 2
+      end function func_int_no_args
+      
+      integer function func_real_no_args()
+         func_real_no_args=3.0
+         write(*,*) 3.0
+      end function func_real_no_args
+      
+      integer function func_real_dp_no_args()
+         func_real_dp_no_args=4.0_dp
+         write(*,*) 4.0_dp
+      end function func_real_dp_no_args
 
 end module tester
