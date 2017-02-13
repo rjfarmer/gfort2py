@@ -84,7 +84,7 @@ class fFort(object):
 	
 	def _init_dt(self,obj):
 		for i in obj['args']:
-			self._init_var(i)
+			self._get_dt_ctype(i)
 		
 	def _init_array_dt(self,obj):
 		pass
@@ -306,6 +306,22 @@ class fFort(object):
 					("dims",descriptor*ndim)]
 					
 		return defarray	
+		
+	def _make_dt_ctype(self,obj,dt_defs)
+		class dt(ctypes.Structure):
+			def __init__(self,lnames,lctypes)
+				self._fields_=[]
+				for k in obj['args']:
+					for i,j in zip():
+						if k['dt']:
+							#Match to the list of dt's
+							for l in dt_defs:
+								if k['name']==l['name']
+									c=ctypes.POINTER(self._make_dt_ctype(l))
+						else:
+							c=k['_ctype']
+						self._fields_.append((k['name'],c))
+		return dt
 		
 	def _array_to_ctype(self,array,obj):
 		obj['_arrary'].base_addr=array.ctypes.data_as(ctypes.c_void_p)
