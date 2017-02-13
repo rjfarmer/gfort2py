@@ -1,257 +1,173 @@
 module tester
 	implicit none
+      
+      ! Parameters
       integer, parameter :: dp = selected_real_kind(p=15)
-      integer, parameter :: dp2=dp+1
-      real,parameter :: real_param=9
-      integer :: xp=1
-      integer,pointer :: x_point
+      integer, parameter :: lp = selected_int_kind(8)
       
-      real(dp) :: y
-      integer :: yyint
-      real(dp) :: aaa(4)=(/1.0,2.0,3.0,4.0/)
+      integer, parameter      :: const_int=1
+      integer, parameter      :: const_int_p1=const_int+1
+      integer(lp), parameter  :: const_int_lp=1_lp
       
-       real(dp),parameter :: param_array(4)=(/1.0,2.0,3.0,4.0/)
-       
-       character(len=10) :: x_str='1234567890'
-       character :: x_str2
+      real, parameter     :: const_real=1.0
+      real(dp), parameter :: const_real_dp=1.0_dp
       
-      real(dp),allocatable,dimension(:) :: alloc_1
-       real(dp),allocatable,dimension(:,:) :: alloc_2     
- 
-      real(dp),pointer,dimension(:) :: p_1
-       real(dp),pointer,dimension(:,:) :: p_2  
-       
-      real(dp),dimension(10),target :: t_1         
+      character(len=10),parameter :: const_str='1234567890'
       
-      type struct_tester
-         integer :: st1
-      end type struct_tester
-      
-      type EoS_General_Info
-         logical :: include_radiation, always_skip_elec_pos, always_include_elec_pos
-         integer :: partials_consistency_level
-         real(dp) :: mass_fraction_limit_for_PC ! skip any species with abundance < this
-         real(dp) :: logRho1_OPAL_SCVH_limit ! don't use OPAL_SCVH for logRho > this
-         real(dp) :: logRho2_OPAL_SCVH_limit ! full OPAL_SCVH okay for logRho < this
-         real(dp) :: logRho1_PC_limit ! okay for pure PC for logRho > this
-         real(dp) :: logRho2_PC_limit ! don't use PC for logRho < this (>= 2.8)
-         ! transition log_Gamma for PC to HELM
-         real(dp) :: log_Gamma_all_HELM ! HELM for log_Gamma <= this
-         real(dp) :: Gamma_all_HELM ! 10**log_Gamma_all_HELM
-         real(dp) :: log_Gamma_all_PC ! PC for log_Gamma >= this
-         real(dp) :: PC_min_Z ! don't use PC for Z < this
-         ! transition Z for OPAL to HELM
-         real(dp) :: Z_all_HELM ! HELM for Z >= this
-         ! transition temperature zone for OPAL to HELM at high T
-         real(dp) :: logT_all_HELM ! HELM for lgT >= this
-         real(dp) :: logT_all_OPAL ! OPAL for lgT <= this
-         ! transition temperature zone for SCVH to HELM at very low T
-         real(dp) :: logT_low_all_HELM ! HELM for lgT <= this
-         real(dp) :: logT_low_all_SCVH ! SCVH for lgT >= this
-         ! transition energy zone for OPAL to HELM (for eosDE)
-         real(dp) :: logE_all_HELM ! HELM for lgE >= this
-         real(dp) :: logE_all_OPAL ! OPAL for lgE <= this
-         ! transition from HELM fully ionized to HELM fully neutral
-         real(dp) :: logT_ion, logT_neutral, max_logRho_neutral
-         ! bookkeeping
-         integer :: handle
-         logical :: in_use
-         real(dp),dimension(10) :: xxxx
-         real(dp),allocatable,dimension(:,:) :: xxxx2
-         type(struct_tester) :: s1
-         type(struct_tester),dimension(5) :: s2
-         type(struct_tester),allocatable,dimension(:) :: s3
-      end type EoS_General_Info
-      
-      type(eos_general_info) :: seos1,seos2
-      type(eos_general_info),allocatable,dimension(:) :: seos1a
-      type(struct_tester) :: st1_test
-      
-      
-      interface
-         integer function func_interface(a,b,c)
-            integer,intent(in) :: a,b,c
-         end function func_interface
-         
-         integer function func_interface2(a,b,c)
-            integer,intent(in) :: a,b,c
-         end function func_interface2
-         
-      end interface   
-      
-      contains
-      
-      
-	real(dp) function test_structer(x)
-		type(struct_tester), intent(in) :: x
-      test_structer=1.d0
-   end function test_structer
-   
-	real(dp) function test_struct(x)
-		type(eos_general_info), intent(in) :: x
-      test_struct=1.d0
-      write(*,*) aaa
-      write(*,*) x%include_radiation
-   end function test_struct
-	
-	real(dp) function loglog(x,z)
-		real(dp), intent(in) :: x
-      integer, intent(in) :: z
-      write(*,*) "x= ",x
-      write(*,*) "z= ",z,x*real_param
-      y=1.d0
-      loglog=log10(x)
-   end function loglog
-   
-	subroutine loglogs(x,z)
-		real(dp), intent(in) :: x
-      integer, intent(in) :: z
-      write(*,*) "x= ",x
-      write(*,*) "z= ",z
-      y=1.d0
-      write(*,*) log10(x)
-   end subroutine loglogs
- 
-   subroutine array_in(x)
-!      integer,dimension(1:9),intent(in) :: x
-      integer,dimension(:),intent(in) :: x
-      
-      write(*,*) shape(x),"*",ubound(x),"*",lbound(x),"*",size(x)
-      write(*,*) x(:)
-      write(*,*) "#",loc(x)
-      write(*,*)
-      
-   end subroutine array_in
-   
-   subroutine array_in_fixed(x) 
-      integer,dimension(1:9),intent(in) :: x
-!      integer,dimension(:),intent(in) :: x
-      
-      write(*,*) shape(x),"*",ubound(x),"*",lbound(x),"*",size(x)
-      write(*,*) x(:)
-      write(*,*) "#",loc(x)
-      
-       
-   end subroutine array_in_fixed
-   
-   subroutine array_in_fixed_2d(x)
-      integer,dimension(1:2,1:9),intent(in) :: x
-!      integer,dimension(:),intent(in) :: x
-      
-      write(*,*) shape(x),"*",ubound(x),"*",lbound(x),"*",size(x)
-      write(*,*) x(1,:)
-      write(*,*) x(2,:)
-      write(*,*) "#",loc(x)
-      
-       
-   end subroutine array_in_fixed_2d
+      integer,dimension(10) :: const_int_arr=(/1,2,3,4,5,6,7,8,9,0/)
+      real,parameter,dimension(10) :: const_real_arr=(/1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,0.0/)
+      real(dp),parameter,dimension(10) :: const_real_dp_arr=(/1_dp,2_dp,3_dp,4_dp,5_dp,6_dp,7_dp,8_dp,9_dp,0_dp/)
 
-   subroutine array_out(x)
-!      integer,dimension(1:9),intent(in) :: x
-      integer,dimension(:),intent(inout) :: x
-      
-      write(*,*) shape(x),"*",ubound(x),"*",lbound(x),"*",size(x)
-      write(*,*) x(:)
-           write(*,*) 
-      x=5
-      
-   end subroutine array_out
-   
-   
-   subroutine array_alloc(x)
-!      integer,dimension(1:9),intent(in) :: x
-      real,dimension(:),allocatable,intent(out) :: x
-      
-     allocate(x(1:10))
-      x=9.d0
-      
-   end subroutine array_alloc
-   
-   subroutine array_alloc2d(x)
-!      integer,dimension(1:9),intent(in) :: x
-      real,dimension(:,:),allocatable,intent(out) :: x
-      
-     allocate(x(1:5,1:10))
-      x=9.d0
-           write(*,*) 
-   end subroutine array_alloc2d
-   
-   subroutine array_alloc3d(x)
-!      integer,dimension(1:9),intent(in) :: x
-      real,dimension(:,:,:),allocatable,intent(out) :: x
-      
-     allocate(x(1:5,1:6,7))
-      x=9.d0
-          write(*,*)  
-   end subroutine array_alloc3d
 
-   
-   subroutine my_func(in_str,yy,zz,aa,bb,cc,dd,ee,ff,xx,xx2)
-      character(len=*),intent(in),optional :: in_str
-      integer,intent(in),optional :: xx
-      integer,intent(in),pointer :: xx2
-      integer,intent(out) :: yy
-      real(dp),intent(inout) :: zz
-      real(dp),pointer,dimension(:) :: aa
-      real(dp),dimension(:) :: bb
-      real(dp),dimension(:,:) :: cc
-      real(dp),dimension(:),intent(in) :: dd
-      real(dp),dimension(:,:),intent(out) :: ee   
-      real(dp),dimension(1:10),intent(in) :: ff 
+      ! Variables
+      integer           :: a_int
+      integer(lp)       :: a_int_lp
+      real              :: a_real
+      real(dp)          :: a_real_dp
+      character(len=10) :: a_str
       
-      if(present(in_str))then
-         write(*,*) "Fortran: ", trim(in_str)
-      else
-         write(*,*)
-      end if
+      integer,pointer            :: a_int_point
+      integer(lp),pointer        :: a_int_lp_point
+      real,pointer               :: a_real_point
+      real(dp),pointer           :: a_real_dp_point
+      character(len=10),pointer  :: a_str_point
+      
+      integer,target            :: a_int_target
+      integer(lp),target        :: a_int_lp_target
+      real,target               :: a_real_target
+      real(dp),target           :: a_real_dp_target
+      character(len=10),target  :: a_str_target
+      
+      
+      ! Arrays
+      integer, dimension(5) :: b_int_exp_1d
+      integer, dimension(5,5) :: b_int_exp_2d
+      integer, dimension(5,5,5) :: b_int_exp_3d
+      integer, dimension(5,5,5,5) :: b_int_exp_4d
+      integer, dimension(5,5,5,5,5) :: b_int_exp_5d
+      
+      real, dimension(5) :: b_real_exp_1d
+      real, dimension(5,5) :: b_real_exp_2d
+      real, dimension(5,5,5) :: b_real_exp_3d
+      real, dimension(5,5,5,5) :: b_real_exp_4d
+      real, dimension(5,5,5,5,5) :: b_real_exp_5d
+      
+      real(dp), dimension(5) :: b_real_dp_exp_1d
+      real(dp), dimension(5,5) :: b_real_dp_exp_2d
+      real(dp), dimension(5,5,5) :: b_real_dp_exp_3d
+      real(dp), dimension(5,5,5,5) :: b_real_dp_exp_4d
+      real(dp), dimension(5,5,5,5,5) :: b_real_dp_exp_5d
+      
+      
+      integer, allocatable, dimension(:) :: c_int_alloc_1d
+      integer, allocatable, dimension(:,:) :: c_int_alloc_2d
+      integer, allocatable, dimension(:,:,:) :: c_int_alloc_3d
+      integer, allocatable, dimension(:,:,:,:) :: c_int_alloc_4d
+      integer, allocatable, dimension(:,:,:,:,:) :: c_int_alloc_5d
+      
+      real, allocatable, dimension(:) :: c_real_alloc_1d
+      real, allocatable, dimension(:,:) :: c_real_alloc_2d
+      real, allocatable, dimension(:,:,:) :: c_real_alloc_3d
+      real, allocatable, dimension(:,:,:,:) :: c_real_alloc_4d
+      real, allocatable, dimension(:,:,:,:,:) :: c_real_alloc_5d
+      
+      real(dp), allocatable, dimension(:) :: c_real_dp_alloc_1d
+      real(dp), allocatable, dimension(:,:) :: c_real_dp_alloc_2d
+      real(dp), allocatable, dimension(:,:,:) :: c_real_dp_alloc_3d
+      real(dp), allocatable, dimension(:,:,:,:) :: c_real_dp_alloc_4d
+      real(dp), allocatable, dimension(:,:,:,:,:) :: c_real_dp_alloc_5d
+      
 
-   end subroutine my_func
-   
-   integer function test_func(x,z)
-      integer,intent(in) :: x
-      real(dp) :: z
-      real(dp) :: y
+      integer, pointer, dimension(:) :: d_int_point_1d
+      integer, pointer, dimension(:,:) :: d_int_point_2d
+      integer, pointer, dimension(:,:,:) :: d_int_point_3d
+      integer, pointer, dimension(:,:,:,:) :: d_int_point_4d
+      integer, pointer, dimension(:,:,:,:,:) :: d_int_point_5d
       
-      test_func=x*y
-   end function test_func
-   
-   integer function test_func2(x)
-      integer,intent(in),pointer :: x
+      real, pointer, dimension(:) :: d_real_point_1d
+      real, pointer, dimension(:,:) :: d_real_point_2d
+      real, pointer, dimension(:,:,:) :: d_real_point_3d
+      real, pointer, dimension(:,:,:,:) :: d_real_point_4d
+      real, pointer, dimension(:,:,:,:,:) :: d_real_point_5d
       
-      test_func2=1
-   end function test_func2
-   
-   
-   integer function test_fun_pass(x,func)
-      integer, intent(in) :: x
-      integer, external :: func
-   
-      test_fun_pass=func(x)
-   end function test_fun_pass
-   
-   complex function test_complex(x)
-      complex,intent(in) :: x
+      real(dp), pointer, dimension(:) :: d_real_dp_point_1d
+      real(dp), pointer, dimension(:,:) :: d_real_dp_point_2d
+      real(dp), pointer, dimension(:,:,:) :: d_real_dp_point_3d
+      real(dp), pointer, dimension(:,:,:,:) :: d_real_dp_point_4d
+      real(dp), pointer, dimension(:,:,:,:,:) :: d_real_dp_point_5d
       
-      write(*,*) x
-   end function test_complex
-   
-   complex function test_complex_dummy(x)
-      complex :: x
+      integer, target, dimension(5) :: e_int_target_1d
+      integer, target, dimension(5,5) :: e_int_target_2d
+      integer, target, dimension(5,5,5) :: e_int_target_3d
+      integer, target, dimension(5,5,5,5) :: e_int_target_4d
+      integer, target, dimension(5,5,5,5,5) :: e_int_target_5d
       
-      write(*,*) x
-   end function test_complex_dummy
-   
-   subroutine print_array(x) 
-      real(dp),dimension(:),intent(in) :: x
+      real, target, dimension(5) :: e_real_target_1d
+      real, target, dimension(5,5) :: e_real_target_2d
+      real, target, dimension(5,5,5) :: e_real_target_3d
+      real, target, dimension(5,5,5,5) :: e_real_target_4d
+      real, target, dimension(5,5,5,5,5) :: e_real_target_5d
       
-      write(*,*) x
-      
-   end subroutine print_array
+      real(dp), target, dimension(5) :: e_real_dp_target_1d
+      real(dp), target, dimension(5,5) :: e_real_dp_target_2d
+      real(dp), target, dimension(5,5,5) :: e_real_dp_target_3d
+      real(dp), target, dimension(5,5,5,5) :: e_real_dp_target_4d
+      real(dp), target, dimension(5,5,5,5,5) :: e_real_dp_target_5d
       
       
-   integer function func_noargs()
-      func_noargs=5
-      write(*,*) func_noargs
-   end function func_noargs 
- 
+      TYPE s_struct_basic
+         integer           :: a_int
+         integer(lp)       :: a_int_lp
+         real              :: a_real
+         real(dp)          :: a_real_dp
+         character(len=10) :: a_str    
+         integer, dimension(5) :: b_int_exp_1d 
+         integer, allocatable, dimension(:) :: c_int_alloc_1d
+         integer, pointer, dimension(:) :: d_int_point_1d
+      END TYPE s_struct_basic
+      
+      
+      TYPE s_struct_nested
+         integer           :: a_int
+         TYPE(s_struct_basic) :: f_struct
+      END TYPE s_struct_nested
+      
+      TYPE s_struct_nested_2
+         integer           :: a_int
+         TYPE(s_struct_nested) :: f_nested
+      END TYPE s_struct_nested_2
+      
+      TYPE(s_struct_basic) :: f_struct
+      TYPE(s_struct_basic),dimension(2) :: f_struct_exp_2d
+      TYPE(s_struct_basic),dimension(2,2) :: f_struct_exp_1d
+      TYPE(s_struct_basic),dimension(:),  allocatable :: f_struct_alloc_1d
+      TYPE(s_struct_basic),dimension(:,:),allocatable :: f_struct_alloc_2d
+      TYPE(s_struct_basic),dimension(:),  pointer :: f_struct_point_1d
+      TYPE(s_struct_basic),dimension(:,:),pointer :: f_struct_point_2d
+      TYPE(s_struct_basic),dimension(2),  target :: f_struct_target_1d
+      TYPE(s_struct_basic),dimension(2,2),target :: f_struct_target_2d
+
+
+      TYPE(s_struct_nested) :: g_struct
+      TYPE(s_struct_nested),dimension(2) :: g_struct_exp_2d
+      TYPE(s_struct_nested),dimension(2,2) :: g_struct_exp_1d
+      TYPE(s_struct_nested),dimension(:),  allocatable :: g_struct_alloc_1d
+      TYPE(s_struct_nested),dimension(:,:),allocatable :: g_struct_alloc_2d
+      TYPE(s_struct_nested),dimension(:),  pointer :: g_struct_point_1d
+      TYPE(s_struct_nested),dimension(:,:),pointer :: g_struct_point_2d
+      TYPE(s_struct_nested),dimension(2),  target :: g_struct_target_1d
+      TYPE(s_struct_nested),dimension(2,2),target :: g_struct_target_2d
+      
+      
+      TYPE(s_struct_nested_2) :: h_struct
+      TYPE(s_struct_nested_2),dimension(2) :: h_struct_exp_2d
+      TYPE(s_struct_nested_2),dimension(2,2) :: h_struct_exp_1d
+      TYPE(s_struct_nested_2),dimension(:),  allocatable :: h_struct_alloc_1d
+      TYPE(s_struct_nested_2),dimension(:,:),allocatable :: h_struct_alloc_2d
+      TYPE(s_struct_nested_2),dimension(:),  pointer :: h_struct_point_1d
+      TYPE(s_struct_nested_2),dimension(:,:),pointer :: h_struct_point_2d
+      TYPE(s_struct_nested_2),dimension(2),  target :: h_struct_target_1d
+      TYPE(s_struct_nested_2),dimension(2,2),target :: h_struct_target_2d
+
+
 end module tester
