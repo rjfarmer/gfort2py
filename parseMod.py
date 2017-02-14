@@ -243,6 +243,12 @@ def parse_pointer(info):
 	else:
 		return False		
 		
+def parse_target(info):
+	if 'TARGET' in info[0]:
+		return True
+	else:
+		return False		
+		
 def parse_ext_func(info):
 	if 'EXTERNAL DUMMY' in info[0]:
 		return True
@@ -254,6 +260,9 @@ def parse_derived_type(info,dt_names,dt=False):
 		x=info[0]
 	else:
 		x=info[2]
+	
+	#remove first bracket and some times this will have a space between the ( and derived
+	x=x[1:].strip()	
 	if 'DERIVED' in x:
 		sx=x.split()
 		#Map id to parent derived type
@@ -297,9 +306,10 @@ def processVar(obj,dt_names):
 	#Handle arrays, obj['array']==False if not an array
 	obj['array']=parse_array(obj['info'])
 	#Handle derived types:
-	#obj['dt']=parse_derived_type(obj['info'],dt_names)	
+	obj['dt']=parse_derived_type(obj['info'],dt_names)
 	obj['pointer']=parse_pointer(obj['info'])
 	obj['char_len']=parse_character(obj['info'])
+	obj['target']=parse_target(obj['info'])
 	#Dont need the info list anymore
 	obj.pop('info',None)
 	#Or the numbers
@@ -332,6 +342,7 @@ def processFuncArg(obj,dt_names):
 	obj['dt']=parse_derived_type(obj['info'],dt_names)
 	obj['pointer']=parse_pointer(obj['info'])
 	obj['char_len']=parse_character(obj['info'])
+	obj['target']=parse_target(obj['info'])
 	#Its off by one
 	obj['parent']=obj['parent']-1
 	#Dont need the info list anymore
@@ -359,8 +370,9 @@ def processDT(obj,dt_names):
 		i['array']=parse_array(i['info'],dt=True)
 		#Handle derived types:
 		i['dt']=parse_derived_type(i['info'],dt_names,dt=True)
-		obj['pointer']=parse_pointer(obj['info'])
-		obj['char_len']=parse_character(obj['info'],dt=True)
+		i['pointer']=parse_pointer(i['info'])
+		i['target']=parse_target(i['info'])
+		i['char_len']=parse_character(i['info'],dt=True)
 		#Dont need the info list anymore
 		i.pop('info',None)
 		#Or the numbers
@@ -497,10 +509,12 @@ def output(filename,*args):
 def fpyname(filename):
 	return filename.split('.')[0]+'.fpy'
 	
-def run_and_save(filename):
+def run_and_save(filename,return_data=False):
 	mod_data,mod_vars,param,funcs,dt_defs=doStuff(filename)
 	outname=fpyname(filename)
 	output(outname,version,mod_data,mod_vars,param,funcs,dt_defs)
+	if return_data:
+		return mod_data,mod_vars,param,funcs,dt_defs
 	
 #################################
 version=1

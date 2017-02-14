@@ -116,8 +116,11 @@ class fFort(object):
 					self._funcs=pickle.load(f)
 					self._dt_defs=pickle.load(f)
 				else:
-					pm.run_and_save(ffile)
-					self._load_data(ffile)
+					x=pm.run_and_save(ffile,return_data=True)
+					self._mod_vars=x[0]
+					self._param=x[1]
+					self._funcs=x[2]
+					self._dt_defs=x[3]
 
 
 	def _init_mod_var(self):

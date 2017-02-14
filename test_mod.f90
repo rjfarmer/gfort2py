@@ -16,7 +16,7 @@ module tester
       
       character(len=10),parameter :: const_str='1234567890'
       
-      integer,dimension(10) :: const_int_arr=(/1,2,3,4,5,6,7,8,9,0/)
+      integer,parameter,dimension(10) :: const_int_arr=(/1,2,3,4,5,6,7,8,9,0/)
       real,parameter,dimension(10) :: const_real_arr=(/1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,0.0/)
       real(dp),parameter,dimension(10) :: const_real_dp_arr=(/1_dp,2_dp,3_dp,4_dp,5_dp,6_dp,7_dp,8_dp,9_dp,0_dp/)
 
