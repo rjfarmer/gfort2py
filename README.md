@@ -2,10 +2,18 @@
 Library to allow calling fortran code from python.
 
 Compile code normnally (parsing -shared -fPIC to make a shared library
-at the end) then point parseMod.py at the .mod files. No changes in the
-source code are expected to be needed.
+at the end)
 
-....
+````python
 
-Profit!
+import gfort2py as gf
+
+SHARED_LIB_NAME='./test_mod.so'
+MOD_FILE_NAME='tester.mod'
+
+x=gf.fFort(SHARED_LIB_NAME,MOD_FILE_NAME)
+
+````
+
+
 

@@ -66,8 +66,8 @@ def hash_file(filename):
 def parse_input(x,filename):
 	res={}
 	x=x.decode()
-	x=x.replace('\n',' ')
 	header=x.split('\n')[0]
+	x=x.replace('\n',' ')
 	if 'GFORTRAN' not in header:
 		raise AttributeError('Not a gfortran mod file')
 	res['version']=int(header.split("'")[1])
@@ -297,7 +297,7 @@ def processVar(obj,dt_names):
 	#Handle arrays, obj['array']==False if not an array
 	obj['array']=parse_array(obj['info'])
 	#Handle derived types:
-	obj['dt']=parse_derived_type(obj['info'],dt_names)	
+	#obj['dt']=parse_derived_type(obj['info'],dt_names)	
 	obj['pointer']=parse_pointer(obj['info'])
 	obj['char_len']=parse_character(obj['info'])
 	#Dont need the info list anymore
@@ -494,9 +494,12 @@ def output(filename,*args):
 			pickle.dump(i,f)
 	
 	
+def fpyname(filename):
+	return filename.split('.')[0]+'.fpy'
+	
 def run_and_save(filename):
 	mod_data,mod_vars,param,funcs,dt_defs=doStuff(filename)
-	outname=mod_data['orig_file'].split('.')[0]+'.fpy'
+	outname=fpyname(filename)
 	output(outname,version,mod_data,mod_vars,param,funcs,dt_defs)
 	
 #################################

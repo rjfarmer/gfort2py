@@ -91,19 +91,34 @@ class fFort(object):
 	_size_t = ctypes.c_int64	
 	
 	
-	def __init__(self,libname,fpy):
+	def __init__(self,libname,ffile):
 		self.lib=ctypes.CDLL(libname)
 		self.libname=libname
-		self.fpy=fpy
+		self.fpy=pm.fpyname(ffile)
+		self._load_data(ffile)
 
+	def _load_data(self,ffile):
+		try:
+			f=open(self.fpy,'rb')
+		except FileNotFoundError:
+			pm.run_and_save(ffile)
+		else:
+			f.close()
+		
 		with open(self.fpy,'rb') as f:
 			self.version=pickle.load(f)
 			if self.version ==1:
 				self._mod_data=pickle.load(f)
-				self._mod_vars=pickle.load(f)
-				self._param=pickle.load(f)
-				self._funcs=pickle.load(f)
-				self._dt_defs=pickle.load(f)
+
+				if self._mod_data["checksum"] == pm.hash_file(ffile):
+					self._mod_vars=pickle.load(f)
+					self._param=pickle.load(f)
+					self._funcs=pickle.load(f)
+					self._dt_defs=pickle.load(f)
+				else:
+					pm.run_and_save(ffile)
+					self._load_data(ffile)
+
 
 	def _init_mod_var(self):
 		for i in self._mod_vars:
@@ -447,27 +462,27 @@ class fFort(object):
 		return array
 
 
-x=fFort('./test_mod.so','test_mod.fpy')
+x=fFort('./test_mod.so','tester.mod')
 
-num=find_key_val(x._mod_vars,'name','x_str')
-x._init_var(x._mod_vars[num])
-print(x._get_var(x._mod_vars[num]))
-x._set_var('abcdefgdet',x._mod_vars[num])
-print(x._get_var(x._mod_vars[num]))
+#num=find_key_val(x._mod_vars,'name','x_str')
+#x._init_var(x._mod_vars[num])
+#print(x._get_var(x._mod_vars[num]))
+#x._set_var('abcdefgdet',x._mod_vars[num])
+#print(x._get_var(x._mod_vars[num]))
 
-num=find_key_val(x._mod_vars,'name','xp')
-x._init_var(x._mod_vars[num])
-print(x._get_var(x._mod_vars[num]))
-x._set_var(2,x._mod_vars[num])
-print(x._get_var(x._mod_vars[num]))
+#num=find_key_val(x._mod_vars,'name','xp')
+#x._init_var(x._mod_vars[num])
+#print(x._get_var(x._mod_vars[num]))
+#x._set_var(2,x._mod_vars[num])
+#print(x._get_var(x._mod_vars[num]))
 
-num=find_key_val(x._mod_vars,'name','aaa')
-x._init_var(x._mod_vars[num])
-print(x._get_array(x._mod_vars[num]))
-x._set_array(np.array([5,6,7,8]),x._mod_vars[num])
-print(x._get_array(x._mod_vars[num]))
+#num=find_key_val(x._mod_vars,'name','aaa')
+#x._init_var(x._mod_vars[num])
+#print(x._get_array(x._mod_vars[num]))
+#x._set_array(np.array([5,6,7,8]),x._mod_vars[num])
+#print(x._get_array(x._mod_vars[num]))
 
 
-num=find_key_val(x._funcs,'name','func_noargs')
+#num=find_key_val(x._funcs,'name','func_noargs')
 #x._init_func(x._funcs[num])
 #x._call(x._funcs[num])
