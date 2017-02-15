@@ -142,7 +142,9 @@ class fFort(object):
 		for i in obj['args']:
 			self._init_var(i)
 			obj['argparse'].append(i['_ctype'])
-		obj['_call']=self._get_from_lib(obj)	
+		if len(obj['argparse'])==0:
+			obj['argparse']=None
+		obj['_call']=getattr(self.lib,obj['mangled_name'])	
 		obj['_call'].argparse=obj['argparse']
 		obj['_call'].restype=obj['_ctype']
 		
@@ -159,7 +161,10 @@ class fFort(object):
 		
 	def _get_ctype(self,obj):
 		if 'intent' not in obj.keys():
-			obj['_ctype']=getattr(ctypes,obj['ctype'])
+			if obj['ctype']=='void':
+				obj['_ctype']=None
+			else:
+				obj['_ctype']=getattr(ctypes,obj['ctype'])
 		elif obj['intent']=="in":
 			obj['_ctype']=getattr(ctypes,obj['ctype'])
 		elif obj['intent']=="out" or obj['intent']=="inout" or obj['pointer']:
@@ -231,11 +236,9 @@ class fFort(object):
 		for i,j in zip(*args,f['args']):
 			args_in.append(self.arg_to_ctype(i,j))
 
-		
-
 		#Call function
 		res=f['_call']()
-		
+
 		#Convert back any args that changed:
 		args_out=[]
 		for i,j in zip(args_in,f['args']):
