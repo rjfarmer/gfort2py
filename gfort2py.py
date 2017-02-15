@@ -122,7 +122,6 @@ class fFort(object):
 					self._funcs=x[2]
 					self._dt_defs=x[3]
 
-
 	def _init_mod_var(self):
 		for i in self._mod_vars:
 			self._init_var(i)
@@ -324,11 +323,10 @@ class fFort(object):
 		array=[]
 		k=0
 		base_address=ctypes.addressof(res)
-		for i in range(len(shape)):
-			for j in range(shape[i]):
-				offset=base_address+k*ctypes.sizeof(obj['_ctype'])
-				array.append(obj['_ctype'].from_address(offset).value)
-				k=k+1
+		offset=base_address
+		for i in range(np.product(shape)):
+			array.append(obj['_ctype'].from_address(offset).value)
+			offset=offset+ctypes.sizeof(obj['_ctype'])
 		return np.reshape(array,newshape=shape)
 
 	def _set_explicit_array(self,res,value,obj):
@@ -465,25 +463,44 @@ class fFort(object):
 		return array
 
 
-x=fFort('./test_mod.so','tester.mod')
+x=fFort('./tester.so','tester.mod')
 
-#num=find_key_val(x._mod_vars,'name','x_str')
-#x._init_var(x._mod_vars[num])
-#print(x._get_var(x._mod_vars[num]))
-#x._set_var('abcdefgdet',x._mod_vars[num])
-#print(x._get_var(x._mod_vars[num]))
+num=find_key_val(x._param,'name','const_str')
+x._init_param()
+print(x._get_param(x._param[num]))
+try:
+	x._set_param('abcdefgdet',x._param[num])
+except AttributeError:
+	print("Success")
+else:
+	print(x._get_param(x._param[num]))
 
-#num=find_key_val(x._mod_vars,'name','xp')
-#x._init_var(x._mod_vars[num])
-#print(x._get_var(x._mod_vars[num]))
-#x._set_var(2,x._mod_vars[num])
-#print(x._get_var(x._mod_vars[num]))
 
-#num=find_key_val(x._mod_vars,'name','aaa')
-#x._init_var(x._mod_vars[num])
-#print(x._get_array(x._mod_vars[num]))
-#x._set_array(np.array([5,6,7,8]),x._mod_vars[num])
-#print(x._get_array(x._mod_vars[num]))
+num=find_key_val(x._mod_vars,'name','a_str')
+x._init_var(x._mod_vars[num])
+print(x._get_var(x._mod_vars[num]))
+x._set_var('abcdefgdet',x._mod_vars[num])
+print(x._get_var(x._mod_vars[num]))
+
+
+num=find_key_val(x._mod_vars,'name','a_int')
+x._init_var(x._mod_vars[num])
+print(x._get_var(x._mod_vars[num]))
+x._set_var(2,x._mod_vars[num])
+print(x._get_var(x._mod_vars[num]))
+
+num=find_key_val(x._mod_vars,'name','b_int_exp_1d')
+x._init_var(x._mod_vars[num])
+print(x._get_array(x._mod_vars[num]))
+x._set_array(np.array([5,6,7,8,9]),x._mod_vars[num])
+print(x._get_array(x._mod_vars[num]))
+
+num=find_key_val(x._mod_vars,'name','b_int_exp_2d')
+x._init_var(x._mod_vars[num])
+print(x._get_array(x._mod_vars[num]))
+x._set_array(np.zeros([5,5],dtype='int'),x._mod_vars[num])
+print(x._get_array(x._mod_vars[num]))
+
 
 
 #num=find_key_val(x._funcs,'name','func_noargs')
