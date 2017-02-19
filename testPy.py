@@ -2,7 +2,7 @@ import numpy as np
 import gfort2py as gf
 
 
-x=gf.fFort('./tester.so','tester.mod')
+x=gf.fFort('./tester.so','tester.mod',reload=True)
 
 num=gf.find_key_val(x._param,'name','const_str')
 x._init_param()
@@ -57,5 +57,7 @@ num=gf.find_key_val(x._funcs,'name','func_real_dp_no_args')
 x._init_func(x._funcs[num])
 x._call(x._funcs[num])
 
-
+num=gf.find_key_val(x._funcs,'name','sub_int_in')
+x._init_func(x._funcs[num])
+x._call(x._funcs[num],1)
 

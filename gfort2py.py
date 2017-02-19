@@ -229,10 +229,11 @@ class fFort(object):
 	def _call(self,f,*args):
 		#Convert args to ctype versions
 		args_in=[]
-		for i,j in zip(*args,f['args']):
+		for i,j in zip(args,f['args']):
 			args_in.append(self.arg_to_ctype(i,j))
 
 		#Call function
+		print(args,args_in)
 		if len(args_in)>0:
 			res=f['_call'](args_in)
 		else:

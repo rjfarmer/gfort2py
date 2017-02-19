@@ -196,5 +196,31 @@ module tester
          func_real_dp_no_args=4.0_dp
          write(*,*) 4.0_dp
       end function func_real_dp_no_args
+      
+      subroutine sub_int_in(x)
+         integer, intent(in) ::x
+         write(*,*) 2*x
+      end subroutine sub_int_in
+      
+      subroutine sub_int_out(x)
+         integer, intent(out) :: x
+         x=1
+      end subroutine sub_int_out
+      
+      subroutine sub_int_inout(x)
+         integer, intent(inout) :: x
+         x=2*x
+      end subroutine sub_int_inout     
+      
+      subroutine sub_int_no_intent(x)
+         integer :: x
+         x=2*x
+      end subroutine sub_int_no_intent 
+      
+      integer function func_int_in(x)
+         integer, intent(in) ::x
+         func_int_in=2*x
+      end function func_int_in
+      
 
 end module tester
