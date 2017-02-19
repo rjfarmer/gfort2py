@@ -187,12 +187,12 @@ module tester
          write(*,*) 2
       end function func_int_no_args
       
-      integer function func_real_no_args()
+      real function func_real_no_args()
          func_real_no_args=3.0
          write(*,*) 3.0
       end function func_real_no_args
       
-      integer function func_real_dp_no_args()
+      real(dp) function func_real_dp_no_args()
          func_real_dp_no_args=4.0_dp
          write(*,*) 4.0_dp
       end function func_real_dp_no_args

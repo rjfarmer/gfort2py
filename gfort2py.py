@@ -97,13 +97,13 @@ class fFort(object):
 	_size_t = ctypes.c_int64	
 	
 	
-	def __init__(self,libname,ffile):
+	def __init__(self,libname,ffile,reload=False):
 		self.lib=ctypes.CDLL(libname)
 		self.libname=libname
 		self.fpy=pm.fpyname(ffile)
-		self._load_data(ffile)
+		self._load_data(ffile,reload)
 
-	def _load_data(self,ffile):
+	def _load_data(self,ffile,reload=False):
 		try:
 			f=open(self.fpy,'rb')
 		except FileNotFoundError:
@@ -116,17 +116,18 @@ class fFort(object):
 			if self.version ==1:
 				self._mod_data=pickle.load(f)
 
-				if self._mod_data["checksum"] == pm.hash_file(ffile):
+				if self._mod_data["checksum"] != pm.hash_file(ffile) or reload:
+					x=pm.run_and_save(ffile,return_data=True)
+					self._mod_data=x[0]
+					self._mod_vars=x[1]
+					self._param=x[2]
+					self._funcs=x[3]
+					self._dt_defs=x[4]
+				else:
 					self._mod_vars=pickle.load(f)
 					self._param=pickle.load(f)
 					self._funcs=pickle.load(f)
 					self._dt_defs=pickle.load(f)
-				else:
-					x=pm.run_and_save(ffile,return_data=True)
-					self._mod_vars=x[0]
-					self._param=x[1]
-					self._funcs=x[2]
-					self._dt_defs=x[3]
 
 	def _init_mod_var(self):
 		for i in self._mod_vars:
@@ -225,24 +226,25 @@ class fFort(object):
 			pass
 		return array
 
-	def _call(self,name,*args):
-		#find function in self._funcs		
-		for f in self._funcs:
-			if f['name']==name:
-				break
-
+	def _call(self,f,*args):
 		#Convert args to ctype versions
 		args_in=[]
 		for i,j in zip(*args,f['args']):
 			args_in.append(self.arg_to_ctype(i,j))
 
 		#Call function
-		res=f['_call']()
+		if len(args_in)>0:
+			res=f['_call'](args_in)
+		else:
+			res=f['_call']()
 
 		#Convert back any args that changed:
 		args_out=[]
 		for i,j in zip(args_in,f['args']):
 			args_out.append(self.ctype_to_py(i,j))
+			
+		if res is not None:
+			res=f['_pytype'](res)
 			
 		return res,args_out		
 
