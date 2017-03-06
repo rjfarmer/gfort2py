@@ -5,6 +5,7 @@ import pickle
 import sys
 import re
 import subprocess
+import numpy as np
 			
 def clean_list(l,idx):
 	return [i for j, i in enumerate(l) if j not in idx]
@@ -383,27 +384,15 @@ def processDT(obj,dt_names):
 	return obj
 	
 def mapArgs2Func(funcs,func_args):
-	#Find when functions have no arguments
-	#Do it this way to avoid loops over func and func_args at the same time
-	no_args=[]
-	for idx,i in enumerate(funcs):
-		if  len(i['arg_nums'])==0:
-			no_args.append(idx)
-		
-	func_arg_par=[0]
-	count=0
-	for i in range(1,len(func_args)):
-		if count in no_args:
-			count=count+1
-		p=func_args[i]['parent']
-		if p is not func_args[i-1]['parent']:
-			count=count+1
-		#This is the index into funcs for each func_args
-		func_arg_par.append(count)
-		
-	for idx,i in enumerate(func_args):
-		funcs[func_arg_par[idx]]['args'].append(i)
-		
+	fArgArray=np.array([i['parent'] for i in func_args])
+	fParArray=np.array([i['num'] for i in funcs])
+
+	ind=np.argsort(fParArray)
+	argInd=np.searchsorted(fParArray,fArgArray,sorter=ind)
+
+	for idx,i in enumerate(argInd):
+		funcs[i]['args'].append(func_args[idx])
+
 	return funcs
 	
 def getDTNames(names):
@@ -466,7 +455,7 @@ def doStuff(filename):
 			d['mangled_name']=mangle_name(d)
 			if 	d['parent']>1:
 				d['info']=split_info(d['info'])
-				func_args.append(processFuncArg(d,dt_names))	
+				func_args.append(processFuncArg(d,dt_names))
 			elif 'VARIABLE' in j:	
 				d['info']=split_info(d['info'])
 				mod_vars.append(processVar(d,dt_names))
