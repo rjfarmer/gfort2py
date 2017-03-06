@@ -17,8 +17,9 @@ def find_key_val(list_dicts,key,value):
 			
 						
 class fVar(object):
-	def __init__(self,obj):
+	def __init__(self,lib,obj):
 		self.__dict__.update(obj)
+		self.lib=lib
 		self._ctype=self.ctype_def()
 		self._ctype_f=self.ctype_def_func()
 		self._pytype=self.pytype_def()
@@ -80,7 +81,38 @@ class fVar(object):
 		except (ValueError, AttributeError):
 			print("Cant find "+self.name)
 		return res
+		
+		
+	def _get_var_by_iter(self,value):
+		""" Gets a varaible where we have to iterate to get multiple elements"""
+		base_address=ctypes.addressof(value)
+		return self._get_var_from_address(base_address)
+
+	def _get_var_from_address(self,ctype_address,size=-1):
+		out=[]
+		i=0
+		sof=ctypes.sizeof(self._ctype)
+		while True:
+			if i==size:
+				break
+			x=self._ctype.from_address(ctype_address+i*sof)
+			if x.value == b'\x00':
+				break
+			else:
+				out=out+(x.value)
+			i=i+1
+		return out
 	
+
+	def _set_var_from_iter(self,res,value,size=99999):
+		base_address=ctypes.addressof(res)
+		self._set_var_from_address(base_address,size)
+		
+	def _set_var_from_address(self,ctype_address,size=99999):
+		for j in range(min(len(value),size)):
+			offset=ctype_address+j*ctypes.sizeof(self._ctype)
+			self._ctype.from_address(offset).value=value[j]	
+
 	
 def fParam(fVar):
 	def set_mod(self,value):
@@ -96,15 +128,55 @@ def fParam(fVar):
 		"""
 		return self.value
 		
-#class fStr(fVar):
-	#def __init__(self,attr):
-		#self.ctype=ctypes.c_char_p
+class fStr(fVar):
+	def __init__(self,lib,obj):
+		self.__dict__.update(obj)
+		self.lib=lib
+		self._ctype=ctypes.c_char
+		self._ctype_f=ctypes.c_char_p
+		self._pytype=str
+	
+	
+	def py_to_ctype(self,value):
+		"""
+		Pass in a python value returns the ctype representation of it
+		"""
+		return ctypes.c_char(value.encode())
+	
+	def ctype_to_py(self,value):
+		"""
+		Pass in a ctype value returns the python representation of it
+		"""
+		return self._get_var_by_iter(value)
+		
+	def ctype_def_func(self):
+		"""
+		The ctype type of a value suitable for use as an argument of a function
+		
+		May just call ctype_def
+		"""
+		return self._ctype_f
+	
+	def set_mod(self,value):
+		"""
+		Set a module level variable
+		"""
+		r=self._get_from_lib()
+		self._set_var_from_iter(r,value.encode())
+	
+	def get_mod(self):
+		"""
+		Get a module level variable
+		"""
+		r=self._get_from_lib()
+		s=self.ctype_to_py(r)
+		return ''.join([i.decode() for i in s])
 	
 	
 ##Inheriet from object or maybe fVar?
-#class fExplicitArray(fVar):
-	#def __init__(self,attr):
-		#pass
+class fExplicitArray(fVar):
+	def __init__(self,attr):
+		pass
 	
 #class fDummyArray(fVar):
 	#_GFC_MAX_DIMENSIONS=7
