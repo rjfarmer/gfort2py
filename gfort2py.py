@@ -15,17 +15,86 @@ def find_key_val(list_dicts,key,value):
 		if i[key]==value:
 			return idx		
 			
-			
-#class fUtils(object):
-	#pass
-			
-#class fVar(fUtils):
-	#def __init__(self,attr):
-		#pass
+						
+class fVar(object):
+	def __init__(self,obj):
+		self.__dict__.update(obj)
+		self._ctype=self.ctype_def()
+		self._ctype_f=self.ctype_def_func()
+		self._pytype=self.pytype_def()
 		
-	#def from_param(self,x):
-		#return self.ctype(x)
+	def py_to_ctype(self,value):
+		"""
+		Pass in a python value returns the ctype representation of it
+		"""
+		return self._cytype(value)
+	
+	def ctype_to_py(self,value):
+		"""
+		Pass in a ctype value returns the python representation of it
+		"""
+		return self._pytype(value.value)
 		
+	def pytype_def(self):
+		return getattr(__builtin__,self.pytype)
+	
+	def ctype_def(self):
+		"""
+		The ctype type of this object
+		"""
+		return getattr(ctypes,self.ctype)
+		
+	def ctype_def_func(self):
+		"""
+		The ctype type of a value suitable for use as an argument of a function
+		
+		May just call ctype_def
+		"""
+		c=None
+		if 'intent' not in self.__dict__.keys():
+			c=getattr(ctypes,self.ctype)
+		elif self.intent=="in":
+			c=getattr(ctypes,obj['ctype'])
+		elif self.intent=="out" or self.intent=="inout" or self.pointer:
+			c=ctypes.POINTER(self.ctype_def())
+		return c
+	
+	def set_mod(self,value):
+		"""
+		Set a module level variable
+		"""
+		r=self._get_from_lib()
+		r.value=self._pytype(value)
+	
+	def get_mod(self):
+		"""
+		Get a module level variable
+		"""
+		r=self._get_from_lib()
+		return self.ctype_to_py(r)
+		
+	def _get_from_lib(self):
+		res=None
+		try:
+			res=self._ctype.in_dll(self.lib,self.mangled_name)
+		except (ValueError, AttributeError):
+			print("Cant find "+self.name)
+		return res
+	
+	
+def fParam(fVar):
+	def set_mod(self,value):
+		"""
+		Cant set a parameter
+		"""
+		raise AttributeError("Can't alter a parameter")
+	
+	def get_mod(self):
+		"""
+		A parameters value is stored in the dict, as we cant access them 
+		from the shared lib.
+		"""
+		return self.value
 		
 #class fStr(fVar):
 	#def __init__(self,attr):
@@ -230,10 +299,10 @@ class fFort(object):
 		#Convert args to ctype versions
 		args_in=[]
 		for i,j in zip(args,f['args']):
-			args_in.append(self.arg_to_ctype(i,j))
+			args_in.append(self._arg_to_ctype(i,j))
 
 		#Call function
-		print(args,args_in)
+		print("in",args,args_in,f['args'])
 		if len(args_in)>0:
 			res=f['_call'](args_in)
 		else:
