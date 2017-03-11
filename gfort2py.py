@@ -114,7 +114,7 @@ class fVar(object):
 			self._ctype.from_address(offset).value=value[j]	
 
 	
-def fParam(fVar):		
+class fParam(fVar):
 	def set_mod(self,value):
 		"""
 		Cant set a parameter
@@ -126,7 +126,7 @@ def fParam(fVar):
 		A parameters value is stored in the dict, as we cant access them 
 		from the shared lib.
 		"""
-		return self.value
+		return self._pytype(self.value)
 		
 class fStr(fVar):
 	def __init__(self,lib,obj):
@@ -256,8 +256,8 @@ class fFort(object):
 		for i in self._mod_vars:
 			self._init_var(i)
 			
-		#for i in self._param:
-			#self._init_param(i)
+		for i in self._param:
+			self._init_param(i)
 			
 					
 	def _init_var(self,obj):
