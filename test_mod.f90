@@ -222,5 +222,4 @@ module tester
          func_int_in=2*x
       end function func_int_in
       
-
 end module tester

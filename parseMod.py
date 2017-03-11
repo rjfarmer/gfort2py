@@ -151,8 +151,8 @@ def parse_type(info,dt=False):
 		pytype='bool'
 		ctype='c_bool'
 	elif 'DERIVED' in attr:
-		pytype='void'
-		ctype='void'
+		pytype='None'
+		ctype='c_void_p'
 	elif 'UNKNOWN' in attr:
 		pytype='void'
 		ctype='void'			
