@@ -11,6 +11,11 @@ x=gf.fFort('./tester.so','tester.mod',reload=True)
 
 
 class TestStringMethods(unittest.TestCase):
+	
+	def test_mising_var(self):	
+		with self.assertRaises(AttributeError) as cm:
+			a=x.invalid_var
+	
 	def test_a_str(self):
 		v='123456798'
 		x.a_str=v
@@ -71,7 +76,80 @@ class TestStringMethods(unittest.TestCase):
 	def test_const_dp_arr(self):	
 		np_test.assert_array_equal(x.const_real_dp_arr,np.array([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,0.0],dtype='float'))
 
-
+	def test_b_int_exp_1d(self):
+		v=np.random.randint(0,100,size=(5))
+		x.b_int_exp_1d=v
+		np_test.assert_array_equal(x.b_int_exp_1d,v)
+		
+	def test_b_int_exp_2d(self):
+		v=np.random.randint(0,100,size=(5,5))
+		x.b_int_exp_2d=v
+		np_test.assert_array_equal(x.b_int_exp_2d,v)
+		
+	def test_b_int_exp_3d(self):
+		v=np.random.randint(0,100,size=(5,5,5))
+		x.b_int_exp_3d=v
+		np_test.assert_array_equal(x.b_int_exp_3d,v)
+		
+	def test_b_int_exp_4d(self):
+		v=np.random.randint(0,100,size=(5,5,5,5))
+		x.b_int_exp_4d=v
+		np_test.assert_array_equal(x.b_int_exp_4d,v)
+		
+	def test_b_int_exp_5d(self):
+		v=np.random.randint(0,100,size=(5,5,5,5,5))
+		x.b_int_exp_5d=v
+		np_test.assert_array_equal(x.b_int_exp_5d,v)
+		
+	def test_b_real_exp_1d(self):
+		v=np.random.random(size=(5))
+		x.b_real_exp_1d=v
+		np_test.assert_allclose(x.b_real_exp_1d,v)
+		
+	def test_b_real_exp_2d(self):
+		v=np.random.random(size=(5,5))
+		x.b_real_exp_2d=v
+		np_test.assert_allclose(x.b_real_exp_2d,v)
+		
+	def test_b_real_exp_3d(self):
+		v=np.random.random(size=(5,5,5))
+		x.b_real_exp_3d=v
+		np_test.assert_allclose(x.b_real_exp_3d,v)
+		
+	def test_b_real_exp_4d(self):
+		v=np.random.random(size=(5,5,5,5))
+		x.b_real_exp_4d=v
+		np_test.assert_allclose(x.b_real_exp_4d,v)
+		
+	def test_b_real_exp_5d(self):
+		v=np.random.random(size=(5,5,5,5,5))
+		x.b_real_exp_5d=v
+		np_test.assert_allclose(x.b_real_exp_5d,v)
+		
+	def test_b_real_dp_exp_1d(self):
+		v=np.random.random(size=(5))
+		x.b_real_dp_exp_1d=v
+		np_test.assert_allclose(x.b_real_dp_exp_1d,v)
+		
+	def test_b_real_dp_exp_2d(self):
+		v=np.random.random(size=(5,5))
+		x.b_real_dp_exp_2d=v
+		np_test.assert_allclose(x.b_real_dp_exp_2d,v)
+		
+	def test_b_real_dp_exp_3d(self):
+		v=np.random.random(size=(5,5,5))
+		x.b_real_dp_exp_3d=v
+		np_test.assert_allclose(x.b_real_dp_exp_3d,v)
+		
+	def test_b_real_dp_exp_4d(self):
+		v=np.random.random(size=(5,5,5,5))
+		x.b_real_dp_exp_4d=v
+		np_test.assert_allclose(x.b_real_dp_exp_4d,v)
+		
+	def test_b_real_dp_exp_5d(self):
+		v=np.random.random(size=(5,5,5,5,5))
+		x.b_real_dp_exp_5d=v
+		np_test.assert_allclose(x.b_real_dp_exp_5d,v)
 
 if __name__ == '__main__':
 	unittest.main() 

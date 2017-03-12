@@ -78,8 +78,8 @@ class fVar(object):
 		res=None
 		try:
 			res=self._ctype.in_dll(self.lib,self.mangled_name)
-		except (ValueError, AttributeError):
-			print("Cant find "+self.name)
+		except AttributeError:
+			raise
 		return res
 		
 		
@@ -192,19 +192,22 @@ class fExplicitArray(fVar):
 		self.__dict__.update(obj)
 		self.lib=lib
 		self._pytype=np.array
+		self._ctype=self.ctype_def()
+		self._ctype_f=self.ctype_def_func()
 	
 	def ctype_to_py(self,value):
 		"""
 		Pass in a ctype value returns the python representation of it
 		"""
-		return self._get_var_by_iter(value,self.char_len)
+		return self._get_var_by_iter(value,self._array_size())
 	
 	def set_mod(self,value):
 		"""
 		Set a module level variable
 		"""
 		r=self._get_from_lib()
-		self._set_var_from_iter(r,value.encode(),self._array_size())
+		v=value.flatten(order='C')
+		self._set_var_from_iter(r,v,self._array_size())
 	
 	def get_mod(self):
 		"""
@@ -212,7 +215,7 @@ class fExplicitArray(fVar):
 		"""
 		r=self._get_from_lib()
 		s=self.ctype_to_py(r)
-		shape=self._make_array_shape(obj)
+		shape=self._make_array_shape()
 		return np.reshape(s,shape)
 	
 	def _make_array_shape(self):
@@ -312,6 +315,8 @@ class fFort(object):
 	def _init_var(self,obj):
 		if obj['pytype']=='str':
 			self._listVars.append(fStr(self.lib,obj))
+		elif obj['array']:
+			self._listVars.append(fExplicitArray(self.lib,obj))
 		else:
 			self._listVars.append(fVar(self.lib,obj))
 		
