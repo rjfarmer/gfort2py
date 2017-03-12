@@ -2,8 +2,7 @@
 
 import os
 from setuptools import setup, find_packages
-import unittest
-
+import unittest2 as unittest
 
 
 
