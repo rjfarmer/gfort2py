@@ -24,3 +24,6 @@ install:
 # command to run tests
 script: 
   - "python setup.py test"
+sudo: required
+env: 
+  TRAVIS=1

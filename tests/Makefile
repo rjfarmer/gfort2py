@@ -1,3 +1,9 @@
 
+FC = gfortran
+
+ifdef TRAVIS
+	FC = gfortran-6
+endif
+
 all:
-	gfortran -fPIC -shared -o tester.so test_mod.f90
+	$(FC) -fPIC -shared -o tester.so test_mod.f90
