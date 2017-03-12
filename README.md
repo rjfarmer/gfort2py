@@ -1,3 +1,5 @@
+![Build status](https://travis-ci.org/rjfarmer/gfort2py.svg?branch=master)
+
 # gfort2py
 Library to allow calling fortran code from python.
 
