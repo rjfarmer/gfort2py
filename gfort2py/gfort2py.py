@@ -8,7 +8,7 @@ import ctypes
 import pickle
 import gfort2py.parseMod as pm
 import numpy as np
-
+import errno
 		
 def find_key_val(list_dicts,key,value):
 	for idx,i in enumerate(list_dicts):
@@ -272,7 +272,9 @@ class fFort(object):
 	def _load_data(self,ffile,reload=False):
 		try:
 			f=open(self.fpy,'rb')
-		except FileNotFoundError:
+		except (OSError, IOError) as e: # FileNotFoundError does not exist on Python < 3.3
+			if e.errno != errno.ENOENT:
+				raise
 			pm.run_and_save(ffile)
 		else:
 			f.close()
