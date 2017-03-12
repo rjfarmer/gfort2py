@@ -58,11 +58,20 @@ class TestStringMethods(unittest.TestCase):
 	def test_const_real_qp(self):	
 		self.assertEqual(x.const_real_qp,1.0)
 
+	def test_const_int_arr_error(self):	
+		with self.assertRaises(ValueError) as cm:
+			x.const_int_arr='abc'
+		
 	def test_const_int_arr(self):	
-		np_test.assert_array_equal(x.const_int_arr,np.array([1,2,3,4,5,6,7,8,9,0]))
+		np_test.assert_array_equal(x.const_int_arr,np.array([1,2,3,4,5,6,7,8,9,0],dtype='int'))
 
 	def test_const_real_arr(self):	
-		np_test.assert_array_equal(x.const_int_arr,np.array([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,0.0]))
+		np_test.assert_array_equal(x.const_real_arr,np.array([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,0.0],dtype='float'))
+
+	def test_const_dp_arr(self):	
+		np_test.assert_array_equal(x.const_real_dp_arr,np.array([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,0.0],dtype='float'))
+
+
 
 if __name__ == '__main__':
 	unittest.main() 
