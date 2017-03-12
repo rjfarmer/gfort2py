@@ -128,6 +128,20 @@ class fParam(fVar):
 		"""
 		return self._pytype(self.value)
 		
+class fParamArray(fVar):
+	def set_mod(self,value):
+		"""
+		Cant set a parameter
+		"""
+		raise ValueError("Can't alter a parameter")
+	
+	def get_mod(self):
+		"""
+		A parameters value is stored in the dict, as we cant access them 
+		from the shared lib.
+		"""
+		return np.array(self.value,dtype=self.pytype)
+		
 class fStr(fVar):
 	def __init__(self,lib,obj):
 		self.__dict__.update(obj)
@@ -267,7 +281,10 @@ class fFort(object):
 			self._listVars.append(fVar(self.lib,obj))
 		
 	def _init_param(self,obj):
-		self._listParams.append(fParam(self.lib,obj))	
+		if len(obj['value']):
+			self._listParams.append(fParamArray(self.lib,obj))	
+		else:
+			self._listParams.append(fParam(self.lib,obj))	
 		
 		
 	def __getattr__(self,name):
@@ -306,7 +323,7 @@ class fFort(object):
 	def __dir__(self):
 		if '_listVars' in self.__dict__ and '_listParams' in self.__dict__:	
 			lv=[str(i.name) for i in self._listVars]
-			#lp=[str(i.name) for i in self._listParams]
+			lp=[str(i.name) for i in self._listParams]
 			#lp=[str(i.name) for i in self._listFuncs]
 			return lv
 		else:
