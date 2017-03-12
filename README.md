@@ -1,6 +1,13 @@
 # gfort2py
 Library to allow calling fortran code from python.
 
+## Build
+````bash
+ipython3 setup.py install --user
+````
+
+## Using
+
 Compile code normnally (parsing -shared -fPIC to make a shared library at the end)
 
 ````python
