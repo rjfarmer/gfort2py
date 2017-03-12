@@ -1,7 +1,7 @@
 import os, sys
 import numpy as np
 import gfort2py as gf
-import unittest
+import unittest2 as unittest
 import subprocess
 import numpy.testing as np_test
 
