@@ -45,6 +45,19 @@ class TestStringMethods(unittest.TestCase):
 	def test_const_int(self):	
 		self.assertEqual(x.const_int,1)	
 
+	def test_const_int_p1(self):	
+		self.assertEqual(x.const_int_p1,2)	
+
+	def test_const_int_long(self):	
+		self.assertEqual(x.const_int_lp,1)	
+
+	def test_const_real_dp(self):	
+		self.assertEqual(x.const_real_dp,1.0)
+		
+	def test_const_real_qp(self):	
+		self.assertEqual(x.const_real_qp,1.0)
+
+
 if __name__ == '__main__':
 	unittest.main() 
 
