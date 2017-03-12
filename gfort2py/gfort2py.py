@@ -187,10 +187,43 @@ class fStr(fVar):
 		return ''.join([i.decode() for i in s])
 	
 	
-##Inheriet from object or maybe fVar?
 class fExplicitArray(fVar):
-	def __init__(self):
-		pass
+	def __init__(self,lib,obj):
+		self.__dict__.update(obj)
+		self.lib=lib
+		self._pytype=np.array
+	
+	def ctype_to_py(self,value):
+		"""
+		Pass in a ctype value returns the python representation of it
+		"""
+		return self._get_var_by_iter(value,self.char_len)
+	
+	def set_mod(self,value):
+		"""
+		Set a module level variable
+		"""
+		r=self._get_from_lib()
+		self._set_var_from_iter(r,value.encode(),self._array_size())
+	
+	def get_mod(self):
+		"""
+		Get a module level variable
+		"""
+		r=self._get_from_lib()
+		s=self.ctype_to_py(r)
+		shape=self._make_array_shape(obj)
+		return np.reshape(s,shape)
+	
+	def _make_array_shape(self):
+		bounds=self.array['bounds']
+		shape=[]
+		for i,j in zip(bounds[0::2],bounds[1::2]):
+			shape.append(j-i+1)
+		return shape	
+	
+	def _array_size(self):
+		return np.product(self._make_array_shape())
 	
 #class fDummyArray(fVar):
 	#_GFC_MAX_DIMENSIONS=7
