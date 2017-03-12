@@ -228,39 +228,82 @@ class fExplicitArray(fVar):
 	def _array_size(self):
 		return np.product(self._make_array_shape())
 	
-#class fDummyArray(fVar):
-	#_GFC_MAX_DIMENSIONS=7
+class fDerivedType(fVar):	
+	def __init__(self,lib,obj):
+		self.__dict__.update(obj)
+		self.lib=lib
+		self._ctype=ctypes.c_void_p
+		
 	
-	#_GFC_DTYPE_RANK_MASK=0x07
-	#_GFC_DTYPE_TYPE_SHIFT=3
-	#_GFC_DTYPE_TYPE_MASK=0x38
-	#_GFC_DTYPE_SIZE_SHIFT=6
+class fDerivedTypeDesc(ctypes.Structure):	
+	def __init__(self,lib,obj):
+		self.__dict__.update(obj)
+		self.lib=lib
+		
+	def setup_desc(self):
+		self._args=[]
+		self._nameArgs=[]
+		self._typeArgs=[]
+		for i in self.args:
+			self._args.append(fVar(self.lib,i))
+			self._nameArgs.append(self._args[-1].name)
+			self._typeArgs.append(self._args[-1]._ctype)
+			
+		self._set_fields(self._nameArgs,self._typeArgs)
+		
+	def set_fields(self,nameArgs,typeArgs):
+		self._fields_=[(i,j) for i,z in zip(nameArgs,typeArgs)]
+			
+	def add_arg(self,name,ctype):
+		self._fields_.append([name,ctype])
 	
-	#_BT_UNKNOWN = 0
-	#_BT_INTEGER=_BT_UNKNOWN+1 
-	#_BT_LOGICAL=_BT_INTEGER+1
-	#_BT_REAL=_BT_LOGICAL+1
-	#_BT_COMPLEX=_BT_REAL+1
-	#_BT_DERIVED=_BT_COMPLEX+1
-	#_BT_CHARACTER=_BT_DERIVED+1
-	#_BT_CLASS=_BT_CHARACTER+1
-	#_BT_PROCEDURE=_BT_CLASS+1
-	#_BT_HOLLERITH=_BT_PROCEDURE+1
-	#_BT_VOID=_BT_HOLLERITH+1
-	#_BT_ASSUMED=_BT_VOID+1	
+class fDummyArray(fVar):
+	_GFC_MAX_DIMENSIONS=7
 	
-	#_index_t = ctypes.c_int64
-	#_size_t = ctypes.c_int64
-	#def __init__(self,attr):
-		#pass
+	_GFC_DTYPE_RANK_MASK=0x07
+	_GFC_DTYPE_TYPE_SHIFT=3
+	_GFC_DTYPE_TYPE_MASK=0x38
+	_GFC_DTYPE_SIZE_SHIFT=6
 	
-#class fDerivedType(fVar):	
-	#def __init__(self,attr):
-		#pass
+	_BT_UNKNOWN = 0
+	_BT_INTEGER=_BT_UNKNOWN+1 
+	_BT_LOGICAL=_BT_INTEGER+1
+	_BT_REAL=_BT_LOGICAL+1
+	_BT_COMPLEX=_BT_REAL+1
+	_BT_DERIVED=_BT_COMPLEX+1
+	_BT_CHARACTER=_BT_DERIVED+1
+	_BT_CLASS=_BT_CHARACTER+1
+	_BT_PROCEDURE=_BT_CLASS+1
+	_BT_HOLLERITH=_BT_PROCEDURE+1
+	_BT_VOID=_BT_HOLLERITH+1
+	_BT_ASSUMED=_BT_VOID+1	
 	
-#class fFunc(fVar):
-	#def __init__(self,attr):
-		#pass
+	_index_t = ctypes.c_int64
+	_size_t = ctypes.c_int64
+	def __init__(self,lib,obj):
+		self.__dict__.update(obj)
+		self.lib=lib
+		
+		self.ndim=self.array['ndims']
+		self._make_array_desc()
+		self._ctype=self._desc
+		
+	def _make_array_desc(self):
+	
+		self._desc=fDerivedTypeDesc()
+		self._desc.set_fields(['base_addr','offset','dtype'],
+							  [ctypes.c_void_p,self._size_t,self._index_t])
+	
+		self._dims=fDerivedTypeDesc()
+		self._dims.set_fields=(['stride','lbound','ubound'],
+							   [self._index_t,self._index_t,self._index_t])
+							  
+		self._desc.add_arg(['dims',self._dims*self.ndim])				  
+		
+	
+class fFunc(fVar):
+	def __init__(self,obj):
+		pass
 			
 			
 class fFort(object):
