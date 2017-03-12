@@ -18,4 +18,5 @@ before_install:
 install: 
   - pip install -r requirements.txt
 # command to run tests
-script: setup.py test
+script: 
+  - "python setup.py test"
