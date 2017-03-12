@@ -6,7 +6,7 @@ except ImportError:
 	
 import ctypes
 import pickle
-import parseMod as pm
+import gfort2py.parseMod as pm
 import numpy as np
 
 		

@@ -1,7 +1,11 @@
+import os, sys
 import numpy as np
 import gfort2py as gf
 import unittest
+import subprocess
 
+os.chdir('tests')
+subprocess.check_output(["make"])
 x=gf.fFort('./tester.so','tester.mod',reload=True)
 
 
