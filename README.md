@@ -1,7 +1,7 @@
 ![Build status](https://travis-ci.org/rjfarmer/gfort2py.svg?branch=master)
 
 # gfort2py
-Library to allow calling fortran code from python.
+Library to allow calling fortran code from python. Tested on python3, i think python2 mostly works except the unit tests. Requires gfortran>=6.0
 
 ## Build
 ````bash
@@ -10,7 +10,7 @@ ipython3 setup.py install --user
 
 ## Using
 
-Compile code normnally (parsing -shared -fPIC to make a shared library at the end)
+Compile code normnally (parsing -shared -fPIC as compile options to make a shared library at the end)
 
 ````python
 
@@ -29,7 +29,7 @@ x now contains all variables, parameters and functions from the module (tab comp
 ## Testing
 
 ````bash
-ipython3 testPy.py
+ipython3 setup.py tests
 ````
 
 To run unit tests
