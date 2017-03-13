@@ -255,7 +255,7 @@ class fDerivedTypeDesc(ctypes.Structure):
 		self._fields_=[(i,j) for i,z in zip(nameArgs,typeArgs)]
 			
 	def add_arg(self,name,ctype):
-		self._fields_.append([name,ctype])
+		self._fields_.append((name,ctype))
 	
 class fDummyArray(fVar):
 	_GFC_MAX_DIMENSIONS=7
@@ -286,19 +286,26 @@ class fDummyArray(fVar):
 		
 		self.ndim=self.array['ndims']
 		self._make_array_desc()
-		self._ctype=self._desc
 		
 	def _make_array_desc(self):
 	
-		self._desc=fDerivedTypeDesc()
-		self._desc.set_fields(['base_addr','offset','dtype'],
+		self._ctype=fDerivedTypeDesc()
+		self._ctype.set_fields(['base_addr','offset','dtype'],
 							  [ctypes.c_void_p,self._size_t,self._index_t])
 	
 		self._dims=fDerivedTypeDesc()
 		self._dims.set_fields=(['stride','lbound','ubound'],
 							   [self._index_t,self._index_t,self._index_t])
 							  
-		self._desc.add_arg(['dims',self._dims*self.ndim])				  
+		self._ctype.add_arg(['dims',self._dims*self.ndim])	
+
+
+	def _set_array(self,value):
+		r=self._get_from_lib()
+		
+		
+	def _get_array(self):
+		r=self._get_from_lib()
 		
 	
 class fFunc(fVar):
