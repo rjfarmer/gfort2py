@@ -33,3 +33,36 @@ ipython3 setup.py tests
 ````
 
 To run unit tests
+
+## Things that work
+
+### Module variables
+
+- [x] Scalars
+- [x] Parameters
+- [x] Characters
+- [x] Explicit size arrays
+- [ ] Complex numbers
+- [ ] Getting a pointer
+- [ ] Assumed shape arrays
+- [ ] Pointer/allocatable arrays
+- [ ] Derived types
+- [ ] Nested derived types
+- [ ] Functions in derived types
+- [ ] Other complicated derived type stuff (abstract etc)
+
+### Functions/subroutines
+
+- [ ] Basic calling
+- [ ] Argument passing
+- [ ] Argument intents
+- [ ] Passing characters
+- [ ] Optional arguments
+- [ ] Keyword arguments
+- [ ] Generic/Elemental functions
+- [ ] Functions as an argument
+
+
+
+
+
