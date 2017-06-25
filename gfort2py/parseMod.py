@@ -45,12 +45,6 @@ def split_brackets(value,remove_b=False):
 			token=''
 	return res
 
-def find_key_val(list_dicts,key,value):
-	for idx,i in enumerate(list_dicts):
-		if i[key]==value:
-			print(idx)
-			print(i)	
-
 def load_data(filename):
 	try:
 		with gzip.open(filename) as f:
