@@ -42,7 +42,7 @@ To run unit tests
 - [x] Parameters
 - [x] Characters
 - [x] Explicit size arrays
-- [ ] Complex numbers
+- [X] Complex numbers (Scalar and parameters)
 - [ ] Getting a pointer
 - [ ] Assumed shape arrays
 - [ ] Pointer/allocatable arrays
