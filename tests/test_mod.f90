@@ -13,6 +13,9 @@ module tester
       real, parameter     :: const_real=1.0
       real(dp), parameter :: const_real_dp=1.0_dp
       real(qp), parameter :: const_real_qp=1.0_qp
+      complex, parameter  :: const_cmplx=(1.0,1.0)
+      complex(dp), parameter  :: const_cmplx_dp=(1.0_dp,1.0_dp)
+      complex(qp), parameter  :: const_cmplx_qp=(1.0_qp,1.0_qp)
       
       character(len=10),parameter :: const_str='1234567890'
       
@@ -28,6 +31,9 @@ module tester
       real(dp)          :: a_real_dp
       real(qp)          :: a_real_qp
       character(len=10) :: a_str
+      complex           :: a_cmplx
+      complex(dp)       :: a_cmplx_dp
+      complex(qp)       :: a_cmplx_qp
       
       integer,pointer            :: a_int_point
       integer(lp),pointer        :: a_int_lp_point

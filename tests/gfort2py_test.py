@@ -211,7 +211,29 @@ class TestStringMethods(unittest.TestCase):
 		x.a_str_target=v
 		self.assertEqual(x.a_str_target,v)
 
+	def test_a_const_cmplx(self):
+		self.assertEqual(x.const_cmplx,complex(1.0,1.0))
+		
+	def test_a_const_cmplx_dp(self):
+		self.assertEqual(x.const_cmplx_dp,complex(1.0,1.0))
+		
+	def test_a_const_cmplx_qp(self):
+		self.assertEqual(x.const_cmplx_qp,complex(1.0,1.0))
+		
+	def test_a_cmplx(self):
+		v=complex(1.0,1.0)
+		x.a_cmplx=v
+		self.assertEqual(x.a_cmplx,v)
 
+	def test_a_cmplx_dp(self):
+		v=complex(1.0,1.0)
+		x.a_cmplx_dp=v
+		self.assertEqual(x.a_cmplx_dp,v)
+		
+	def test_a_cmplx_qp(self):
+		v=complex(1.0,1.0)
+		x.a_cmplx_qp=v
+		self.assertEqual(x.a_cmplx_qp,v)
 
 if __name__ == '__main__':
 	unittest.main() 

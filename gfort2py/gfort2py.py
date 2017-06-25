@@ -142,6 +142,68 @@ class fParamArray(fVar):
 		"""
 		return np.array(self.value,dtype=self.pytype)
 		
+class fParamComplex(fVar):
+	def set_mod(self,value):
+		"""
+		Cant set a parameter
+		"""
+		raise ValueError("Can't alter a parameter")
+	
+	def get_mod(self):
+		"""
+		A parameters value is stored in the dict, as we cant access them 
+		from the shared lib.
+		"""
+		return complex(float(self.value[0]),float(self.value[1]))
+			
+		
+class fComplex(fVar):
+	def __init__(self,lib,obj):
+		self.__dict__.update(obj)
+		self.lib=lib
+		self._ctype=self.ctype_def()
+		self._ctype_f=self.ctype_def_func()
+		self._pytype=self.pytype_def()
+		
+	def py_to_ctype(self,value):
+		"""
+		Pass in a python value returns the ctype representation of it
+		"""
+		r=self._get_from_lib()
+		x=[value.real,value.imag]
+		return self._set_var_from_iter(r,x,2)
+	
+	def ctype_to_py(self,value):
+		"""
+		Pass in a ctype value returns the python representation of it
+		"""
+		x=self._get_var_by_iter(value,2)
+		return self._pytype(x[0],x[1])
+		
+	def pytype_def(self):
+		return complex
+	
+	def ctype_def(self):
+		"""
+		The ctype type of this object
+		"""
+		return getattr(ctypes,self.ctype)
+
+
+	def set_mod(self,value):
+		if isinstance(value,complex):
+			self.py_to_ctype(value)
+		else:
+			raise ValueError("Not complex")
+		
+		
+	def get_mod(self):
+		r=self._get_from_lib()
+		s=self.ctype_to_py(r)
+		return s
+		
+	
+		
 class fStr(fVar):
 	def __init__(self,lib,obj):
 		self.__dict__.update(obj)
@@ -365,13 +427,17 @@ class fFort(object):
 	def _init_var(self,obj):
 		if obj['pytype']=='str':
 			self._listVars.append(fStr(self.lib,obj))
+		elif obj['pytype']=='complex':
+			self._listVars.append(fComplex(self.lib,obj))
 		elif obj['array']:
 			self._listVars.append(fExplicitArray(self.lib,obj))
 		else:
 			self._listVars.append(fVar(self.lib,obj))
 		
 	def _init_param(self,obj):
-		if len(obj['value']):
+		if obj['pytype']=='complex':
+			self._listParams.append(fParamComplex(self.lib,obj))
+		elif len(obj['value']):
 			self._listParams.append(fParamArray(self.lib,obj))	
 		else:
 			self._listParams.append(fParam(self.lib,obj))	

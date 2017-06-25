@@ -145,7 +145,7 @@ def parse_type(info,dt=False):
 		pytype='float'
 		ctype=get_ctype_float(size)
 	elif 'COMPLEX' in attr:
-		pytype='void'
+		pytype='complex'
 		ctype=get_ctype_float(size)
 	elif 'LOGICAL' in attr:
 		pytype='bool'
@@ -205,9 +205,14 @@ def get_param_val(info):
 		if len(x)==1:
 			value=parse_single_param_val(x[0])
 		else:
-			#Dont do whole list as last element is array size
 			value=[]
-			for i in range(len(x)-1):
+			if 'COMPLEX' in info[2]:
+				l=2
+			else:
+				#Dont do whole list as last element is array size
+				l=len(x)-1
+			
+			for i in range(l):
 				value.append(parse_single_param_val(x[i]))
 	return value
 			
