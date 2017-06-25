@@ -1,7 +1,8 @@
 
 def find_key_val(list_dicts,key,value):
+	v=value.lower()
 	for idx,i in enumerate(list_dicts):
-		if i[key]==value:
+		if i[key].lower()==v:
 			return idx		
 			
 		
