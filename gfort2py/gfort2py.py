@@ -18,9 +18,10 @@ from gfort2py.types import fDerivedType,fDerivedTypeDesc
 import gfort2py.utils as utils
 from gfort2py.var import fVar,fParam
 
+prefix='_f_'
+
 		
 class fFort(object):
-	
 	def __init__(self,libname,ffile,reload=False):		
 		self.lib=ctypes.CDLL(libname)
 		self.libname=libname
@@ -61,6 +62,13 @@ class fFort(object):
 		self._listVars=[]
 		self._listParams=[]
 		self._listFuncs=[]
+		
+		for i in self._mod_vars:
+			if i['dt']:
+				for j in self._dt_defs:
+					if i['dt'].lower()==j['name'].lower():
+						i['_dt_def']=j
+		
 		for i in self._mod_vars:
 			self._init_var(i)
 			
@@ -70,35 +78,35 @@ class fFort(object):
 					
 	def _init_var(self,obj):
 		if obj['pytype']=='str':
-			self._listVars.append(fStr(self.lib,obj))
+			x=fStr(self.lib,obj)
 		elif obj['pytype']=='complex':
-			self._listVars.append(fComplex(self.lib,obj))
+			x=fComplex(self.lib,obj)
+		elif obj['dt']:
+			x=fDerivedType(self.lib,obj)
 		elif obj['array']:
-			self._listVars.append(fExplicitArray(self.lib,obj))
+			x=fExplicitArray(self.lib,obj)
 		else:
-			self._listVars.append(fVar(self.lib,obj))
+			x=fVar(self.lib,obj)
+			
+		self.__dict__[prefix+x.name]=x
 		
 	def _init_param(self,obj):
 		if obj['pytype']=='complex':
-			self._listParams.append(fParamComplex(self.lib,obj))
+			x=fParamComplex(self.lib,obj)
 		elif len(obj['value']):
-			self._listParams.append(fParamArray(self.lib,obj))	
+			x=fParamArray(self.lib,obj)
 		else:
-			self._listParams.append(fParam(self.lib,obj))	
+			x=fParam(self.lib,obj)
+			
+		self.__dict__[prefix+x.name]=x
 		
 		
 	def __getattr__(self,name):
 		if name in self.__dict__:
 			return self.__dict__[name]
 			
-		if '_listVars' in self.__dict__ and '_listParams' in self.__dict__:	
-			for i in self._listVars:
-				if i.name==name:
-					return i.get_mod()
-			for i in self._listParams:
-				if i.name==name:
-					i.get_mod()
-					return i.get_mod()
+		if prefix+name in self.__dict__:	
+			return self.__dict__[prefix+name]
 		raise AttributeError("No variable "+name)
 					
 	def __setattr__(self,name,value):
@@ -106,26 +114,13 @@ class fFort(object):
 			self.__dict__[name]=value
 			return
 		
-		if '_listVars' in self.__dict__ and '_listParams' in self.__dict__:	
-			for i in self._listVars:
-				if i.name==name:
-					i.set_mod(value)
-					return
-			for i in self._listParams:
-				if i.name==name:
-					i.set_mod(value)	
-					return
+		if prefix+name in self.__dict__:	
+			self.__dict__[prefix+name].set_mod(value)
 		else:
 			self.__dict__[name]=value
 			return
 		
 				
 	def __dir__(self):
-		if '_listVars' in self.__dict__ and '_listParams' in self.__dict__:	
-			lv=[str(i.name) for i in self._listVars]
-			lp=[str(i.name) for i in self._listParams]
-			#lp=[str(i.name) for i in self._listFuncs]
-			return lv
-		else:
-			return []
-	
+		lv=[str(i.replace(prefix,'')) for i in self.__dict__ if prefix in i]
+		return lv

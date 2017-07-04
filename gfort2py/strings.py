@@ -38,7 +38,7 @@ class fStr(fVar):
 		r=self._get_from_lib()
 		self._set_var_from_iter(r,value.encode(),self.char_len)
 	
-	def get_mod(self):
+	def get(self):
 		"""
 		Get a module level variable
 		"""

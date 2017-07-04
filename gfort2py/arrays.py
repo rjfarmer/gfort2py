@@ -24,7 +24,7 @@ class fExplicitArray(fVar):
 		v=value.flatten(order='C')
 		self._set_var_from_iter(r,v,self._array_size())
 	
-	def get_mod(self):
+	def get(self):
 		"""
 		Get a module level variable
 		"""
@@ -42,7 +42,6 @@ class fExplicitArray(fVar):
 	
 	def _array_size(self):
 		return np.product(self._make_array_shape())
-
 
 class fDummyArray(fVar):
 	_GFC_MAX_DIMENSIONS=7
@@ -94,6 +93,8 @@ class fDummyArray(fVar):
 	def _get_array(self):
 		r=self._get_from_lib()
 		
+
+		
 class fParamArray(fVar):
 	def set_mod(self,value):
 		"""
@@ -101,7 +102,7 @@ class fParamArray(fVar):
 		"""
 		raise ValueError("Can't alter a parameter")
 	
-	def get_mod(self):
+	def get(self):
 		"""
 		A parameters value is stored in the dict, as we cant access them 
 		from the shared lib.

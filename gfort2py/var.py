@@ -58,7 +58,7 @@ class fVar(object):
 		r=self._get_from_lib()
 		r.value=self._pytype(value)
 	
-	def get_mod(self):
+	def get(self):
 		"""
 		Get a module level variable
 		"""
@@ -103,7 +103,17 @@ class fVar(object):
 		for j in range(min(len(value),size)):
 			offset=ctype_address+j*ctypes.sizeof(self._ctype)
 			self._ctype.from_address(offset).value=value[j]	
-
+			
+			
+	def __str__(self):
+		return str(self.get())
+		
+	def __repr__(self):
+		return str(self.get())	
+		
+	def __call__(self):
+		return self.get()
+			
 class fParam(fVar):
   	def set_mod(self,value):
   		"""
@@ -111,7 +121,7 @@ class fParam(fVar):
   		"""
   		raise ValueError("Can't alter a parameter")
   	
-  	def get_mod(self):
+  	def get(self):
   		"""
   		A parameters value is stored in the dict, as we cant access them 
   		from the shared lib.

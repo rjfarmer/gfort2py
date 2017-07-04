@@ -41,7 +41,7 @@ class fComplex(fVar):
 			raise ValueError("Not complex")
 		
 		
-	def get_mod(self):
+	def get(self):
 		r=self._get_from_lib()
 		s=self.ctype_to_py(r)
 		return s
@@ -54,7 +54,7 @@ class fParamComplex(fVar):
   		"""
   		raise ValueError("Can't alter a parameter")
   	
-  	def get_mod(self):
+  	def get(self):
   		"""
   		A parameters value is stored in the dict, as we cant access them 
   		from the shared lib.

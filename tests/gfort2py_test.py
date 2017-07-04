@@ -14,22 +14,22 @@ class TestStringMethods(unittest.TestCase):
 	
 	def test_mising_var(self):	
 		with self.assertRaises(AttributeError) as cm:
-			a=x.invalid_var
+			a=x.invalid_var.get()
 	
 	def test_a_str(self):
 		v='123456798'
 		x.a_str=v
-		self.assertEqual(x.a_str,v)
+		self.assertEqual(x.a_str.get(),v)
 		
 	def test_a_str_bad_length(self):
 		v='132456789kjhgjhf'
 		x.a_str=v
-		self.assertEqual(x.a_str,v[0:10])
+		self.assertEqual(x.a_str.get(),v[0:10])
 		
 	def test_a_int(self):
 		v=1
 		x.a_int=v
-		self.assertEqual(x.a_int,v)
+		self.assertEqual(x.a_int.get(),v)
 		
 	def test_a_int_str(self):
 		with self.assertRaises(ValueError) as cm:
@@ -38,7 +38,7 @@ class TestStringMethods(unittest.TestCase):
 	def test_a_real(self):
 		v=1.0
 		x.a_real=v
-		self.assertEqual(x.a_real,v)
+		self.assertEqual(x.a_real.get(),v)
 	
 	def test_a_real_str(self):	
 		with self.assertRaises(ValueError) as cm:
@@ -49,191 +49,191 @@ class TestStringMethods(unittest.TestCase):
 			x.const_int=2
 			
 	def test_const_int(self):	
-		self.assertEqual(x.const_int,1)	
+		self.assertEqual(x.const_int.get(),1)	
 
 	def test_const_int_p1(self):	
-		self.assertEqual(x.const_int_p1,2)	
+		self.assertEqual(x.const_int_p1.get(),2)	
 
 	def test_const_int_long(self):	
-		self.assertEqual(x.const_int_lp,1)	
+		self.assertEqual(x.const_int_lp.get(),1)	
 
 	def test_const_real_dp(self):	
-		self.assertEqual(x.const_real_dp,1.0)
+		self.assertEqual(x.const_real_dp.get(),1.0)
 		
 	def test_const_real_qp(self):	
-		self.assertEqual(x.const_real_qp,1.0)
+		self.assertEqual(x.const_real_qp.get(),1.0)
 
 	def test_const_int_arr_error(self):	
 		with self.assertRaises(ValueError) as cm:
 			x.const_int_arr='abc'
 		
 	def test_const_int_arr(self):	
-		np_test.assert_array_equal(x.const_int_arr,np.array([1,2,3,4,5,6,7,8,9,0],dtype='int'))
+		np_test.assert_array_equal(x.const_int_arr.get(),np.array([1,2,3,4,5,6,7,8,9,0],dtype='int'))
 
 	def test_const_real_arr(self):	
-		np_test.assert_array_equal(x.const_real_arr,np.array([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,0.0],dtype='float'))
+		np_test.assert_array_equal(x.const_real_arr.get(),np.array([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,0.0],dtype='float'))
 
 	def test_const_dp_arr(self):	
-		np_test.assert_array_equal(x.const_real_dp_arr,np.array([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,0.0],dtype='float'))
+		np_test.assert_array_equal(x.const_real_dp_arr.get(),np.array([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,0.0],dtype='float'))
 
 	def test_b_int_exp_1d(self):
 		v=np.random.randint(0,100,size=(5))
 		x.b_int_exp_1d=v
-		np_test.assert_array_equal(x.b_int_exp_1d,v)
+		np_test.assert_array_equal(x.b_int_exp_1d.get(),v)
 		
 	def test_b_int_exp_2d(self):
 		v=np.random.randint(0,100,size=(5,5))
 		x.b_int_exp_2d=v
-		np_test.assert_array_equal(x.b_int_exp_2d,v)
+		np_test.assert_array_equal(x.b_int_exp_2d.get(),v)
 		
 	def test_b_int_exp_3d(self):
 		v=np.random.randint(0,100,size=(5,5,5))
 		x.b_int_exp_3d=v
-		np_test.assert_array_equal(x.b_int_exp_3d,v)
+		np_test.assert_array_equal(x.b_int_exp_3d.get(),v)
 		
 	def test_b_int_exp_4d(self):
 		v=np.random.randint(0,100,size=(5,5,5,5))
 		x.b_int_exp_4d=v
-		np_test.assert_array_equal(x.b_int_exp_4d,v)
+		np_test.assert_array_equal(x.b_int_exp_4d.get(),v)
 		
 	def test_b_int_exp_5d(self):
 		v=np.random.randint(0,100,size=(5,5,5,5,5))
 		x.b_int_exp_5d=v
-		np_test.assert_array_equal(x.b_int_exp_5d,v)
+		np_test.assert_array_equal(x.b_int_exp_5d.get(),v)
 		
 	def test_b_real_exp_1d(self):
 		v=np.random.random(size=(5))
 		x.b_real_exp_1d=v
-		np_test.assert_allclose(x.b_real_exp_1d,v)
+		np_test.assert_allclose(x.b_real_exp_1d.get(),v)
 		
 	def test_b_real_exp_2d(self):
 		v=np.random.random(size=(5,5))
 		x.b_real_exp_2d=v
-		np_test.assert_allclose(x.b_real_exp_2d,v)
+		np_test.assert_allclose(x.b_real_exp_2d.get(),v)
 		
 	def test_b_real_exp_3d(self):
 		v=np.random.random(size=(5,5,5))
 		x.b_real_exp_3d=v
-		np_test.assert_allclose(x.b_real_exp_3d,v)
+		np_test.assert_allclose(x.b_real_exp_3d.get(),v)
 		
 	def test_b_real_exp_4d(self):
 		v=np.random.random(size=(5,5,5,5))
 		x.b_real_exp_4d=v
-		np_test.assert_allclose(x.b_real_exp_4d,v)
+		np_test.assert_allclose(x.b_real_exp_4d.get(),v)
 		
 	def test_b_real_exp_5d(self):
 		v=np.random.random(size=(5,5,5,5,5))
 		x.b_real_exp_5d=v
-		np_test.assert_allclose(x.b_real_exp_5d,v)
+		np_test.assert_allclose(x.b_real_exp_5d.get(),v)
 		
 	def test_b_real_dp_exp_1d(self):
 		v=np.random.random(size=(5))
 		x.b_real_dp_exp_1d=v
-		np_test.assert_allclose(x.b_real_dp_exp_1d,v)
+		np_test.assert_allclose(x.b_real_dp_exp_1d.get(),v)
 		
 	def test_b_real_dp_exp_2d(self):
 		v=np.random.random(size=(5,5))
 		x.b_real_dp_exp_2d=v
-		np_test.assert_allclose(x.b_real_dp_exp_2d,v)
+		np_test.assert_allclose(x.b_real_dp_exp_2d.get(),v)
 		
 	def test_b_real_dp_exp_3d(self):
 		v=np.random.random(size=(5,5,5))
 		x.b_real_dp_exp_3d=v
-		np_test.assert_allclose(x.b_real_dp_exp_3d,v)
+		np_test.assert_allclose(x.b_real_dp_exp_3d.get(),v)
 		
 	def test_b_real_dp_exp_4d(self):
 		v=np.random.random(size=(5,5,5,5))
 		x.b_real_dp_exp_4d=v
-		np_test.assert_allclose(x.b_real_dp_exp_4d,v)
+		np_test.assert_allclose(x.b_real_dp_exp_4d.get(),v)
 		
 	def test_b_real_dp_exp_5d(self):
 		v=np.random.random(size=(5,5,5,5,5))
 		x.b_real_dp_exp_5d=v
-		np_test.assert_allclose(x.b_real_dp_exp_5d,v)
+		np_test.assert_allclose(x.b_real_dp_exp_5d.get(),v)
 
 	def test_a_int_point(self):
 		v=1
 		x.a_int_point=v
-		self.assertEqual(x.a_int_point,v)
+		self.assertEqual(x.a_int_point.get(),v)
 
 	def test_a_int_lp_point(self):
 		v=1
 		x.a_int_lp_point=v
-		self.assertEqual(x.a_int_lp_point,v)
+		self.assertEqual(x.a_int_lp_point.get(),v)
 
 	def test_a_real_point(self):
 		v=1.0
 		x.a_real_point=v
-		self.assertEqual(x.a_real_point,v)
+		self.assertEqual(x.a_real_point.get(),v)
 		
 	def test_a_real_dp_point(self):
 		v=1.0
 		x.a_real_dp_point=v
-		self.assertEqual(x.a_real_dp_point,v)
+		self.assertEqual(x.a_real_dp_point.get(),v)
 		
 	def test_a_real_qp_point(self):
 		v=1.0
 		x.a_real_qp_point=v
-		self.assertEqual(x.a_real_qp_point,v)
+		self.assertEqual(x.a_real_qp_point.get(),v)
 		
 	def test_a_str_point(self):
 		v='abcdefghij'
 		x.a_str_point=v
-		self.assertEqual(x.a_str_point,v)
+		self.assertEqual(x.a_str_point.get(),v)
 
 	def test_a_int_target(self):
 		v=1
 		x.a_int_target=v
-		self.assertEqual(x.a_int_target,v)
+		self.assertEqual(x.a_int_target.get(),v)
 
 	def test_a_int_lp_target(self):
 		v=1
 		x.a_int_lp_target=v
-		self.assertEqual(x.a_int_lp_target,v)
+		self.assertEqual(x.a_int_lp_target.get(),v)
 
 	def test_a_real_target(self):
 		v=1.0
 		x.a_real_target=v
-		self.assertEqual(x.a_real_target,v)
+		self.assertEqual(x.a_real_target.get(),v)
 		
 	def test_a_real_dp_target(self):
 		v=1.0
 		x.a_real_dp_target=v
-		self.assertEqual(x.a_real_dp_target,v)
+		self.assertEqual(x.a_real_dp_target.get(),v)
 		
 	def test_a_real_qp_target(self):
 		v=1.0
 		x.a_real_qp_target=v
-		self.assertEqual(x.a_real_qp_target,v)
+		self.assertEqual(x.a_real_qp_target.get(),v)
 		
 	def test_a_str_target(self):
 		v='abcdefghij'
 		x.a_str_target=v
-		self.assertEqual(x.a_str_target,v)
+		self.assertEqual(x.a_str_target.get(),v)
 
 	def test_a_const_cmplx(self):
-		self.assertEqual(x.const_cmplx,complex(1.0,1.0))
+		self.assertEqual(x.const_cmplx.get(),complex(1.0,1.0))
 		
 	def test_a_const_cmplx_dp(self):
-		self.assertEqual(x.const_cmplx_dp,complex(1.0,1.0))
+		self.assertEqual(x.const_cmplx_dp.get(),complex(1.0,1.0))
 		
 	def test_a_const_cmplx_qp(self):
-		self.assertEqual(x.const_cmplx_qp,complex(1.0,1.0))
+		self.assertEqual(x.const_cmplx_qp.get(),complex(1.0,1.0))
 		
 	def test_a_cmplx(self):
 		v=complex(1.0,1.0)
 		x.a_cmplx=v
-		self.assertEqual(x.a_cmplx,v)
+		self.assertEqual(x.a_cmplx.get(),v)
 
 	def test_a_cmplx_dp(self):
 		v=complex(1.0,1.0)
 		x.a_cmplx_dp=v
-		self.assertEqual(x.a_cmplx_dp,v)
+		self.assertEqual(x.a_cmplx_dp.get(),v)
 		
 	def test_a_cmplx_qp(self):
 		v=complex(1.0,1.0)
 		x.a_cmplx_qp=v
-		self.assertEqual(x.a_cmplx_qp,v)
+		self.assertEqual(x.a_cmplx_qp.get(),v)
 
 if __name__ == '__main__':
 	unittest.main() 
