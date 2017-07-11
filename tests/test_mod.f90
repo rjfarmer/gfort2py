@@ -242,5 +242,21 @@ module tester
          a_cmplx_qp=(00.0_qp,99.0_qp)
       end subroutine sub_alter_mod
       
+   
+      subroutine sub_alloc_int_1d_arrs()
+      
+         if(.not. allocated(c_int_alloc_1d)) allocate(c_int_alloc_1d(5))
+         if(.not. allocated(c_int_alloc_2d)) allocate(c_int_alloc_2d(5,5))
+         if(.not. allocated(c_int_alloc_3d)) allocate(c_int_alloc_3d(5,5,5))
+         if(.not. allocated(c_int_alloc_4d)) allocate(c_int_alloc_4d(5,5,5,5))
+         if(.not. allocated(c_int_alloc_5d)) allocate(c_int_alloc_5d(5,5,5,5,5))
+         
+         c_int_alloc_1d=1
+         c_int_alloc_2d=1
+         c_int_alloc_3d=1
+         c_int_alloc_4d=1  
+         c_int_alloc_5d=1
+      
+      end subroutine sub_alloc_int_1d_arrs
       
 end module tester

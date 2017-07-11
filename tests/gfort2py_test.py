@@ -269,6 +269,10 @@ class TestStringMethods(unittest.TestCase):
 		self.assertEqual(x.a_cmplx.get(),complex(99.0,99.0))
 		self.assertEqual(x.a_cmplx_dp.get(),complex(99.0,99.0))
 		#self.assertEqual(x.a_cmplx_qp.get(),complex(99.0,99.0))	
+		
+		
+	def test_alloc_1d_arrs(self):
+		x.sub_alloc_int_1d_arrs()
 
 if __name__ == '__main__':
 	unittest.main() 
