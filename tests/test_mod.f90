@@ -37,12 +37,12 @@ module tester
       complex(dp)       :: a_cmplx_dp
       complex(qp)       :: a_cmplx_qp
       
-      integer,pointer            :: a_int_point
-      integer(lp),pointer        :: a_int_lp_point
-      real,pointer               :: a_real_point
-      real(dp),pointer           :: a_real_dp_point
-      real(qp),pointer           :: a_real_qp_point
-      character(len=10),pointer  :: a_str_point
+      integer,pointer            :: a_int_point => null()
+      integer(lp),pointer        :: a_int_lp_point => null()
+      real,pointer               :: a_real_point => null()
+      real(dp),pointer           :: a_real_dp_point => null()
+      real(qp),pointer           :: a_real_qp_point => null()
+      character(len=10),pointer  :: a_str_point => null()
       
       integer,target            :: a_int_target
       integer(lp),target        :: a_int_lp_target
@@ -91,23 +91,23 @@ module tester
       real(dp), allocatable, dimension(:,:,:,:,:) :: c_real_dp_alloc_5d
       
 
-      integer, pointer, dimension(:) :: d_int_point_1d
-      integer, pointer, dimension(:,:) :: d_int_point_2d
-      integer, pointer, dimension(:,:,:) :: d_int_point_3d
-      integer, pointer, dimension(:,:,:,:) :: d_int_point_4d
-      integer, pointer, dimension(:,:,:,:,:) :: d_int_point_5d
+      integer, pointer, dimension(:) :: d_int_point_1d => null()
+      integer, pointer, dimension(:,:) :: d_int_point_2d => null()
+      integer, pointer, dimension(:,:,:) :: d_int_point_3d => null()
+      integer, pointer, dimension(:,:,:,:) :: d_int_point_4d => null()
+      integer, pointer, dimension(:,:,:,:,:) :: d_int_point_5d => null()
       
-      real, pointer, dimension(:) :: d_real_point_1d
-      real, pointer, dimension(:,:) :: d_real_point_2d
-      real, pointer, dimension(:,:,:) :: d_real_point_3d
-      real, pointer, dimension(:,:,:,:) :: d_real_point_4d
-      real, pointer, dimension(:,:,:,:,:) :: d_real_point_5d
+      real, pointer, dimension(:) :: d_real_point_1d => null()
+      real, pointer, dimension(:,:) :: d_real_point_2d => null()
+      real, pointer, dimension(:,:,:) :: d_real_point_3d => null()
+      real, pointer, dimension(:,:,:,:) :: d_real_point_4d => null()
+      real, pointer, dimension(:,:,:,:,:) :: d_real_point_5d => null()
       
-      real(dp), pointer, dimension(:) :: d_real_dp_point_1d
-      real(dp), pointer, dimension(:,:) :: d_real_dp_point_2d
-      real(dp), pointer, dimension(:,:,:) :: d_real_dp_point_3d
-      real(dp), pointer, dimension(:,:,:,:) :: d_real_dp_point_4d
-      real(dp), pointer, dimension(:,:,:,:,:) :: d_real_dp_point_5d
+      real(dp), pointer, dimension(:) :: d_real_dp_point_1d => null()
+      real(dp), pointer, dimension(:,:) :: d_real_dp_point_2d => null()
+      real(dp), pointer, dimension(:,:,:) :: d_real_dp_point_3d => null()
+      real(dp), pointer, dimension(:,:,:,:) :: d_real_dp_point_4d => null()
+      real(dp), pointer, dimension(:,:,:,:,:) :: d_real_dp_point_5d => null()
       
       integer, target, dimension(5) :: e_int_target_1d
       integer, target, dimension(5,5) :: e_int_target_2d
@@ -136,7 +136,7 @@ module tester
          character(len=10) :: a_str    
          integer, dimension(5) :: b_int_exp_1d 
          integer, allocatable, dimension(:) :: c_int_alloc_1d
-         integer, pointer, dimension(:) :: d_int_point_1d
+         integer, pointer, dimension(:) :: d_int_point_1d => null()
       END TYPE s_struct_basic
       
       
@@ -155,8 +155,8 @@ module tester
       TYPE(s_struct_basic),dimension(2,2) :: f_struct_exp_1d
       TYPE(s_struct_basic),dimension(:),  allocatable :: f_struct_alloc_1d
       TYPE(s_struct_basic),dimension(:,:),allocatable :: f_struct_alloc_2d
-      TYPE(s_struct_basic),dimension(:),  pointer :: f_struct_point_1d
-      TYPE(s_struct_basic),dimension(:,:),pointer :: f_struct_point_2d
+      TYPE(s_struct_basic),dimension(:),  pointer :: f_struct_point_1d => null()
+      TYPE(s_struct_basic),dimension(:,:),pointer :: f_struct_point_2d => null()
       TYPE(s_struct_basic),dimension(2),  target :: f_struct_target_1d
       TYPE(s_struct_basic),dimension(2,2),target :: f_struct_target_2d
 
@@ -166,8 +166,8 @@ module tester
       TYPE(s_struct_nested),dimension(2,2) :: g_struct_exp_1d
       TYPE(s_struct_nested),dimension(:),  allocatable :: g_struct_alloc_1d
       TYPE(s_struct_nested),dimension(:,:),allocatable :: g_struct_alloc_2d
-      TYPE(s_struct_nested),dimension(:),  pointer :: g_struct_point_1d
-      TYPE(s_struct_nested),dimension(:,:),pointer :: g_struct_point_2d
+      TYPE(s_struct_nested),dimension(:),  pointer :: g_struct_point_1d => null()
+      TYPE(s_struct_nested),dimension(:,:),pointer :: g_struct_point_2d => null()
       TYPE(s_struct_nested),dimension(2),  target :: g_struct_target_1d
       TYPE(s_struct_nested),dimension(2,2),target :: g_struct_target_2d
       
@@ -177,8 +177,8 @@ module tester
       TYPE(s_struct_nested_2),dimension(2,2) :: h_struct_exp_1d
       TYPE(s_struct_nested_2),dimension(:),  allocatable :: h_struct_alloc_1d
       TYPE(s_struct_nested_2),dimension(:,:),allocatable :: h_struct_alloc_2d
-      TYPE(s_struct_nested_2),dimension(:),  pointer :: h_struct_point_1d
-      TYPE(s_struct_nested_2),dimension(:,:),pointer :: h_struct_point_2d
+      TYPE(s_struct_nested_2),dimension(:),  pointer :: h_struct_point_1d => null()
+      TYPE(s_struct_nested_2),dimension(:,:),pointer :: h_struct_point_2d => null()
       TYPE(s_struct_nested_2),dimension(2),  target :: h_struct_target_1d
       TYPE(s_struct_nested_2),dimension(2,2),target :: h_struct_target_2d
 
