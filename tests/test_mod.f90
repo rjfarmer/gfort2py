@@ -1,4 +1,6 @@
 module tester
+   use iso_fortran_env, only: output_unit
+
 	implicit none
       
       ! Parameters
@@ -185,7 +187,7 @@ module tester
       
       
       subroutine sub_no_args()
-         write(*,*) 1
+         write(output_unit,*) "1"
       end subroutine sub_no_args
       
       integer function func_int_no_args()

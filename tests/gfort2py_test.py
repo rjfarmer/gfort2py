@@ -5,10 +5,27 @@ import unittest2 as unittest
 import subprocess
 import numpy.testing as np_test
 
+from contextlib import contextmanager
+try:
+	from StringIO import StringIO
+	from BytesIO import BytesIO
+except ImportError:
+	from io import StringIO
+	from io import BytesIO
+
 os.chdir('tests')
 subprocess.check_output(["make"])
 x=gf.fFort('./tester.so','tester.mod',reload=True)
 
+@contextmanager
+def captured_output():
+	new_out, new_err = StringIO(),StringIO()
+	old_out,old_err = sys.stdout, sys.stderr
+	try:
+		sys.stdout, sys.stderr = new_out, new_err
+		yield sys.stdout, sys.stderr
+	finally:
+		sys.stdout, sys.stderr = old_out, old_err
 
 class TestStringMethods(unittest.TestCase):
 	
@@ -234,6 +251,12 @@ class TestStringMethods(unittest.TestCase):
 		v=complex(1.0,1.0)
 		x.a_cmplx_qp=v
 		self.assertEqual(x.a_cmplx_qp.get(),v)
+		
+	def test_sub_no_args(self):
+		with captured_output() as (out,err):
+			x.sub_no_args()
+		output=out.getvalue().strip()
+		self.assertEqual(output,"1")
 
 if __name__ == '__main__':
 	unittest.main() 

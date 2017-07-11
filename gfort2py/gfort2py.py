@@ -23,7 +23,10 @@ prefix='_f_'
 		
 class fFort(object):
 	def __init__(self,libname,ffile,reload=False):		
+		
 		self.lib=ctypes.CDLL(libname)
+		
+		
 		self.libname=libname
 		self.fpy=pm.fpyname(ffile)
 		self._load_data(ffile,reload)
@@ -75,6 +78,10 @@ class fFort(object):
 		for i in self._param:
 			self._init_param(i)
 			
+		#Must come last after the derived types are setup
+		for i in self._funcs:
+			self._init_func(i)
+			
 					
 	def _init_var(self,obj):
 		if obj['pytype']=='str':
@@ -101,6 +108,10 @@ class fFort(object):
 		self.__dict__[prefix+x.name]=x
 		
 		
+	def _init_func(self,obj):
+		x=fFunc(self.lib,obj)
+		self.__dict__[prefix+x.name]=x
+		
 	def __getattr__(self,name):
 		if name in self.__dict__:
 			return self.__dict__[name]
@@ -119,7 +130,6 @@ class fFort(object):
 		else:
 			self.__dict__[name]=value
 			return
-		
 				
 	def __dir__(self):
 		lv=[str(i.replace(prefix,'')) for i in self.__dict__ if prefix in i]
