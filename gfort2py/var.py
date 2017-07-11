@@ -6,7 +6,7 @@ except ImportError:
 import ctypes	
 import numpy as np
 	
-#Hacky yes
+#Hacky, yes
 __builtin__.quad=np.longdouble
 				
 class fVar(object):
@@ -79,7 +79,7 @@ class fVar(object):
 		
 		
 	def _get_var_by_iter(self,value,size=-1):
-		""" Gets a varaible where we have to iterate to get multiple elements"""
+		""" Gets a variable where we have to iterate to get multiple elements"""
 		base_address=ctypes.addressof(value)
 		return self._get_var_from_address(base_address,size=size)
 
@@ -114,9 +114,6 @@ class fVar(object):
 		
 	def __repr__(self):
 		return str(self.get())	
-		
-	def __call__(self):
-		return self.get()
 			
 class fParam(fVar):
   	def set_mod(self,value):
