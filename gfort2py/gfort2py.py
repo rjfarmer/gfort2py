@@ -86,7 +86,7 @@ class fFort(object):
 	def _init_var(self,obj):
 		if obj['pytype']=='str':
 			x=fStr(self.lib,obj)
-		elif obj['pytype']=='complex':
+		elif obj['cmplx']:
 			x=fComplex(self.lib,obj)
 		elif obj['dt']:
 			x=fDerivedType(self.lib,obj)
@@ -98,7 +98,7 @@ class fFort(object):
 		self.__dict__[prefix+x.name]=x
 		
 	def _init_param(self,obj):
-		if obj['pytype']=='complex':
+		if obj['cmplx']:
 			x=fParamComplex(self.lib,obj)
 		elif len(obj['value']):
 			x=fParamArray(self.lib,obj)

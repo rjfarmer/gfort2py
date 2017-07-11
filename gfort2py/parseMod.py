@@ -106,6 +106,7 @@ def get_ctype_int(size):
 	
 def get_ctype_float(size):
 	size=int(size)
+	pytype="float"
 	if size==ctypes.sizeof(ctypes.c_float):
 		res='c_float'
 	elif size==ctypes.sizeof(ctypes.c_double):
@@ -114,14 +115,16 @@ def get_ctype_float(size):
 		res='c_long'
 	elif size==ctypes.sizeof(ctypes.c_longdouble):
 		res='c_longdouble'
+		pytype="quad"
 	elif size==ctypes.sizeof(ctypes.c_longlong):
 		res='c_long'
 	else:
 		raise ValueError("Cant find suitable float for size "+str(size))
-	return res
+	return pytype,res
 
 
 def parse_type(info,dt=False):
+	cmplx=False
 	if dt:
 		#Derived types have own format, must remove ( and space at start
 		attr=info[0][1:]
@@ -136,11 +139,10 @@ def parse_type(info,dt=False):
 		pytype='int'
 		ctype=get_ctype_int(size)
 	elif 'REAL' in attr:
-		pytype='float'
-		ctype=get_ctype_float(size)
+		pytype,ctype=get_ctype_float(size)
 	elif 'COMPLEX' in attr:
-		pytype='complex'
-		ctype=get_ctype_float(size)
+		pytype,ctype=get_ctype_float(size)
+		cmplx=True
 	elif 'LOGICAL' in attr:
 		pytype='bool'
 		ctype='c_bool'
@@ -152,7 +154,7 @@ def parse_type(info,dt=False):
 		ctype='void'			
 	else:
 		raise ValueError("Cant parse "+attr)
-	return pytype,ctype
+	return pytype,ctype,cmplx
 	
 def parse_array(info,dt=False):
 	d={}
@@ -302,7 +304,7 @@ def get_child_num(info):
 	
 def processVar(obj,dt_names):
 	#Get python and ctype
-	obj['pytype'],obj['ctype']=parse_type(obj['info'])	
+	obj['pytype'],obj['ctype'],obj['cmplx']=parse_type(obj['info'])	
 	#Handle arrays, obj['array']==False if not an array
 	obj['array']=parse_array(obj['info'])
 	#Handle derived types:
@@ -318,7 +320,7 @@ def processVar(obj,dt_names):
 	return obj
 	
 def processParam(obj):
-	obj['pytype'],obj['ctype']=parse_type(obj['info'])	
+	obj['pytype'],obj['ctype'],obj['cmplx']=parse_type(obj['info'])	
 	obj['value']=get_param_val(obj['info'])
 	#Dont need the info list anymore
 	obj.pop('info',None)
@@ -329,7 +331,7 @@ def processParam(obj):
 	
 def processFuncArg(obj,dt_names):
 	#Get python and ctype
-	obj['pytype'],obj['ctype']=parse_type(obj['info'])	
+	obj['pytype'],obj['ctype'],obj['cmplx']=parse_type(obj['info'])	
 	#Handle arrays, obj['array']==False if not an array
 	obj['array']=parse_array(obj['info'])
 	#Get Intents
@@ -351,7 +353,7 @@ def processFuncArg(obj,dt_names):
 	return obj
 	
 def processFunc(obj):
-	obj['pytype'],obj['ctype']=parse_type(obj['info'])	
+	obj['pytype'],obj['ctype'],obj['cmplx']=parse_type(obj['info'])	
 	obj['arg_nums']=get_child_num(obj['info'])
 	obj['args']=[]
 	#Dont need the info list anymore
@@ -365,7 +367,7 @@ def processDT(obj,dt_names):
 	for i in obj['args']:
 		i['info']=split_info(i['info'])	
 		#Get python and ctype
-		i['pytype'],i['ctype']=parse_type(i['info'],dt=True)	
+		i['pytype'],i['ctype'],obj['cmplx']=parse_type(i['info'],dt=True)	
 		#Handle arrays, i['array']==False if not an array
 		i['array']=parse_array(i['info'],dt=True)
 		#Handle derived types:

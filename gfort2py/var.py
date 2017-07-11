@@ -6,6 +6,8 @@ except ImportError:
 import ctypes	
 import numpy as np
 	
+#Hacky yes
+__builtin__.quad=np.longdouble
 				
 class fVar(object):
 	def __init__(self,lib,obj):
@@ -14,6 +16,8 @@ class fVar(object):
 		self._ctype=self.ctype_def()
 		self._ctype_f=self.ctype_def_func()
 		self._pytype=self.pytype_def()
+		if self.pytype=='quad':
+			self.pytype=np.longdouble
 		
 	def py_to_ctype(self,value):
 		"""

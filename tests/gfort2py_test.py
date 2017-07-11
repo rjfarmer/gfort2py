@@ -257,6 +257,18 @@ class TestStringMethods(unittest.TestCase):
 			x.sub_no_args()
 		output=out.getvalue().strip()
 		self.assertEqual(output,"1")
+		
+	def test_sub_alter_mod(self):
+		x.sub_alter_mod()
+		self.assertEqual(x.a_int.get(),99)
+		self.assertEqual(x.a_int_lp.get(),99)
+		self.assertEqual(x.a_real.get(),99.0)
+		self.assertEqual(x.a_real_dp.get(),99.0)
+		#self.assertEqual(x.a_real_qp.get(),99.0)
+		self.assertEqual(x.a_str.get(),"9999999999")
+		self.assertEqual(x.a_cmplx.get(),complex(99.0,99.0))
+		self.assertEqual(x.a_cmplx_dp.get(),complex(99.0,99.0))
+		#self.assertEqual(x.a_cmplx_qp.get(),complex(99.0,99.0))	
 
 if __name__ == '__main__':
 	unittest.main() 
