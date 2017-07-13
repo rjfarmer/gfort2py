@@ -113,7 +113,7 @@ class fVar(object):
 		return str(self.get())
 		
 	def __repr__(self):
-		return str(self.get())	
+		return str(self.get())+" <"+str(self.pytype)+">"	
 			
 class fParam(fVar):
   	def set_mod(self,value):

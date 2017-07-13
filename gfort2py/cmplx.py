@@ -46,6 +46,9 @@ class fComplex(fVar):
 		s=self.ctype_to_py(r)
 		return s
 		
+	def __repr__(self):
+		return str(self.get())+" <complex>"
+		
 	
 class fParamComplex(fVar):
   	def set_mod(self,value):

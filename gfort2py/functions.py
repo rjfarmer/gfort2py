@@ -9,12 +9,13 @@ class fFunc(fVar):
 		self.lib=lib
 		self._call=getattr(self.lib,self.mangled_name)
 		
-		try:
+		self.sub=False
+		if self.pytype=='void':
+			self.sub=True
+			
+		if not self.sub:
 			self._restype=self.ctype_def()
-		except AttributeError:
-			#Func returns void
-			self._restype=None
-		self._call.restype=self._restype
+			self._call.restype=self._restype
 		
 		
 			
@@ -47,4 +48,22 @@ class fFunc(fVar):
 
 		return res
 		
-	
+	def __str__(self):
+		return str("Function: "+self.name)
+		
+	def __repr__(self):
+		s="Function: "+self.name+"("
+		if len(self.args)>0:
+			s=s+"Arg list"
+		else:
+			s=s+"None"
+		s=s+")"+os.linesep
+		s=s+"Args In: "+os.linesep
+		s=s+"Args Out: "+os.linesep
+		s=s+"Returns: "
+		if self.sub:
+			s=s+"None"
+		else:
+			s=s+str(self.pytype)
+		s=s+os.linesep
+		return s
