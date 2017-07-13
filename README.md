@@ -53,7 +53,7 @@ To run unit tests
 
 ### Functions/subroutines
 
-- [ ] Basic calling
+- [X] Basic calling (no arguments)
 - [ ] Argument passing
 - [ ] Argument intents
 - [ ] Passing characters

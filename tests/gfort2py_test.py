@@ -19,6 +19,14 @@ x=gf.fFort('./tester.so','tester.mod',reload=True)
 
 @contextmanager
 def captured_output():
+	"""
+	For use when we need to grab the stdout/stderr from fortran (but only in testing)
+	Use as:
+	with captured_output() as (out,err):
+		func()
+	output=out.getvalue().strip()
+	error=err.getvalue().strip()
+	"""
 	new_out, new_err = StringIO(),StringIO()
 	old_out,old_err = sys.stdout, sys.stderr
 	try:
