@@ -4,7 +4,7 @@ from .var import fVar
 class fComplex(fVar):
 	def __init__(self,lib,obj):
 		self.__dict__.update(obj)
-		self.lib=lib
+		self._lib=lib
 		self._ctype=self.ctype_def()
 		self._ctype_f=self.ctype_def_func()
 		self._pytype=self.pytype_def()

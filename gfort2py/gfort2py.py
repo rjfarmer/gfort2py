@@ -18,23 +18,20 @@ from gfort2py.types import fDerivedType,fDerivedTypeDesc
 import gfort2py.utils as utils
 from gfort2py.var import fVar,fParam
 
-prefix='_f_'
-
 		
 class fFort(object):
 	def __init__(self,libname,ffile,reload=False):		
 		
-		self.lib=ctypes.CDLL(libname)
+		self._lib=ctypes.CDLL(libname)
 		
-		
-		self.libname=libname
-		self.fpy=pm.fpyname(ffile)
+		self._libname=libname
+		self._fpy=pm.fpyname(ffile)
 		self._load_data(ffile,reload)
 		self._init()
 
 	def _load_data(self,ffile,reload=False):
 		try:
-			f=open(self.fpy,'rb')
+			f=open(self._fpy,'rb')
 		except (OSError, IOError) as e: # FileNotFoundError does not exist on Python < 3.3
 			if e.errno != errno.ENOENT:
 				raise
@@ -42,7 +39,7 @@ class fFort(object):
 		else:
 			f.close()
 		
-		with open(self.fpy,'rb') as f:
+		with open(self._fpy,'rb') as f:
 			self.version=pickle.load(f)
 			if self.version ==1:
 				self._mod_data=pickle.load(f)
@@ -85,52 +82,50 @@ class fFort(object):
 					
 	def _init_var(self,obj):
 		if obj['pytype']=='str':
-			x=fStr(self.lib,obj)
+			x=fStr(self._lib,obj)
 		elif obj['cmplx']:
-			x=fComplex(self.lib,obj)
+			x=fComplex(self._lib,obj)
 		elif obj['dt']:
-			x=fDerivedType(self.lib,obj)
+			x=fDerivedType(self._lib,obj)
 		elif obj['array']:
-			x=fExplicitArray(self.lib,obj)
+			x=fExplicitArray(self._lib,obj)
 		else:
-			x=fVar(self.lib,obj)
+			x=fVar(self._lib,obj)
 			
-		self.__dict__[prefix+x.name]=x
+		self.__dict__[x.name]=x
 		
 	def _init_param(self,obj):
 		if obj['cmplx']:
-			x=fParamComplex(self.lib,obj)
+			x=fParamComplex(self._lib,obj)
 		elif len(obj['value']):
-			x=fParamArray(self.lib,obj)
+			x=fParamArray(self._lib,obj)
 		else:
-			x=fParam(self.lib,obj)
+			x=fParam(self._lib,obj)
 			
-		self.__dict__[prefix+x.name]=x
+		self.__dict__[x.name]=x
 		
 		
 	def _init_func(self,obj):
-		x=fFunc(self.lib,obj)
-		self.__dict__[prefix+x.name]=x
+		x=fFunc(self._lib,obj)
+		self.__dict__[x.name]=x
 		
 	def __getattr__(self,name):
 		if name in self.__dict__:
 			return self.__dict__[name]
-			
-		if prefix+name in self.__dict__:	
-			return self.__dict__[prefix+name]
+
 		raise AttributeError("No variable "+name)
 					
 	def __setattr__(self,name,value):
 		if name in self.__dict__:
-			self.__dict__[name]=value
-			return
-		
-		if prefix+name in self.__dict__:	
-			self.__dict__[prefix+name].set_mod(value)
+			if '__fortran' in self.__dict__:
+				if self._fortran:
+					self.__dict__[name].set_mod(value)
+			else:
+				self.__dict__[name]=value
 		else:
 			self.__dict__[name]=value
-			return
+		return
 				
-	def __dir__(self):
-		lv=[str(i.replace(prefix,'')) for i in self.__dict__ if prefix in i]
-		return lv
+	#def __dir__(self):
+		#lv=[str(i) for i in self.__dict__ if i.__dict__['_fotran']]
+		#return lv

@@ -42,8 +42,8 @@ def read_pipe(pipe_out):
 	
 	
 	#def __init__(self,libname,ffile,reload=False):
-		#self.lib=ctypes.CDLL(libname)
-		#self.libname=libname
+		#self._lib=ctypes.CDLL(libname)
+		#self._libname=libname
 		#self.fpy=pm.fpyname(ffile)
 		#self._load_data(ffile,reload)
 
@@ -89,7 +89,7 @@ def read_pipe(pipe_out):
 			#obj['argparse'].append(i['_ctype'])
 		#if len(obj['argparse'])==0:
 			#obj['argparse']=None
-		#obj['_call']=getattr(self.lib,obj['mangled_name'])	
+		#obj['_call']=getattr(self._lib,obj['mangled_name'])	
 		#obj['_call'].argparse=obj['argparse']
 		#obj['_call'].restype=obj['_ctype']
 		
@@ -250,7 +250,7 @@ def read_pipe(pipe_out):
 	#def _get_from_lib(self,obj):
 		#res=None
 		#try:
-			#res=obj['_ctype'].in_dll(self.lib,obj['mangled_name'])
+			#res=obj['_ctype'].in_dll(self._lib,obj['mangled_name'])
 		#except (ValueError, AttributeError):
 			#print("Cant find "+obj['name'])
 		#return res

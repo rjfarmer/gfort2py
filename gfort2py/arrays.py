@@ -5,7 +5,7 @@ import numpy as np
 class fExplicitArray(fVar):
 	def __init__(self,lib,obj):
 		self.__dict__.update(obj)
-		self.lib=lib
+		self._lib=lib
 		self._pytype=np.array
 		self._ctype=self.ctype_def()
 		self._ctype_f=self.ctype_def_func()
@@ -68,7 +68,7 @@ class fDummyArray(fVar):
 	_size_t = ctypes.c_int64
 	def __init__(self,lib,obj):
 		self.__dict__.update(obj)
-		self.lib=lib
+		self._lib=lib
 		
 		self.ndim=self.array['ndims']
 		self._make_array_desc()

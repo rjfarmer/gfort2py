@@ -4,7 +4,7 @@ from .var import fVar
 class fDerivedType(fVar):	
 	def __init__(self,lib,obj):
 		self.__dict__.update(obj)
-		self.lib=lib
+		self._lib=lib
 		self._ctype=ctypes.c_void_p
 		self._desc=fDerivedTypeDesc(lib,self._dt_def)
 	
@@ -25,7 +25,7 @@ class fDerivedType(fVar):
 
 class fDerivedTypeDesc(ctypes.Structure):	
 	def __init__(self,lib,obj=None):
-		self.lib=lib
+		self._lib=lib
 		self._args=[]
 		self._nameArgs=[]
 		self._typeArgs=[]
@@ -36,7 +36,7 @@ class fDerivedTypeDesc(ctypes.Structure):
 
 	def setup_desc(self):
 		for i in self.args:
-			self._args.append(fVar(self.lib,i))
+			self._args.append(fVar(self._lib,i))
 			self._nameArgs.append(self._args[-1].name.replace("\'",''))
 			self._typeArgs.append(self._args[-1]._ctype)
 			

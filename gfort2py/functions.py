@@ -6,8 +6,9 @@ from .utils import *
 class fFunc(fVar):
 	def __init__(self,lib,obj):
 		self.__dict__.update(obj)
-		self.lib=lib
-		self._call=getattr(self.lib,self.mangled_name)
+		self._lib=lib
+		self._call=getattr(self._lib,self.mangled_name)
+		self._set_return()
 		
 		self.sub=False
 		if self.pytype=='void':

@@ -12,12 +12,15 @@ __builtin__.quad=np.longdouble
 class fVar(object):
 	def __init__(self,lib,obj):
 		self.__dict__.update(obj)
-		self.lib=lib
+		self._lib=lib
 		self._ctype=self.ctype_def()
 		self._ctype_f=self.ctype_def_func()
 		self._pytype=self.pytype_def()
 		if self.pytype=='quad':
 			self.pytype=np.longdouble
+			
+		#if true for things that are fortran things
+		self._fortran=True
 		
 	def py_to_ctype(self,value):
 		"""
@@ -72,7 +75,7 @@ class fVar(object):
 	def _get_from_lib(self):
 		res=None
 		try:
-			res=self._ctype.in_dll(self.lib,self.mangled_name)
+			res=self._ctype.in_dll(self._lib,self.mangled_name)
 		except AttributeError:
 			raise
 		return res

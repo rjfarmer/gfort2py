@@ -5,7 +5,7 @@ from .var import fVar
 class fStr(fVar):
 	def __init__(self,lib,obj):
 		self.__dict__.update(obj)
-		self.lib=lib
+		self._lib=lib
 		self._ctype=ctypes.c_char
 		self._ctype_f=ctypes.c_char_p
 		self._pytype=str
