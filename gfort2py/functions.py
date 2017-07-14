@@ -1,6 +1,11 @@
 import ctypes
 import os
 from .var import fVar
+from .cmplx import fComplex
+from .arrays import fExplicitArray
+from .strings import fStr
+from gfort2py.types import fDerivedType,fDerivedTypeDesc
+
 from .utils import *
 
 class fFunc(fVar):
@@ -9,7 +14,31 @@ class fFunc(fVar):
 		self._lib=lib
 		self._call=getattr(self._lib,self.mangled_name)
 		self._set_return()
+		self._set_arg_ctypes()
 		
+	def _set_arg_ctypes(self):
+		self._arg_ctypes=[]
+		self._arg_vars=[]
+		for i in self.args:
+			self._arg_vars.append(self._init_var(i))
+			self._arg_ctypes.append(self._arg_vars[-1].ctype_def_func())
+		self._call.argtypes=self._arg_ctypes
+		
+	def _init_var(self,obj):
+		if obj['pytype']=='str':
+			x=fStr(self._lib,obj)
+		elif obj['cmplx']:
+			x=fComplex(self._lib,obj)
+		elif obj['dt']:
+			x=fDerivedType(self._lib,obj)
+		elif obj['array']:
+			x=fExplicitArray(self._lib,obj)
+		else:
+			x=fVar(self._lib,obj)
+			
+		return x
+			
+	def _set_return(self):
 		self.sub=False
 		if self.pytype=='void':
 			self.sub=True
@@ -17,8 +46,7 @@ class fFunc(fVar):
 		if not self.sub:
 			self._restype=self.ctype_def()
 			self._call.restype=self._restype
-		
-		
+			
 			
 	def _set_args_ctype(self):
 		pass
@@ -55,12 +83,12 @@ class fFunc(fVar):
 	def __repr__(self):
 		s="Function: "+self.name+"("
 		if len(self.args)>0:
-			s=s+"Arg list"
+			s=s+",".join([i._pname() for i in self._arg_vars])
 		else:
 			s=s+"None"
 		s=s+")"+os.linesep
-		s=s+"Args In: "+os.linesep
-		s=s+"Args Out: "+os.linesep
+		s=s+"Args In: "+",".join([i._pname() for i in self._arg_vars if 'in' in i.intent])+os.linesep
+		s=s+"Args Out: "+",".join([i._pname() for i in self._arg_vars if 'out' in i.intent])+os.linesep
 		s=s+"Returns: "
 		if self.sub:
 			s=s+"None"

@@ -110,7 +110,9 @@ class fVar(object):
 		for j in range(min(len(value),size)):
 			offset=ctype_address+j*ctypes.sizeof(self._ctype)
 			self._ctype.from_address(offset).value=value[j]	
-			
+		
+	def _pname(self):
+		return 	str(self.name)+" <"+str(self.pytype)+">"
 			
 	def __str__(self):
 		return str(self.get())
