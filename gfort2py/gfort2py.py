@@ -117,10 +117,9 @@ class fFort(object):
 					
 	def __setattr__(self,name,value):
 		if name in self.__dict__:
-			if '__fortran' in self.__dict__:
-				if self._fortran:
-					self.__dict__[name].set_mod(value)
-			else:
+			try:
+				self.__dict__[name].set_mod(value)
+			except AttributeError:
 				self.__dict__[name]=value
 		else:
 			self.__dict__[name]=value
