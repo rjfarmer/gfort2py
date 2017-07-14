@@ -46,4 +46,20 @@ class fStr(fVar):
 		s=self.ctype_to_py(r)
 		return ''.join([i.decode() for i in s])
 	
-	
+	def __len__(self):
+		return len(self.get())
+		
+	def __add__(self,other):
+		return 	NotImplemented
+
+	def __sub__(self,other):
+		return 	NotImplemented
+		
+	def __mul__(self,other):
+		return 	NotImplemented
+		
+	def __truediv__(self,other):
+		return 	NotImplemented
+		
+	def __pow__(self,other,modulo=None):
+		return NotImplemented

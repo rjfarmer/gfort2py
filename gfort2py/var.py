@@ -117,6 +117,52 @@ class fVar(object):
 		
 	def __repr__(self):
 		return str(self.get())+" <"+str(self.pytype)+">"	
+		
+	def __add__(self,other):
+		return 	self.get()+other
+
+	def __sub__(self,other):
+		return 	self.get()-other
+		
+	def __mul__(self,other):
+		return 	self.get()*other
+		
+	def __truediv__(self,other):
+		return 	self.get()/other
+		
+	def __pow__(self,other,modulo=None):
+		x=self.get()**other
+		if modulo:
+			x=x%modulo
+
+		return 	x
+
+	def __iadd__(self,other):
+		self.set_mod(self.get()+other)
+		return 	self.get()
+
+	def __isub__(self,other):
+		self.set_mod(self.get()-other)
+		return 	self.get()
+
+		
+	def __imul__(self,other):
+		self.set_mod(self.get()*other)
+		return 	self.get()
+
+	def __itruediv__(self,other):
+		self.set_mod(self.get()/other)
+		return 	self.get()
+
+		
+	def __ipow__(self,other,modulo=None):
+		x=self.get()**other
+		if modulo:
+			x=x%modulo
+		self.set_mod(x)
+		return 	self.get()
+
+
 			
 class fParam(fVar):
   	def set_mod(self,value):
