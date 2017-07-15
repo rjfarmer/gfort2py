@@ -278,9 +278,39 @@ class TestStringMethods(unittest.TestCase):
 		self.assertEqual(x.a_cmplx_dp.get(),complex(99.0,99.0))
 		#self.assertEqual(x.a_cmplx_qp.get(),complex(99.0,99.0))	
 		
-		
 	def test_alloc_1d_arrs(self):
 		x.sub_alloc_int_1d_arrs()
+
+	def test_func_int_in(self):
+		v=5
+		y=x.func_int_in(v)
+		self.assertEqual(int(y),2*v)
+		
+	def test_func_int_in_multi(self):
+		v=5
+		w=3
+		u=4
+		y=x.func_int_in_multi(v,w,u)
+		self.assertEqual(y,v+w+u)
+		
+	def test_sub_int_in(self):
+		v=5
+		with captured_output() as (out,err):
+			x.sub_int_in(v)
+		output=out.getvalue().strip()
+		self.assertEqual(int(output),2*v)	
+
+	def func_int_no_args(self):
+		y=x.func_int_no_args(v)
+		self.assertEqual(y,2)
+		
+	def func_real_no_args(self):
+		y=x.func_real_no_args(v)
+		self.assertEqual(y,3.0)
+
+	def func_real_dp_no_args(self):
+		y=x.func_real_dp_no_args(v)
+		self.assertEqual(y,4.0)
 
 if __name__ == '__main__':
 	unittest.main() 

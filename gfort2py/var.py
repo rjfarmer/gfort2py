@@ -52,13 +52,14 @@ class fVar(object):
         May just call ctype_def
         """
         c = None
-        if 'intent' not in self.__dict__.keys():
-            c = getattr(ctypes, self.ctype)
-        elif self.intent == "out" or self.intent == "inout" or self.pointer:
-            c = ctypes.POINTER(self.ctype_def())
-        else:
-            c = getattr(ctypes, self.ctype)
-        return c
+        #if 'intent' not in self.__dict__.keys():
+            #c = self.ctype_def()
+        #elif self.intent == "out" or self.intent == "inout" or self.pointer:
+            #c = ctypes.POINTER(self.ctype_def())
+        #else:
+            #c = self.ctype_def()
+        #return c
+        return ctypes.POINTER(self.ctype_def())
 
     def set_mod(self, value):
         """
@@ -118,7 +119,13 @@ class fVar(object):
         return str(self.get())
 
     def __repr__(self):
-        return str(self.get()) + " <" + str(self.pytype) + ">"
+        s=''
+        try:
+            s=str(self.get()) + " <" + str(self.pytype) + ">"
+        except ValueError:
+            # Skip for things that aren't in the module (function arg)
+            s=" <" + str(self.pytype) + ">"
+        return s
 
     def __add__(self, other):
         return self.get() + other

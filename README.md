@@ -54,7 +54,9 @@ To run unit tests
 ### Functions/subroutines
 
 - [X] Basic calling (no arguments)
-- [ ] Argument passing
+- [x] Argument passing (scalars)
+- [ ] Argument passing (arrays)
+- [ ] Argument passing (derived types)
 - [ ] Argument intents
 - [ ] Passing characters
 - [ ] Optional arguments

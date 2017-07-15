@@ -100,7 +100,7 @@ class fParamArray(fParam):
 
     def get(self):
         """
-        A parameters value is stored in the dict,  as we cant access them 
+        A parameters value is stored in the dict, as we cant access them
         from the shared lib.
         """
         return np.array(self.value, dtype=self.pytype)

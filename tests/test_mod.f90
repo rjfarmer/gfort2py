@@ -230,6 +230,11 @@ module tester
          func_int_in=2*x
       end function func_int_in
       
+      integer function func_int_in_multi(x,y,z)
+         integer, intent(in) ::x,y,z
+         func_int_in_multi=x+y+z
+      end function func_int_in_multi
+      
       subroutine sub_alter_mod()
          a_int=99
          a_int_lp=99_lp
