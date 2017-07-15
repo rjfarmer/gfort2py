@@ -136,7 +136,6 @@ class fVar(object):
 		x=self.get()**other
 		if modulo:
 			x=x%modulo
-
 		return 	x
 
 	def __iadd__(self,other):

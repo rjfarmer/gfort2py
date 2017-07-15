@@ -1,5 +1,5 @@
 import ctypes
-from .var import fVar
+from .var import fVar,fParam
 		
 class fComplex(fVar):
 	def __init__(self,lib,obj):
@@ -50,13 +50,7 @@ class fComplex(fVar):
 		return str(self.get())+" <complex>"
 		
 	
-class fParamComplex(fVar):
-  	def set_mod(self,value):
-  		"""
-  		Cant set a parameter
-  		"""
-  		raise ValueError("Can't alter a parameter")
-  	
+class fParamComplex(fParam):  	
   	def get(self):
   		"""
   		A parameters value is stored in the dict, as we cant access them 

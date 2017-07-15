@@ -1,5 +1,5 @@
 import ctypes
-from .var import fVar	
+from .var import fVar,fParam	
 import numpy as np
 	
 class fExplicitArray(fVar):
@@ -95,13 +95,7 @@ class fDummyArray(fVar):
 		
 
 		
-class fParamArray(fVar):
-	def set_mod(self,value):
-		"""
-		Cant set a parameter
-		"""
-		raise ValueError("Can't alter a parameter")
-	
+class fParamArray(fParam):
 	def get(self):
 		"""
 		A parameters value is stored in the dict, as we cant access them 
