@@ -126,6 +126,9 @@ class fVar(object):
             # Skip for things that aren't in the module (function arg)
             s=" <" + str(self.pytype) + ">"
         return s
+    
+    def __getattr__(self, name): 
+        return getattr(self.get(), name)
 
     def __add__(self, other):
         return self.get() + other
@@ -185,6 +188,9 @@ class fVar(object):
 
     def __ge__(self, other):
         return self.get() >= other
+        
+    def __dir__(self):
+        return list(self.__dict__.keys()) + list(dir(self.get()))
 
 
 class fParam(fVar):
