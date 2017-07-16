@@ -4,12 +4,13 @@ from .var import fVar, fParam
 
 class fComplex(fVar):
 
-    def __init__(self, lib, obj):
+    def __init__(self, lib, obj,TEST_FLAG=False):
         self.__dict__.update(obj)
         self._lib = lib
         self._ctype = self.ctype_def()
-        self._ctype_f = self.ctype_def_func()
+        #self._ctype_f = self.ctype_def_func()
         self._pytype = self.pytype_def()
+        self.TEST_FLAG=TEST_FLAG
 
     def py_to_ctype(self, value):
         """

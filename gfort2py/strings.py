@@ -4,12 +4,13 @@ from .var import fVar
 
 class fStr(fVar):
 
-    def __init__(self, lib, obj):
+    def __init__(self, lib, obj,TEST_FLAG=False):
         self.__dict__.update(obj)
         self._lib = lib
         self._ctype = ctypes.c_char
         self._ctype_f = ctypes.c_char_p
         self._pytype = str
+        self.TEST_FLAG=TEST_FLAG
 
     def py_to_ctype(self, value):
         """

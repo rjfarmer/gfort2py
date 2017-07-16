@@ -4,11 +4,12 @@ from .var import fVar
 
 class fDerivedType(fVar):
 
-    def __init__(self, lib, obj):
+    def __init__(self, lib, obj,TEST_FLAG=False):
         self.__dict__.update(obj)
         self._lib = lib
         self._ctype = ctypes.c_void_p
         self._desc = fDerivedTypeDesc(lib, self._dt_def)
+        self.TEST_FLAG=TEST_FLAG
 
     def get(self):
         pass
@@ -27,11 +28,12 @@ class fDerivedType(fVar):
 
 class fDerivedTypeDesc(ctypes.Structure):
 
-    def __init__(self, lib, obj=None):
+    def __init__(self, lib, obj=None,TEST_FLAG=False):
         self._lib = lib
         self._args = []
         self._nameArgs = []
         self._typeArgs = []
+        self.TEST_FLAG=TEST_FLAG
 
         if obj is not None:
             self.__dict__.update(obj)

@@ -12,17 +12,22 @@ __builtin__.quad = np.longdouble
 
 class fVar(object):
 
-    def __init__(self, lib, obj):
+    def __init__(self, lib, obj,TEST_FLAG=False):
         self.__dict__.update(obj)
         self._lib = lib
         self._ctype = self.ctype_def()
-        self._ctype_f = self.ctype_def_func()
+        #self._ctype_f = self.ctype_def_func()
         self._pytype = self.pytype_def()
         if self.pytype == 'quad':
             self.pytype = np.longdouble
 
         # if true for things that are fortran things
         self._fortran = True
+        
+        # True if its a function argument
+        self._func_arg=False
+        
+        self.TEST_FLAG=TEST_FLAG
 
     def py_to_ctype(self, value):
         """

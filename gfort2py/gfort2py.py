@@ -18,11 +18,10 @@ from gfort2py.types import fDerivedType, fDerivedTypeDesc
 import gfort2py.utils as utils
 from gfort2py.var import fVar, fParam
 
-
 class fFort(object):
 
-    def __init__(self, libname, ffile, reload=False):
-
+    def __init__(self, libname, ffile, reload=False,TEST_FLAG=False):
+        self.TEST_FLAG=TEST_FLAG
         self._lib = ctypes.CDLL(libname)
 
         self._libname = libname
@@ -82,15 +81,15 @@ class fFort(object):
 
     def _init_var(self, obj):
         if obj['pytype'] == 'str':
-            x = fStr(self._lib, obj)
+            x = fStr(self._lib, obj,self.TEST_FLAG)
         elif obj['cmplx']:
-            x = fComplex(self._lib, obj)
+            x = fComplex(self._lib, obj,self.TEST_FLAG)
         elif obj['dt']:
-            x = fDerivedType(self._lib, obj)
+            x = fDerivedType(self._lib, obj,self.TEST_FLAG)
         elif obj['array']:
-            x = fExplicitArray(self._lib, obj)
+            x = fExplicitArray(self._lib, obj,self.TEST_FLAG)
         else:
-            x = fVar(self._lib, obj)
+            x = fVar(self._lib, obj,self.TEST_FLAG)
 
         self.__dict__[x.name] = x
 
@@ -105,7 +104,7 @@ class fFort(object):
         self.__dict__[x.name] = x
 
     def _init_func(self, obj):
-        x = fFunc(self._lib, obj)
+        x = fFunc(self._lib, obj,self.TEST_FLAG)
         self.__dict__[x.name] = x
 
     def __getattr__(self, name):

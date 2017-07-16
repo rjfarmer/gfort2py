@@ -15,7 +15,7 @@ except ImportError:
 
 os.chdir('tests')
 subprocess.check_output(["make"])
-x=gf.fFort('./tester.so','tester.mod',reload=True)
+x=gf.fFort('./tester.so','tester.mod',reload=True,TEST_FLAG=True)
 
 @contextmanager
 def captured_output():

@@ -5,12 +5,13 @@ import numpy as np
 
 class fExplicitArray(fVar):
 
-    def __init__(self, lib, obj):
+    def __init__(self, lib, obj,TEST_FLAG=False):
         self.__dict__.update(obj)
         self._lib = lib
         self._pytype = np.array
         self._ctype = self.ctype_def()
-        self._ctype_f = self.ctype_def_func()
+        #self._ctype_f = self.ctype_def_func()
+        self.TEST_FLAG=TEST_FLAG
 
     def ctype_to_py(self, value):
         """

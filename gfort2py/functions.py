@@ -11,12 +11,13 @@ from .utils import *
 
 class fFunc(fVar):
 
-    def __init__(self, lib, obj):
+    def __init__(self, lib, obj,TEST_FLAG=False):
         self.__dict__.update(obj)
         self._lib = lib
         self._call = getattr(self._lib, self.mangled_name)
         self._set_return()
         self._set_arg_ctypes()
+        self.TEST_FLAG=TEST_FLAG
 
     def _set_arg_ctypes(self):
         self._arg_ctypes = []
@@ -54,16 +55,19 @@ class fFunc(fVar):
         
         # Capture stdout messages
         # Cant call python print() untill after the read_pipe call
-        pipe_out, pipe_in = os.pipe()
-        stdout = os.dup(1)
-        os.dup2(pipe_in, 1)
+        if self.TEST_FLAG:
+            pipe_out, pipe_in = os.pipe()
+            stdout = os.dup(1)
+            os.dup2(pipe_in, 1)
         if len(args_in) > 0:
             res = self._call(*args_in)
         else:
             res = self._call()
-        # Print stdout
-        os.dup2(stdout, 1)
-        print(read_pipe(pipe_out))
+        if self.TEST_FLAG:
+            # Print stdout
+            os.dup2(stdout, 1)
+            print(read_pipe(pipe_out))
+        # Python print available now
 
         return res
 
