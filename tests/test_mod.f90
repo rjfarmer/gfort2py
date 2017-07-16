@@ -192,17 +192,17 @@ module tester
       
       integer function func_int_no_args()
          func_int_no_args=2
-         write(output_unit,*) 2
+        ! write(output_unit,*) 2
       end function func_int_no_args
       
       real function func_real_no_args()
          func_real_no_args=3.0
-         write(output_unit,*) 3.0
+        ! write(output_unit,*) 3.0
       end function func_real_no_args
       
       real(dp) function func_real_dp_no_args()
          func_real_dp_no_args=4.0_dp
-         write(output_unit,*) 4.0_dp
+        ! write(output_unit,*) 4.0_dp
       end function func_real_dp_no_args
       
       subroutine sub_int_in(x)
@@ -234,6 +234,22 @@ module tester
          integer, intent(in) ::x,y,z
          func_int_in_multi=x+y+z
       end function func_int_in_multi
+      
+      subroutine sub_str_in_explicit(x)
+         character(len=10), intent(in) ::x
+         write(output_unit,*) trim(x)
+      end subroutine sub_str_in_explicit
+      
+      subroutine sub_str_in_implicit(x)
+         character(len=*), intent(in) ::x
+         write(output_unit,*) trim(x)
+      end subroutine sub_str_in_implicit
+      
+      subroutine sub_str_multi(x,y,z)
+         integer, intent(in) ::x,z
+         character(len=*), intent(in) ::y
+         write(output_unit,'(I1,1X,A)') x+z,trim(y)
+      end subroutine sub_str_multi
       
       subroutine sub_alter_mod()
          a_int=99

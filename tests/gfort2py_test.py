@@ -300,17 +300,40 @@ class TestStringMethods(unittest.TestCase):
 		output=out.getvalue().strip()
 		self.assertEqual(int(output),2*v)	
 
-	def func_int_no_args(self):
-		y=x.func_int_no_args(v)
+	def test_func_int_no_args(self):
+		y=x.func_int_no_args()
 		self.assertEqual(y,2)
 		
-	def func_real_no_args(self):
-		y=x.func_real_no_args(v)
+	def test_func_real_no_args(self):
+		y=x.func_real_no_args()
 		self.assertEqual(y,3.0)
 
-	def func_real_dp_no_args(self):
-		y=x.func_real_dp_no_args(v)
+	def test_func_real_dp_no_args(self):
+		y=x.func_real_dp_no_args()
 		self.assertEqual(y,4.0)
+		
+	def test_sub_str_in_explicit(self):
+		v='1324567980'
+		with captured_output() as (out,err):
+			x.sub_str_in_explicit(v)
+		output=out.getvalue().strip()
+		self.assertEqual(output,v)	
+		
+	def test_sub_str_in_implicit(self):
+		v='123456789'
+		with captured_output() as (out,err):
+			x.sub_str_in_implicit(v)
+		output=out.getvalue().strip()	
+		self.assertEqual(output,v)	
+	
+	def test_sub_str_multi(self):
+		v=5
+		u='123456789'
+		w=4
+		with captured_output() as (out,err):
+			x.sub_str_multi(v,u,w)
+		output=out.getvalue().strip()	
+		self.assertEqual(output,str(v+w)+' '+u)	
 
 if __name__ == '__main__':
 	unittest.main() 

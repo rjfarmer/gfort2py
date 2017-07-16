@@ -34,6 +34,17 @@ class fVar(object):
         Pass in a python value returns the ctype representation of it
         """
         return self._cytype(value)
+        
+    def py_to_ctype_f(self, value):
+        """
+        Pass in a python value returns the ctype representation of it, 
+        suitable for a function
+        
+        Second return value is anythng that needs to go at the end of the
+        arg list, like a string len
+        """
+        x,_=self.ctype_def_func()
+        return x(self.ctype_def()(value)),None
 
     def ctype_to_py(self, value):
         """
@@ -55,16 +66,12 @@ class fVar(object):
         The ctype type of a value suitable for use as an argument of a function
 
         May just call ctype_def
+        
+        Second return value is anythng that needs to go at the end of the
+        arg list, like a string len
         """
-        c = None
-        #if 'intent' not in self.__dict__.keys():
-            #c = self.ctype_def()
-        #elif self.intent == "out" or self.intent == "inout" or self.pointer:
-            #c = ctypes.POINTER(self.ctype_def())
-        #else:
-            #c = self.ctype_def()
-        #return c
-        return ctypes.POINTER(self.ctype_def())
+
+        return ctypes.POINTER(self.ctype_def()),None
 
     def set_mod(self, value):
         """

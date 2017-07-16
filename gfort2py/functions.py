@@ -22,10 +22,17 @@ class fFunc(fVar):
     def _set_arg_ctypes(self):
         self._arg_ctypes = []
         self._arg_vars = []
+        
+        tmp=[]
         for i in self.args:
             self._arg_vars.append(self._init_var(i))
-            self._arg_ctypes.append(self._arg_vars[-1].ctype_def_func())
-        self._call.argtypes = self._arg_ctypes
+            self._arg_vars[-1]._func_arg=True
+            
+            x,y=self._arg_vars[-1].ctype_def_func()
+            self._arg_ctypes.append(x)
+            if y is not None:
+                tmp.append(y)
+        self._call.argtypes = self._arg_ctypes+tmp
 
     def _init_var(self, obj):
         if obj['pytype'] == 'str':
@@ -49,10 +56,19 @@ class fFunc(fVar):
         if not self.sub:
             self._restype = self.ctype_def()
             self._call.restype = self._restype
-
+            
+    def _args_to_ctypes(self,args):
+        tmp = []
+        args_in = []
+        for i, j in  zip(self._arg_vars, args):
+            x,y=i.py_to_ctype_f(j)
+            args_in.append(x)
+            if y is not None:
+                tmp.append(y)
+        return args_in + tmp
+    
     def __call__(self, *args):
-        args_in = [i.ctype_def()(j) for i, j in zip(self._arg_vars, args)]
-        
+        args_in = self._args_to_ctypes(args)
         # Capture stdout messages
         # Cant call python print() untill after the read_pipe call
         if self.TEST_FLAG:

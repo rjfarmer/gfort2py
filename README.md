@@ -55,6 +55,7 @@ To run unit tests
 
 - [X] Basic calling (no arguments)
 - [x] Argument passing (scalars)
+- [x] Argument passing (strings)
 - [ ] Argument passing (arrays)
 - [ ] Argument passing (derived types)
 - [ ] Argument intents
