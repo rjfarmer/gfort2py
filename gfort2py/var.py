@@ -133,7 +133,14 @@ class fVar(object):
         return s
     
     def __getattr__(self, name): 
-        return getattr(self.get(), name)
+        if name in self.__dict__:
+            return self.__dict__[name]
+        if self._func_arg:
+            return    
+        try:
+            return getattr(self.get(), name)
+        except ValueError:
+            pass
 
     def __add__(self, other):
         return self.get() + other
