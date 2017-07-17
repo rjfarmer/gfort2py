@@ -280,4 +280,59 @@ module tester
       
       end subroutine sub_alloc_int_1d_arrs
       
+      subroutine sub_exp_array_int_1d(x)
+         integer,dimension(5), intent(in) :: x
+         
+         write(output_unit,'(5(I1,1X))') x
+      end subroutine sub_exp_array_int_1d
+
+      subroutine sub_exp_array_int_2d(x)
+         integer,dimension(5,5), intent(in) :: x
+         integer :: i,j,k
+         write(output_unit,'(25(I2.2,1X))') x
+      end subroutine sub_exp_array_int_2d
+      
+      subroutine sub_exp_array_int_3d(x)
+         integer,dimension(5,5,5), intent(in) :: x
+         write(output_unit,'(125(I3.3,1X))') x
+      end subroutine sub_exp_array_int_3d
+      
+      subroutine sub_exp_array_real_1d(x)
+         real,dimension(5), intent(in) :: x
+         write(output_unit,'(5(F5.1,1X))') x
+      end subroutine sub_exp_array_real_1d
+  
+      subroutine sub_exp_array_real_2d(x)
+         real,dimension(5,5), intent(in) :: x
+         write(output_unit,'(25(F5.1,1X))') x
+      end subroutine sub_exp_array_real_2d  
+      
+      subroutine sub_exp_array_real_3d(x)
+         real,dimension(5,5,5), intent(in) :: x
+         write(output_unit,'(125(F5.1,1X))') x
+      end subroutine sub_exp_array_real_3d
+      
+      subroutine sub_exp_array_real_dp_1d(x)
+         real(dp),dimension(5), intent(in) :: x
+         write(output_unit,'(5(F5.1,1X))') x
+      end subroutine sub_exp_array_real_dp_1d
+  
+      subroutine sub_exp_array_real_dp_2d(x)
+         real(dp),dimension(5,5), intent(in) :: x
+         write(output_unit,'(25(F5.1,1X))') x
+      end subroutine sub_exp_array_real_dp_2d  
+      
+      subroutine sub_exp_array_real_dp_3d(x)
+         real(dp),dimension(5,5,5), intent(in) :: x
+         write(output_unit,'(125(F5.1,1X))') x
+      end subroutine sub_exp_array_real_dp_3d
+    
+      subroutine sub_exp_array_int_1d_multi(y,x,z)
+         integer,dimension(5), intent(in) :: x
+         integer,intent(in) :: y,z
+         
+         write(output_unit,'(I2,1X,5(I1,1X),I2,1X)') y,x,z
+      end subroutine sub_exp_array_int_1d_multi
+    
+      
 end module tester

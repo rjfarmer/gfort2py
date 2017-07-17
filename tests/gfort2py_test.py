@@ -334,6 +334,92 @@ class TestStringMethods(unittest.TestCase):
 			x.sub_str_multi(v,u,w)
 		output=out.getvalue().strip()	
 		self.assertEqual(output,str(v+w)+' '+u)	
+		
+		
+	def test_sub_exp_array_int_1d(self):
+		v=np.arange(0,5)
+		o=' '.join([str(i) for i in v.flatten()])
+		with captured_output() as (out,err):
+			x.sub_exp_array_int_1d(v)
+		output=out.getvalue().strip()	
+		self.assertEqual(output,o.strip())	
+		
+	def test_sub_exp_array_int_2d(self):
+		v=np.arange(0,5*5).reshape((5,5))
+		o=''.join([str(i).zfill(2).ljust(3) for i in v.flatten()])
+		with captured_output() as (out,err):
+			x.sub_exp_array_int_2d(v)
+		output=out.getvalue().strip()	
+		self.assertEqual(output,o.strip())	
+
+	def test_sub_exp_array_int_3d(self):
+		v=np.arange(0,5*5*5).reshape((5,5,5))
+		o=''.join([str(i).zfill(3).ljust(4) for i in v.flatten()])
+		with captured_output() as (out,err):
+			x.sub_exp_array_int_3d(v)
+		output=out.getvalue().strip()	
+		self.assertEqual(output,o.strip())			
+
+
+	def test_sub_exp_array_real_1d(self):
+		v=np.arange(0,5.0).reshape((5))
+		o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
+		with captured_output() as (out,err):
+			x.sub_exp_array_real_1d(v)
+		output=out.getvalue().strip()	
+		self.assertEqual(output,o.strip())	
+		
+	def test_sub_exp_array_real_2d(self):
+		v=np.arange(0,5.0*5.0).reshape((5,5))
+		o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
+		with captured_output() as (out,err):
+			x.sub_exp_array_real_2d(v)
+		output=out.getvalue().strip()	
+		self.assertEqual(output,o.strip())	
+
+	def test_sub_exp_array_real_3d(self):
+		v=np.arange(0,5.0*5.0*5.0).reshape((5,5,5))
+		o=' '.join(["{:>5.1f}".format(i) for i in v.flatten()])
+		with captured_output() as (out,err):
+			x.sub_exp_array_real_3d(v)
+		output=out.getvalue().strip()	
+		self.assertEqual(output,o.strip())	 
+
+	def test_sub_exp_array_int_1d_multi(self):
+		u=19
+		w=20
+		v=np.arange(0,5)
+		o=' '.join([str(i) for i in v.flatten()])
+		with captured_output() as (out,err):
+			x.sub_exp_array_int_1d_multi(u,v,w)
+		output=out.getvalue().strip()	
+		self.assertEqual(output,str(u)+' '+o.strip()+' '+str(w)) 
+ 
+ 
+	def test_sub_exp_array_real_dp_1d(self):
+		v=np.arange(0,5.0).reshape((5))
+		o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
+		with captured_output() as (out,err):
+			x.sub_exp_array_real_dp_1d(v)
+		output=out.getvalue().strip()	
+		self.assertEqual(output,o.strip())	
+		
+	def test_sub_exp_array_real_dp_2d(self):
+		v=np.arange(0,5.0*5.0).reshape((5,5))
+		o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
+		with captured_output() as (out,err):
+			x.sub_exp_array_real_dp_2d(v)
+		output=out.getvalue().strip()	
+		self.assertEqual(output,o.strip())	
+
+	def test_sub_exp_array_real_dp_3d(self):
+		v=np.arange(0,5.0*5.0*5.0).reshape((5,5,5))
+		o=' '.join(["{:>5.1f}".format(i) for i in v.flatten()])
+		with captured_output() as (out,err):
+			x.sub_exp_array_real_dp_3d(v)
+		output=out.getvalue().strip()	
+		self.assertEqual(output,o.strip())	   
+
 
 if __name__ == '__main__':
 	unittest.main() 

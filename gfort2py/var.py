@@ -142,8 +142,10 @@ class fVar(object):
     def __getattr__(self, name): 
         if name in self.__dict__:
             return self.__dict__[name]
-        if self._func_arg:
-            return    
+            
+        if '_func_arg' in self.__dict__:
+            if self._func_arg:
+                return    
         try:
             return getattr(self.get(), name)
         except ValueError:

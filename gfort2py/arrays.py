@@ -12,12 +12,52 @@ class fExplicitArray(fVar):
         self._ctype = self.ctype_def()
         #self._ctype_f = self.ctype_def_func()
         self.TEST_FLAG=TEST_FLAG
+        self._dtype=self.pytype+str(8*ctypes.sizeof(self._ctype))
 
     def ctype_to_py(self, value):
         """
         Pass in a ctype value returns the python representation of it
         """
         return self._get_var_by_iter(value, self._array_size())
+        
+        
+        
+    def py_to_ctype_f(self, value):
+        """
+        Pass in a python value returns the ctype representation of it, 
+        suitable for a function
+        
+        Second return value is anything that needs to go at the end of the
+        arg list, like a string len
+        """
+        self._data = np.asfortranarray(value.T.astype(self._dtype))
+
+        return self._data,None
+
+    def pytype_def(self):
+        return self._pytype
+
+    def ctype_def(self):
+        """
+        The ctype type of this object
+        """
+        return getattr(ctypes, self.ctype)
+
+    def ctype_def_func(self):
+        """
+        The ctype type of a value suitable for use as an argument of a function
+
+        May just call ctype_def
+        
+        Second return value is anythng that needs to go at the end of the
+        arg list, like a string len
+        """
+        x=np.ctypeslib.ndpointer(dtype=self._dtype,ndim=self.array['ndims'],
+                                flags='F_CONTIGUOUS')
+        y=None
+        return x,y        
+        
+        
 
     def set_mod(self, value):
         """
@@ -26,7 +66,7 @@ class fExplicitArray(fVar):
         r = self._get_from_lib()
         v = value.flatten(order='C')
         self._set_var_from_iter(r, v, self._array_size())
-
+        
     def get(self):
         """
         Get a module level variable
@@ -36,15 +76,17 @@ class fExplicitArray(fVar):
         shape = self._make_array_shape()
         return np.reshape(s, shape)
 
-    def _make_array_shape(self):
-        bounds = self.array['bounds']
+    def _make_array_shape(self,bounds=None):
+        if bounds is None:
+            bounds = self.array['bounds']
+        
         shape = []
         for i, j in zip(bounds[0::2], bounds[1::2]):
             shape.append(j - i + 1)
         return shape
 
-    def _array_size(self):
-        return np.product(self._make_array_shape())
+    def _array_size(self,bounds=None):
+        return np.product(self._make_array_shape(bounds))
 
 
 class fDummyArray(fVar):
