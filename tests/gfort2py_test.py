@@ -267,7 +267,7 @@ class TestStringMethods(unittest.TestCase):
 		self.assertEqual(output,"1")
 		
 	def test_sub_alter_mod(self):
-		x.sub_alter_mod()
+		y=x.sub_alter_mod()
 		self.assertEqual(x.a_int.get(),99)
 		self.assertEqual(x.a_int_lp.get(),99)
 		self.assertEqual(x.a_real.get(),99.0)
@@ -278,8 +278,8 @@ class TestStringMethods(unittest.TestCase):
 		self.assertEqual(x.a_cmplx_dp.get(),complex(99.0,99.0))
 		#self.assertEqual(x.a_cmplx_qp.get(),complex(99.0,99.0))	
 		
-	def test_alloc_1d_arrs(self):
-		x.sub_alloc_int_1d_arrs()
+	def test_sub_alloc_1d_arrs(self):
+		y=x.sub_alloc_int_1d_arrs()
 
 	def test_func_int_in(self):
 		v=5
@@ -296,7 +296,7 @@ class TestStringMethods(unittest.TestCase):
 	def test_sub_int_in(self):
 		v=5
 		with captured_output() as (out,err):
-			x.sub_int_in(v)
+			y=x.sub_int_in(v)
 		output=out.getvalue().strip()
 		self.assertEqual(int(output),2*v)	
 
@@ -315,14 +315,14 @@ class TestStringMethods(unittest.TestCase):
 	def test_sub_str_in_explicit(self):
 		v='1324567980'
 		with captured_output() as (out,err):
-			x.sub_str_in_explicit(v)
+			y=x.sub_str_in_explicit(v)
 		output=out.getvalue().strip()
 		self.assertEqual(output,v)	
 		
 	def test_sub_str_in_implicit(self):
 		v='123456789'
 		with captured_output() as (out,err):
-			x.sub_str_in_implicit(v)
+			y=x.sub_str_in_implicit(v)
 		output=out.getvalue().strip()	
 		self.assertEqual(output,v)	
 	
@@ -331,7 +331,7 @@ class TestStringMethods(unittest.TestCase):
 		u='123456789'
 		w=4
 		with captured_output() as (out,err):
-			x.sub_str_multi(v,u,w)
+			y=x.sub_str_multi(v,u,w)
 		output=out.getvalue().strip()	
 		self.assertEqual(output,str(v+w)+' '+u)	
 		
@@ -340,7 +340,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.arange(0,5)
 		o=' '.join([str(i) for i in v.flatten()])
 		with captured_output() as (out,err):
-			x.sub_exp_array_int_1d(v)
+			y=x.sub_exp_array_int_1d(v)
 		output=out.getvalue().strip()	
 		self.assertEqual(output,o.strip())	
 		
@@ -348,7 +348,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.arange(0,5*5).reshape((5,5))
 		o=''.join([str(i).zfill(2).ljust(3) for i in v.flatten()])
 		with captured_output() as (out,err):
-			x.sub_exp_array_int_2d(v)
+			y=x.sub_exp_array_int_2d(v)
 		output=out.getvalue().strip()	
 		self.assertEqual(output,o.strip())	
 
@@ -356,7 +356,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.arange(0,5*5*5).reshape((5,5,5))
 		o=''.join([str(i).zfill(3).ljust(4) for i in v.flatten()])
 		with captured_output() as (out,err):
-			x.sub_exp_array_int_3d(v)
+			y=x.sub_exp_array_int_3d(v)
 		output=out.getvalue().strip()	
 		self.assertEqual(output,o.strip())			
 
@@ -365,7 +365,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.arange(0,5.0).reshape((5))
 		o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
 		with captured_output() as (out,err):
-			x.sub_exp_array_real_1d(v)
+			y=x.sub_exp_array_real_1d(v)
 		output=out.getvalue().strip()	
 		self.assertEqual(output,o.strip())	
 		
@@ -373,7 +373,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.arange(0,5.0*5.0).reshape((5,5))
 		o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
 		with captured_output() as (out,err):
-			x.sub_exp_array_real_2d(v)
+			y=x.sub_exp_array_real_2d(v)
 		output=out.getvalue().strip()	
 		self.assertEqual(output,o.strip())	
 
@@ -381,7 +381,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.arange(0,5.0*5.0*5.0).reshape((5,5,5))
 		o=' '.join(["{:>5.1f}".format(i) for i in v.flatten()])
 		with captured_output() as (out,err):
-			x.sub_exp_array_real_3d(v)
+			y=x.sub_exp_array_real_3d(v)
 		output=out.getvalue().strip()	
 		self.assertEqual(output,o.strip())	 
 
@@ -391,7 +391,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.arange(0,5)
 		o=' '.join([str(i) for i in v.flatten()])
 		with captured_output() as (out,err):
-			x.sub_exp_array_int_1d_multi(u,v,w)
+			y=x.sub_exp_array_int_1d_multi(u,v,w)
 		output=out.getvalue().strip()	
 		self.assertEqual(output,str(u)+' '+o.strip()+' '+str(w)) 
  
@@ -400,7 +400,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.arange(0,5.0).reshape((5))
 		o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
 		with captured_output() as (out,err):
-			x.sub_exp_array_real_dp_1d(v)
+			y=x.sub_exp_array_real_dp_1d(v)
 		output=out.getvalue().strip()	
 		self.assertEqual(output,o.strip())	
 		
@@ -408,7 +408,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.arange(0,5.0*5.0).reshape((5,5))
 		o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
 		with captured_output() as (out,err):
-			x.sub_exp_array_real_dp_2d(v)
+			y=x.sub_exp_array_real_dp_2d(v)
 		output=out.getvalue().strip()	
 		self.assertEqual(output,o.strip())	
 
@@ -416,9 +416,49 @@ class TestStringMethods(unittest.TestCase):
 		v=np.arange(0,5.0*5.0*5.0).reshape((5,5,5))
 		o=' '.join(["{:>5.1f}".format(i) for i in v.flatten()])
 		with captured_output() as (out,err):
-			x.sub_exp_array_real_dp_3d(v)
+			y=x.sub_exp_array_real_dp_3d(v)
 		output=out.getvalue().strip()	
 		self.assertEqual(output,o.strip())	   
+
+	def test_sub_int_out(self):
+		v=5
+		with captured_output() as (out,err):
+			y=x.sub_int_out(v)
+		output=out.getvalue().strip()
+		self.assertEqual(y[0],None)
+		self.assertEqual(y[1],{'x':1})		
+
+	def test_sub_int_inout(self):
+		v=5
+		with captured_output() as (out,err):
+			y=x.sub_int_inout(v)
+		output=out.getvalue().strip()
+		self.assertEqual(y[0],None)
+		self.assertEqual(y[1],{'x':2*v})
+		
+	def test_sub_int_no_intent(self):
+		v=5
+		with captured_output() as (out,err):
+			y=x.sub_int_no_intent(v)
+		output=out.getvalue().strip()
+		self.assertEqual(y[0],None)
+		self.assertEqual(y[1],{'x':2*v})
+		
+	def test_sub_real_inout(self):
+		v=5.0
+		with captured_output() as (out,err):
+			y=x.sub_real_inout(v)
+		output=out.getvalue().strip()
+		self.assertEqual(y[0],None)
+		self.assertEqual(y[1],{'x':2*v})
+		
+	def test_sub_exp_inout(self):
+		v=np.array([1,2,3,4,5])
+		with captured_output() as (out,err):
+			y=x.sub_exp_inout(v)
+		output=out.getvalue().strip()
+		self.assertEqual(y[0],None)
+		np_test.assert_array_equal(y[1]['x'],2*v)
 
 
 if __name__ == '__main__':

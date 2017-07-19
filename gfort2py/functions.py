@@ -67,6 +67,13 @@ class fFunc(fVar):
                 tmp.append(y)
         return args_in + tmp
     
+    def _ctypes_to_return(self,args_out):
+        r={}
+        for i,j in zip(self._arg_vars,args_out):
+            if 'out' in i.intent or i.intent=='':
+                r[i.name]=i.ctype_to_py_f(j)
+        return r
+    
     def __call__(self, *args):
         args_in = self._args_to_ctypes(args)
         # Capture stdout messages
@@ -84,9 +91,12 @@ class fFunc(fVar):
             os.dup2(stdout, 1)
             print(read_pipe(pipe_out))
         # Python print available now
-
-        return res
-
+        
+        if self.sub:
+            return None,self._ctypes_to_return(args_in)
+        else:
+            return res
+            
     def __str__(self):
         return str("Function: " + self.name)
 

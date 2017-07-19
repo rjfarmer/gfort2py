@@ -33,6 +33,13 @@ class fExplicitArray(fVar):
         self._data = np.asfortranarray(value.T.astype(self._dtype))
 
         return self._data,None
+        
+    def ctype_to_py_f(self, value):
+        """
+        Pass in a ctype value returns the python representation of it,
+        as returned by a function (may be a pointer)
+        """
+        return np.asfortranarray(value,dtype=self._dtype)
 
     def pytype_def(self):
         return self._pytype

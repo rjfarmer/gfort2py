@@ -59,7 +59,7 @@ To run unit tests
 - [X] Argument passing (explicit arrays)
 - [ ] Argument passing (assumed arrays)
 - [ ] Argument passing (derived types)
-- [ ] Argument intents
+- [x] Argument intents (in, out, inout and none)
 - [ ] Passing characters
 - [ ] Optional arguments
 - [ ] Keyword arguments

@@ -218,7 +218,25 @@ module tester
       subroutine sub_int_inout(x)
          integer, intent(inout) :: x
          x=2*x
-      end subroutine sub_int_inout     
+      end subroutine sub_int_inout    
+      
+       subroutine sub_real_inout(x)
+         real, intent(inout) :: x
+         x=2*x
+      end subroutine sub_real_inout   
+      
+      subroutine sub_exp_inout(x)
+         integer,dimension(5),intent(inout) :: x
+         x=2*x
+      end subroutine sub_exp_inout   
+      
+      subroutine sub_multi_inout(x,y,z)
+         integer, intent(in) :: x
+         integer, intent(inout) :: y
+         integer, intent(out) :: z
+         y=y*x
+         z=y*x
+      end subroutine sub_multi_inout  
       
       subroutine sub_int_no_intent(x)
          integer :: x
