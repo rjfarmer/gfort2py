@@ -101,6 +101,9 @@ class fFunc(fVar):
         return str("Function: " + self.name)
 
     def __repr__(self):
+        return self.__str__()
+
+    def __doc__(self):
         s = "Function: " + self.name + "("
         if len(self.args) > 0:
             s = s + ",".join([i._pname() for i in self._arg_vars])

@@ -158,23 +158,85 @@ class fVar(object):
         except ValueError:
             pass
 
+    #Stuff to call the result of self.get() (a python object int/str etc)
+
     def __add__(self, other):
-        return self.get() + other
+        return getattr(self.get(), '__add__')(other)
 
     def __sub__(self, other):
-        return self.get() - other
+        return getattr(self.get(), '__sub__')(other)
 
     def __mul__(self, other):
-        return self.get() * other
+        return getattr(self.get(), '__mul__')(other)
+
+    def __matmul__(self,other):
+        return getattr(self.get(), '__matmul__')(other)
 
     def __truediv__(self, other):
-        return self.get() / other
+        return getattr(self.get(), '__truediv__')(other)
+        
+    def __floordiv__(self,other):
+        return getattr(self.get(), '__floordiv__')(other)
 
     def __pow__(self, other, modulo=None):
-        x = self.get()**other
-        if modulo:
-            x = x % modulo
-        return x
+        return getattr(self.get(), '__pow__')(other,modulo)
+
+    def __mod__(self,other):
+        return getattr(self.get(), '__mod__')(other)        
+        
+    def __lshift__(self,other):
+        return getattr(self.get(), '__lshift__')(other)        
+
+    def __rshift__(self,other):
+        return getattr(self.get(), '__rshift__')(other)
+
+    def __and__(self,other):
+        return getattr(self.get(), '__and__')(other)
+        
+    def __xor__(self,other):
+        return getattr(self.get(), '__xor__')(other)
+        
+    def __or__(self,other):
+        return getattr(self.get(), '__or__')(other)
+        
+    def __radd__(self, other):
+        return getattr(self.get(), '__radd__')(other)
+
+    def __rsub__(self, other):
+        return getattr(self.get(), '__rsub__')(other)
+
+    def __rmul__(self, other):
+        return getattr(self.get(), '__rmul__')(other)
+
+    def __rmatmul__(self,other):
+        return getattr(self.get(), '__rmatmul__')(other)
+
+    def __rtruediv__(self, other):
+        return getattr(self.get(), '__rtruediv__')(other)
+        
+    def __rfloordiv__(self,other):
+        return getattr(self.get(), '__rfloordiv__')(other)
+
+    def __rpow__(self, other):
+        return getattr(self.get(), '__rpow__')(other)
+
+    def __rmod__(self,other):
+        return getattr(self.get(), '__rmod__')(other)        
+        
+    def __rlshift__(self,other):
+        return getattr(self.get(), '__rlshift__')(other)        
+
+    def __rrshift__(self,other):
+        return getattr(self.get(), '__rrshift__')(other)
+
+    def __rand__(self,other):
+        return getattr(self.get(), '__rand__')(other)
+        
+    def __rxor__(self,other):
+        return getattr(self.get(), '__rxor__')(other)
+        
+    def __ror__(self,other):
+        return getattr(self.get(), '__ror__')(other)
 
     def __iadd__(self, other):
         self.set_mod(self.get() + other)
@@ -200,22 +262,37 @@ class fVar(object):
         return self.get()
 
     def __eq__(self, other):
-        return self.get() == other
+        return getattr(self.get(), '__eq__')(other)
 
     def __neq__(self, other):
-        return self.get() != other
+        return getattr(self.get(), '__new__')(other)
 
     def __lt__(self, other):
-        return self.get() < other
+        return getattr(self.get(), '__lt__')(other)
 
     def __le__(self, other):
-        return self.get() <= other
+        return getattr(self.get(), '__le__')(other)
 
     def __gt__(self, other):
-        return self.get() > other
+        return getattr(self.get(), '__gt__')(other)
 
     def __ge__(self, other):
-        return self.get() >= other
+        return getattr(self.get(), '__ge__')(other)
+        
+    def __format__(self, other):
+        return getattr(self.get(), '__format__')(other)
+  
+    def __bytes__(self):
+        return getattr(self.get(), '__bytes__')()  
+        
+    def __bool__(self):
+        return getattr(self.get(), '__bool__')()
+   
+    def __len__(self):
+        return getattr(self.get(), '__len__')()
+ 
+    def __length_hint__(self):
+        return getattr(self.get(), '__length_hint__')()       
         
     def __dir__(self):
         return list(self.__dict__.keys()) + list(dir(self.get()))
