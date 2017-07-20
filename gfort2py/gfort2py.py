@@ -9,14 +9,14 @@ import pickle
 import numpy as np
 import errno
 
-import gfort2py.parseMod as pm
-from gfort2py.cmplx import fComplex, fParamComplex
-from gfort2py.arrays import fExplicitArray, fDummyArray, fParamArray
-from gfort2py.functions import fFunc
-from gfort2py.strings import fStr
-from gfort2py.types import fDerivedType, fDerivedTypeDesc
-import gfort2py.utils as utils
-from gfort2py.var import fVar, fParam
+from .parseMod import run_and_save, hash_file, fpyname
+from .cmplx import fComplex, fParamComplex
+from .arrays import fExplicitArray, fDummyArray, fParamArray
+from .functions import fFunc
+from .strings import fStr
+from .types import fDerivedType, fDerivedTypeDesc
+from .utils import *
+from .var import fVar, fParam
 
 class fFort(object):
 
@@ -25,7 +25,7 @@ class fFort(object):
         self._lib = ctypes.CDLL(libname)
 
         self._libname = libname
-        self._fpy = pm.fpyname(ffile)
+        self._fpy = fpyname(ffile)
         self._load_data(ffile, reload)
         self._init()
 
@@ -36,7 +36,7 @@ class fFort(object):
         except (OSError, IOError) as e: 
             if e.errno != errno.ENOENT:
                 raise
-            pm.run_and_save(ffile)
+            run_and_save(ffile)
         else:
             f.close()
 
@@ -45,8 +45,8 @@ class fFort(object):
             if self.version == 1:
                 self._mod_data = pickle.load(f)
 
-                if self._mod_data["checksum"] != pm.hash_file(ffile) or reload:
-                    x = pm.run_and_save(ffile, return_data=True)
+                if self._mod_data["checksum"] != hash_file(ffile) or reload:
+                    x = run_and_save(ffile, return_data=True)
                     self._mod_data = x[0]
                     self._mod_vars = x[1]
                     self._param = x[2]

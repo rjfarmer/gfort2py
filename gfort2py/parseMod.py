@@ -1,3 +1,4 @@
+from __future__ import print_function
 import gzip
 import ctypes
 import os
@@ -525,7 +526,7 @@ def doStuff(filename):
 def output(filename, *args):
     with open(filename, 'wb') as f:
         for i in args:
-            pickle.dump(i, f)
+            pickle.dump(i, f, protocol=2)
 
 
 def fpyname(filename):

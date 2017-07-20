@@ -1,10 +1,11 @@
+from __future__ import print_function
 import ctypes
 import os
 from .var import fVar
 from .cmplx import fComplex
 from .arrays import fExplicitArray
 from .strings import fStr
-from gfort2py.types import fDerivedType, fDerivedTypeDesc
+from .types import fDerivedType, fDerivedTypeDesc
 
 from .utils import *
 
