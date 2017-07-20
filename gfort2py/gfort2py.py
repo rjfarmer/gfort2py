@@ -14,7 +14,7 @@ from .cmplx import fComplex, fParamComplex
 from .arrays import fExplicitArray, fDummyArray, fParamArray
 from .functions import fFunc
 from .strings import fStr
-from .types import fDerivedType, fDerivedTypeDesc
+from .types import fDerivedType
 from .utils import *
 from .var import fVar, fParam
 

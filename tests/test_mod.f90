@@ -139,6 +139,10 @@ module tester
          integer, pointer, dimension(:) :: d_int_point_1d => null()
       END TYPE s_struct_basic
       
+      TYPE s_simple
+         integer           :: x,y
+      END TYPE s_simple
+      
       
       TYPE s_struct_nested
          integer           :: a_int
@@ -149,6 +153,8 @@ module tester
          integer           :: a_int
          TYPE(s_struct_nested) :: f_nested
       END TYPE s_struct_nested_2
+      
+      TYPE(s_simple) :: f_struct_simple
       
       TYPE(s_struct_basic) :: f_struct
       TYPE(s_struct_basic),dimension(2) :: f_struct_exp_2d

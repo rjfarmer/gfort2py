@@ -46,7 +46,7 @@ To run unit tests
 - [ ] Getting a pointer
 - [ ] Assumed shape arrays
 - [ ] Pointer/allocatable arrays
-- [ ] Derived types
+- [x] Derived types
 - [ ] Nested derived types
 - [ ] Functions in derived types
 - [ ] Other complicated derived type stuff (abstract etc)

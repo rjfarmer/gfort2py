@@ -5,7 +5,7 @@ from .var import fVar
 from .cmplx import fComplex
 from .arrays import fExplicitArray
 from .strings import fStr
-from .types import fDerivedType, fDerivedTypeDesc
+from .types import fDerivedType
 
 from .utils import *
 

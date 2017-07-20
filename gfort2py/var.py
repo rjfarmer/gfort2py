@@ -28,6 +28,9 @@ class fVar(object):
         # True if its a function argument
         self._func_arg=False
         
+        #True if struct member
+        self._dt_arg=False
+        
         self.TEST_FLAG=TEST_FLAG
 
     def py_to_ctype(self, value):
@@ -99,7 +102,7 @@ class fVar(object):
         res = None
         try:
             res = self._ctype.in_dll(self._lib, self.mangled_name)
-        except AttributeError:
+        except ValueError:
             raise
         return res
 
@@ -142,7 +145,7 @@ class fVar(object):
         s=''
         try:
             s=str(self.get()) + " <" + str(self.pytype) + ">"
-        except ValueError:
+        except (ValueError,AttributeError):
             # Skip for things that aren't in the module (function arg)
             s=" <" + str(self.pytype) + ">"
         return s
@@ -153,7 +156,12 @@ class fVar(object):
             
         if '_func_arg' in self.__dict__:
             if self._func_arg:
-                return    
+                return   
+        
+        if '_dt_arg' in self.__dict__:
+            if self._dt_arg:
+                return 
+                 
         try:
             return getattr(self.get(), name)
         except ValueError:
