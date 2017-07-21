@@ -51,7 +51,6 @@ class fDerivedType(fVar):
         
     
     def setup_desc(self):
-        print(self._typeArgs)
         for i in self._dt_def['args']:
             self._args.append(fVar(self._lib, i))
             self._args[-1]._dt_arg=True         

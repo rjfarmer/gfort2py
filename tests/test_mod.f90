@@ -304,6 +304,18 @@ module tester
       
       end subroutine sub_alloc_int_1d_arrs
       
+      
+      subroutine sub_alloc_int_1d_cleanup()
+      
+         if(allocated(c_int_alloc_1d)) deallocate(c_int_alloc_1d)
+         if(allocated(c_int_alloc_2d)) deallocate(c_int_alloc_2d)
+         if(allocated(c_int_alloc_3d)) deallocate(c_int_alloc_3d)
+         if(allocated(c_int_alloc_4d)) deallocate(c_int_alloc_4d)
+         if(allocated(c_int_alloc_5d)) deallocate(c_int_alloc_5d)
+
+      end subroutine sub_alloc_int_1d_cleanup     
+      
+      
       subroutine sub_exp_array_int_1d(x)
          integer,dimension(5), intent(in) :: x
          

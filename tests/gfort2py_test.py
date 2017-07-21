@@ -484,6 +484,99 @@ class TestStringMethods(unittest.TestCase):
 		with self.assertRaises(TypeError) as cm:
 			x.f_struct_simple.x='asde'
 	
+	
+	def test_c_int_alloc_1d_non_alloc(self):
+		y=x.sub_alloc_int_1d_cleanup()
+		with self.assertRaises(ValueError) as cm:
+			x.c_int_alloc_1d.get()
+			
+	def test_c_int_alloc_1d(self):
+		y=x.sub_alloc_int_1d_cleanup()
+		y=x.sub_alloc_int_1d_arrs()
+		v=np.zeros([5])
+		v[:]=1
+		np_test.assert_array_equal(x.c_int_alloc_1d.get(),v)
+		y=x.sub_alloc_int_1d_cleanup()
+	
+	def test_c_int_alloc_2d(self):
+		y=x.sub_alloc_int_1d_cleanup()
+		y=x.sub_alloc_int_1d_arrs()
+		v=np.zeros([5,5])
+		v[:]=1
+		np_test.assert_array_equal(x.c_int_alloc_2d.get(),v)
+		y=x.sub_alloc_int_1d_cleanup()
+	
+	def test_c_int_alloc_3d(self):
+		y=x.sub_alloc_int_1d_cleanup()
+		y=x.sub_alloc_int_1d_arrs()
+		v=np.zeros([5,5,5])
+		v[:]=1
+		np_test.assert_array_equal(x.c_int_alloc_3d.get(),v)
+		y=x.sub_alloc_int_1d_cleanup()
+	
+	def test_c_int_alloc_4d(self):
+		y=x.sub_alloc_int_1d_cleanup()
+		y=x.sub_alloc_int_1d_arrs()
+		v=np.zeros([5,5,5,5])
+		v[:]=1
+		np_test.assert_array_equal(x.c_int_alloc_4d.get(),v)
+		y=x.sub_alloc_int_1d_cleanup()
+	
+	def test_c_int_alloc_5d(self):
+		y=x.sub_alloc_int_1d_cleanup()
+		y=x.sub_alloc_int_1d_arrs()
+		v=np.zeros([5,5,5,5,5])
+		v[:]=1
+		np_test.assert_array_equal(x.c_int_alloc_5d.get(),v)
+		y=x.sub_alloc_int_1d_cleanup()
+		
+	
+	def test_c_int_alloc_1d_set(self):
+		y=x.sub_alloc_int_1d_cleanup()
+		y=x.sub_alloc_int_1d_arrs()
+		v=np.zeros([5])
+		v[:]=5
+		x.c_int_alloc_1d = v
+		np_test.assert_array_equal(x.c_int_alloc_1d.get(),v)
+		y=x.sub_alloc_int_1d_cleanup()
+	
+	def test_c_int_alloc_2d_set(self):
+		y=x.sub_alloc_int_1d_cleanup()
+		y=x.sub_alloc_int_1d_arrs()
+		v=np.zeros([5,5])
+		v[:]=5
+		x.c_int_alloc_2d = v
+		np_test.assert_array_equal(x.c_int_alloc_2d.get(),v)
+		y=x.sub_alloc_int_1d_cleanup()
+	
+	def test_c_int_alloc_3d_set(self):
+		y=x.sub_alloc_int_1d_cleanup()
+		y=x.sub_alloc_int_1d_arrs()
+		v=np.zeros([5,5,5])
+		v[:]=5
+		x.c_int_alloc_3d = v
+		np_test.assert_array_equal(x.c_int_alloc_3d.get(),v)
+		y=x.sub_alloc_int_1d_cleanup()
+	
+	#def test_c_int_alloc_4d_set(self):
+		#y=x.sub_alloc_int_1d_cleanup()
+		#y=x.sub_alloc_int_1d_arrs()
+		#v=np.zeros([5,5,5,5])
+		#v[:]=5
+		#x.c_int_alloc_4d = v
+		#np_test.assert_array_equal(x.c_int_alloc_4d.get(),v)
+		#y=x.sub_alloc_int_1d_cleanup()
+	
+	#def test_c_int_alloc_5d_set(self):
+		#y=x.sub_alloc_int_1d_cleanup()
+		#y=x.sub_alloc_int_1d_arrs()
+		#v=np.zeros([5,5,5,5,5])
+		#v[:]=5
+		#x.c_int_alloc_5d = v
+		#np_test.assert_array_equal(x.c_int_alloc_5d.get(),v)
+		#y=x.sub_alloc_int_1d_cleanup()
+	
+	
 
 
 if __name__ == '__main__':

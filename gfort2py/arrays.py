@@ -1,12 +1,13 @@
 from __future__ import print_function
 import ctypes
 from .var import fVar, fParam
+from .types import fDerivedType
 import numpy as np
 
 
 class fExplicitArray(fVar):
 
-    def __init__(self, lib, obj,TEST_FLAG=False):
+    def __init__(self, lib, obj, TEST_FLAG=False):
         self.__dict__.update(obj)
         self._lib = lib
         self._pytype = np.array
@@ -121,31 +122,204 @@ class fDummyArray(fVar):
     _index_t = ctypes.c_int64
     _size_t = ctypes.c_int64
 
-    def __init__(self, lib, obj):
+    def __init__(self, lib, obj, TEST_FLAG=False):
         self.__dict__.update(obj)
         self._lib = lib
 
         self.ndim = self.array['ndims']
-        self._make_array_desc()
+        self._lib = lib
+        
+        self._desc = self._setup_desc()
+        self._ctype = getattr(ctypes,self.ctype)
+        self._ctype_desc = ctypes.POINTER(self._desc)
+        self._npdtype=self.pytype+str(8*ctypes.sizeof(self._ctype))
 
-    def _make_array_desc(self):
+    def _setup_desc(self):
+        class bounds(ctypes.Structure):
+            _fields_=[("stride",self._index_t),
+                      ("lbound",self._index_t),
+                      ("ubound",self._index_t)]
+        
+        class fAllocArray(ctypes.Structure):
+            _fields_=[('base_addr',ctypes.c_void_p), 
+                      ('offset',self._size_t), 
+                      ('dtype',self._index_t),
+                      ('dims',bounds*self.ndim)
+                      ]
+                      
+        return fAllocArray
 
-        self._ctype = fDerivedTypeDesc()
-        self._ctype.set_fields(['base_addr', 'offset', 'dtype'],
-                               [ctypes.c_void_p, self._size_t, self._index_t])
+    def _get_pointer(self):
+        return self._ctype_desc.from_address(ctypes.addressof(getattr(self._lib,self.mangled_name)))
 
-        self._dims = fDerivedTypeDesc()
-        self._dims.set_fields = (['stride', 'lbound', 'ubound'],
-                                 [self._index_t, self._index_t, self._index_t])
 
-        self._ctype.add_arg(['dims', self._dims * self.ndim])
+    def set_mod(self, value):
+        """
+        Set a module level variable
+        """
+        self._value = np.asfortranarray(value).astype(self._npdtype)
+        p = self._get_pointer()
+        self._set_to_pointer(self._value,p.contents)
+        
+        return 
+        
+    def _set_to_pointer(self,value,p):
+    
+        if value.ndim > self._GFC_MAX_DIMENSIONS:
+            raise ValueError("Array too big")
+        
+        if not self.ndim == value.ndim:
+            raise ValueError("Array size mismatch")
+        
+        p.base_addr = value.ctypes.get_data()
+        p.offset = self._size_t(0)
+        
+        p.dtype = self._get_dtype()
+        
+        for i in range(self.ndim):
+            p.dims[i].stride = self._index_t(value.strides[i]//ctypes.sizeof(self._ctype))
+            p.dims[i].lbound = self._index_t(1)
+            p.dims[i].ubound = self._index_t(value.shape[i])
+            
+        return
 
-    def _set_array(self, value):
-        r = self._get_from_lib()
+    def get(self,copy=False):
+        """
+        Get a module level variable
+        """
+        p = self._get_pointer()
+        value = self._get_from_pointer(p.contents,copy)
+        return value
+        
+    def _get_from_pointer(self,p,copy=False):
+        base_addr = p.base_addr
+        
+        if base_addr is None:
+            raise ValueError("Array not allocated yet")
+        
+        offset = p.offset
+        dtype = p.dtype
+        
+        dims=[]
+        shape=[]
+        for i in range(self.ndim):
+            dims.append({})
+            dims[i]['stride'] = p.dims[i].stride
+            dims[i]['lbound'] = p.dims[i].lbound
+            dims[i]['ubound'] = p.dims[i].ubound
+            
+        for i in range(self.ndim):
+            shape.append(dims[i]['ubound']-dims[i]['lbound']+1)
+            
+        shape=tuple(shape)
+        size=np.product(shape)
+        
+        if copy:
+            # When we want a copy of the array not a pointer to the fortran memoray
+            res = self._get_var_from_address(base_addr,size=size)
+            res = np.asfortranarray(res)
+            res = res.reshape(shape).astype(self._npdtype)
+        else:
+            # When we want to pointer to the underlaying fortran memoray
+            # will leak as we dont have a deallocate call to call in a del func
+            ptr = ctypes.cast(base_addr,ctypes.POINTER(self._ctype))
+            res = np.ctypeslib.as_array(ptr,shape=shape)
+        
+        return res
+        
 
-    def _get_array(self):
-        r = self._get_from_lib()
+    def py_to_ctype(self, value):
+        """
+        Pass in a python value returns the ctype representation of it
+        """
+        return self._set_to_pointer(value,self._ctype)
+        
+    def py_to_ctype_f(self, value):
+        """
+        Pass in a python value returns the ctype representation of it, 
+        suitable for a function
+        
+        Second return value is anything that needs to go at the end of the
+        arg list, like a string len
+        """
+        return self._set_to_pointer(value,self._ctype),None
 
+    def ctype_to_py(self, value):
+        """
+        Pass in a ctype value returns the python representation of it
+        """
+        return self._get_from_pointer(value.contents)
+        
+    def ctype_to_py_f(self, value):
+        """
+        Pass in a ctype value returns the python representation of it,
+        as returned by a function (may be a pointer)
+        """
+        return self._get_from_pointer(value.contents)
+
+    def pytype_def(self):
+        return np.array
+
+    def ctype_def(self):
+        """
+        The ctype type of this object
+        """
+        return self._ctype_desc
+
+    def ctype_def_func(self):
+        """
+        The ctype type of a value suitable for use as an argument of a function
+
+        May just call ctype_def
+        
+        Second return value is anythng that needs to go at the end of the
+        arg list, like a string len
+        """
+
+        return self.ctype_def(),None
+
+    def _get_dtype(self):
+        ftype=self._get_ftype()
+        d=self.ndim
+        d=d|(ftype<<self._GFC_DTYPE_TYPE_SHIFT)
+        d=d|(ctypes.sizeof(self._ctype)<<self._GFC_DTYPE_SIZE_SHIFT)
+        return d
+
+    def _get_ftype(self):
+        ftype=None
+        dtype=self.ctype
+        if 'c_int' in dtype:
+            ftype=self._BT_INTEGER
+        elif 'c_double' in dtype or 'c_real' in dtype:
+            ftype=self._BT_REAL
+        elif 'c_bool' in dtype:
+            ftype=self._BT_LOGICAL
+        elif 'c_char' in dtype:
+            ftype=self._BT_CHARACTER
+        else:
+            raise ValueError("Cant match dtype, got "+dtype)
+        return ftype
+
+    def __str__(self):
+        return str(self.get())
+        
+    def __repr__(self):
+        return repr(self.get())
+
+    def __getattr__(self, name): 
+        if name in self.__dict__:
+            return self.__dict__[name]
+
+        return getattr(self.get(),name)
+
+    def __setattr__(self, name, value):
+        if '_nameArgs' in self.__dict__:
+            if name in self._nameArgs:
+                self.set_single(name,value)
+                return
+        
+        self.__dict__[name] = value
+        return  
 
 class fParamArray(fParam):
 
