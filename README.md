@@ -44,7 +44,7 @@ To run unit tests
 - [x] Explicit size arrays
 - [X] Complex numbers (Scalar and parameters)
 - [ ] Getting a pointer
-- [ ] Assumed shape arrays
+- [X] Assumed shape arrays (As long as size is less than 256 elements)
 - [ ] Pointer/allocatable arrays
 - [x] Derived types
 - [ ] Nested derived types
@@ -60,7 +60,7 @@ To run unit tests
 - [ ] Argument passing (assumed arrays)
 - [ ] Argument passing (derived types)
 - [x] Argument intents (in, out, inout and none)
-- [ ] Passing characters
+- [x] Passing characters
 - [ ] Optional arguments
 - [ ] Keyword arguments
 - [ ] Generic/Elemental functions
