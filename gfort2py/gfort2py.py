@@ -18,6 +18,8 @@ from .types import fDerivedType
 from .utils import *
 from .var import fVar, fParam
 
+WARN_ON_SKIP=False
+
 class fFort(object):
 
     def __init__(self, libname, ffile, reload=False,TEST_FLAG=False):
@@ -80,6 +82,7 @@ class fFort(object):
             self._init_func(i)
 
     def _init_var(self, obj):
+        x=None
         if obj['pytype'] == 'str':
             x = fStr(self._lib, obj,self.TEST_FLAG)
         elif obj['cmplx']:
@@ -91,7 +94,10 @@ class fFort(object):
         else:
             x = fVar(self._lib, obj,self.TEST_FLAG)
 
-        self.__dict__[x.name] = x
+        if x is not None:
+            self.__dict__[x.name] = x
+        else:
+            print("Skipping "+obj['name'])
 
     def _init_param(self, obj):
         if obj['cmplx']:

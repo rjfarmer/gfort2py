@@ -429,40 +429,36 @@ class TestStringMethods(unittest.TestCase):
 		with captured_output() as (out,err):
 			y=x.sub_int_out(v)
 		output=out.getvalue().strip()
-		self.assertEqual(y[0],None)
-		self.assertEqual(y[1],{'x':1})		
+		self.assertEqual(y,{'x':1})		
 
 	def test_sub_int_inout(self):
 		v=5
 		with captured_output() as (out,err):
 			y=x.sub_int_inout(v)
 		output=out.getvalue().strip()
-		self.assertEqual(y[0],None)
-		self.assertEqual(y[1],{'x':2*v})
+		self.assertEqual(y,{'x':2*v})
 		
 	def test_sub_int_no_intent(self):
 		v=5
 		with captured_output() as (out,err):
 			y=x.sub_int_no_intent(v)
 		output=out.getvalue().strip()
-		self.assertEqual(y[0],None)
-		self.assertEqual(y[1],{'x':2*v})
+		self.assertEqual(y,{'x':2*v})
 		
 	def test_sub_real_inout(self):
 		v=5.0
 		with captured_output() as (out,err):
 			y=x.sub_real_inout(v)
 		output=out.getvalue().strip()
-		self.assertEqual(y[0],None)
-		self.assertEqual(y[1],{'x':2*v})
+		self.assertEqual(y,{'x':2*v})
 		
 	def test_sub_exp_inout(self):
 		v=np.array([1,2,3,4,5])
 		with captured_output() as (out,err):
 			y=x.sub_exp_inout(v)
 		output=out.getvalue().strip()
-		self.assertEqual(y[0],None)
-		np_test.assert_array_equal(y[1]['x'],2*v)
+
+		np_test.assert_array_equal(y['x'],2*v)
 		
 		
 	def test_dt_basic(self):

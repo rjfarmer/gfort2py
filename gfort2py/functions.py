@@ -94,7 +94,7 @@ class fFunc(fVar):
         # Python print available now
         
         if self.sub:
-            return None,self._ctypes_to_return(args_in)
+            return self._ctypes_to_return(args_in)
         else:
             return res
             
