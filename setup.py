@@ -3,6 +3,11 @@
 import os
 from setuptools import setup, find_packages
 
+from distutils.core import setup, Extension
+from Cython.Build import cythonize
+
+import numpy as np
+
 try:
 	import unittest as unittest
 except ImportError:
@@ -18,9 +23,6 @@ def my_test_suite():
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-
-
-
 setup(name='gfort2py',
       version='0.0',
       description='Python bindings for Fortran',
@@ -34,5 +36,6 @@ setup(name='gfort2py',
 			"License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
 			"Programming Language :: Fortran",
       ],
-      test_suite = 'tests'
+      test_suite = 'tests',
+      ext_modules = cythonize("gfort2py/fnumpy.pyx",include_path=[np.get_include()])
      )

@@ -3,7 +3,8 @@ import ctypes
 from .var import fVar, fParam
 from .types import fDerivedType
 import numpy as np
-
+from .utils import *
+from .fnumpy import *
 
 class fExplicitArray(fVar):
 
@@ -133,6 +134,7 @@ class fDummyArray(fVar):
         self._ctype = getattr(ctypes,self.ctype)
         self._ctype_desc = ctypes.POINTER(self._desc)
         self._npdtype=self.pytype+str(8*ctypes.sizeof(self._ctype))
+        
 
     def _setup_desc(self):
         class bounds(ctypes.Structure):
@@ -157,7 +159,7 @@ class fDummyArray(fVar):
         """
         Set a module level variable
         """
-        self._value = np.asfortranarray(value).astype(self._npdtype)
+        self._value = value.astype(self._npdtype)
         p = self._get_pointer()
         self._set_to_pointer(self._value,p.contents)
         
@@ -193,8 +195,7 @@ class fDummyArray(fVar):
         
     def _get_from_pointer(self,p,copy=False):
         base_addr = p.base_addr
-        
-        if base_addr is None:
+        if self._isallocated():
             raise ValueError("Array not allocated yet")
         
         offset = p.offset
@@ -211,7 +212,7 @@ class fDummyArray(fVar):
         for i in range(self.ndim):
             shape.append(dims[i]['ubound']-dims[i]['lbound']+1)
             
-        shape=tuple(shape)
+        self._shape=tuple(shape)
         size=np.product(shape)
         
         if copy:
@@ -223,7 +224,7 @@ class fDummyArray(fVar):
             # When we want to pointer to the underlaying fortran memoray
             # will leak as we dont have a deallocate call to call in a del func
             ptr = ctypes.cast(base_addr,ctypes.POINTER(self._ctype))
-            res = np.ctypeslib.as_array(ptr,shape=shape)
+            res = np.ctypeslib.as_array(ptr,shape= self._shape)
         
         return res
         
@@ -311,16 +312,25 @@ class fDummyArray(fVar):
             return self.__dict__[name]
 
         return getattr(self.get(),name)
-
-    def __setattr__(self, name, value):
-        if '_nameArgs' in self.__dict__:
-            if name in self._nameArgs:
-                self.set_single(name,value)
-                return
         
-        self.__dict__[name] = value
-        return  
-
+    def __del__(self):
+        if '_value' in self.__dict__:
+            if self._isallocated():
+                # Problem occurs as both fortran and numpy are pointing to same memory address
+                # Thus if fortran deallocates the array numpy will try to free the pointer
+                # when del is called casuing a double free error
+                
+                # By calling remove_ownership we tell numpy it dosn't own the data
+                # thus is shouldn't call free(ptr).
+                # This doesnt leak memory as this only happens
+                # when fortran has deallocated the data allready 
+                remove_ownership(self._value)
+                
+                
+    def _isallocated(self):
+        p = self._get_pointer()
+        return p.contents.base_addr is None
+        
 class fParamArray(fParam):
 
     def get(self):
@@ -329,3 +339,5 @@ class fParamArray(fParam):
         from the shared lib.
         """
         return np.array(self.value, dtype=self.pytype)
+
+
