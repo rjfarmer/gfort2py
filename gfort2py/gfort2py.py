@@ -25,7 +25,7 @@ class fFort(object):
     def __init__(self, libname, ffile, reload=False,TEST_FLAG=False):
         self.TEST_FLAG=TEST_FLAG
         self._lib = ctypes.CDLL(libname)
-
+        self._all_names=[]
         self._libname = libname
         self._fpy = fpyname(ffile)
         self._load_data(ffile, reload)
@@ -64,6 +64,16 @@ class fFort(object):
         self._listVars = []
         self._listParams = []
         self._listFuncs = []
+        
+        for i in self._mod_vars:
+            self._all_names.append(i['name'])
+
+        for i in self._param:
+            self._all_names.append(i['name'])
+            
+        for i in self._funcs:
+            self._all_names.append(i['name'])
+        
 
         for i in self._mod_vars:
             if i['dt']:
@@ -120,14 +130,17 @@ class fFort(object):
         if name in self.__dict__:
             return self.__dict__[name]
 
+        if '_all_names' in self.__dict__:
+            if name in self._all_names:
+                return self.__dict__[name].get()
+
         raise AttributeError("No variable " + name)
 
     def __setattr__(self, name, value):
-        if name in self.__dict__:
-            try:
+        if '_all_names' in self.__dict__:
+            if name in self._all_names:
                 self.__dict__[name].set_mod(value)
-            except AttributeError:
-                self.__dict__[name] = value
-        else:
-            self.__dict__[name] = value
+                return
+       
+        self.__dict__[name] = value
         return
