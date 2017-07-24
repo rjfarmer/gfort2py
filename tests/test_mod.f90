@@ -316,6 +316,61 @@ module tester
       end subroutine sub_alloc_int_1d_cleanup     
       
       
+      subroutine sub_alloc_real_1d_arrs()
+      
+         if(.not. allocated(c_real_alloc_1d)) allocate(c_real_alloc_1d(5))
+         if(.not. allocated(c_real_alloc_2d)) allocate(c_real_alloc_2d(5,5))
+         if(.not. allocated(c_real_alloc_3d)) allocate(c_real_alloc_3d(5,5,5))
+         if(.not. allocated(c_real_alloc_4d)) allocate(c_real_alloc_4d(5,5,5,5))
+         if(.not. allocated(c_real_alloc_5d)) allocate(c_real_alloc_5d(5,5,5,5,5))
+         
+         c_real_alloc_1d=1
+         c_real_alloc_2d=1
+         c_real_alloc_3d=1
+         c_real_alloc_4d=1  
+         c_real_alloc_5d=1
+      
+      end subroutine sub_alloc_real_1d_arrs
+      
+      
+      subroutine sub_alloc_real_1d_cleanup()
+      
+         if(allocated(c_real_alloc_1d)) deallocate(c_real_alloc_1d)
+         if(allocated(c_real_alloc_2d)) deallocate(c_real_alloc_2d)
+         if(allocated(c_real_alloc_3d)) deallocate(c_real_alloc_3d)
+         if(allocated(c_real_alloc_4d)) deallocate(c_real_alloc_4d)
+         if(allocated(c_real_alloc_5d)) deallocate(c_real_alloc_5d)
+
+      end subroutine sub_alloc_real_1d_cleanup  
+   
+      subroutine sub_alloc_real_dp_1d_arrs()
+      
+         if(.not. allocated(c_real_dp_alloc_1d)) allocate(c_real_dp_alloc_1d(5))
+         if(.not. allocated(c_real_dp_alloc_2d)) allocate(c_real_dp_alloc_2d(5,5))
+         if(.not. allocated(c_real_dp_alloc_3d)) allocate(c_real_dp_alloc_3d(5,5,5))
+         if(.not. allocated(c_real_dp_alloc_4d)) allocate(c_real_dp_alloc_4d(5,5,5,5))
+         if(.not. allocated(c_real_dp_alloc_5d)) allocate(c_real_dp_alloc_5d(5,5,5,5,5))
+         
+         c_real_dp_alloc_1d=1
+         c_real_dp_alloc_2d=1
+         c_real_dp_alloc_3d=1
+         c_real_dp_alloc_4d=1  
+         c_real_dp_alloc_5d=1
+      
+      end subroutine sub_alloc_real_dp_1d_arrs
+      
+      
+      subroutine sub_alloc_real_dp_1d_cleanup()
+      
+         if(allocated(c_real_dp_alloc_1d)) deallocate(c_real_dp_alloc_1d)
+         if(allocated(c_real_dp_alloc_2d)) deallocate(c_real_dp_alloc_2d)
+         if(allocated(c_real_dp_alloc_3d)) deallocate(c_real_dp_alloc_3d)
+         if(allocated(c_real_dp_alloc_4d)) deallocate(c_real_dp_alloc_4d)
+         if(allocated(c_real_dp_alloc_5d)) deallocate(c_real_dp_alloc_5d)
+
+      end subroutine sub_alloc_real_dp_1d_cleanup  
+      
+      
       subroutine sub_exp_array_int_1d(x)
          integer,dimension(5), intent(in) :: x
          
