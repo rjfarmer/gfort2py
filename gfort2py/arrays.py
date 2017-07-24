@@ -164,8 +164,6 @@ class fDummyArray(fVar):
         #Did we make a copy?
         if self._id(self._value)==self._id(value):
             remove_ownership(value)
-
-        print(hex(self._id(self._value)),hex(self._id(value)))
         remove_ownership(self._value)
             
         p = self._get_pointer()
