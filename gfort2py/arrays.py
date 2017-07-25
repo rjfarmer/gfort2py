@@ -42,7 +42,8 @@ class fExplicitArray(fVar):
         Pass in a ctype value returns the python representation of it,
         as returned by a function (may be a pointer)
         """
-        return np.asfortranarray(value,dtype=self._dtype)
+        self._value = np.asfortranarray(value,dtype=self._dtype)
+        return self._value
 
     def pytype_def(self):
         return self._pytype
@@ -67,8 +68,6 @@ class fExplicitArray(fVar):
         y=None
         return x,y        
         
-        
-
     def set_mod(self, value):
         """
         Set a module level variable
@@ -154,30 +153,40 @@ class fDummyArray(fVar):
     def _get_pointer(self):
         return self._ctype_desc.from_address(ctypes.addressof(getattr(self._lib,self.mangled_name)))
 
-
     def set_mod(self, value):
         """
         Set a module level variable
         """
+        
+        if not self.ndim == value.ndim:
+            raise ValueError("Array size mismatch "+str(self.ndim)+' '+str(value.ndim))
+        
+        
         self._value = value.astype(self.npdtype)
         
         #Did we make a copy?
         if self._id(self._value)==self._id(value):
             remove_ownership(value)
         remove_ownership(self._value)
-            
+        
         p = self._get_pointer()
-        self._set_to_pointer(self._value,p.contents)
+        if p:
+            self._set_to_pointer(self._value,p.contents)
         
         return 
         
+    def set_func_arg(self,value):
+        #Create an allocatable array
+        self._value_array = self._desc()
+
+        self._value = np.asfortranarray(value).astype(self.npdtype)
+        
+        self._set_to_pointer(self._value,self._value_array)
+        
+        
     def _set_to_pointer(self,value,p):
-    
         if value.ndim > self._GFC_MAX_DIMENSIONS:
             raise ValueError("Array too big")
-        
-        if not self.ndim == value.ndim:
-            raise ValueError("Array size mismatch")
         
         p.base_addr = value.ctypes.get_data()
         p.offset = self._size_t(0)
@@ -195,9 +204,11 @@ class fDummyArray(fVar):
         """
         Get a module level variable
         """
+        if self._func_arg:
+            return self._value
+           
         p = self._get_pointer()
-        value = self._get_from_pointer(p.contents,copy)
-        return value
+        return self._get_from_pointer(p.contents,copy)
         
     def _get_from_pointer(self,p,copy=False):
         base_addr = p.base_addr
@@ -219,7 +230,7 @@ class fDummyArray(fVar):
             shape.append(dims[i]['ubound']-dims[i]['lbound']+1)
             
         self._shape=tuple(shape)
-        size=np.product(shape)
+        size = np.product(shape)
         
         if copy:
             # When we want a copy of the array not a pointer to the fortran memoray
@@ -239,7 +250,8 @@ class fDummyArray(fVar):
         """
         Pass in a python value returns the ctype representation of it
         """
-        return self._set_to_pointer(value,self._ctype)
+        self.set_func_arg(value)
+        return self._value
         
     def py_to_ctype_f(self, value):
         """
@@ -249,7 +261,9 @@ class fDummyArray(fVar):
         Second return value is anything that needs to go at the end of the
         arg list, like a string len
         """
-        return self._set_to_pointer(value,self._ctype),None
+        self.set_func_arg(value)
+    
+        return self._value,None
 
     def ctype_to_py(self, value):
         """
@@ -297,7 +311,7 @@ class fDummyArray(fVar):
         dtype=self.ctype
         if 'c_int' in dtype:
             ftype=self._BT_INTEGER
-        elif 'c_double' in dtype or 'c_real' in dtype:
+        elif 'c_double' in dtype or 'c_real' in dtype or 'c_float' in dtype:
             ftype=self._BT_REAL
         elif 'c_bool' in dtype:
             ftype=self._BT_LOGICAL
@@ -308,16 +322,24 @@ class fDummyArray(fVar):
         return ftype
 
     def __str__(self):
-        return str(self.get())
+        x=self.get()
+        if x is None:
+            return "<array>"
+        else:
+            return str(self.get())
         
     def __repr__(self):
-        return repr(self.get())
+        x=self.get()
+        if x is None:
+            return "<array>"
+        else:
+            return repr(self.get())
 
     def __getattr__(self, name): 
         if name in self.__dict__:
             return self.__dict__[name]
 
-        return getattr(self.get(),name)
+        #return getattr(self.get(),name)
         
     def __del__(self):
         if '_value' in self.__dict__:
@@ -343,13 +365,62 @@ class fDummyArray(fVar):
     def _id(self,x):
         return x.ctypes.data
         
-class fParamArray(fParam):
+        
+class fAssumedShape(fDummyArray):
+    def _get_pointer(self):
+        return self._ctype_desc.from_address(ctypes.addressof(self._value_array))
+    
+    
+    def set_func_arg(self,value):
+        
+        super(fAssumedShape,self).set_func_arg(value)
+        
+        #Fix up bounds
+    
+        #From gcc source code
+        #Parsed       Lower   Upper  Returned
+        #------------------------------------
+          #:           NULL    NULL   AS_DEFERRED (*)
+          #x            1       x     AS_EXPLICIT
+          #x:           x      NULL   AS_ASSUMED_SHAPE
+          #x:y          x       y     AS_EXPLICIT
+          #x:*          x      NULL   AS_ASSUMED_SIZE
+          #*            1      NULL   AS_ASSUMED_SIZE
+      
+        for i in range(self.ndim):
+            self._value_array.dims[i].ubound=0
+            self._value_array.dims[i].lbound=0
+            
+    def __str__(self):
+        return str(self._value_array)
+        
+    def __repr__(self):
+        return repr(self._value_array)
 
+    def py_to_ctype(self, value):
+        """
+        Pass in a python value returns the ctype representation of it
+        """
+        self.set_func_arg(value)
+        return self._value_array
+        
+    def py_to_ctype_f(self, value):
+        """
+        Pass in a python value returns the ctype representation of it, 
+        suitable for a function
+        
+        Second return value is anything that needs to go at the end of the
+        arg list, like a string len
+        """
+        return self.py_to_ctype(value),None    
+    
+class fAssumedSize(fExplicitArray):
+    pass
+
+class fParamArray(fParam):
     def get(self):
         """
         A parameters value is stored in the dict, as we cant access them
         from the shared lib.
         """
         return np.array(self.value, dtype=self.pytype)
-
-

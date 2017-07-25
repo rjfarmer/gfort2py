@@ -765,6 +765,56 @@ class TestStringMethods(unittest.TestCase):
 		self.assertEqual(y,True)
 		y=x.func_return_res(10)
 		self.assertEqual(y,False)		
+	
+
+	def test_func_assumed_shape_arr_1d(self):
+		v=np.zeros([5],dtype='int32')
+		v[0]=2.0
+		y=x.func_assumed_shape_arr_1d(v)
+		self.assertEqual(y,True)
+		
+	def test_func_assumed_shape_arr_2d(self):
+		v=np.zeros([5,5],dtype='int32')
+		v[1,0]=2.0
+		y=x.func_assumed_shape_arr_2d(v)
+		self.assertEqual(y,True)
+		
+	def test_func_assumed_shape_arr_3d(self):
+		v=np.zeros([5,5,5],dtype='int32')
+		v[2,1,0]=2.0
+		y=x.func_assumed_shape_arr_3d(v)
+		self.assertEqual(y,True)
+		
+	def test_func_assumed_shape_arr_4d(self):
+		v=np.zeros([5,5,5,5],dtype='int32')
+		v[3,2,1,0]=2.0
+		y=x.func_assumed_shape_arr_4d(v)
+		self.assertEqual(y,True)
+		
+	def test_func_assumed_shape_arr_5d(self):
+		v=np.zeros([5,5,5,5,5],dtype='int32')
+		v[4,3,2,1,0]=2.0
+		y=x.func_assumed_shape_arr_5d(v)
+		self.assertEqual(y,True)
+		
+		
+	def test_func_assumed_size_arr_1d(self):
+		v=np.zeros([5],dtype='int32')
+		v[1]=2
+		y=x.func_assumed_size_arr_1d(v)
+		self.assertEqual(y,True)
+		
+	def test_func_assumed_size_arr_real_1d(self):
+		v=np.zeros([5],dtype='float32')
+		v[1]=2.0
+		y=x.func_assumed_size_arr_real_1d(v)
+		self.assertEqual(y,True)
+		
+	def test_func_assumed_size_arr_real_dp_1d(self):
+		v=np.zeros([5],dtype='float64')
+		v[1]=2.0
+		y=x.func_assumed_size_arr_real_dp_1d(v)
+		self.assertEqual(y,True)
 
 if __name__ == '__main__':
 	unittest.main() 

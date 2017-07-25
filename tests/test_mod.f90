@@ -432,4 +432,63 @@ module tester
       end function func_return_res
       
       
+      logical function func_assumed_shape_arr_1d(x) result(res)
+         integer, dimension(:), intent(inout) :: x
+         res =.false.
+         if(x(1)==2) res = .true.
+      end function func_assumed_shape_arr_1d
+      
+      logical function func_assumed_shape_arr_2d(x) result(res)
+         integer, dimension(:,:), intent(inout) :: x
+         res =.false.
+         if(x(2,1)==2) res = .true.
+      end function func_assumed_shape_arr_2d
+      
+      logical function func_assumed_shape_arr_3d(x) result(res)
+         integer, dimension(:,:,:), intent(inout) :: x
+         res =.false.
+         if(x(3,2,1)==2) res = .true.
+      end function func_assumed_shape_arr_3d
+      
+      logical function func_assumed_shape_arr_4d(x) result(res)
+         integer, dimension(:,:,:,:), intent(inout) :: x
+         res =.false.
+         if(x(4,3,2,1)==2) res = .true.
+      end function func_assumed_shape_arr_4d
+      
+      logical function func_assumed_shape_arr_5d(x) result(res)
+         integer, dimension(:,:,:,:,:), intent(inout) :: x
+         res =.false.
+         if(x(5,4,3,2,1)==2) res = .true.
+      end function func_assumed_shape_arr_5d
+      
+
+      logical function func_assumed_size_arr_1d(x) result(res)
+         integer, intent(inout) :: x(*)
+         res =.false.
+         if(x(2)==2) res = .true.
+      end function func_assumed_size_arr_1d
+   
+ 
+      logical function func_assumed_size_arr_real_1d(x) result(res)
+         real, intent(inout) :: x(*)
+         res =.false.
+         if(x(2)==2) res = .true.
+      end function func_assumed_size_arr_real_1d
+      
+      logical function func_assumed_size_arr_real_dp_1d(x) result(res)
+         real(dp), intent(inout) :: x(*)
+         res =.false.
+         if(x(2)==2) res = .true.
+      end function func_assumed_size_arr_real_dp_1d 
+      
+      subroutine sub_alloc_arr_1d(x)
+         integer, dimension(:),allocatable, intent(inout) :: x
+         
+         allocate(x(1:10))
+         x=10
+
+      end subroutine sub_alloc_arr_1d
+      
+      
 end module tester

@@ -3,7 +3,7 @@ import ctypes
 import os
 from .var import fVar
 from .cmplx import fComplex
-from .arrays import fExplicitArray
+from .arrays import fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize
 from .strings import fStr
 from .types import fDerivedType
 
@@ -43,9 +43,21 @@ class fFunc(fVar):
         elif obj['dt']:
             x = fDerivedType(self._lib, obj)
         elif obj['array']:
-            x = fExplicitArray(self._lib, obj)
+            if obj['array']['atype'] == 'explicit':
+                x = fExplicitArray(self._lib, obj,self.TEST_FLAG)
+            elif obj['array']['atype'] == 'alloc':
+                x = fDummyArray(self._lib, obj, self.TEST_FLAG)
+            elif obj['array']['atype'] == 'assumed_shape':
+                x = fAssumedShape(self._lib, obj, self.TEST_FLAG)
+            elif obj['array']['atype'] == 'assumed_size':
+                x = fAssumedSize(self._lib, obj, self.TEST_FLAG)
+            else:
+                print("Unknown: "+str(obj))
+                raise ValueError
         else:
             x = fVar(self._lib, obj)
+
+        x._func_arg=True
 
         return x
 
@@ -61,7 +73,11 @@ class fFunc(fVar):
     def _args_to_ctypes(self,args):
         tmp = []
         args_in = []
+        #if type(args) is not list: args = [ args ]
+        #print("args ",args)
+        #print("argtypes",self._call.argtypes)
         for i, j in  zip(self._arg_vars, args):
+            #print("j ",type(j),j)
             x,y=i.py_to_ctype_f(j)
             args_in.append(x)
             if y is not None:
@@ -76,6 +92,7 @@ class fFunc(fVar):
         return r
     
     def __call__(self, *args):
+        #print("call ",args)
         args_in = self._args_to_ctypes(args)
         # Capture stdout messages
         # Cant call python print() untill after the read_pipe call
