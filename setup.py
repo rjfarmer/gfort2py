@@ -27,9 +27,6 @@ def my_test_suite():
     test_suite = test_loader.discover('tests', pattern='*_test.py')
     return test_suite
 
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
 setup(name='gfort2py',
       version='0.0',
       description='Python bindings for Fortran',
@@ -45,5 +42,6 @@ setup(name='gfort2py',
       ],
       test_suite = 'tests',
 	  cmdclass={"build_ext": build_ext},
-	  ext_modules=[ext]
+	  ext_modules=[ext],
+	  include_dirs = [np.get_include()]
      )
