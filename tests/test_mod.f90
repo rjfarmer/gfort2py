@@ -424,6 +424,12 @@ module tester
          
          write(output_unit,'(I2,1X,5(I1,1X),I2,1X)') y,x,z
       end subroutine sub_exp_array_int_1d_multi
-    
+      
+      logical function func_return_res(x) result(res)
+         integer, intent(in) :: x
+         res =.false.
+         if(x==2) res = .true.
+      end function func_return_res
+      
       
 end module tester

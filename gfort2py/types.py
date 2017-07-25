@@ -69,10 +69,18 @@ class fDerivedType(fVar):
         return self._nameArgs
 
     def __str__(self):
-        return str(self.get())
+        x=self.get()
+        if x is None:
+            return "<dt>"
+        else:
+            return str(self.get())
         
     def __repr__(self):
-        return str(self.get())
+        x=self.get()
+        if x is None:
+            return "<dt>"
+        else:
+            return repr(self.get())
         
     def __getattr__(self, name): 
         if name in self.__dict__:

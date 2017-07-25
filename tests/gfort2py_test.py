@@ -759,10 +759,12 @@ class TestStringMethods(unittest.TestCase):
 		x.c_real_dp_alloc_5d = v
 		np_test.assert_array_equal(x.c_real_dp_alloc_5d.get(),v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
-	
-
-
-
+		
+	def test_func_return_res(self):
+		y=x.func_return_res(2)
+		self.assertEqual(y,True)
+		y=x.func_return_res(10)
+		self.assertEqual(y,False)		
 
 if __name__ == '__main__':
 	unittest.main() 

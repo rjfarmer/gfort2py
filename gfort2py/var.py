@@ -11,6 +11,10 @@ import numpy as np
 __builtin__.quad = np.longdouble
 
 
+class NotInLib(Exception):
+    pass
+
+
 class fVar(object):
 
     def __init__(self, lib, obj,TEST_FLAG=False):
@@ -99,12 +103,11 @@ class fVar(object):
         return self.ctype_to_py(r)
 
     def _get_from_lib(self):
-        res = None
-        try:
-            res = self._ctype.in_dll(self._lib, self.mangled_name)
-        except ValueError:
-            raise
-        return res
+        
+        if 'mangled_name' in self.__dict__ and '_lib' in self.__dict__ and '_ctype' in self.__dict__:
+            return self._ctype.in_dll(self._lib, self.mangled_name)
+        else:
+            raise NotInLib
 
     def _get_var_by_iter(self, value, size=-1):
         """ Gets a variable where we have to iterate to get multiple elements"""
@@ -164,8 +167,10 @@ class fVar(object):
                  
         try:
             return getattr(self.get(), name)
-        except ValueError:
-            pass
+        except NotInLib:
+            return None
+        except AttributeError:
+            raise
 
     #Stuff to call the result of self.get() (a python object int/str etc)
 

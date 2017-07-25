@@ -20,6 +20,8 @@ from .var import fVar, fParam
 
 WARN_ON_SKIP=False
 
+#https://gcc.gnu.org/onlinedocs/gcc-6.1.0/gfortran/Argument-passing-conventions.html
+
 class fFort(object):
 
     def __init__(self, libname, ffile, reload=False,TEST_FLAG=False):

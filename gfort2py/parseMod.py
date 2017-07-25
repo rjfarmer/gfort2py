@@ -182,7 +182,9 @@ def parse_array(info, dt=False):
     elif 'POINTER' in attr1:
         d['atype'] = 'pointer'
     elif 'ASSUMED_SHAPE' in attr2:
-        d['atype'] = 'assumed'
+        d['atype'] = 'assumed_shape'
+    elif 'ASSUMED_SIZE' in attr2:
+        d['atype'] = 'assumed_size'
     elif 'CONSTANT' in attr2:
         d['bounds'] = get_bounds(info, dt=dt)
         d['atype'] = 'explicit'
@@ -420,6 +422,8 @@ def mapArgs2Func(funcs, func_args):
     argInd = np.searchsorted(fParArray, fArgArray, sorter=ind)
 
     for idx, i in enumerate(argInd):
+        if func_args[idx]['name']=='res':
+            continue
         funcs[i]['args'].append(func_args[idx])
 
     return funcs
