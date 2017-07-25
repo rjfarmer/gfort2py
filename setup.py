@@ -5,6 +5,7 @@ from setuptools import setup, find_packages
 
 from distutils.core import setup, Extension
 from Cython.Distutils import build_ext
+from Cython.Build import cythonize
 
 import numpy as np
 import os
@@ -42,6 +43,5 @@ setup(name='gfort2py',
       ],
       test_suite = 'tests',
 	  cmdclass={"build_ext": build_ext},
-	  ext_modules=[ext],
-	  include_dirs = [np.get_include()]
+	  ext_modules=cythonize(ext)
      )
