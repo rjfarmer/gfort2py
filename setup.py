@@ -4,15 +4,22 @@ import os
 from setuptools import setup, find_packages
 
 from distutils.core import setup, Extension
-from Cython.Build import cythonize
+from Cython.Distutils import build_ext
 
 import numpy as np
+import os
 
 try:
 	import unittest as unittest
 except ImportError:
 	import unittest2 as unittest
 
+SRC_DIR = "gfort2py"
+
+ext = Extension(os.path.join(SRC_DIR,"fnumpy"),
+				[os.path.join(SRC_DIR,"fnumpy.c"),os.path.join(SRC_DIR,"fnumpy.pyx")],
+				libraries=[],
+				include_dirs=[np.get_include()])
 
 
 def my_test_suite():
@@ -37,5 +44,6 @@ setup(name='gfort2py',
 			"Programming Language :: Fortran",
       ],
       test_suite = 'tests',
-      ext_modules = cythonize("gfort2py/fnumpy.pyx",include_path=[np.get_include()])
+	  cmdclass={"build_ext": build_ext},
+	  ext_modules=[ext]
      )
