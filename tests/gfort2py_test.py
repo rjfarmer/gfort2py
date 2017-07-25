@@ -815,6 +815,14 @@ class TestStringMethods(unittest.TestCase):
 		v[1]=2.0
 		y=x.func_assumed_size_arr_real_dp_1d(v)
 		self.assertEqual(y,True)
+		
+	def test_sub_alloc_arr_1d(self):
+		v=0
+		y=x.sub_alloc_arr_1d(v)
+		vTest=np.zeros(10)
+		vTest[:]=10
+		np_test.assert_array_equal(y['x'],vTest)
+		
 
 if __name__ == '__main__':
 	unittest.main() 

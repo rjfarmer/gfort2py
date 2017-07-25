@@ -3,7 +3,7 @@ import ctypes
 import os
 from .var import fVar
 from .cmplx import fComplex
-from .arrays import fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize
+from .arrays import fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize, fAllocatableArray
 from .strings import fStr
 from .types import fDerivedType
 
@@ -46,7 +46,7 @@ class fFunc(fVar):
             if obj['array']['atype'] == 'explicit':
                 x = fExplicitArray(self._lib, obj,self.TEST_FLAG)
             elif obj['array']['atype'] == 'alloc':
-                x = fDummyArray(self._lib, obj, self.TEST_FLAG)
+                x = fAllocatableArray(self._lib, obj, self.TEST_FLAG)
             elif obj['array']['atype'] == 'assumed_shape':
                 x = fAssumedShape(self._lib, obj, self.TEST_FLAG)
             elif obj['array']['atype'] == 'assumed_size':

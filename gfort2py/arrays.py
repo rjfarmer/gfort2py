@@ -251,7 +251,7 @@ class fDummyArray(fVar):
         Pass in a python value returns the ctype representation of it
         """
         self.set_func_arg(value)
-        return self._value
+        return self._value_array
         
     def py_to_ctype_f(self, value):
         """
@@ -261,9 +261,7 @@ class fDummyArray(fVar):
         Second return value is anything that needs to go at the end of the
         arg list, like a string len
         """
-        self.set_func_arg(value)
-    
-        return self._value,None
+        return self.py_to_ctype(value),None
 
     def ctype_to_py(self, value):
         """
@@ -416,6 +414,44 @@ class fAssumedShape(fDummyArray):
     
 class fAssumedSize(fExplicitArray):
     pass
+    
+class fAllocatableArray(fDummyArray):
+    def py_to_ctype(self, value):
+        """
+        Pass in a python value returns the ctype representation of it
+        """
+        self.set_func_arg(value)
+        
+        # self._value_array needs to be empty if the array is allocatable and not
+        # allready allocataed
+        self._value_array.base_addr=ctypes.c_void_p(0)
+        
+        return self._value_array
+        
+    def py_to_ctype_f(self, value):
+        """
+        Pass in a python value returns the ctype representation of it, 
+        suitable for a function
+        
+        Second return value is anything that needs to go at the end of the
+        arg list, like a string len
+        """
+        return self.py_to_ctype(value),None   
+        
+    def ctype_to_py_f(self, value):
+        """
+        Pass in a ctype value returns the python representation of it,
+        as returned by a function (may be a pointer)
+        """
+        shape=[]
+        for i in value.dims:
+            shape.append(i.ubound-i.lbound+1)
+        shape=tuple(shape)
+        
+        p=ctypes.POINTER(self._ctype)
+        res=ctypes.cast(value.base_addr,p)
+        return np.ctypeslib.as_array(res,shape=shape)
+    
 
 class fParamArray(fParam):
     def get(self):
