@@ -9,19 +9,21 @@ from Cython.Build import cythonize
 
 import numpy as np
 import os
+import sysconfig
 
 try:
 	import unittest as unittest
 except ImportError:
 	import unittest2 as unittest
 
+
+PY_INCLUDE = sysconfig.get_paths()['include']
+
 SRC_DIR = "gfort2py"
 
 ext = Extension(os.path.join(SRC_DIR,"fnumpy"),
-				[os.path.join(SRC_DIR,"fnumpy.c"),os.path.join(SRC_DIR,"fnumpy.pyx")],
-				libraries=[],
-				include_dirs=[np.get_include()])
-
+				[os.path.join(SRC_DIR,"fnumpy.pyx")],
+				include_dirs=[np.get_include(),PY_INCLUDE])
 
 def my_test_suite():
     test_loader = unittest.TestLoader()
