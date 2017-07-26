@@ -89,6 +89,9 @@ class TestStringMethods(unittest.TestCase):
 	def test_const_real_dp(self):	
 		self.assertEqual(x.const_real_dp.get(),1.0)
 		
+	def test_const_real_pi_dp(self):	
+		self.assertEqual(x.const_real_pi_dp.get(),3.14)
+		
 	def test_const_real_qp(self):	
 		self.assertEqual(x.const_real_qp.get(),1.0)
 

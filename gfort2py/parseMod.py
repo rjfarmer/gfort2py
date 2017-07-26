@@ -16,6 +16,17 @@ def clean_list(l, idx):
 def mangle_name(obj):
     return '__' + obj['module'] + '_MOD_' + obj['name'].lower()
 
+def hextofloat(s):
+    # GIven hex like parameter '0.12decde@9' returns 5065465344.0
+    man, exp =s.split('@')
+    exp=int(exp)
+    decimal = man.index('.')
+    man = man[decimal+1:]
+    man = man.ljust(exp,'0')
+    man = man[:exp]+'.'+man[exp:]
+    man = man +'P0'
+    return float.fromhex(man)
+
 
 def split_brackets(value, remove_b=False):
     '''
@@ -229,8 +240,7 @@ def get_param_val(info):
 
 def parse_single_param_val(x):
     if '@' in x:
-        sp = x.split('@')
-        value = str(float(sp[0]) * 10**float(sp[1]))
+        value=str(hextofloat(x))
     else:
         value = str(x)
     return value

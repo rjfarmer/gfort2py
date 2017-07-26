@@ -14,6 +14,7 @@ module tester
       
       real, parameter     :: const_real=1.0
       real(dp), parameter :: const_real_dp=1.0_dp
+      real(dp), parameter :: const_real_pi_dp=3.14_dp
       real(qp), parameter :: const_real_qp=1.0_qp
       complex, parameter  :: const_cmplx=(1.0,1.0)
       complex(dp), parameter  :: const_cmplx_dp=(1.0_dp,1.0_dp)
