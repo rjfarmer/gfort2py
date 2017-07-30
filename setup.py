@@ -19,11 +19,10 @@ except ImportError:
 
 PY_INCLUDE = sysconfig.get_paths()['include']
 
-SRC_DIR = "gfort2py"
-
-ext = Extension(os.path.join(SRC_DIR,"fnumpy"),
-				[os.path.join(SRC_DIR,"fnumpy.pyx")],
+ext = Extension("**/*",
+				["**/*.pyx"],
 				include_dirs=[np.get_include(),PY_INCLUDE])
+				
 
 def my_test_suite():
     test_loader = unittest.TestLoader()
@@ -37,13 +36,12 @@ setup(name='gfort2py',
       author='Robert Farmer',
       author_email='rjfarmer@asu.edu',
       url='https://github.com/rjfarmer/gfort2py',
-      packages=["gfort2py"],
+      packages=["src"],
       classifiers=[
 			"Development Status :: 1 - Planning",
 			"License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
 			"Programming Language :: Fortran",
       ],
       test_suite = 'tests',
-	  cmdclass={"build_ext": build_ext},
 	  ext_modules=cythonize(ext)
      )

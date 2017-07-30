@@ -13,6 +13,7 @@ class fDerivedType(fVar):
         
         self._desc = self.create_struct()
         self._ctype = ctypes.POINTER(self._desc)
+        self._ctype_desc = self._desc()
         self.TEST_FLAG=TEST_FLAG
         
     def get(self):
@@ -26,7 +27,14 @@ class fDerivedType(fVar):
         return getattr(r.contents,name)
 
     def _get_pointer(self):
-        return self._ctype.from_address(ctypes.addressof(getattr(self._lib,self.mangled_name)))
+        if '_func_arg' in self.__dict__:
+            if self._func_arg:
+                return self._desc.from_address(ctypes.addressof(self._ctype_desc))
+        
+        #return self._ctype.from_address(ctypes.addressof(getattr(self._lib,self.mangled_name)))
+        return self._desc.from_address(ctypes.addressof(getattr(self._lib,self.mangled_name)))
+
+
 
     def set_mod(self,value):
         # Wants a dict
@@ -40,7 +48,7 @@ class fDerivedType(fVar):
         if name not in self._nameArgs:
             raise KeyError("Name not in struct")
         r = self._get_pointer()
-        setattr(r.contents,name,value)
+        setattr(r,name,value)
         
     def create_struct(self):
         self.setup_desc()
@@ -64,6 +72,23 @@ class fDerivedType(fVar):
     def set_fields(self, nameArgs, typeArgs):
         self.fields = [(i, j) for i, j in zip(nameArgs, typeArgs)]
 
+
+    def py_to_ctype_f(self,value):
+        self.set_mod(value)
+        return self._ctype_desc,None
+
+
+    def ctype_def_func(self):
+        """
+        The ctype type of a value suitable for use as an argument of a function
+
+        May just call ctype_def
+        
+        Second return value is anythng that needs to go at the end of the
+        arg list, like a string len
+        """
+
+        return self._desc,None
 
     def __dir__(self):
         return self._nameArgs
@@ -98,3 +123,13 @@ class fDerivedType(fVar):
         
         self.__dict__[name] = value
         return    
+        
+    def get_dict(self):
+        """
+        Return a dict with the keys set suitable for this dt
+        """
+        x={}
+        for i in self._nameArgs:
+            x[i]=0
+        return x
+        

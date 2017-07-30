@@ -9,7 +9,7 @@ import pickle
 import numpy as np
 import errno
 
-from .parseMod import run_and_save, hash_file, fpyname
+#from .parseMod import run_and_save, hash_file, fpyname
 from .cmplx import fComplex, fParamComplex
 from .arrays import fExplicitArray, fDummyArray, fParamArray
 from .functions import fFunc
@@ -88,6 +88,15 @@ class fFort(object):
 
         for i in self._param:
             self._init_param(i)
+
+    
+        for i in self._funcs:
+            if i['args']:
+                for k in i['args']:
+                    if k['dt']:
+                        for j in self._dt_defs:
+                            if k['dt'].lower() == j['name'].lower():
+                                k['_dt_def'] = j  
 
         # Must come last after the derived types are setup
         for i in self._funcs:
