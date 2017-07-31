@@ -9,7 +9,7 @@ cpdef split_brackets(str value, bint remove_b=True):
     Outputs:
         ['abc (def')', '(fgh () ())']
     '''
-    cdef int idx,j,count,lvalue
+    cdef int idx,j,j2,count,lvalue
     cdef bint start
     cdef str i
     
@@ -23,7 +23,6 @@ cpdef split_brackets(str value, bint remove_b=True):
     start = False
     count = 0
     j = 0
-    lvalue=len(value)
     for idx,i in enumerate(value):
         if i == '(':
             count = count + 1
@@ -32,8 +31,9 @@ cpdef split_brackets(str value, bint remove_b=True):
             count = count - 1
         if start:
             if count == 0:
-                res.append(value[j:idx+1])
-                j=idx+1
+                j2=idx+1
+                res.append(value[j:j2])
+                j=j2
                 start = False
 
     return res
