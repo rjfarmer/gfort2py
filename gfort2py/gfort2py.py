@@ -18,7 +18,7 @@ from .types import fDerivedType
 from .utils import *
 from .var import fVar, fParam
 
-import parseMod as pm
+from . import parseMod as pm
 
 WARN_ON_SKIP=False
 
@@ -26,16 +26,16 @@ WARN_ON_SKIP=False
 
 class fFort(object):
 
-    def __init__(self, libname, ffile, reload=False,TEST_FLAG=False):
+    def __init__(self, libname, ffile, rerun=False,TEST_FLAG=False):
         self.TEST_FLAG=TEST_FLAG
         self._lib = ctypes.CDLL(libname)
         self._all_names=[]
         self._libname = libname
         self._fpy = pm.fpyname(ffile)
-        self._load_data(ffile, reload)
+        self._load_data(ffile, rerun)
         self._init()
 
-    def _load_data(self, ffile, reload=False):
+    def _load_data(self, ffile, rerun=False):
         try:
             f = open(self._fpy, 'rb')
         # FileNotFoundError does not exist on Python < 3.3
@@ -51,7 +51,7 @@ class fFort(object):
             if self.version == 1:
                 self._mod_data = pickle.load(f)
 
-                if self._mod_data["checksum"] != pm.hash_file(ffile) or reload:
+                if self._mod_data["checksum"] != pm.hashFile(ffile) or rerun:
                     x = pm.run(ffile,save=True,unpack=True)
                     self._mod_data = x[0]
                     self._mod_vars = x[1]

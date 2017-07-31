@@ -1,4 +1,4 @@
-import parseModCommon as pmc
+from . import parseModCommon as pmc
 
 
 class parseMod(pmc.parseModBase):

@@ -20,7 +20,7 @@ except ImportError:
 
 os.chdir('tests')
 subprocess.check_output(["make"])
-x=gf.fFort('./tester.so','tester.mod',reload=True,TEST_FLAG=True)
+x=gf.fFort('./tester.so','tester.mod',rerun=True,TEST_FLAG=True)
 
 #Decreases recursion depth to make debugging easier
 #sys.setrecursionlimit(100)

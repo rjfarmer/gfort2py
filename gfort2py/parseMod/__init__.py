@@ -1,2 +1,2 @@
 
-from .parseMod import run, fpyname
+from .parseMod import run, fpyname, hashFile

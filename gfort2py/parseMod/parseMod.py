@@ -25,39 +25,42 @@ def hashFile(filename):
     return p.decode().split()[0]
 
 def parseInput(x, filename):
-	res = {}
+    res = {}
+    
+    x = x.decode()
+    header = x.split('\n')[0]
+    x = x.replace('\n', ' ')
+    
+    if 'GFORTRAN' not in header:
+            raise ValueError('Not a gfortran mod file')
+    
+    res['version'] = int(header.split("'")[1])
+    res['orig_file'] = header.split()[-1]
+    res['filename'] = filename
+    res['checksum'] = hashFile(filename)
+    
+    if res['version'] == 14:
+            from . import parseMod14 as p
+    else:
+            raise VersionError("Only supports mod version 14")
+    
+    pm = p.parseMod(x,filename,res,PYFILE_VERSION)
+    
+    return pm
 	
-	x = x.decode()
-	header = x.split('\n')[0]
-	x = x.replace('\n', ' ')
-	
-	if 'GFORTRAN' not in header:
-		raise ValueError('Not a gfortran mod file')
-	
-	res['version'] = int(header.split("'")[1])
-	res['orig_file'] = header.split()[-1]
-	res['filename'] = filename
-	res['checksum'] = hashFile(filename)
-	
-	if res['version'] == 14:
-		import parseMod14 as p
-	else:
-		raise VersionError("Only supports mod version 14")
-
-	pm = p.parseMod(x,filename,res,PYFILE_VERSION)
-
-	return pm
-	
-def run(filename,save=True,unpack=True):
-	x = loadData(filename)
-	x.processData()
-	if save:
-                x.save()
-                
-        if unpack:
-                return x.all_data
-        else:
-                return x
+def run(filename,output=None,save=True,unpack=True):
+    x = loadData(filename)
+    x.processData()
+    if save:
+        if output is None:
+            output=fpyname(filename)
+        
+        x.save(output)
+        
+    if unpack:
+        return x.getUnpackedData()
+    else:
+        return x
 
 def fpyname(filename):
     return filename.split('.')[0] + '.fpy'
@@ -69,4 +72,4 @@ if __name__ == "__main__":
         files = sys.argv[1:]
         
     for filename in files:
-        runAndSave(filename)
+        run(filename,save=True,unpack=False)

@@ -25,10 +25,11 @@ class parseModBase(object):
         self.mod_data = res
         self.PYFILE_VERSION = PYFILE_VERSION
         
-        self.funcs={}
-        self.mod_vars={}
-        self.param={}
-        self.dt_defs={}
+        self.funcs=[]
+        self.mod_vars=[]
+        self.param=[]
+        self.dt_defs=[]
+        self._unpacked=False
 
     def processData(self):
         self.data = split_brackets(self.data)
@@ -42,15 +43,42 @@ class parseModBase(object):
         self.parseAllSymbols()
         
         self.matchFuncArgs()
-        #self.data=None
+        self.data=None
+        
+        self.unpackData()
 
-    def runAndSave(filename, return_data=False):
-        pass
-        #mod_data, mod_vars, param, funcs, dt_defs = doStuff(filename)
-        #outname = fpyname(filename)
-        #output(outname, self.PYFILE_VERSION, mod_data, mod_vars, param, funcs, dt_defs)
-        #if return_data:
-            #return mod_data, mod_vars, param, funcs, dt_defs
+    def save(self,output):
+        if not self._unpacked:
+            self.unpackData()
+        
+        self.pickler(output, self.PYFILE_VERSION, 
+                    self.mod_data, self.mod_vars, self.param, 
+                    self.funcs, self.dt_defs)
+
+ 
+    def pickler(self,filename, *args):   
+        with open(filename, 'wb') as f:
+            for i in args:
+                pickle.dump(i, f, protocol=2)
+            
+    def unpackData(self):
+        self._unpacked = True
+        
+        for i in self.all_symbols:
+            if 'proc' in i:
+                self.funcs.append(i)
+            elif 'var' in i:
+                self.mod_vars.append(i)
+            elif 'param' in i:
+                self.param.append(i)
+            elif 'dt_def' in i:
+                self.dt_defs.append(i)
+                
+    def getUnpackedData(self):
+        if not self._unpacked:
+            self.unpackData()
+            
+        return  self.mod_data, self.mod_vars, self.param, self.funcs, self.dt_defs
     
     def mangleName(self,item):
         return '__' + item['module'] + '_MOD_' + item['name'].lower()
@@ -137,10 +165,6 @@ class parseModBase(object):
                 #r['dt_type'] = self.parseDTType(info)
             else:
                 r['proc'] = self.parseProc(info)
-                #print(r['proc'])
-                #print(symbol)
-                #print()
-                
         elif 'MODULE ' in type_line:
             r['module'] = self.parseModule(info)
         elif 'PARAMETER ' in type_line:
