@@ -4,7 +4,6 @@ import os
 import pickle
 import sys
 import subprocess
-import utils 
 
 PYFILE_VERSION = 1
 
@@ -49,19 +48,19 @@ def parseInput(x, filename):
 
 	return pm
 	
-def run(filename):
+def run(filename,save=True,unpack=True):
 	x = loadData(filename)
 	x.processData()
-	return x
-    
-def runAndSave(filename):
-	x=run(filename)
-	x.save()
-	
-def runAndReturn(filename):
-	x=run(filename)
-	return self.outputData
+	if save:
+                x.save()
+                
+        if unpack:
+                return x.all_data
+        else:
+                return x
 
+def fpyname(filename):
+    return filename.split('.')[0] + '.fpy'
 
 #################################
 

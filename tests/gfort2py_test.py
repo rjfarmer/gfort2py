@@ -1,7 +1,12 @@
 import os, sys
 import numpy as np
 import gfort2py as gf
-import unittest2 as unittest
+
+try:
+	import unittest as unittest
+except ImportError:
+	import unittest2 as unittest
+	
 import subprocess
 import numpy.testing as np_test
 
@@ -464,28 +469,28 @@ class TestStringMethods(unittest.TestCase):
 		np_test.assert_array_equal(y['x'],2*v)
 		
 		
-	def test_dt_basic(self):
-		y=x.f_struct_simple.get()
-		self.assertEqual(y,{'x':0,'y':0})
+	#def test_dt_basic(self):
+		#y=x.f_struct_simple.get()
+		#self.assertEqual(y,{'x':0,'y':0})
 	
-	def test_dt_set_value(self):
-		x.f_struct_simple.x=1
-		x.f_struct_simple.y=0
-		y=x.f_struct_simple.get()
-		self.assertEqual(y,{'x':1,'y':0})
+	#def test_dt_set_value(self):
+		#x.f_struct_simple.x=1
+		#x.f_struct_simple.y=0
+		#y=x.f_struct_simple.get()
+		#self.assertEqual(y,{'x':1,'y':0})
 	
-	def test_dt_set_dict(self):	
-		x.f_struct_simple={'x':5,'y':5}
-		y=x.f_struct_simple.get()
-		self.assertEqual(y,{'x':5,'y':5})
+	#def test_dt_set_dict(self):	
+		#x.f_struct_simple={'x':5,'y':5}
+		#y=x.f_struct_simple.get()
+		#self.assertEqual(y,{'x':5,'y':5})
 		
-	def test_dt_bad_dict(self):
-		with self.assertRaises(ValueError) as cm:
-			x.f_struct_simple = {'asw':2,'y':0}
+	#def test_dt_bad_dict(self):
+		#with self.assertRaises(ValueError) as cm:
+			#x.f_struct_simple = {'asw':2,'y':0}
 	
-	def test_dt_bad_value(self):
-		with self.assertRaises(TypeError) as cm:
-			x.f_struct_simple.x='asde'
+	#def test_dt_bad_value(self):
+		#with self.assertRaises(TypeError) as cm:
+			#x.f_struct_simple.x='asde'
 	
 	
 	def test_c_int_alloc_1d_non_alloc(self):
@@ -826,6 +831,26 @@ class TestStringMethods(unittest.TestCase):
 		vTest[:]=10
 		np_test.assert_array_equal(y['x'],vTest)
 		
+	#def test_sub_dt_in_s_simple(self):
+		#with captured_output() as (out,err):
+			#y=x.sub_f_simple_in({'x':1,'y':10})
+		#output=out.getvalue().strip()
+		#o=''.join([str(i).zfill(3).ljust(4) for i in [1,10]])
+		#self.AssertEqual(output,o)
+		
+	#def test_sub_dt_out_s_simple(self):
+		#with captured_output() as (out,err):
+			#y=x.sub_f_simple_out({})
+		#output=out.getvalue().strip()
+		#self.assertEqual(y[0],{'x':1,'y':10})	
+	
+	#def test_sub_dt_inout_s_simple(self):
+		#with captured_output() as (out,err):
+			#y=x.sub_f_simple_inout({'x':5,'y':3})
+		#output=out.getvalue().strip()
+		#o=''.join([str(i).zfill(3).ljust(4) for i in [1,10]])
+		#self.AssertEqual(output,o)
+		#self.assertEqual(y[0],{'x':1,'y':10})
 
 if __name__ == '__main__':
 	unittest.main() 

@@ -13,8 +13,8 @@ import subprocess
 import numpy as np
 import multiprocessing as mp
 
-from utils import *
-from utils_cpython import *
+from .utils import *
+from .utils_cpython import *
 
 PARALLEL = False
 

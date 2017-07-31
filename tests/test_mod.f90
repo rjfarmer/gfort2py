@@ -492,4 +492,26 @@ module tester
       end subroutine sub_alloc_arr_1d
       
       
+      subroutine sub_f_simple_in(x)
+         type(s_simple), intent(in) :: x
+         
+         write(output_unit,'(2(I2,1X))') x%x,x%y
+      end subroutine sub_f_simple_in
+      
+      subroutine sub_f_simple_out(x)
+         type(s_simple), intent(out) :: x
+         
+         x%x=1
+         x%y=10
+      end subroutine sub_f_simple_out
+      
+      subroutine sub_f_simple_inout(zzz)
+         type(s_simple), intent(inout) :: zzz
+         
+         write(output_unit,'(2(I2,1X))') zzz%x,zzz%y
+         zzz%x=1
+         zzz%y=10
+      end subroutine sub_f_simple_inout
+      
+      
 end module tester

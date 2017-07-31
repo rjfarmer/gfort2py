@@ -19,9 +19,7 @@ except ImportError:
 
 PY_INCLUDE = sysconfig.get_paths()['include']
 
-ext = Extension("**/*",
-				["**/*.pyx"],
-				include_dirs=[np.get_include(),PY_INCLUDE])
+ext = Extension("**/*",["**/*.pyx"],include_dirs=[np.get_include(),PY_INCLUDE])
 				
 
 def my_test_suite():
@@ -36,12 +34,12 @@ setup(name='gfort2py',
       author='Robert Farmer',
       author_email='rjfarmer@asu.edu',
       url='https://github.com/rjfarmer/gfort2py',
-      packages=["src"],
+      packages=find_packages(),
       classifiers=[
 			"Development Status :: 1 - Planning",
 			"License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
 			"Programming Language :: Fortran",
       ],
       test_suite = 'tests',
-	  ext_modules=cythonize(ext)
+      ext_modules=cythonize(ext)
      )

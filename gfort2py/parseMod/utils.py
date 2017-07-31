@@ -10,8 +10,6 @@ def output(filename, *args):
         for i in args:
             pickle.dump(i, f, protocol=2)
 
-def fpyname(filename):
-    return filename.split('.')[0] + '.fpy'
 	
 #def split_brackets(value, remove_b=True):
     #'''
@@ -57,40 +55,3 @@ def hextofloat(s):
     man = man[:exp]+'.'+man[exp:]
     man = man +'P0'
     return float.fromhex(man)
-    
-#def split_brackets(value, remove_b=False):
-    #'''
-    #Split a string based on pairs of brackets, nested brackets are not split
-
-    #Input:
-        #'abc (def) (fgh () ())'
-
-    #Outputs:
-        #['def', 'fgh () ()']
-    #'''
-    #if value.startswith('('):
-        #value = value[1:]
-    
-    #if value.endswith(')'):
-        #value = value[:-1]
-    
-    #res = []
-    #token = ''
-    #start = False
-    #count = 0
-    #for i in value:
-        #if i == '(':
-            #count = count + 1
-            #start = True
-        #if start:
-            #token += i
-        #if i == ')':
-            #count = count - 1
-        #if start and count == 0:
-            #if remove_b:
-                #res.append(token[1:-1])
-            #else:
-                #res.append(token)
-            #start = False
-            #token = ''
-    #return res

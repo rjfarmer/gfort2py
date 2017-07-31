@@ -18,6 +18,8 @@ from .types import fDerivedType
 from .utils import *
 from .var import fVar, fParam
 
+import parseMod as pm
+
 WARN_ON_SKIP=False
 
 #https://gcc.gnu.org/onlinedocs/gcc-6.1.0/gfortran/Argument-passing-conventions.html
@@ -29,7 +31,7 @@ class fFort(object):
         self._lib = ctypes.CDLL(libname)
         self._all_names=[]
         self._libname = libname
-        self._fpy = fpyname(ffile)
+        self._fpy = pm.fpyname(ffile)
         self._load_data(ffile, reload)
         self._init()
 
@@ -40,7 +42,7 @@ class fFort(object):
         except (OSError, IOError) as e: 
             if e.errno != errno.ENOENT:
                 raise
-            run_and_save(ffile)
+            pm.run(ffile,save=True)
         else:
             f.close()
 
@@ -49,8 +51,8 @@ class fFort(object):
             if self.version == 1:
                 self._mod_data = pickle.load(f)
 
-                if self._mod_data["checksum"] != hash_file(ffile) or reload:
-                    x = run_and_save(ffile, return_data=True)
+                if self._mod_data["checksum"] != pm.hash_file(ffile) or reload:
+                    x = pm.run(ffile,save=True,unpack=True)
                     self._mod_data = x[0]
                     self._mod_vars = x[1]
                     self._param = x[2]
