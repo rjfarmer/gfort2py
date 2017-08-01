@@ -94,7 +94,7 @@ class fFunc(fVar):
     def _ctypes_to_return(self,args_out):
         r={}
         for i,j in zip(self._arg_vars,args_out):
-            if 'out' in i.intent or i.intent=='':
+            if 'out' in i.var['intent'] or i.var['intent']=='':
                 r[i.name]=i.ctype_to_py_f(j)
         return r
     
