@@ -25,32 +25,33 @@ class fFunc(fVar):
         self._arg_vars = []
         
         tmp=[]
-        for i in self.args:
-            self._arg_vars.append(self._init_var(i))
-            self._arg_vars[-1]._func_arg=True
-            
-            x,y=self._arg_vars[-1].ctype_def_func()
-            self._arg_ctypes.append(x)
-            if y is not None:
-                tmp.append(y)
-        self._call.argtypes = self._arg_ctypes+tmp
+        if len(self.proc['arg_nums'])>0:
+            for i in self.arg:
+                self._arg_vars.append(self._init_var(i))
+                self._arg_vars[-1]._func_arg=True
+                
+                x,y=self._arg_vars[-1].ctype_def_func()
+                self._arg_ctypes.append(x)
+                if y is not None:
+                    tmp.append(y)
+            self._call.argtypes = self._arg_ctypes+tmp
 
     def _init_var(self, obj):
-        if obj['pytype'] == 'str':
+        if obj['var']['pytype'] == 'str':
             x = fStr(self._lib, obj)
-        elif obj['cmplx']:
+        elif obj['var']['pytype'] == 'complex':
             x = fComplex(self._lib, obj)
-        elif obj['dt']:
+        elif 'dt' in obj['var']:
             x = fDerivedType(self._lib, obj)
-        elif obj['array']:
-            if obj['array']['atype'] == 'explicit':
-                x = fExplicitArray(self._lib, obj,self.TEST_FLAG)
-            elif obj['array']['atype'] == 'alloc':
-                x = fAllocatableArray(self._lib, obj, self.TEST_FLAG)
-            elif obj['array']['atype'] == 'assumed_shape':
-                x = fAssumedShape(self._lib, obj, self.TEST_FLAG)
-            elif obj['array']['atype'] == 'assumed_size':
-                x = fAssumedSize(self._lib, obj, self.TEST_FLAG)
+        elif 'array' in obj['var']:
+            if obj['var']['array']['atype'] == 'explicit':
+                x = fExplicitArray(self._lib, obj['var'],self.TEST_FLAG)
+            elif obj['var']['array']['atype'] == 'alloc':
+                x = fAllocatableArray(self._lib, obj['var'], self.TEST_FLAG)
+            elif obj['var']['array']['atype'] == 'assumed_shape':
+                x = fAssumedShape(self._lib, obj['var'], self.TEST_FLAG)
+            elif obj['var']['array']['atype'] == 'assumed_size':
+                x = fAssumedSize(self._lib, obj['var'], self.TEST_FLAG)
             else:
                 print("Unknown: "+str(obj))
                 raise ValueError
@@ -63,7 +64,7 @@ class fFunc(fVar):
 
     def _set_return(self):
         self.sub = False
-        if self.pytype == 'void':
+        if self.proc['ctype'] is None:
             self.sub = True
 
         if not self.sub:
@@ -83,6 +84,12 @@ class fFunc(fVar):
             if y is not None:
                 tmp.append(y)
         return args_in + tmp
+        
+    def ctype_def(self):
+        """
+        The ctype type of this object
+        """
+        return getattr(ctypes, self.proc['ctype'])
     
     def _ctypes_to_return(self,args_out):
         r={}

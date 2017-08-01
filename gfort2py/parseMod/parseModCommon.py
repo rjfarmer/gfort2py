@@ -143,6 +143,9 @@ class parseModBase(object):
         for i in ['num','name','module','parent_id']:
             r[i]=r[i].replace("'","")
         
+        if len(r['name'])==0:
+            return {}
+        
         ## things to left of '(' are basic info right of '(' contains detailed info
         ## about the symbol  
         splitPoint = symbol.index("(")
@@ -158,7 +161,8 @@ class parseModBase(object):
             if r['parent_id']=='1':
                 r['var'] = self.parseVar(info)
             else:
-                r['func_arg'] = self.parseFuncArg(info)
+                r['var'] = self.parseFuncArg(info)
+                r['func_arg']=True
         elif 'PROCEDURE ' in type_line:
             if 'GENERIC' in type_line:
                 pass #Uneeded
@@ -166,7 +170,7 @@ class parseModBase(object):
             else:
                 r['proc'] = self.parseProc(info)
         elif 'MODULE ' in type_line:
-            r['module'] = self.parseModule(info)
+            r['module_info'] = self.parseModule(info)
         elif 'PARAMETER ' in type_line:
             r['param'] = self.parseParam(info)
         elif 'DERIVED ' in type_line:
@@ -174,6 +178,8 @@ class parseModBase(object):
             r['dt_def'] = self.parseDT(info)
         else:
             raise ValueError("Unknown object "+symbol)
+            
+        r['mangled_name']=self.mangleName(r)
             
         r.pop('info')
 
@@ -249,7 +255,7 @@ class parseModBase(object):
             info_el = split_brackets(i[i.index("(")-1:],remove_b=False)
             #Re-roder to be the same as everything else
             newL = [info_el[2],'()',info_el[0],'()',info_el[1]]
-            dtEl['arg'] = self.parseVar(newL)
+            dtEl['var'] = self.parseVar(newL)
             res['arg'].append(dtEl)
         
         return res
@@ -376,15 +382,15 @@ class parseModBase(object):
             ctype='c_bool'
         elif 'UNKNOWN' in x:
             pytype='None'
-            ctype='c_void'
+            ctype='c_void_p'
         elif "DERIVED" in x:
             #Skip these
-            pytype=None
-            ctype=None
+            pytype='None'
+            ctype='c_void_p'
         else:
             print("Skipping "+x)
-            pytype=None
-            ctype=None
+            pytype='None'
+            ctype='c_void_p'
             #raise ValueError("Cant parse " + x)
         return pytype,ctype
         

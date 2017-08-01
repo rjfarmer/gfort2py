@@ -54,12 +54,12 @@ class fDerivedType(fVar):
         self.setup_desc()
         class fDerivedTypeDesc(ctypes.Structure):
             _fields_ = self.fields
-        fDerivedTypeDesc.__name__ = self.dt
+        fDerivedTypeDesc.__name__ = self._dt_def['name']
         return fDerivedTypeDesc
         
     
     def setup_desc(self):
-        for i in self._dt_def['args']:
+        for i in self._dt_def['dt_def']['arg']:
             self._args.append(fVar(self._lib, i))
             self._args[-1]._dt_arg=True         
             self._nameArgs.append(self._args[-1].name.replace("\'", ''))

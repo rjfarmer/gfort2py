@@ -20,6 +20,8 @@ class fVar(object):
     def __init__(self, lib, obj,TEST_FLAG=False):
         self.__dict__.update(obj)
         self._lib = lib
+        self.ctype=self.var['ctype']
+        self.pytype=self.var['pytype']
         self._ctype = self.ctype_def()
         #self._ctype_f = self.ctype_def_func()
         self._pytype = self.pytype_def()
@@ -313,6 +315,10 @@ class fVar(object):
 
 
 class fParam(fVar):
+    def __init__(self, lib, obj,TEST_FLAG=False):
+        self.__dict__.update(obj)
+        self._lib = lib
+        self.TEST_FLAG=TEST_FLAG
 
     def set_mod(self, value):
         """

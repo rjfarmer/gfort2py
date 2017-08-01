@@ -78,11 +78,11 @@ class fFort(object):
         for i in self._funcs:
             self._all_names.append(i['name'])
         
-
         for i in self._mod_vars:
-            if i['dt']:
+            if 'var' in i and 'dt' in i['var']:
+                i['var']['dt']['name']=i['var']['dt']['name'].lower().replace("'","")
                 for j in self._dt_defs:
-                    if i['dt'].lower() == j['name'].lower():
+                    if i['var']['dt']['name'].lower() == j['name'].lower():
                         i['_dt_def'] = j
 
         for i in self._mod_vars:
@@ -93,11 +93,12 @@ class fFort(object):
 
     
         for i in self._funcs:
-            if i['args']:
-                for k in i['args']:
-                    if k['dt']:
+            if 'arg' in i and len(i['arg'])>0:
+                for k in i['arg']:
+                    if 'dt' in k['var']:
+                        k['var']['dt']['name']=k['var']['dt']['name'].lower().replace("'","")
                         for j in self._dt_defs:
-                            if k['dt'].lower() == j['name'].lower():
+                            if k['var']['dt']['name'].lower() == j['name'].lower():
                                 k['_dt_def'] = j  
 
         # Must come last after the derived types are setup
@@ -106,13 +107,13 @@ class fFort(object):
 
     def _init_var(self, obj):
         x=None
-        if obj['pytype'] == 'str':
+        if obj['var']['pytype'] == 'str':
             x = fStr(self._lib, obj,self.TEST_FLAG)
-        elif obj['cmplx']:
+        elif obj['var']['pytype'] == 'complex':
             x = fComplex(self._lib, obj,self.TEST_FLAG)
-        elif obj['dt']:
+        elif 'dt' in obj['var'] and obj['var']['dt']:
             x = fDerivedType(self._lib, obj,self.TEST_FLAG)
-        elif obj['array']:
+        elif 'array' in obj:
             if obj['array']['atype'] == 'explicit':
                 x = fExplicitArray(self._lib, obj,self.TEST_FLAG)
             elif obj['array']['atype'] == 'alloc':
@@ -126,9 +127,9 @@ class fFort(object):
             print("Skipping "+obj['name'])
 
     def _init_param(self, obj):
-        if obj['cmplx']:
+        if obj['param']['pytype']=='complex':
             x = fParamComplex(self._lib, obj)
-        elif len(obj['value']):
+        elif 'array' in obj:
             x = fParamArray(self._lib, obj)
         else:
             x = fParam(self._lib, obj)

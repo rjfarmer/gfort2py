@@ -13,6 +13,7 @@ class fExplicitArray(fVar):
         self._lib = lib
         self._pytype = np.array
         self._ctype = self.ctype_def()
+        self.ndims = int(self.array['ndims'])
         #self._ctype_f = self.ctype_def_func()
         self.TEST_FLAG=TEST_FLAG
         self._dtype=self.pytype+str(8*ctypes.sizeof(self._ctype))
@@ -63,7 +64,7 @@ class fExplicitArray(fVar):
         Second return value is anythng that needs to go at the end of the
         arg list, like a string len
         """
-        x=np.ctypeslib.ndpointer(dtype=self._dtype,ndim=self.array['ndims'],
+        x=np.ctypeslib.ndpointer(dtype=self._dtype,ndim=self.ndims,
                                 flags='F_CONTIGUOUS')
         y=None
         return x,y        
@@ -126,7 +127,7 @@ class fDummyArray(fVar):
         self.__dict__.update(obj)
         self._lib = lib
 
-        self.ndim = self.array['ndims']
+        self.ndim = int(self.array['ndims'])
         self._lib = lib
         
         self._desc = self._setup_desc()
