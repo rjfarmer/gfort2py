@@ -12,6 +12,9 @@ class fStr(fVar):
        # self._ctype_f = self.ctype_def_func()
         self._pytype = str
         self.TEST_FLAG=TEST_FLAG
+        
+        self.char_len = self.var['len']
+
 
     def py_to_ctype(self, value):
         """

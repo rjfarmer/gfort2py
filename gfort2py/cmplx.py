@@ -63,4 +63,4 @@ class fParamComplex(fParam):
         A parameters value is stored in the dict, as we cant access them 
         from the shared lib.
         """
-        return complex(float(self.value[0]), float(self.value[1]))
+        return self.value

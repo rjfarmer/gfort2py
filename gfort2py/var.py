@@ -319,6 +319,7 @@ class fParam(fVar):
         self.__dict__.update(obj)
         self._lib = lib
         self.TEST_FLAG=TEST_FLAG
+        self.value = self.param['value']
 
     def set_mod(self, value):
         """

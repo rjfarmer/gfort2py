@@ -45,13 +45,13 @@ class fFunc(fVar):
             x = fDerivedType(self._lib, obj)
         elif 'array' in obj['var']:
             if obj['var']['array']['atype'] == 'explicit':
-                x = fExplicitArray(self._lib, obj['var'],self.TEST_FLAG)
+                x = fExplicitArray(self._lib, obj,self.TEST_FLAG)
             elif obj['var']['array']['atype'] == 'alloc':
-                x = fAllocatableArray(self._lib, obj['var'], self.TEST_FLAG)
+                x = fAllocatableArray(self._lib, obj, self.TEST_FLAG)
             elif obj['var']['array']['atype'] == 'assumed_shape':
-                x = fAssumedShape(self._lib, obj['var'], self.TEST_FLAG)
+                x = fAssumedShape(self._lib, obj, self.TEST_FLAG)
             elif obj['var']['array']['atype'] == 'assumed_size':
-                x = fAssumedSize(self._lib, obj['var'], self.TEST_FLAG)
+                x = fAssumedSize(self._lib, obj, self.TEST_FLAG)
             else:
                 print("Unknown: "+str(obj))
                 raise ValueError

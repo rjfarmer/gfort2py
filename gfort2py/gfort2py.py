@@ -113,10 +113,10 @@ class fFort(object):
             x = fComplex(self._lib, obj,self.TEST_FLAG)
         elif 'dt' in obj['var'] and obj['var']['dt']:
             x = fDerivedType(self._lib, obj,self.TEST_FLAG)
-        elif 'array' in obj:
-            if obj['array']['atype'] == 'explicit':
+        elif 'array' in obj['var']:
+            if obj['var']['array']['atype'] == 'explicit':
                 x = fExplicitArray(self._lib, obj,self.TEST_FLAG)
-            elif obj['array']['atype'] == 'alloc':
+            elif obj['var']['array']['atype'] == 'alloc':
                 x = fDummyArray(self._lib, obj, self.TEST_FLAG)
         else:
             x = fVar(self._lib, obj,self.TEST_FLAG)
