@@ -129,7 +129,7 @@ class fFort(object):
     def _init_param(self, obj):
         if obj['param']['pytype']=='complex':
             x = fParamComplex(self._lib, obj)
-        elif 'array' in obj:
+        elif obj['param']['array']:
             x = fParamArray(self._lib, obj)
         else:
             x = fParam(self._lib, obj)

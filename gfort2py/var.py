@@ -320,6 +320,8 @@ class fParam(fVar):
         self._lib = lib
         self.TEST_FLAG=TEST_FLAG
         self.value = self.param['value']
+        self.pytype = self.param['pytype']
+        self._pytype = self.pytype_def()
 
     def set_mod(self, value):
         """

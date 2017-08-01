@@ -277,6 +277,11 @@ class parseModBase(object):
         res['bytes'] = s
         
         res['value']=self.getParamValue(value,res['pytype'])
+        
+        res['array']=False
+        if 'ARRAY' in value:
+            res['array']=True
+        
         return res
 
 
@@ -295,7 +300,7 @@ class parseModBase(object):
         if 'ARRAY' in x:
             x = split_brackets(x.strip())
             arrLen = int(''.join(c for c in x[-1] if c not in "'()"))
-            x2 = split_brackets(x[1])
+            x2 = split_brackets(x[1][x[1].index("("):])
             listParam = [y.split("'")[-2] for y in x2]
             p = [self.parseSingleParam(y,typ) for y in listParam]
         else:
