@@ -1,4 +1,9 @@
 from __future__ import print_function
+try:
+    import __builtin__
+except ImportError:
+    import builtins as __builtin__
+
 import ctypes
 import os
 from .var import fVar
@@ -15,6 +20,7 @@ class fFunc(fVar):
     def __init__(self, lib, obj,TEST_FLAG=False):
         self.__dict__.update(obj)
         self._lib = lib
+        self._sub = self.proc['sub']
         self._call = getattr(self._lib, self.mangled_name)
         self._set_return()
         self._set_arg_ctypes()
@@ -63,11 +69,7 @@ class fFunc(fVar):
         return x
 
     def _set_return(self):
-        self.sub = False
-        if self.proc['ctype'] is None:
-            self.sub = True
-
-        if not self.sub:
+        if not self._sub:
             self._restype = self.ctype_def()
             self._call.restype = self._restype
             
@@ -89,7 +91,7 @@ class fFunc(fVar):
         """
         The ctype type of this object
         """
-        return getattr(ctypes, self.proc['ctype'])
+        return getattr(ctypes, self.proc['ret']['ctype'])
     
     def _ctypes_to_return(self,args_out):
         r={}
@@ -117,10 +119,13 @@ class fFunc(fVar):
             print(read_pipe(pipe_out))
         # Python print available now
         
-        if self.sub:
+        if self._sub:
             return self._ctypes_to_return(args_in)
         else:
-            return res
+            return self.returnPytype()(res)
+            
+    def returnPytype(self):
+        return getattr(__builtin__, self.proc['ret']['pytype'])
             
     def __str__(self):
         return str("Function: " + self.name)

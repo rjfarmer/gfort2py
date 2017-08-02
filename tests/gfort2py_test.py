@@ -831,26 +831,29 @@ class TestStringMethods(unittest.TestCase):
 		vTest[:]=10
 		np_test.assert_array_equal(y['x'],vTest)
 		
-	#def test_sub_dt_in_s_simple(self):
-		#with captured_output() as (out,err):
-			#y=x.sub_f_simple_in({'x':1,'y':10})
-		#output=out.getvalue().strip()
-		#o=''.join([str(i).zfill(3).ljust(4) for i in [1,10]])
-		#self.AssertEqual(output,o)
-		
-	#def test_sub_dt_out_s_simple(self):
-		#with captured_output() as (out,err):
-			#y=x.sub_f_simple_out({})
-		#output=out.getvalue().strip()
-		#self.assertEqual(y[0],{'x':1,'y':10})	
+	@unittest.skip("In progress")
+	def test_sub_dt_in_s_simple(self):
+		with captured_output() as (out,err):
+			y=x.sub_f_simple_in({'x':1,'y':10})
+		output=out.getvalue().strip()
+		o=''.join([str(i).zfill(3).ljust(4) for i in [1,10]])
+		self.AssertEqual(output,o)
 	
-	#def test_sub_dt_inout_s_simple(self):
-		#with captured_output() as (out,err):
-			#y=x.sub_f_simple_inout({'x':5,'y':3})
-		#output=out.getvalue().strip()
-		#o=''.join([str(i).zfill(3).ljust(4) for i in [1,10]])
-		#self.AssertEqual(output,o)
-		#self.assertEqual(y[0],{'x':1,'y':10})
+	@unittest.skip("In progress")	
+	def test_sub_dt_out_s_simple(self):
+		with captured_output() as (out,err):
+			y=x.sub_f_simple_out({})
+		output=out.getvalue().strip()
+		self.assertEqual(y[0],{'x':1,'y':10})	
+	
+	@unittest.skip("In progress")
+	def test_sub_dt_inout_s_simple(self):
+		with captured_output() as (out,err):
+			y=x.sub_f_simple_inout({'x':5,'y':3})
+		output=out.getvalue().strip()
+		o=''.join([str(i).zfill(3).ljust(4) for i in [1,10]])
+		self.AssertEqual(output,o)
+		self.assertEqual(y[0],{'x':1,'y':10})
 
 if __name__ == '__main__':
 	unittest.main() 

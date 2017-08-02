@@ -118,10 +118,10 @@ class parseModBase(object):
         
     
     def parseAllSymbols(self):
-        x = self.data[6][1:-1].strip()
+        x = self.data[6].strip()[1:-1].strip()
         
         #Breaks the single list of items into pairs of info for each symbol
-        split_data = split_brackets(x)
+        split_data = split_brackets(x,remove_b=False)
         
         if PARALLEL:
             with mp.Pool() as pool:
@@ -234,6 +234,16 @@ class parseModBase(object):
         
         x=info[3][info[3].index("("):]
         res['arg_nums']=x.replace("(","").replace(")","").split()
+        
+        if 'SUBROUTINE' in info[0]:
+            res['sub']=True
+        else:
+            res['sub']=False
+        
+        #Retrun value
+        res['ret'] = self.parseVar(info)
+        
+        
         return res
         
     def parseModule(self,info):
@@ -475,4 +485,8 @@ class parseModBase(object):
                     for k,kdx in zip(func_arg_num,ind_func_args):
                         if j==k:
                             self.all_symbols[idx]['arg'].append(self.all_symbols[kdx])
+
+
+
+
 

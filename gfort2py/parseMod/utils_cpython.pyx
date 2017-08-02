@@ -14,10 +14,8 @@ cpdef split_brackets(str value, bint remove_b=True):
     cdef str i
     
     if remove_b:
-        if value.startswith('('):
-            value = value[1:]
-        if value.endswith(')'):
-            value = value[:-1]
+        if value.startswith('(') and value.endswith(')'):
+            value = value[1:-1]
     
     res = []
     start = False
@@ -35,5 +33,8 @@ cpdef split_brackets(str value, bint remove_b=True):
                 res.append(value[j:j2])
                 j=j2
                 start = False
+                
+    if not j == len(value):
+        res.append(value[j:])
 
     return res
