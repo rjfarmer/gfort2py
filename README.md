@@ -1,4 +1,5 @@
 ![Build status](https://travis-ci.org/rjfarmer/gfort2py.svg?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/rjfarmer/gfort2py/badge.svg?branch=master)](https://coveralls.io/github/rjfarmer/gfort2py?branch=master)
 
 # gfort2py
 Library to allow calling fortran code from python. Requires gfortran>=6.0

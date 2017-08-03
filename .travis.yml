@@ -25,13 +25,16 @@ addons:
       - gzip
 install: 
   - pip install -r requirements.txt
-  - "python setup.py install"
+  - pip install coveralls
+  - python setup.py install
 # command to run tests
 script: 
-  - "python setup.py test"
+  - coverage run --source=gfort2py setup.py test
 sudo: required
 env: 
   TRAVIS=1
+after_success:
+    coveralls
 cache: 
   directories:
     - $HOME/.cache/pip
