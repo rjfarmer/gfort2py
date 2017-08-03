@@ -468,30 +468,24 @@ class TestStringMethods(unittest.TestCase):
 
 		np_test.assert_array_equal(y['x'],2*v)
 		
+	def test_dt_set_value(self):
+		x.f_struct_simple.x=1
+		x.f_struct_simple.y=0
+		y=x.f_struct_simple.get()
+		self.assertEqual(y,{'x':1,'y':0})
 		
-	#def test_dt_basic(self):
-		#y=x.f_struct_simple.get()
-		#self.assertEqual(y,{'x':0,'y':0})
-	
-	#def test_dt_set_value(self):
-		#x.f_struct_simple.x=1
-		#x.f_struct_simple.y=0
-		#y=x.f_struct_simple.get()
-		#self.assertEqual(y,{'x':1,'y':0})
-	
-	#def test_dt_set_dict(self):	
-		#x.f_struct_simple={'x':5,'y':5}
-		#y=x.f_struct_simple.get()
-		#self.assertEqual(y,{'x':5,'y':5})
-		
-	#def test_dt_bad_dict(self):
-		#with self.assertRaises(ValueError) as cm:
-			#x.f_struct_simple = {'asw':2,'y':0}
-	
-	#def test_dt_bad_value(self):
-		#with self.assertRaises(TypeError) as cm:
-			#x.f_struct_simple.x='asde'
-	
+	def test_dt_set_dict(self):	
+		x.f_struct_simple={'x':5,'y':5}
+		y=x.f_struct_simple.get()
+		self.assertEqual(y,{'x':5,'y':5})
+			
+	def test_dt_bad_dict(self):
+		with self.assertRaises(ValueError) as cm:
+			x.f_struct_simple = {'asw':2,'y':0}
+			
+	def test_dt_bad_value(self):
+		with self.assertRaises(TypeError) as cm:
+			x.f_struct_simple.x='asde'
 	
 	def test_c_int_alloc_1d_non_alloc(self):
 		y=x.sub_alloc_int_1d_cleanup()

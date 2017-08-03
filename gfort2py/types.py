@@ -24,7 +24,7 @@ class fDerivedType(fVar):
             
     def get_single(self,name):
         r = self._get_pointer()
-        return getattr(r.contents,name)
+        return getattr(r,name)
 
     def _get_pointer(self):
         if '_func_arg' in self.__dict__:
