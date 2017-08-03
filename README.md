@@ -1,7 +1,7 @@
 ![Build status](https://travis-ci.org/rjfarmer/gfort2py.svg?branch=master)
 
 # gfort2py
-Library to allow calling fortran code from python. Tested on python3, i think python2 mostly works except the unit tests. Requires gfortran>=6.0
+Library to allow calling fortran code from python. Requires gfortran>=6.0
 
 ## Build
 ````bash
@@ -24,6 +24,26 @@ x=gf.fFort(SHARED_LIB_NAME,MOD_FILE_NAME)
 ````
 
 x now contains all variables, parameters and functions from the module (tab completable)
+
+````python
+y = x.func_name(a,b,c)
+````
+
+Will call the fortran function with varaibles a,b,c and will return the result in y
+
+
+````python
+x.some_var = 1
+````
+
+Sets a module variable to 1, will attempt to coerce it to the fortran type
+
+````python
+x.some_var
+x.some_var.get()
+````
+
+First will print the value in some_var while get() will return the value
 
 
 ## Testing

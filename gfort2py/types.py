@@ -54,7 +54,7 @@ class fDerivedType(fVar):
         self.setup_desc()
         class fDerivedTypeDesc(ctypes.Structure):
             _fields_ = self.fields
-        fDerivedTypeDesc.__name__ = self._dt_def['name']
+        fDerivedTypeDesc.__name__ = str(self._dt_def['name'])
         return fDerivedTypeDesc
         
     

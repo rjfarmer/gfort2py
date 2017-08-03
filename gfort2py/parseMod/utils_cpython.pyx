@@ -1,5 +1,5 @@
 
-cpdef split_brackets(str value, bint remove_b=True):
+cpdef split_brackets(value, bint remove_b=True):
     '''
     Split a string based on pairs of brackets, nested brackets are not split
 
@@ -11,7 +11,6 @@ cpdef split_brackets(str value, bint remove_b=True):
     '''
     cdef int idx,j,j2,count,lvalue
     cdef bint start
-    cdef str i
     
     if remove_b:
         if value.startswith('(') and value.endswith(')'):
