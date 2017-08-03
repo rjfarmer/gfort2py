@@ -30,7 +30,8 @@ x now contains all variables, parameters and functions from the module (tab comp
 y = x.func_name(a,b,c)
 ````
 
-Will call the fortran function with varaibles a,b,c and will return the result in y
+Will call the fortran function with varaibles a,b,c and will return the result in y,
+subroutines will return a dict (possibly empty) with any intent out, inout or undefined intent variables.
 
 
 ````python
