@@ -12,30 +12,17 @@ class fDerivedType(fVar):
         self._typeArgs = []
         
         self._desc = self.create_struct()
-        self._ctype = ctypes.POINTER(self._desc)
-        self._ctype_desc = self._desc()
+        self._ctype = self._desc
+        self._ctype_desc = ctypes.POINTER(self._desc)
         self.TEST_FLAG=TEST_FLAG
         
     def get(self):
         r={}
-        for i in self._nameArgs:
-            r[i]=self.get_single(i)
+        v = self._get_from_lib()
+        for name in self._nameArgs:
+            r[name]=getattr(v,name)
         return r
             
-    def get_single(self,name):
-        r = self._get_pointer()
-        return getattr(r,name)
-
-    def _get_pointer(self):
-        if '_func_arg' in self.__dict__:
-            if self._func_arg:
-                return self._desc.from_address(ctypes.addressof(self._ctype_desc))
-        
-        #return self._ctype.from_address(ctypes.addressof(getattr(self._lib,self.mangled_name)))
-        return self._desc.from_address(ctypes.addressof(getattr(self._lib,self.mangled_name)))
-
-
-
     def set_mod(self,value):
         # Wants a dict
         if not all(i in self._nameArgs for i in value.keys()):
@@ -47,8 +34,8 @@ class fDerivedType(fVar):
     def set_single(self,name,value):
         if name not in self._nameArgs:
             raise KeyError("Name not in struct")
-        r = self._get_pointer()
-        setattr(r,name,value)
+        v = self._get_from_lib()
+        setattr(v,name,value)
         
     def create_struct(self):
         self.setup_desc()
@@ -73,10 +60,54 @@ class fDerivedType(fVar):
         self.fields = [(i, j) for i, j in zip(nameArgs, typeArgs)]
 
 
-    def py_to_ctype_f(self,value):
-        self.set_mod(value)
-        return self._ctype_desc,None
 
+    def py_to_ctype(self, value):
+        """
+        Pass in a python value returns the ctype representation of it
+        """
+        self._value=self._desc()
+
+        # Wants a dict
+        if not all(i in self._nameArgs for i in value.keys()):
+            raise ValueError("Dict contains elements not in struct")
+        
+        for name in value:
+            setattr(self._value,name,value[name])
+        
+        return self._value
+        
+    def py_to_ctype_f(self, value):
+        """
+        Pass in a python value returns the ctype representation of it, 
+        suitable for a function
+        
+        Second return value is anythng that needs to go at the end of the
+        arg list, like a string len
+        """
+        return self.py_to_ctype(value),None
+
+    def ctype_to_py(self, value):
+        """
+        Pass in a ctype value returns the python representation of it
+        """
+        res={}
+        for i in self._nameArgs:
+            res[i]=getattr(value,i)
+
+        return res
+        
+    def ctype_to_py_f(self, value):
+        """
+        Pass in a ctype value returns the python representation of it,
+        as returned by a function (may be a pointer)
+        """
+        return self.ctype_to_py(value)
+
+    def ctype_def(self):
+        """
+        The ctype type of this object
+        """
+        return self._desc
 
     def ctype_def_func(self):
         """
@@ -88,7 +119,7 @@ class fDerivedType(fVar):
         arg list, like a string len
         """
 
-        return self._desc,None
+        return self._ctype_desc,None
 
     def __dir__(self):
         return self._nameArgs
