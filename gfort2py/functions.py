@@ -104,10 +104,10 @@ class fFunc(fVar):
         for i,j in zip(self._arg_vars,args_out):
             if 'out' in i.var['intent'] or i.var['intent']=='':
                 if hasattr(j,'contents'):
-                    print(j)
                     r[i.name]=i.ctype_to_py_f(j.contents)
                 else:
                     r[i.name]=i.ctype_to_py_f(j)
+        #print(r)
         return r
     
     def __call__(self, *args):

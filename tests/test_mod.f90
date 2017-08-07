@@ -547,7 +547,7 @@ module tester
       subroutine sub_arr_assumed_rank_int_1d(zzz)
          real,dimension(:),pointer, intent(inout) :: zzz
          
-         write(*,'(5(I2,1X))') zzz(1:5)
+         write(*,*) zzz(1:5)
          zzz(1:5) = 100.0
       end subroutine sub_arr_assumed_rank_int_1d
       

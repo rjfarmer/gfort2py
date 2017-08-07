@@ -195,7 +195,6 @@ class fDummyArray(fVar):
         self._value_array = self._desc()
 
         self._value = np.asfortranarray(value).astype(self.npdtype)
-        
         self._set_to_pointer(self._value,self._value_array)
         
         
@@ -289,7 +288,6 @@ class fDummyArray(fVar):
         Pass in a ctype value returns the python representation of it,
         as returned by a function (may be a pointer)
         """
-        print(value.__dict__)
         if hasattr(value,'contents'):
             return self._get_from_pointer(value.contents)
         else:
@@ -382,16 +380,6 @@ class fDummyArray(fVar):
     def _id(self,x):
         return x.ctypes.data
    
-   
-    def py_to_ctype_p(self,value):
-        """
-        The ctype represnation suitable for function arguments wanting a pointer
-        """
-
-        return ctypes.POINTER(self._desc)(self.py_to_ctype(value))
-        
-        
-        
 class fAssumedShape(fDummyArray):
     def _get_pointer(self):
         return self._ctype_desc.from_address(ctypes.addressof(self._value_array))
@@ -412,10 +400,11 @@ class fAssumedShape(fDummyArray):
           #x:y          x       y     AS_EXPLICIT
           #x:*          x      NULL   AS_ASSUMED_SIZE
           #*            1      NULL   AS_ASSUMED_SIZE
-      
-        for i in range(self.ndim):
-            self._value_array.dims[i].ubound=0
-            self._value_array.dims[i].lbound=0
+          
+       # for i in range(self.ndim):
+            #print(self._value_array.dims[i].lbound,self._value_array.dims[i].ubound)
+            #self._value_array.dims[i].ubound=0
+            #self._value_array.dims[i].lbound=0
             
     def __str__(self):
         return str(self._value_array)
@@ -451,7 +440,7 @@ class fAllocatableArray(fDummyArray):
         self.set_func_arg(value)
         
         # self._value_array needs to be empty if the array is allocatable and not
-        # allready allocataed
+        # allready allocated
         self._value_array.base_addr=ctypes.c_void_p(0)
         
         return self._value_array
@@ -480,7 +469,6 @@ class fAllocatableArray(fDummyArray):
         res=ctypes.cast(value.base_addr,p)
         return np.ctypeslib.as_array(res,shape=shape)
     
-
 class fParamArray(fParam):
     def get(self):
         """
