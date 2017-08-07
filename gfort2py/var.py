@@ -43,7 +43,7 @@ class fVar(object):
         """
         Pass in a python value returns the ctype representation of it
         """
-        return self._cytype(value)
+        return self.ctype_def()(value)
         
     def py_to_ctype_f(self, value):
         """
@@ -89,6 +89,14 @@ class fVar(object):
         """
 
         return ctypes.POINTER(self.ctype_def()),None
+        
+    def py_to_ctype_p(self,value):
+        """
+        The ctype represnation suitable for function arguments wanting a pointer
+        """
+
+        return ctypes.POINTER(self.ctype_def())(self.py_to_ctype(value))
+        
 
     def set_mod(self, value):
         """
@@ -105,11 +113,10 @@ class fVar(object):
         return self.ctype_to_py(r)
 
     def _get_from_lib(self):
-        
-        if 'mangled_name' in self.__dict__ and '_lib' in self.__dict__ and '_ctype' in self.__dict__:
+        if 'mangled_name' in self.__dict__ and '_lib' in self.__dict__:
             return self._ctype.in_dll(self._lib, self.mangled_name)
-        else:
-            raise NotInLib
+        raise NotInLib   
+        
 
     def _get_var_by_iter(self, value, size=-1):
         """ Gets a variable where we have to iterate to get multiple elements"""
@@ -144,13 +151,16 @@ class fVar(object):
         return str(self.name) + " <" + str(self.pytype) + ">"
 
     def __str__(self):
-        return str(self.get())
+        try:
+            return str(self.get(), name)
+        except NotInLib:
+            return None
 
     def __repr__(self):
         s=''
         try:
             s=str(self.get()) + " <" + str(self.pytype) + ">"
-        except (ValueError,AttributeError):
+        except (ValueError,AttributeError,NotInLib):
             # Skip for things that aren't in the module (function arg)
             s=" <" + str(self.pytype) + ">"
         return s
@@ -169,10 +179,8 @@ class fVar(object):
                  
         try:
             return getattr(self.get(), name)
-        except NotInLib:
+        except:
             return None
-        except AttributeError:
-            raise
 
     #Stuff to call the result of self.get() (a python object int/str etc)
 

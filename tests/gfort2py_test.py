@@ -845,6 +845,15 @@ class TestStringMethods(unittest.TestCase):
 		o='  '.join([str(i) for i in [5,3]])
 		self.assertEqual(output,o)
 		self.assertEqual(y['zzz'],{'x':1,'y':10})
+		
+	def test_sub_dt_inoutp_s_simple(self):
+		with captured_output() as (out,err):
+			y=x.sub_f_simple_inoutp({'x':5,'y':3})
+		output=out.getvalue().strip()
+		o='  '.join([str(i) for i in [5,3]])
+		self.assertEqual(output,o)
+		self.assertEqual(y['zzz'],{'x':1,'y':10})
+
 
 if __name__ == '__main__':
 	unittest.main() 

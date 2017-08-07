@@ -479,8 +479,8 @@ class parseModBase(object):
                 func_arg_num.append(int(i['num']))
         
         for i,idx in zip(func_nums,ind_funcs):
+            self.all_symbols[idx]['arg']=[]
             if len(i)>0:
-                self.all_symbols[idx]['arg']=[]
                 for j in i:
                     for k,kdx in zip(func_arg_num,ind_func_args):
                         if j==k:

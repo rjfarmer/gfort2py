@@ -37,7 +37,11 @@ class fFunc(fVar):
                 self._arg_vars[-1]._func_arg=True
                 
                 x,y=self._arg_vars[-1].ctype_def_func()
-                self._arg_ctypes.append(x)
+                if 'pointer' in i['var']:
+                    print(i)
+                    self._arg_ctypes.append(ctypes.POINTER(x))
+                else:
+                    self._arg_ctypes.append(x)
                 if y is not None:
                     tmp.append(y)
             self._call.argtypes = self._arg_ctypes+tmp
@@ -76,15 +80,15 @@ class fFunc(fVar):
     def _args_to_ctypes(self,args):
         tmp = []
         args_in = []
-        #if type(args) is not list: args = [ args ]
-        #print("args ",args)
-        #print("argtypes",self._call.argtypes)
-        for i, j in  zip(self._arg_vars, args):
-            #print("j ",type(j),j)
-            x,y=i.py_to_ctype_f(j)
-            args_in.append(x)
+        for vout, vin, fctype, a in  zip(self._arg_vars, args,self._arg_ctypes, self.arg):
+            x,y=vout.py_to_ctype_f(vin)
+            if 'pointer' in a['var']:
+                args_in.append(vout.py_to_ctype_p(vin))
+            else:
+                args_in.append(x)
             if y is not None:
                 tmp.append(y)
+                
         return args_in + tmp
         
     def ctype_def(self):
@@ -97,7 +101,10 @@ class fFunc(fVar):
         r={}
         for i,j in zip(self._arg_vars,args_out):
             if 'out' in i.var['intent'] or i.var['intent']=='':
-                r[i.name]=i.ctype_to_py_f(j)
+                if 'pointer' in i.var:
+                    r[i.name]=i.ctype_to_py_f(j.contents)
+                else:
+                    r[i.name]=i.ctype_to_py_f(j)
         return r
     
     def __call__(self, *args):

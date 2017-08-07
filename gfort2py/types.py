@@ -12,8 +12,9 @@ class fDerivedType(fVar):
         self._typeArgs = []
         
         self._desc = self.create_struct()
+        
         self._ctype = self._desc
-        self._ctype_desc = ctypes.POINTER(self._desc)
+        self._ctype_desc = ctypes.POINTER(self._ctype)
         self.TEST_FLAG=TEST_FLAG
         
     def get(self):
@@ -60,12 +61,11 @@ class fDerivedType(fVar):
         self.fields = [(i, j) for i, j in zip(nameArgs, typeArgs)]
 
 
-
     def py_to_ctype(self, value):
         """
         Pass in a python value returns the ctype representation of it
         """
-        self._value=self._desc()
+        self._value=self._ctype()
 
         # Wants a dict
         if not all(i in self._nameArgs for i in value.keys()):
@@ -84,7 +84,8 @@ class fDerivedType(fVar):
         Second return value is anythng that needs to go at the end of the
         arg list, like a string len
         """
-        return self.py_to_ctype(value),None
+        r=self.py_to_ctype(value)        
+        return r,None
 
     def ctype_to_py(self, value):
         """
@@ -107,7 +108,7 @@ class fDerivedType(fVar):
         """
         The ctype type of this object
         """
-        return self._desc
+        return self._ctype
 
     def ctype_def_func(self):
         """
@@ -118,21 +119,36 @@ class fDerivedType(fVar):
         Second return value is anythng that needs to go at the end of the
         arg list, like a string len
         """
+        f=self._ctype_desc
+        return f,None
+        
+    def py_to_ctype_p(self,value):
+        """
+        The ctype representation suitable for function arguments wanting a pointer
+        """
 
-        return self._ctype_desc,None
+        return ctypes.POINTER(self.ctype_def())(self.py_to_ctype(value))
+        
 
     def __dir__(self):
         return self._nameArgs
 
     def __str__(self):
-        x=self.get()
+        try:
+            x=self.get()
+        except:
+            x=None
         if x is None:
             return "<dt>"
         else:
             return str(self.get())
         
     def __repr__(self):
-        x=self.get()
+        try:
+            x=self.get()
+        except:
+            x=None
+            
         if x is None:
             return "<dt>"
         else:
