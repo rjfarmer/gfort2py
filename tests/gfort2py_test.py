@@ -853,7 +853,44 @@ class TestStringMethods(unittest.TestCase):
 		o='  '.join([str(i) for i in [5,3]])
 		self.assertEqual(output,o)
 		self.assertEqual(y['zzz'],{'x':1,'y':10})
+		
+	def test_sub_int_p(self):
+		with captured_output() as (out,err):
+			y=x.sub_int_p(1)
+		output=out.getvalue().strip()
+		self.assertEqual(output,'1')
+		self.assertEqual(y['zzz'],5)
 
+	def test_sub_real_p(self):
+		with captured_output() as (out,err):
+			y=x.sub_real_p(1.0)
+		output=out.getvalue().strip()
+		self.assertEqual(output,'1.00')
+		self.assertEqual(y['zzz'],5.0)
+		
+	def test_sub_str_p(self):
+		with captured_output() as (out,err):
+			y=x.sub_str_p('abcdef')
+		output=out.getvalue().strip()
+		self.assertEqual(output,'abcdef')
+		self.assertEqual(y['zzz'],'xyzxyz')
+		
+	def test_sub_arr_exp_p(self):
+		v=np.arange(0,5)
+		o=' '.join([str(i) for i in v.flatten()])
+		with captured_output() as (out,err):
+			y=x.sub_exp_array_int_1d(v)
+		output=out.getvalue().strip()	
+		self.assertEqual(output,o.strip())
+		
+	def test_sub_arr_assumed_rank_int_1d(self):
+		v=np.arange(0,5)
+		o=' '.join([str(i) for i in v.flatten()])
+		with captured_output() as (out,err):
+			y=x.sub_arr_assumed_rank_int_1d(v)
+		output=out.getvalue().strip()	
+		np_test.assert_array_equal(y['zzz'],np.array([100.0]*5))
+		
 
 if __name__ == '__main__':
 	unittest.main() 

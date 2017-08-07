@@ -67,7 +67,10 @@ class fVar(object):
         Pass in a ctype value returns the python representation of it,
         as returned by a function (may be a pointer)
         """
-        return self._pytype(value.contents.value)
+        if hasattr(value,'contents'):
+            return self._pytype(value.contents.value)
+        else:
+            return self._pytype(value.value)
 
     def pytype_def(self):
         return getattr(__builtin__, self.pytype)

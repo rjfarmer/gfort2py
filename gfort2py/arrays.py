@@ -30,8 +30,6 @@ class fExplicitArray(fVar):
         """
         return self._get_var_by_iter(value, self._array_size())
         
-        
-        
     def py_to_ctype_f(self, value):
         """
         Pass in a python value returns the ctype representation of it, 
@@ -103,6 +101,13 @@ class fExplicitArray(fVar):
 
     def _array_size(self,bounds=None):
         return np.product(self._make_array_shape(bounds))
+       
+    def py_to_ctype_p(self,value):
+        """
+        The ctype represnation suitable for function arguments wanting a pointer
+        """
+
+        raise AttributeError("Cant have explicit array as a pointer")
 
 
 class fDummyArray(fVar):
@@ -284,7 +289,11 @@ class fDummyArray(fVar):
         Pass in a ctype value returns the python representation of it,
         as returned by a function (may be a pointer)
         """
-        return self._get_from_pointer(value.contents)
+        print(value.__dict__)
+        if hasattr(value,'contents'):
+            return self._get_from_pointer(value.contents)
+        else:
+            return self._get_from_pointer(value)
 
     def pytype_def(self):
         return np.array
@@ -372,6 +381,15 @@ class fDummyArray(fVar):
         
     def _id(self,x):
         return x.ctypes.data
+   
+   
+    def py_to_ctype_p(self,value):
+        """
+        The ctype represnation suitable for function arguments wanting a pointer
+        """
+
+        return ctypes.POINTER(self._desc)(self.py_to_ctype(value))
+        
         
         
 class fAssumedShape(fDummyArray):

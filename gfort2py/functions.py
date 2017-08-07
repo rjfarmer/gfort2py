@@ -38,7 +38,6 @@ class fFunc(fVar):
                 
                 x,y=self._arg_vars[-1].ctype_def_func()
                 if 'pointer' in i['var']:
-                    print(i)
                     self._arg_ctypes.append(ctypes.POINTER(x))
                 else:
                     self._arg_ctypes.append(x)
@@ -47,24 +46,27 @@ class fFunc(fVar):
             self._call.argtypes = self._arg_ctypes+tmp
 
     def _init_var(self, obj):
+        array = None
+        if 'array' in obj['var']:
+            array = obj['var']['array']
+        
         if obj['var']['pytype'] == 'str':
             x = fStr(self._lib, obj)
         elif obj['var']['pytype'] == 'complex':
             x = fComplex(self._lib, obj)
         elif 'dt' in obj['var']:
             x = fDerivedType(self._lib, obj)
-        elif 'array' in obj['var']:
-            if obj['var']['array']['atype'] == 'explicit':
+        elif array is not None:
+            if array['atype'] == 'explicit':
                 x = fExplicitArray(self._lib, obj,self.TEST_FLAG)
-            elif obj['var']['array']['atype'] == 'alloc':
+            elif array['atype'] == 'alloc':
                 x = fAllocatableArray(self._lib, obj, self.TEST_FLAG)
-            elif obj['var']['array']['atype'] == 'assumed_shape':
+            elif array['atype'] == 'assumed_shape' or array['atype'] == 'pointer':
                 x = fAssumedShape(self._lib, obj, self.TEST_FLAG)
-            elif obj['var']['array']['atype'] == 'assumed_size':
+            elif array['atype'] == 'assumed_size':
                 x = fAssumedSize(self._lib, obj, self.TEST_FLAG)
             else:
-                print("Unknown: "+str(obj))
-                raise ValueError
+                raise ValueError("Unknown array: "+str(obj))
         else:
             x = fVar(self._lib, obj)
 
@@ -101,7 +103,8 @@ class fFunc(fVar):
         r={}
         for i,j in zip(self._arg_vars,args_out):
             if 'out' in i.var['intent'] or i.var['intent']=='':
-                if 'pointer' in i.var:
+                if hasattr(j,'contents'):
+                    print(j)
                     r[i.name]=i.ctype_to_py_f(j.contents)
                 else:
                     r[i.name]=i.ctype_to_py_f(j)
@@ -125,7 +128,6 @@ class fFunc(fVar):
             os.dup2(stdout, 1)
             print(read_pipe(pipe_out))
         # Python print available now
-        
         if self._sub:
             return self._ctypes_to_return(args_in)
         else:

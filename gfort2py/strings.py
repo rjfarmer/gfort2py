@@ -53,6 +53,30 @@ class fStr(fVar):
         arg list, like a string len
         """
         return ctypes.c_char_p,ctypes.c_int
+        
+    def py_to_ctype_p(self,value):
+        """
+        The ctype represnation suitable for function arguments wanting a pointer
+        """
+        return ctypes.c_char_p(value.encode())
+        
+    def ctype_to_py_f(self, value):
+        """
+        Pass in a ctype value returns the python representation of it,
+        as returned by a function (may be a pointer)
+        """
+        if hasattr(value,'contents'):
+            r = value.contents.value
+        else:
+            r = value.value
+            
+        try:
+            r = r.decode()
+        except AttributeError:
+            pass
+            
+        return r
+            
 
     def set_mod(self, value):
         """

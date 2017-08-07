@@ -66,7 +66,8 @@ To run unit tests
 - [x] Explicit size arrays
 - [X] Complex numbers (Scalar and parameters)
 - [ ] Getting a pointer
-- [x] Pointer/allocatable arrays
+- [x] Getting the value of a pointer
+- [x] allocatable arrays
 - [x] Derived types
 - [ ] Nested derived types
 - [ ] Functions in derived types
@@ -84,6 +85,7 @@ To run unit tests
 - [x] Argument passing (derived types)
 - [x] Argument intents (in, out, inout and none)
 - [x] Passing characters
+- [x] Pointer Arguments (except arrays)
 - [ ] Optional arguments
 - [ ] Keyword arguments
 - [ ] Generic/Elemental functions

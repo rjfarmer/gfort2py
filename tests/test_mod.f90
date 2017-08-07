@@ -526,8 +526,31 @@ module tester
          write(output_unit,'(I2)') zzz
          
          zzz = 5
-         
       end subroutine sub_int_p
+      
+      subroutine sub_real_p(zzz)
+         real,pointer, intent(inout) :: zzz
+         
+         write(output_unit,'(F5.2)') zzz
+         
+         zzz = 5.0
+      end subroutine sub_real_p
+      
+      subroutine sub_str_p(zzz)
+         character(len=*),pointer, intent(inout) :: zzz
+         
+         write(output_unit,'(A)') zzz
+         
+         zzz = 'xyzxyz'
+      end subroutine sub_str_p
+      
+      subroutine sub_arr_assumed_rank_int_1d(zzz)
+         real,dimension(:),pointer, intent(inout) :: zzz
+         
+         write(*,'(5(I2,1X))') zzz(1:5)
+         zzz(1:5) = 100.0
+      end subroutine sub_arr_assumed_rank_int_1d
+      
       
       
 end module tester

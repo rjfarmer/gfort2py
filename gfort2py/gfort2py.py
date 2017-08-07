@@ -118,6 +118,8 @@ class fFort(object):
                 x = fExplicitArray(self._lib, obj,self.TEST_FLAG)
             elif obj['var']['array']['atype'] == 'alloc':
                 x = fDummyArray(self._lib, obj, self.TEST_FLAG)
+            elif obj['var']['array']['atype'] == 'pointer':
+                x = fDummyArray(self._lib, obj, self.TEST_FLAG)
         else:
             x = fVar(self._lib, obj,self.TEST_FLAG)
 

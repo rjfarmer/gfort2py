@@ -403,7 +403,6 @@ class parseModBase(object):
             pytype='None'
             ctype='c_void_p'
         else:
-            print("Skipping "+x)
             pytype='None'
             ctype='c_void_p'
             #raise ValueError("Cant parse " + x)
