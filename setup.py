@@ -26,18 +26,6 @@ def my_test_suite():
     test_loader = unittest.TestLoader()
     test_suite = test_loader.discover('tests', pattern='*_test.py')
     return test_suite
-    
-    
-install_requires = [
-	'numpy',
-	'cython'
-]
-
-tests_requires = [
-	'unittest2',
-	'coveralls'
-]
-    
 
 setup(name='gfort2py',
       version='0.0',
@@ -47,10 +35,6 @@ setup(name='gfort2py',
       author_email='rjfarmer@asu.edu',
       url='https://github.com/rjfarmer/gfort2py',
       packages=find_packages(),
-      install_requires=install_requires,
-      extras_require={
-			'test':tests_requires
-			},
       classifiers=[
 			"Development Status :: 1 - Planning",
 			"License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",

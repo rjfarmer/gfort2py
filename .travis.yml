@@ -24,7 +24,9 @@ addons:
       - gfortran-6
       - gzip
 install: 
-  - pip install -e .[test]
+  - pip install -r requirements.txt
+  - pip install coveralls
+  - python setup.py install
 # command to run tests
 script: 
   - coverage run --source=gfort2py setup.py test
