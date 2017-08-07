@@ -23,6 +23,7 @@ addons:
     packages:
       - gfortran-6
       - gzip
+      - cython3 #3.7 needs it here to install properly
 install: 
   - pip install -r requirements.txt
   - pip install coveralls
