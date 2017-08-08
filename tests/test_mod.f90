@@ -1,5 +1,7 @@
 module tester
    use iso_fortran_env, only: output_unit
+   use test2
+
 
 	implicit none
       
@@ -156,6 +158,10 @@ module tester
       END TYPE s_struct_nested_2
       
       TYPE(s_simple) :: f_struct_simple
+      
+      ! From second module
+      TYPE(s_simple2) :: f_struct_simple2
+      
       
       TYPE(s_struct_basic) :: f_struct
       TYPE(s_struct_basic),dimension(2) :: f_struct_exp_2d
@@ -562,4 +568,11 @@ module tester
       end subroutine sub_int_opt
       
       
+      subroutine sub_use_mod()
+      
+         test2_x = 1
+         f_struct_simple2%x = 5
+         f_struct_simple2%y = 6
+      
+      end subroutine sub_use_mod
 end module tester

@@ -912,6 +912,13 @@ class TestStringMethods(unittest.TestCase):
 		y=x.f_struct_simple.get(copy=False)
 		self.assertEqual(y.x,99)
 		self.assertEqual(y.y,99)
+		
+		
+	def test_second_mod(self):
+		x.f_struct_simple2.x=99
+		y=x.sub_use_mod()
+		self.assertEqual(x.test2_x,1)
+		self.assertEqual(x.f_struct_simple2.get(),{'x':5,'y':6})
 	
 
 if __name__ == '__main__':
