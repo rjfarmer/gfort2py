@@ -189,7 +189,6 @@ module tester
       TYPE(s_struct_nested_2),dimension(2),  target :: h_struct_target_1d
       TYPE(s_struct_nested_2),dimension(2,2),target :: h_struct_target_2d
 
-
       contains
       
       

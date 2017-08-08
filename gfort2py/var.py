@@ -111,12 +111,20 @@ class fVar(object):
         r = self._get_from_lib()
         r.value = self._pytype(value)
 
-    def get(self):
+    def get(self,copy=True):
         """
         Get a module level variable
         """
         r = self._get_from_lib()
-        return self.ctype_to_py(r)
+        if copy:
+            res = self.ctype_to_py(r)
+        else:
+            if hasattr(r,'contents'):
+                res =r.contents
+            else:
+                res = r
+        
+        return res
 
     def _get_from_lib(self):
         if 'mangled_name' in self.__dict__ and '_lib' in self.__dict__:

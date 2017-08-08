@@ -89,10 +89,13 @@ class fStr(fVar):
         r = self._get_from_lib()
         self._set_var_from_iter(r, value.encode(), self.char_len)
 
-    def get(self):
+    def get(self,copy=True):
         """
         Get a module level variable
         """
         r = self._get_from_lib()
         s = self.ctype_to_py(r)
+        if not copy:
+            raise ValueError("Must copy a string")
+        
         return ''.join([i.decode() for i in s])

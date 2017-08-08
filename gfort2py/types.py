@@ -17,12 +17,18 @@ class fDerivedType(fVar):
         self._ctype_desc = ctypes.POINTER(self._ctype)
         self.TEST_FLAG=TEST_FLAG
         
-    def get(self):
-        r={}
-        v = self._get_from_lib()
-        for name in self._nameArgs:
-            r[name]=getattr(v,name)
-        return r
+    def get(self,copy=True):
+        res={}
+        r = self._get_from_lib()
+        if copy:
+            for name in self._nameArgs:
+                res[name]=getattr(r,name)
+        else:
+            if hasattr(r,'contents'):
+                res =r.contents
+            else:
+                res = r
+        return res
             
     def set_mod(self,value):
         # Wants a dict

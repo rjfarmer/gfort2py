@@ -96,7 +96,7 @@ To run unit tests
 - [x] Characters
 - [x] Explicit size arrays
 - [X] Complex numbers (Scalar and parameters)
-- [ ] Getting a pointer
+- [x] Getting a pointer
 - [x] Getting the value of a pointer
 - [x] allocatable arrays
 - [x] Derived types

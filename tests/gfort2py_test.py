@@ -902,6 +902,17 @@ class TestStringMethods(unittest.TestCase):
 		output=out.getvalue().strip()
 		self.assertEqual(output,'200')
 	
+	def test_dt_copy(self):
+		x.f_struct_simple.x=99
+		x.f_struct_simple.y=99
+		y=x.f_struct_simple.get()
+		self.assertEqual(y,{'x':99,'y':99})
+		y=x.f_struct_simple.get(copy=True)
+		self.assertEqual(y,{'x':99,'y':99})
+		y=x.f_struct_simple.get(copy=False)
+		self.assertEqual(y.x,99)
+		self.assertEqual(y.y,99)
+	
 
 if __name__ == '__main__':
 	unittest.main() 

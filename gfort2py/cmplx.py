@@ -47,9 +47,12 @@ class fComplex(fVar):
         else:
             raise ValueError("Not complex")
 
-    def get(self):
+    def get(self,copy=True):
         r = self._get_from_lib()
         s = self.ctype_to_py(r)
+        if not copy:
+            raise ValueError("Must copy complex number")
+        
         return s
 
     def __repr__(self):

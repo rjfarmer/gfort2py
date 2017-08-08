@@ -84,7 +84,7 @@ class fExplicitArray(fVar):
         v = value.flatten(order='C')
         self._set_var_from_iter(r, v, self._array_size())
         
-    def get(self):
+    def get(self,copy=True):
         """
         Get a module level variable
         """
