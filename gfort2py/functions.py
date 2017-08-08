@@ -19,11 +19,12 @@ from .utils import *
 
 class fFunc(fVar):
 
-    def __init__(self, lib, obj,TEST_FLAG=False):
+    def __init__(self, lib, obj, dt_defs, TEST_FLAG=False):
         self.__dict__.update(obj)
         self._lib = lib
         self._sub = self.proc['sub']
         self._call = getattr(self._lib, self.mangled_name)
+        self._dt_defs = dt_defs
         self._set_return()
         self._set_arg_ctypes()
         self.TEST_FLAG=TEST_FLAG
@@ -58,11 +59,11 @@ class fFunc(fVar):
             array = obj['var']['array']
         
         if obj['var']['pytype'] == 'str':
-            x = fStr(self._lib, obj)
+            x = fStr(self._lib, obj,self.TEST_FLAG)
         elif obj['var']['pytype'] == 'complex':
-            x = fComplex(self._lib, obj)
+            x = fComplex(self._lib, obj,self.TEST_FLAG)
         elif 'dt' in obj['var']:
-            x = fDerivedType(self._lib, obj)
+            x = fDerivedType(self._lib, obj,self._dt_defs,self.TEST_FLAG)
         elif array is not None:
             if array['atype'] == 'explicit':
                 x = fExplicitArray(self._lib, obj,self.TEST_FLAG)

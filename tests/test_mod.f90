@@ -575,4 +575,15 @@ module tester
          f_struct_simple2%y = 6
       
       end subroutine sub_use_mod
+      
+      
+      logical function func_check_nested_dt() result(res)
+      
+         res=.false.
+         
+         if(g_struct%a_int==10 .and. &
+            g_struct%f_struct%a_int==8) res=.True.
+         
+      end function func_check_nested_dt
+      
 end module tester

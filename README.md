@@ -26,6 +26,7 @@ x=gf.fFort(SHARED_LIB_NAME,MOD_FILE_NAME)
 
 x now contains all variables, parameters and functions from the module (tab completable)
 
+### Functions
 ````python
 y = x.func_name(a,b,c)
 ````
@@ -35,7 +36,7 @@ subroutines will return a dict (possibly empty) with any intent out, inout or un
 
 
 Most of the time the function will copy the intent out variables before returning,
-(arrays sometimes copy) and derive types are copied into a dict. To stop this from
+(arrays sometimes copy) and derived types are copied into a dict. To stop this from
 happening (say with very large arrays/derived types)
 
 ````python
@@ -52,7 +53,7 @@ x.func_name.args_out
 
 Which is a dict containg ctype data, derived types can be accessed 
 (lets say variable *a* as was derived type with components (x,y)) using
-a decimal point followed by the component name *x*,*y*
+a decimal point followed by the component name.
 
 ````python
 z=x.func_name.args_out`["a"]`
@@ -63,7 +64,7 @@ z.y
 Optional arguments are handled by not passing anything for that item (python side), but
 they must be at the end of the argument list (on the fortran side)
 
-
+### Variables
 
 ````python
 x.some_var = 1
@@ -77,6 +78,45 @@ x.some_var.get()
 ````
 
 First will print the value in some_var while get() will return the value
+
+
+### Derived types
+
+Derived types can be set with a dict 
+````python
+x.my_dt={'x':1,'y':'abc'}
+````
+And return a dict when the .get() method is called, unless you pass
+copy=False to the get call in which case a ctype is returned (and fields
+access via the dot interface)
+
+````python
+y=x.my_dt.get(copy=False)
+y.x
+y.y
+````
+If the derived type contains another derived type then you can set a dict in a dict
+
+````python
+x.my_dt={'x':1,'y':{'a':1}}
+````
+
+This can then be accessed either via:
+
+````python
+x.my_dt.y
+````
+
+To get a dict back, or:
+
+````python
+x.my_dt.y.a
+````
+
+To get a single value.
+
+When setting the components of a derived type you do not need to specify
+all of them at the same time.
 
 
 ## Testing
@@ -100,7 +140,8 @@ To run unit tests
 - [x] Getting the value of a pointer
 - [x] allocatable arrays
 - [x] Derived types
-- [ ] Nested derived types
+- [x] Nested derived types
+- [ ] Arrays of derived types
 - [ ] Functions in derived types
 - [ ] Other complicated derived type stuff (abstract etc)
 

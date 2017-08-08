@@ -1,15 +1,18 @@
 from __future__ import print_function
 import ctypes
+import functools
 from .var import fVar
 
 
 class fDerivedType(fVar):
-    def __init__(self, lib, obj,TEST_FLAG=False):
+    def __init__(self, lib, obj,dt_defs,TEST_FLAG=False):
         self.__dict__.update(obj)
         self._lib = lib
         self._args = []
         self._nameArgs = []
         self._typeArgs = []
+        self._dt_defs = dt_defs
+        self._resolveDT()
         
         self._desc = self.create_struct()
         
@@ -39,11 +42,17 @@ class fDerivedType(fVar):
             self.set_single(name,value[name])
             
     def set_single(self,name,value):
-        if name not in self._nameArgs:
-            raise KeyError("Name not in struct")
         v = self._get_from_lib()
-        setattr(v,name,value)
         
+        self._setSingle(v,name,value)
+        
+    def _setSingle(self,v,name,value):
+        if isinstance(value,dict):
+            for i in value:
+                self._setSingle(getattr(v,name),i,value[i])
+        else:
+            setattr(v,name,value)
+
     def create_struct(self):
         self.setup_desc()
         class fDerivedTypeDesc(ctypes.Structure):
@@ -51,16 +60,22 @@ class fDerivedType(fVar):
         fDerivedTypeDesc.__name__ = str(self._dt_def['name'])
         return fDerivedTypeDesc
         
-    
     def setup_desc(self):
-        for i in self._dt_def['dt_def']['arg']:
-            self._args.append(fVar(self._lib, i))
+        for i in self._dt_def['dt_def']['arg']:            
+            ct = i['var']['ctype']
+            if ct == 'c_void_p' and 'dt' in i['var']:
+                self._args.append(fDerivedType(self._lib,i,self._dt_defs,self.TEST_FLAG))
+                self._args[-1].setup_desc()
+            else:
+                self._args.append(fVar(self._lib, i))
+                ct=self._args[-1]._ctype
+                
             self._args[-1]._dt_arg=True         
             self._nameArgs.append(self._args[-1].name.replace("\'", ''))
             #Overload the mangled name so we can use the get from fVar 
             self._args[-1].mangled_name=self._nameArgs[-1]
             self._typeArgs.append(self._args[-1]._ctype)
-
+                
         self.set_fields(self._nameArgs, self._typeArgs)
  
     def set_fields(self, nameArgs, typeArgs):
@@ -170,7 +185,7 @@ class fDerivedType(fVar):
 
         if '_args' in self.__dict__ and '_nameArgs' in self.__dict__:
             if name in self._nameArgs:
-                return self.get_single(name)
+                return self.__getitem__(name)
 
     def __setattr__(self, name, value):
         if '_nameArgs' in self.__dict__:
@@ -202,6 +217,13 @@ class fDerivedType(fVar):
         else:
             return getattr(self._value,name)
         
-        
-        
-        
+    def _resolveDT(self):
+        name = self.var['dt']['name']
+        name = name.lower().replace("\'","")
+        for j in self._dt_defs:
+            if j['name']==name:
+                self._dt_def = j
+                return
+        raise KeyError("Couldn't match "+ str(name))
+
+

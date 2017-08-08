@@ -920,6 +920,16 @@ class TestStringMethods(unittest.TestCase):
 		self.assertEqual(x.test2_x,1)
 		self.assertEqual(x.f_struct_simple2.get(),{'x':5,'y':6})
 	
+	def test_nested_dts(self):
+		x.g_struct.a_int=10
+		self.assertEqual(x.g_struct.a_int,10)
+		x.g_struct={'a_int':10,'f_struct':{'a_int':3}}
+		self.assertEqual(x.g_struct.f_struct.a_int,3)
+		x.g_struct.f_struct.a_int=8
+		self.assertEqual(x.g_struct.f_struct.a_int,8)
+		y=x.func_check_nested_dt()
+		self.assertEqual(y,True)
+	
 
 if __name__ == '__main__':
 	unittest.main() 

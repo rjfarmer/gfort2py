@@ -77,14 +77,10 @@ class fFort(object):
             
         for i in self._funcs:
             self._all_names.append(i['name'])
+            
+        for i in self._dt_defs:
+            i['name']=i['name'].lower().replace("'","")
         
-        for i in self._mod_vars:
-            if 'var' in i and 'dt' in i['var']:
-                i['var']['dt']['name']=i['var']['dt']['name'].lower().replace("'","")
-                for j in self._dt_defs:
-                    if i['var']['dt']['name'].lower() == j['name'].lower():
-                        i['_dt_def'] = j
-
         for i in self._mod_vars:
             self._init_var(i)
 
@@ -112,7 +108,7 @@ class fFort(object):
         elif obj['var']['pytype'] == 'complex':
             x = fComplex(self._lib, obj,self.TEST_FLAG)
         elif 'dt' in obj['var'] and obj['var']['dt']:
-            x = fDerivedType(self._lib, obj,self.TEST_FLAG)
+            x = fDerivedType(self._lib, obj,self._dt_defs,self.TEST_FLAG)
         elif 'array' in obj['var']:
             if obj['var']['array']['atype'] == 'explicit':
                 x = fExplicitArray(self._lib, obj,self.TEST_FLAG)
@@ -139,7 +135,7 @@ class fFort(object):
         self.__dict__[x.name] = x
 
     def _init_func(self, obj):
-        x = fFunc(self._lib, obj,self.TEST_FLAG)
+        x = fFunc(self._lib, obj,self._dt_defs,self.TEST_FLAG)
         self.__dict__[x.name] = x
 
     def __getattr__(self, name):
