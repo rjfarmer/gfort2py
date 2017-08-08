@@ -6,6 +6,8 @@ except ImportError:
 
 import ctypes
 import os
+import six
+
 from .var import fVar
 from .cmplx import fComplex
 from .arrays import fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize, fAllocatableArray
@@ -87,14 +89,19 @@ class fFunc(fVar):
     def _args_to_ctypes(self,args):
         tmp = []
         args_in = []
-        for vout, vin, fctype, a in  zip(self._arg_vars, args,self._arg_ctypes, self.arg):
-            x,y=vout.py_to_ctype_f(vin)
-            if 'pointer' in a['var']:
-                args_in.append(vout.py_to_ctype_p(vin))
+        
+        for vout, vin, fctype, a in six.moves.zip_longest(self._arg_vars, args, self._arg_ctypes, self.arg):
+            if 'optional' in a['var'] and vin is None:
+                #Missing optional arguments 
+                args_in.append(None)            
             else:
-                args_in.append(x)
-            if y is not None:
-                tmp.append(y)
+                x,y=vout.py_to_ctype_f(vin)
+                if 'pointer' in a['var']:
+                    args_in.append(vout.py_to_ctype_p(vin))
+                else:
+                    args_in.append(x)
+                if y is not None:
+                    tmp.append(y)
                 
         return args_in + tmp
         

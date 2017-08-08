@@ -891,7 +891,17 @@ class TestStringMethods(unittest.TestCase):
 			y=x.sub_arr_assumed_rank_int_1d(v)
 		output=out.getvalue().strip()	
 		np_test.assert_array_equal(y['zzz'],np.array([100.0]*5))
-		
+	
+	def test_sub_opt(self):
+		with captured_output() as (out,err):
+			y=x.sub_int_opt(1)
+		output=out.getvalue().strip()
+		self.assertEqual(output,'100')
+		with captured_output() as (out,err):
+			y=x.sub_int_opt()
+		output=out.getvalue().strip()
+		self.assertEqual(output,'200')
+	
 
 if __name__ == '__main__':
 	unittest.main() 

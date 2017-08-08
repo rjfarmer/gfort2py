@@ -60,6 +60,10 @@ z.x
 z.y
 ````
 
+Optional arguments are handled by not passing anything for that item (python side), but
+they must be at the end of the argument list (on the fortran side)
+
+
 
 ````python
 x.some_var = 1
@@ -113,7 +117,7 @@ To run unit tests
 - [x] Argument intents (in, out, inout and none)
 - [x] Passing characters
 - [x] Pointer Arguments 
-- [ ] Optional arguments
+- [x] Optional arguments
 - [ ] Keyword arguments
 - [ ] Generic/Elemental functions
 - [ ] Functions as an argument

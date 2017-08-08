@@ -552,5 +552,15 @@ module tester
       end subroutine sub_arr_assumed_rank_int_1d
       
       
+      subroutine sub_int_opt(x)
+         integer, optional, intent(in) :: x
+         
+         if(present(x)) then
+            write(*,*) 100
+         else
+            write(*,*) 200
+         end if  
+      end subroutine sub_int_opt
+      
       
 end module tester
