@@ -34,6 +34,33 @@ Will call the fortran function with varaibles a,b,c and will return the result i
 subroutines will return a dict (possibly empty) with any intent out, inout or undefined intent variables.
 
 
+Most of the time the function will copy the intent out variables before returning,
+(arrays sometimes copy) and derive types are copied into a dict. To stop this from
+happening (say with very large arrays/derived types)
+
+````python
+x.func_name.saveArgs(True)
+y = x.func_name(a,b,c)
+````
+
+Now the return value in y is a dict of only the intent out names. The data
+is stored in:
+
+````python
+x.func_name.args_out
+````
+
+Which is a dict containg ctype data, derived types can be accessed 
+(lets say variable *a* as was derived type with components (x,y)) using
+a decimal point followed by the component name *x*,*y*
+
+````python
+z=x.func_name.args_out`["a"]`
+z.x
+z.y
+````
+
+
 ````python
 x.some_var = 1
 ````
@@ -85,7 +112,7 @@ To run unit tests
 - [x] Argument passing (derived types)
 - [x] Argument intents (in, out, inout and none)
 - [x] Passing characters
-- [x] Pointer Arguments (except arrays)
+- [x] Pointer Arguments 
 - [ ] Optional arguments
 - [ ] Keyword arguments
 - [ ] Generic/Elemental functions

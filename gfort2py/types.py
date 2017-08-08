@@ -184,3 +184,18 @@ class fDerivedType(fVar):
             x[i]=0
         return x
         
+    def __getitem__(self,name=None):
+        if name is None:
+            raise KeyError
+        if name not in self._nameArgs:
+            raise KeyError("Name not in struct")
+        
+        if self._value is None:
+            v = self._get_from_lib()
+            return getattr(v,name)
+        else:
+            return getattr(self._value,name)
+        
+        
+        
+        

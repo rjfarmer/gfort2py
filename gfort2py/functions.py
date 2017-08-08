@@ -25,6 +25,8 @@ class fFunc(fVar):
         self._set_return()
         self._set_arg_ctypes()
         self.TEST_FLAG=TEST_FLAG
+        self.save_args=False
+        self.args_out = None
 
     def _set_arg_ctypes(self):
         self._arg_ctypes = []
@@ -103,19 +105,34 @@ class fFunc(fVar):
         return getattr(ctypes, self.proc['ret']['ctype'])
     
     def _ctypes_to_return(self,args_out):
-        r={}
-        for i,j in zip(self._arg_vars,args_out):
-            if 'out' in i.var['intent'] or i.var['intent']=='':
-                if hasattr(j,'contents'):
-                    r[i.name]=i.ctype_to_py_f(j.contents)
-                else:
-                    r[i.name]=i.ctype_to_py_f(j)
-        #print(r)
+    
+        r = {}
+        self.args_out = {}
+        
+        if self.save_args:
+            # Save arguments inside this object
+            for i,j in zip(self._arg_vars,args_out):
+                if 'out' in i.var['intent'] or i.var['intent']=='': 
+                    r[i.name]=''
+                    if hasattr(j,'contents'):
+                        self.args_out[i.name]=j.contents
+                    else:
+                        self.args_out[i.name]=j
+        else:
+        # Copy arguments into a dict for returning
+            for i,j in zip(self._arg_vars,args_out):
+                if 'out' in i.var['intent'] or i.var['intent']=='':
+                    if hasattr(j,'contents'):
+                        r[i.name]=i.ctype_to_py_f(j.contents)
+                    else:
+                        r[i.name]=i.ctype_to_py_f(j)
+
         return r
     
     def __call__(self, *args):
         #print("call ",args)
         args_in = self._args_to_ctypes(args)
+        
         # Capture stdout messages
         # Cant call python print() untill after the read_pipe call
         if self.TEST_FLAG:
@@ -130,11 +147,21 @@ class fFunc(fVar):
             # Print stdout
             os.dup2(stdout, 1)
             print(read_pipe(pipe_out))
+            
         # Python print available now
         if self._sub:
             return self._ctypes_to_return(args_in)
         else:
             return self.returnPytype()(res)
+            
+    def saveArgs(self,v=False):
+        """ Instead of copying arguments back we save them
+        inside the func object so we dont need to copy them
+        """
+        if v:
+            self.save_args=True
+        else:
+            self.save_args=False
             
     def returnPytype(self):
         return getattr(__builtin__, self.proc['ret']['pytype'])
