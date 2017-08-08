@@ -81,7 +81,7 @@ class fVar(object):
         """
         return getattr(ctypes, self.ctype)
 
-    def ctype_def_func(self):
+    def ctype_def_func(self,pointer=False):
         """
         The ctype type of a value suitable for use as an argument of a function
 
@@ -90,8 +90,11 @@ class fVar(object):
         Second return value is anythng that needs to go at the end of the
         arg list, like a string len
         """
+        f = ctypes.POINTER(self.ctype_def())
+        if pointer:
+            f = ctypes.POINTER(f)
 
-        return ctypes.POINTER(self.ctype_def()),None
+        return f,None
         
     def py_to_ctype_p(self,value):
         """

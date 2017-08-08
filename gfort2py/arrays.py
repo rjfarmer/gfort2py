@@ -59,7 +59,7 @@ class fExplicitArray(fVar):
         """
         return getattr(ctypes, self.ctype)
 
-    def ctype_def_func(self):
+    def ctype_def_func(self,pointer=False):
         """
         The ctype type of a value suitable for use as an argument of a function
 
@@ -68,6 +68,9 @@ class fExplicitArray(fVar):
         Second return value is anythng that needs to go at the end of the
         arg list, like a string len
         """
+        if pointer:
+            raise ValueError("Cant have explicit array as a pointer")
+        
         x=np.ctypeslib.ndpointer(dtype=self._dtype,ndim=self.ndims,
                                 flags='F_CONTIGUOUS')
         y=None
@@ -203,7 +206,7 @@ class fDummyArray(fVar):
             raise ValueError("Array too big")
         
         p.base_addr = value.ctypes.get_data()
-        p.offset = self._size_t(0)
+        p.offset = self._size_t(-1)
         
         p.dtype = self._get_dtype()
         
@@ -292,6 +295,13 @@ class fDummyArray(fVar):
             return self._get_from_pointer(value.contents)
         else:
             return self._get_from_pointer(value)
+            
+    def py_to_ctype_p(self,value):
+        """
+        The ctype represnation suitable for function arguments wanting a pointer
+        """
+        return self.py_to_ctype(value)
+            
 
     def pytype_def(self):
         return np.array
@@ -302,7 +312,7 @@ class fDummyArray(fVar):
         """
         return self._ctype_desc
 
-    def ctype_def_func(self):
+    def ctype_def_func(self,pointer=False):
         """
         The ctype type of a value suitable for use as an argument of a function
 

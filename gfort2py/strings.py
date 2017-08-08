@@ -43,7 +43,7 @@ class fStr(fVar):
     def ctype_def(self):
         return ctypes.c_char
 
-    def ctype_def_func(self):
+    def ctype_def_func(self,pointer=False):
         """
         The ctype type of a value suitable for use as an argument of a function
 
@@ -52,7 +52,11 @@ class fStr(fVar):
         Second return value is anythng that needs to go at the end of the
         arg list, like a string len
         """
-        return ctypes.c_char_p,ctypes.c_int
+        f = ctypes.c_char_p
+        if pointer:
+            f = ctypes.POINTER(f)
+        
+        return f,ctypes.c_int
         
     def py_to_ctype_p(self,value):
         """

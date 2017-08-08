@@ -110,7 +110,7 @@ class fDerivedType(fVar):
         """
         return self._ctype
 
-    def ctype_def_func(self):
+    def ctype_def_func(self,pointer=False):
         """
         The ctype type of a value suitable for use as an argument of a function
 
@@ -119,7 +119,11 @@ class fDerivedType(fVar):
         Second return value is anythng that needs to go at the end of the
         arg list, like a string len
         """
-        f=self._ctype_desc
+        if pointer:
+            f=ctypes.POINTER(self._ctype_desc)
+        else:
+            f=self._ctype_desc
+            
         return f,None
         
     def py_to_ctype_p(self,value):

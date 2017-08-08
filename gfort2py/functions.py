@@ -36,11 +36,14 @@ class fFunc(fVar):
                 self._arg_vars.append(self._init_var(i))
                 self._arg_vars[-1]._func_arg=True
                 
-                x,y=self._arg_vars[-1].ctype_def_func()
                 if 'pointer' in i['var']:
-                    self._arg_ctypes.append(ctypes.POINTER(x))
+                    pointer=True
                 else:
-                    self._arg_ctypes.append(x)
+                    pointer=False
+                
+                x,y=self._arg_vars[-1].ctype_def_func(pointer=pointer)
+                    
+                self._arg_ctypes.append(x)
                 if y is not None:
                     tmp.append(y)
             self._call.argtypes = self._arg_ctypes+tmp

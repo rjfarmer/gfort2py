@@ -883,9 +883,9 @@ class TestStringMethods(unittest.TestCase):
 		output=out.getvalue().strip()	
 		self.assertEqual(output,o.strip())
 	
-	@unittest.skip("Skipping")	
+	#@unittest.skip("Skipping")	
 	def test_sub_arr_assumed_rank_int_1d(self):
-		v=np.arange(0,5.0)
+		v=np.arange(10.0,15.0)
 		o=' '.join([str(i) for i in v.flatten()])
 		with captured_output() as (out,err):
 			y=x.sub_arr_assumed_rank_int_1d(v)
