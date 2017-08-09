@@ -64,8 +64,14 @@ class fDerivedType(fVar):
         for i in self._dt_def['dt_def']['arg']:            
             ct = i['var']['ctype']
             if ct == 'c_void_p' and 'dt' in i['var']:
-                self._args.append(fDerivedType(self._lib,i,self._dt_defs,self.TEST_FLAG))
-                self._args[-1].setup_desc()
+                if int(self._dt_def['num'])==int(i['var']['dt']['num']):
+                    # when nesting the same dt inside it self, we want an empty version
+                    # otherwise we get a recursive loop
+                    self._args.append(emptyfDerivedType(self._dt_def['name']))
+                    self._args[-1].create_struct()
+                else:
+                    self._args.append(fDerivedType(self._lib,i,self._dt_defs,self.TEST_FLAG))
+                    self._args[-1].setup_desc()
             else:
                 self._args.append(fVar(self._lib, i))
                 ct=self._args[-1]._ctype
@@ -227,3 +233,19 @@ class fDerivedType(fVar):
         raise KeyError("Couldn't match "+ str(name))
 
 
+
+class emptyfDerivedType(fDerivedType):
+    def __init__(self,name, *args,**kwargs):
+        self._desc = self.create_struct()
+        self.name = name
+        
+        self._desc = self.create_struct()
+        self._ctype = self._desc
+        self._ctype_desc = ctypes.POINTER(self._ctype)
+
+    def create_struct(self):
+        class fDerivedTypeDesc(ctypes.Structure):
+            pass
+        fDerivedTypeDesc.__name__ = str(self.name)
+        return fDerivedTypeDesc
+        
