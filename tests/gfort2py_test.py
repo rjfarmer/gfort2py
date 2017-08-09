@@ -917,7 +917,7 @@ class TestStringMethods(unittest.TestCase):
 	def test_second_mod(self):
 		x.f_struct_simple2.x=99
 		y=x.sub_use_mod()
-		self.assertEqual(x.test2_x,1)
+		self.assertEqual(x.test2_x.get(),1)
 		self.assertEqual(x.f_struct_simple2.get(),{'x':5,'y':6})
 	
 	def test_nested_dts(self):

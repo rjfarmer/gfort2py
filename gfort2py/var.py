@@ -174,7 +174,7 @@ class fVar(object):
         s=''
         try:
             s=str(self.get()) + " <" + str(self.pytype) + ">"
-        except (ValueError,AttributeError,NotInLib):
+        except:
             # Skip for things that aren't in the module (function arg)
             s=" <" + str(self.pytype) + ">"
         return s

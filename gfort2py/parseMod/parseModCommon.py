@@ -29,10 +29,18 @@ class parseModBase(object):
         self.mod_vars=[]
         self.param=[]
         self.dt_defs=[]
+        self.dt_defines=[]
         self._unpacked=False
 
     def processData(self):
         self.data = split_brackets(self.data)
+        
+        #Store the split data once:
+        _t=[]
+        for i in self.data:
+            _t.append(split_brackets(i.strip(),remove_b=True))
+        self.data = _t
+        
     
         self.parseAllIntrinsic()
         self.parseAllOperator()
@@ -86,23 +94,49 @@ class parseModBase(object):
     def parseAllIntrinsic(self):
         x = self.data[0]
         #Remove the module header
-        x = x[x.index("("):]
+        #x = x[x.index("("):]
         
     def parseAllOperator(self):
         x = self.data[1]
         
     def parseAllDTDefines(self):
         x = self.data[2]
-        x = split_brackets(x.strip(),remove_b=True) 
+        #x = split_brackets(x.strip(),remove_b=True) 
         
-        self.dt_defines=[]
         for i in x:
             i=i.replace("(","").replace(")",'').strip()
             r={}
             r['name'],r['module'],r['num']=i.split()
             r['num'] = int(r['num'])
             self.dt_defines.append(r)
-        
+            
+            
+        # Find the dt's used by the module but not defined by the module,
+        # but its defintion is still copied in here
+        for symbol in self.data[6]:
+            try:
+                splitPoint = symbol.index("(")
+            except ValueError:
+                continue
+            info = symbol[splitPoint:].strip()
+            info = split_brackets(info)
+            type_line = info[0]
+            
+            if 'DERIVED ' in type_line:
+                num,name,module  =  symbol.split()[0:3]
+                if len(self.dt_defines)>0:
+                    found=False
+                    for i in self.dt_defines:
+                        if int(i['num']) == int(num):
+                            found=True
+                else:
+                    found = False
+                
+                if not found:
+                    self.dt_defines.append({'name':name,
+                                        'module':module,
+                                        'num':num})
+    
     def parseAllCommon(self):
         x = self.data[3]
         
@@ -111,17 +145,17 @@ class parseModBase(object):
 
     def parseAllNameSymbols(self):
         x = self.data[7]
-        x = x.split()
+        x = x[0].split()
         self.symbol_names = []
         for i in range(len(x)//3):
             self.symbol_names.append({'name':x[i*3],'num':x[i*3+2],'ambiguous_flag':bool(x[i*3+1])})
         
     
     def parseAllSymbols(self):
-        x = self.data[6].strip()[1:-1].strip()
-        
+        #x = self.data[6].strip()[1:-1].strip()
+        split_data = self.data[6]
         #Breaks the single list of items into pairs of info for each symbol
-        split_data = split_brackets(x,remove_b=False)
+        #split_data = split_brackets(x,remove_b=False)
         
         if PARALLEL:
             with mp.Pool() as pool:
@@ -132,9 +166,10 @@ class parseModBase(object):
         self.all_symbols = all_symbols
         
     def parseSymbol(self,symbol):
+        symbol = symbol.strip()
         #things to skip
 
-        if '__' in symbol or '(intrinsic)' in symbol or 'INTRINSIC' in symbol:
+        if '__' in symbol or '(intrinsic)' in symbol or 'INTRINSIC' in symbol or len(symbol)==0:
             return {}
 
         r = {}
@@ -457,7 +492,7 @@ class parseModBase(object):
 
     def matchDtDef(self,num):
         for i in self.dt_defines:
-            if num == i['num']:
+            if int(num) == int(i['num']):
                 return i
         
         print("Cant match dt definition "+str(num))
