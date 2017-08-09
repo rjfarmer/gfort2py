@@ -397,8 +397,12 @@ class parseModBase(object):
         return info[4].replace("(", "").strip().split()[0]
     
     def getBounds(self, info):
-        # Horrible but easier than splitting the nested brackets
-        return [int(x) for x in info[4].split("'")[1:-1:2]]
+        try:
+            # Horrible but easier than splitting the nested brackets
+            return [int(x) for x in info[4].split("'")[1:-1:2]]
+        except ValueError:
+            # Sometimes we cant know the size till run time
+            return -1
  
     def getStrLen(self, info):
         # Horrible but easier than splitting the nested brackets
