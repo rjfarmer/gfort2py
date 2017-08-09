@@ -166,7 +166,7 @@ class fVar(object):
 
     def __str__(self):
         try:
-            return str(self.get(), name)
+            return str(self.get())
         except NotInLib:
             return None
 
