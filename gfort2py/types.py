@@ -5,13 +5,15 @@ from .var import fVar
 
 
 class fDerivedType(fVar):
-    def __init__(self, lib, obj,dt_defs,TEST_FLAG=False):
+    def __init__(self, lib, obj,dt_defs,TEST_FLAG=False,_dt_contained=[]):
         self.__dict__.update(obj)
         self._lib = lib
         self._args = []
         self._nameArgs = []
         self._typeArgs = []
         self._dt_defs = dt_defs
+        self._dt_contained=[]
+        self._dt_contained=self._dt_contained+_dt_contained
         self._resolveDT()
         
         self._desc = self.create_struct()
@@ -64,13 +66,19 @@ class fDerivedType(fVar):
         for i in self._dt_def['dt_def']['arg']:            
             ct = i['var']['ctype']
             if ct == 'c_void_p' and 'dt' in i['var']:
-                if int(self._dt_def['num'])==int(i['var']['dt']['num']):
-                    # when nesting the same dt inside it self, we want an empty version
-                    # otherwise we get a recursive loop
-                    self._args.append(emptyfDerivedType(self._dt_def['name']))
+                self._dt_contained.append((int(self._dt_def['num']),self._dt_def['name']))
+                name=None
+                for j in self._dt_contained:
+                    if j[0] == int(i['var']['dt']['num']):
+                        name=j[1]
+
+                if name is not None:
+                    # when nesting dt's we want to prevent recurisve loops if either a dt conatins itself
+                    # it contains dt_A contains dt_b which contains dt_A
+                    self._args.append(emptyfDerivedType(name))
                     self._args[-1].create_struct()
                 else:
-                    self._args.append(fDerivedType(self._lib,i,self._dt_defs,self.TEST_FLAG))
+                    self._args.append(fDerivedType(self._lib,i,self._dt_defs,self.TEST_FLAG,self._dt_contained))
                     self._args[-1].setup_desc()
             else:
                 self._args.append(fVar(self._lib, i))

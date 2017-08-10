@@ -100,13 +100,20 @@ class parseModBase(object):
         x = self.data[1]
         
     def parseAllDTDefines(self):
+        # This isnt just dt names, its also the name and number(s) for 
+        # generic interfaces
         x = self.data[2]
         #x = split_brackets(x.strip(),remove_b=True) 
         
         for i in x:
             i=i.replace("(","").replace(")",'').strip()
             r={}
-            r['name'],r['module'],r['num']=i.split()
+            z = i.split()
+            r['name'] = z[0]
+            r['module'] = z[1]
+            r['num'] = z[2]
+            if(len(z))> 3:
+                r['num_alts']=z[2:]
             r['num'] = int(r['num'])
             self.dt_defines.append(r)
             
