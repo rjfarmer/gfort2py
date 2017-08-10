@@ -199,7 +199,7 @@ class parseModBase(object):
         r['info'] = info
         type_line = info[0]
         # need spaces on end of names as sometimes we have name-something etc
-        if 'VARIABLE ' in type_line:
+        if 'VARIABLE ' in type_line or 'DUMMY ' in type_line:
             if r['parent_id']=='1':
                 r['var'] = self.parseVar(info)
             else:
