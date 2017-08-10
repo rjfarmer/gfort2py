@@ -23,7 +23,12 @@ class fFunc(fVar):
         self.__dict__.update(obj)
         self._lib = lib
         self._sub = self.proc['sub']
-        self._call = getattr(self._lib, self.mangled_name)
+        try:
+            self._call = getattr(self._lib, self.mangled_name)
+        except AttributeError:
+            print("Skipping "+self.mangled_name)
+            return
+            
         self._dt_defs = dt_defs
         self._set_return()
         self._set_arg_ctypes()

@@ -103,11 +103,13 @@ class fDerivedType(fVar):
         self._value=self._ctype()
 
         # Wants a dict
-        if not all(i in self._nameArgs for i in value.keys()):
-            raise ValueError("Dict contains elements not in struct")
+        if isinstance(value,dict):
+            if not all(i in self._nameArgs for i in value.keys()):
+                raise ValueError("Dict contains elements not in struct")
+            
+            for name in value:
+                setattr(self._value,name,value[name])
         
-        for name in value:
-            setattr(self._value,name,value[name])
         
         return self._value
         
@@ -119,7 +121,8 @@ class fDerivedType(fVar):
         Second return value is anythng that needs to go at the end of the
         arg list, like a string len
         """
-        r=self.py_to_ctype(value)        
+        r=self.py_to_ctype(value)    
+            
         return r,None
 
     def ctype_to_py(self, value):

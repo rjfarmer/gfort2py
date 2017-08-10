@@ -282,8 +282,12 @@ class parseModBase(object):
         else:
             res['sub']=False
         
-        #Retrun value
+        #Return value
         res['ret'] = self.parseVar(info)
+        
+        
+        if 'ABSTRACT 'in type_info:
+            res={}
         
         
         return res
@@ -452,6 +456,11 @@ class parseModBase(object):
             pytype='None'
             ctype='c_void_p'
             #raise ValueError("Cant parse " + x)
+            
+        if 'PASS ' in x:
+            pytype='None'
+            ctype='c_void_p'
+            
         return pytype,ctype
         
     def getCtypeIntSize(self,size):
