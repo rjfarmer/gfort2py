@@ -180,19 +180,20 @@ class fFunc(fVar):
     def __repr__(self):
         return self.__str__()
 
+    @property
     def __doc__(self):
         s = "Function: " + self.name + "("
-        if len(self.args) > 0:
+        if len(self._arg_vars) > 0:
             s = s + ",".join([i._pname() for i in self._arg_vars])
         else:
             s = s + "None"
         s = s + ")" + os.linesep
         s = s + "Args In: " + \
-            ",".join([i._pname()
-                      for i in self._arg_vars if 'in' in i.intent]) + os.linesep
+            ", ".join([i._pname()
+                      for i in self._arg_vars if 'in' in i.var['intent']]) + ' '+os.linesep
         s = s + "Args Out: " + \
-            ",".join([i._pname()
-                      for i in self._arg_vars if 'out' in i.intent]) + os.linesep
+            ", ".join([i._pname()
+                      for i in self._arg_vars if 'out' in i.var['intent']]) + ' '+os.linesep
         s = s + "Returns: "
         if self.sub:
             s = s + "None"
@@ -200,3 +201,9 @@ class fFunc(fVar):
             s = s + str(self.pytype)
         s = s + os.linesep
         return s
+
+    def __bool__(self):
+        return True
+        
+    def __len__(self):
+        return 1
