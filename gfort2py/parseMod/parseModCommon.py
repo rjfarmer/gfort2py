@@ -218,6 +218,8 @@ class parseModBase(object):
         elif 'DERIVED ' in type_line:
             #This definition of a dt 
             r['dt_def'] = self.parseDT(info)
+        elif 'NAMELIST ' in type_line:
+            print("Skipping namelist "+r['name'])
         else:
             raise ValueError("Unknown object "+symbol)
             
