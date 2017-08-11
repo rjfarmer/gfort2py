@@ -487,10 +487,10 @@ class TestStringMethods(unittest.TestCase):
 		with self.assertRaises(TypeError) as cm:
 			x.f_struct_simple.x='asde'
 	
-	def test_c_int_alloc_1d_non_alloc(self):
-		y=x.sub_alloc_int_1d_cleanup()
-		with self.assertRaises(ValueError) as cm:
-			x.c_int_alloc_1d.get()
+	#def test_c_int_alloc_1d_non_alloc(self):
+		#y=x.sub_alloc_int_1d_cleanup()
+		#with self.assertRaises(ValueError) as cm:
+			#x.c_int_alloc_1d.get()
 			
 	def test_c_int_alloc_1d(self):
 		y=x.sub_alloc_int_1d_cleanup()
