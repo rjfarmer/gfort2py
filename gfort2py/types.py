@@ -107,7 +107,7 @@ class fDerivedType(fVar):
             if not all(i in self._nameArgs for i in value.keys()):
                 raise ValueError("Dict contains elements not in struct")
             
-            for name in value:
+            for name in value.keys():
                 setattr(self._value,name,value[name])
         
         

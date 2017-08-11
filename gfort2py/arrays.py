@@ -230,7 +230,8 @@ class fDummyArray(fVar):
     def _get_from_pointer(self,p,copy=False):
         base_addr = p.base_addr
         if not self._isallocated():
-            raise ValueError("Array not allocated yet")
+            return np.zeros(1)
+            #raise ValueError("Array not allocated yet")
         
         offset = p.offset
         dtype = p.dtype
