@@ -139,12 +139,12 @@ class fFort(object):
         self.__dict__[x.name] = x
 
     def __getattr__(self, name):
-        if name in self.__dict__:
-            return self.__dict__[name]
+        if name.lower() in self.__dict__:
+            return self.__dict__[name.lower()]
 
         if '_all_names' in self.__dict__:
-            if name in self._all_names:
-                return self.__dict__[name].get()
+            if name.lower() in self._all_names:
+                return self.__dict__[name.lower()].get()
 
         raise AttributeError("No variable " + name)
 
