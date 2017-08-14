@@ -43,13 +43,13 @@ class fStr(fVar):
     def ctype_def(self):
         return ctypes.c_char
 
-    def ctype_def_func(self,pointer=False):
+    def ctype_def_func(self,pointer=False,intent=''):
         """
         The ctype type of a value suitable for use as an argument of a function
 
         May just call ctype_def
         
-        Second return value is anythng that needs to go at the end of the
+        Second return value is anything that needs to go at the end of the
         arg list, like a string len
         """
         f = ctypes.c_char_p

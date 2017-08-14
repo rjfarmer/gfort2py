@@ -504,12 +504,14 @@ class parseModBase(object):
     
     def parseIntent(self,info):
         value = False
-        if ' INOUT ' in info or ' UNKNOWN-INTENT ' in info:
+        if ' INOUT ' in info:
             value = 'inout'
         elif ' OUT ' in info:
             value = 'out'
         elif ' IN ' in info:
             value = 'in'
+        elif ' UNKNOWN-INTENT ' in info:
+            value = 'na'
         return value
 
     def matchDtDef(self,num):

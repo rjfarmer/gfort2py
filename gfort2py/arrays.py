@@ -5,6 +5,7 @@ from .types import fDerivedType
 import numpy as np
 from .utils import *
 from .fnumpy import *
+from .types import fDerivedType
 
 class fExplicitArray(fVar):
 
@@ -59,7 +60,7 @@ class fExplicitArray(fVar):
         """
         return getattr(ctypes, self.ctype)
 
-    def ctype_def_func(self,pointer=False):
+    def ctype_def_func(self,pointer=False,intent=''):
         """
         The ctype type of a value suitable for use as an argument of a function
 
@@ -313,7 +314,7 @@ class fDummyArray(fVar):
         """
         return self._ctype_desc
 
-    def ctype_def_func(self,pointer=False):
+    def ctype_def_func(self,pointer=False,intent=''):
         """
         The ctype type of a value suitable for use as an argument of a function
 
@@ -487,3 +488,7 @@ class fParamArray(fParam):
         from the shared lib.
         """
         return np.array(self.value, dtype=self.pytype)
+
+
+
+

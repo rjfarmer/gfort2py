@@ -50,8 +50,7 @@ class fFunc(fVar):
                     pointer=True
                 else:
                     pointer=False
-                
-                x,y=self._arg_vars[-1].ctype_def_func(pointer=pointer)
+                x,y=self._arg_vars[-1].ctype_def_func(pointer=pointer,intent=i['var']['intent'])
                     
                 self._arg_ctypes.append(x)
                 if y is not None:
@@ -125,7 +124,7 @@ class fFunc(fVar):
         if self.save_args:
             # Save arguments inside this object
             for i,j in zip(self._arg_vars,args_out):
-                if 'out' in i.var['intent'] or i.var['intent']=='': 
+                if 'out' in i.var['intent'] or i.var['intent']=='na': 
                     r[i.name]=''
                     if hasattr(j,'contents'):
                         self.args_out[i.name]=j.contents
@@ -134,7 +133,7 @@ class fFunc(fVar):
         else:
         # Copy arguments into a dict for returning
             for i,j in zip(self._arg_vars,args_out):
-                if 'out' in i.var['intent'] or i.var['intent']=='':
+                if 'out' in i.var['intent'] or i.var['intent']=='na':
                     if hasattr(j,'contents'):
                         r[i.name]=i.ctype_to_py_f(j.contents)
                     else:

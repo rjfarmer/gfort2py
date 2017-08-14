@@ -148,17 +148,19 @@ class fDerivedType(fVar):
         """
         return self._ctype
 
-    def ctype_def_func(self,pointer=False):
+    def ctype_def_func(self,pointer=False,intent=''):
         """
         The ctype type of a value suitable for use as an argument of a function
 
         May just call ctype_def
         
-        Second return value is anythng that needs to go at the end of the
+        Second return value is anything that needs to go at the end of the
         arg list, like a string len
         """
-        if pointer:
+        if pointer and intent is not 'na':
             f=ctypes.POINTER(self._ctype_desc)
+        elif intent=='na':
+            f=self._ctype_desc
         else:
             f=self._ctype_desc
             
