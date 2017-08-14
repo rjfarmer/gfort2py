@@ -143,7 +143,11 @@ To run unit tests
 - [x] Nested derived types
 - [ ] Arrays of derived types
 - [ ] Functions in derived types
-- [ ] Other complicated derived type stuff (abstract etc)
+- [ ] Classes
+- [ ] Abstract
+- [ ] Common blocks
+- [ ] Equivalences
+- [ ] Namelists
 
 ### Functions/subroutines
 
