@@ -125,9 +125,6 @@ class fFort(object):
         if x is not None:
             self.__dict__[x.name] = x
         else:
-            print(x)
-            print(obj)
-            print()
             print("Skipping init "+obj['name'])
 
     def _init_param(self, obj):
