@@ -192,19 +192,19 @@ class fFunc(fVar):
             s = s + ",".join([i._pname() for i in self._arg_vars])
         else:
             s = s + "None"
-        s = s + ")" + os.linesep
+        s = s + ")" + os.linesep+' '
         s = s + "Args In: " + \
             ", ".join([i._pname()
-                      for i in self._arg_vars if 'in' in i.var['intent']]) + ' '+os.linesep
+                      for i in self._arg_vars if 'in' in i.var['intent']]) + ' '+os.linesep+' '
         s = s + "Args Out: " + \
             ", ".join([i._pname()
-                      for i in self._arg_vars if 'out' in i.var['intent']]) + ' '+os.linesep
+                      for i in self._arg_vars if 'out' in i.var['intent']]) + ' '+os.linesep+' '
         s = s + "Returns: "
         if self.sub:
             s = s + "None"
         else:
             s = s + str(self.pytype)
-        s = s + os.linesep
+        s = s + os.linesep+' '
         return s
 
     def __bool__(self):

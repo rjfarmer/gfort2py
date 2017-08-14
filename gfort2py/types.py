@@ -171,30 +171,17 @@ class fDerivedType(fVar):
 
         return ctypes.POINTER(self.ctype_def())(self.py_to_ctype(value))
         
+    def _pname(self):
+        return str(self.name) + " <" + str(self._dt_def['name']) + ">"
 
     def __dir__(self):
         return self._nameArgs
 
     def __str__(self):
-        try:
-            x=self.get()
-        except:
-            x=None
-        if x is None:
-            return "<dt>"
-        else:
-            return str(self.get())
+        return self._dt_def['name']+" <dt>"
         
     def __repr__(self):
-        try:
-            x=self.get()
-        except:
-            x=None
-            
-        if x is None:
-            return "<dt>"
-        else:
-            return repr(self.get())
+        return self._dt_def['name']+" <dt>"
         
     def __getattr__(self, name): 
         if name in self.__dict__:
