@@ -122,7 +122,7 @@ all of them at the same time.
 ## Testing
 
 ````bash
-ipython3 setup.py tests
+ipython3 setup.py test
 ````
 
 To run unit tests
@@ -138,7 +138,7 @@ To run unit tests
 - [X] Complex numbers (Scalar and parameters)
 - [x] Getting a pointer
 - [x] Getting the value of a pointer
-- [x] allocatable arrays
+- [x] Allocatable arrays
 - [x] Derived types
 - [x] Nested derived types
 - [ ] Arrays of derived types
