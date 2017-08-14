@@ -11,7 +11,7 @@ import errno
 
 #from .parseMod import run_and_save, hash_file, fpyname
 from .cmplx import fComplex, fParamComplex
-from .arrays import fExplicitArray, fDummyArray, fParamArray
+from .arrays import fExplicitArray, fDummyArray, fParamArray, fAssumedShape , fAssumedSize
 from .functions import fFunc
 from .strings import fStr
 from .types import fDerivedType
@@ -110,19 +110,26 @@ class fFort(object):
         elif 'dt' in obj['var'] and obj['var']['dt']:
             x = fDerivedType(self._lib, obj,self._dt_defs,self.TEST_FLAG)
         elif 'array' in obj['var']:
-            if obj['var']['array']['atype'] == 'explicit':
+            array = obj['var']['array']['atype'] 
+            if array == 'explicit':
                 x = fExplicitArray(self._lib, obj,self.TEST_FLAG)
-            elif obj['var']['array']['atype'] == 'alloc':
+            elif array == 'alloc':
                 x = fDummyArray(self._lib, obj, self.TEST_FLAG)
-            elif obj['var']['array']['atype'] == 'pointer':
-                x = fDummyArray(self._lib, obj, self.TEST_FLAG)
+            elif array == 'assumed_shape' or array == 'pointer':
+                x =  fAssumedShape(self._lib, obj, self.TEST_FLAG)
+            elif array == 'assumed_size':
+                x = fAssumedSize(self._lib, obj, self.TEST_FLAG)
+                
         else:
             x = fVar(self._lib, obj,self.TEST_FLAG)
 
         if x is not None:
             self.__dict__[x.name] = x
         else:
-            print("Skipping "+obj['name'])
+            print(x)
+            print(obj)
+            print()
+            print("Skipping init "+obj['name'])
 
     def _init_param(self, obj):
         if obj['param']['pytype']=='complex':
