@@ -60,7 +60,7 @@ class fVar(object):
         """
         Pass in a ctype value returns the python representation of it
         """
-        return self._pytype(value.value)
+        return self.ctype_to_py_f(value)
         
     def ctype_to_py_f(self, value):
         """
@@ -69,8 +69,11 @@ class fVar(object):
         """
         if hasattr(value,'contents'):
             return self._pytype(value.contents.value)
-        else:
+        elif hasattr(value,'value'):
             return self._pytype(value.value)
+        else:
+            return self._pytype(value)
+
 
     def pytype_def(self):
         return getattr(__builtin__, self.pytype)

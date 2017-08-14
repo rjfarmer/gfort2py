@@ -2,6 +2,9 @@ from __future__ import print_function
 import ctypes
 import functools
 from .var import fVar
+from .cmplx import fComplex
+from .arrays import fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize, fAllocatableArray
+from .strings import fStr
 
 
 class fDerivedType(fVar):
@@ -21,13 +24,16 @@ class fDerivedType(fVar):
         self._ctype = self._desc
         self._ctype_desc = ctypes.POINTER(self._ctype)
         self.TEST_FLAG=TEST_FLAG
+        self.intent=None
+        self.pointer=None
         
     def get(self,copy=True):
         res={}
         r = self._get_from_lib()
         if copy:
-            for name in self._nameArgs:
-                res[name]=getattr(r,name)
+            for name,i in zip(self._nameArgs,self._args):
+                x=getattr(r,name)
+                res[name]=i.ctype_to_py_f(x)
         else:
             if hasattr(r,'contents'):
                 res =r.contents
@@ -81,7 +87,7 @@ class fDerivedType(fVar):
                     self._args.append(fDerivedType(self._lib,i,self._dt_defs,self.TEST_FLAG,self._dt_contained))
                     self._args[-1].setup_desc()
             else:
-                self._args.append(fVar(self._lib, i))
+                self._args.append(self._init_var(i))
                 ct=self._args[-1]._ctype
                 
             self._args[-1]._dt_arg=True         
@@ -91,6 +97,31 @@ class fDerivedType(fVar):
             self._typeArgs.append(self._args[-1]._ctype)
                 
         self.set_fields(self._nameArgs, self._typeArgs)
+        
+    def _init_var(self, obj):
+        array = None
+        if 'array' in obj['var']:
+            array = obj['var']['array']
+        
+        if obj['var']['pytype'] == 'str':
+            x = fStr(self._lib, obj,self.TEST_FLAG)
+        elif obj['var']['pytype'] == 'complex':
+            x = fComplex(self._lib, obj,self.TEST_FLAG)
+        elif array is not None:
+            if array['atype'] == 'explicit':
+                x = fExplicitArray(self._lib, obj,self.TEST_FLAG)
+            elif array['atype'] == 'alloc':
+                x = fAllocatableArray(self._lib, obj, self.TEST_FLAG)
+            elif array['atype'] == 'assumed_shape' or array['atype'] == 'pointer':
+                x = fAssumedShape(self._lib, obj, self.TEST_FLAG)
+            elif array['atype'] == 'assumed_size':
+                x = fAssumedSize(self._lib, obj, self.TEST_FLAG)
+            else:
+                raise ValueError("Unknown array: "+str(obj))
+        else:
+            x = fVar(self._lib, obj)
+
+        return x
  
     def set_fields(self, nameArgs, typeArgs):
         self.fields = [(i, j) for i, j in zip(nameArgs, typeArgs)]
@@ -130,8 +161,9 @@ class fDerivedType(fVar):
         Pass in a ctype value returns the python representation of it
         """
         res={}
-        for i in self._nameArgs:
-            res[i]=getattr(value,i)
+        for name,i in zip(self._nameArgs,self._args):
+            x=getattr(value,name)
+            res[name]=i.ctype_to_py_f(x)
 
         return res
         
@@ -157,10 +189,12 @@ class fDerivedType(fVar):
         Second return value is anything that needs to go at the end of the
         arg list, like a string len
         """
+        self.intent=intent
+        self.pointer=pointer
         if pointer and intent is not 'na':
             f=ctypes.POINTER(self._ctype_desc)
         elif intent=='na':
-            f=self._ctype_desc
+            f=ctypes.POINTER(self._ctype_desc)
         else:
             f=self._ctype_desc
             
@@ -170,7 +204,6 @@ class fDerivedType(fVar):
         """
         The ctype representation suitable for function arguments wanting a pointer
         """
-
         return ctypes.POINTER(self.ctype_def())(self.py_to_ctype(value))
         
     def _pname(self):

@@ -1,11 +1,10 @@
 from __future__ import print_function
 import ctypes
 from .var import fVar, fParam
-from .types import fDerivedType
 import numpy as np
 from .utils import *
 from .fnumpy import *
-from .types import fDerivedType
+
 
 class fExplicitArray(fVar):
 
@@ -149,9 +148,11 @@ class fDummyArray(fVar):
         self._lib = lib
         
         self._desc = self._setup_desc()
-        self._ctype = getattr(ctypes,self.ctype)
+        self._ctype_single = getattr(ctypes,self.ctype)
+        #self._ctype = getattr(ctypes,self.ctype)
+        self._ctype = self._desc
         self._ctype_desc = ctypes.POINTER(self._desc)
-        self.npdtype=self.pytype+str(8*ctypes.sizeof(self._ctype))
+        self.npdtype=self.pytype+str(8*ctypes.sizeof(self._ctype_single))
         
 
     def _setup_desc(self):
@@ -166,7 +167,7 @@ class fDummyArray(fVar):
                       ('dtype',self._index_t),
                       ('dims',bounds*self.ndim)
                       ]
-                      
+
         return fAllocArray
 
     def _get_pointer(self):
@@ -212,7 +213,7 @@ class fDummyArray(fVar):
         p.dtype = self._get_dtype()
         
         for i in range(self.ndim):
-            p.dims[i].stride = self._index_t(value.strides[i]//ctypes.sizeof(self._ctype))
+            p.dims[i].stride = self._index_t(value.strides[i]//ctypes.sizeof(self._ctype_single))
             p.dims[i].lbound = self._index_t(1)
             p.dims[i].ubound = self._index_t(value.shape[i])
             
@@ -259,7 +260,7 @@ class fDummyArray(fVar):
         else:
             # When we want to pointer to the underlaying fortran memoray
             # will leak as we dont have a deallocate call to call in a del func
-            ptr = ctypes.cast(base_addr,ctypes.POINTER(self._ctype))
+            ptr = ctypes.cast(base_addr,ctypes.POINTER(self._ctype_single))
             res = np.ctypeslib.as_array(ptr,shape= self._shape)
         
         return res
@@ -286,7 +287,7 @@ class fDummyArray(fVar):
         """
         Pass in a ctype value returns the python representation of it
         """
-        return self._get_from_pointer(value.contents)
+        return self.ctype_to_py_f(value.contents)
         
     def ctype_to_py_f(self, value):
         """
@@ -297,6 +298,7 @@ class fDummyArray(fVar):
             return self._get_from_pointer(value.contents)
         else:
             return self._get_from_pointer(value)
+
             
     def py_to_ctype_p(self,value):
         """
@@ -330,7 +332,7 @@ class fDummyArray(fVar):
         ftype=self._get_ftype()
         d=self.ndim
         d=d|(ftype<<self._GFC_DTYPE_TYPE_SHIFT)
-        d=d|(ctypes.sizeof(self._ctype)<<self._GFC_DTYPE_SIZE_SHIFT)
+        d=d|(ctypes.sizeof(self._ctype_single)<<self._GFC_DTYPE_SIZE_SHIFT)
         return d
 
     def _get_ftype(self):
@@ -382,7 +384,11 @@ class fDummyArray(fVar):
                 
                 
     def _isallocated(self):
-        p = self._get_pointer()
+        
+        try:
+            p = self._get_pointer()
+        except TypeError:
+            return False
         if p.contents.base_addr:
             #Base addr is NULL if deallocated
             return True
@@ -477,7 +483,7 @@ class fAllocatableArray(fDummyArray):
             shape.append(i.ubound-i.lbound+1)
         shape=tuple(shape)
         
-        p=ctypes.POINTER(self._ctype)
+        p=ctypes.POINTER(self._ctype_single)
         res=ctypes.cast(value.base_addr,p)
         return np.ctypeslib.as_array(res,shape=shape)
     

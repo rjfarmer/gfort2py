@@ -71,13 +71,17 @@ class fStr(fVar):
         """
         if hasattr(value,'contents'):
             r = value.contents.value
-        else:
+        elif hasattr(value,'value'):
             r = value.value
+        else:
+            r = value
             
         try:
             r = r.decode()
         except AttributeError:
             pass
+        except UnicodeDecodeError:
+            r = ''
             
         return r
             
