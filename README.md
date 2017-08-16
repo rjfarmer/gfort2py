@@ -10,6 +10,7 @@ ipython3 setup.py install --user
 ````
 
 ## Using
+### Fortran side
 Compile code with -fPIC and -shared as options, then link togthter as a shared lib at the end
 
 ````bash
@@ -19,6 +20,11 @@ gfortran -fPIC -shared -o libfile file.f90
 If your code comes as  program that does everything, then just turn the program into a function call inside a module,
 then create a new file with your program that uses the module and calls the function you just made.
 
+If the shared library needs other
+shared libraries you will need to set LD_LIBRARY_PATH enviroment variable, and its also recommended is to run chrpath on the 
+shared libraries so you can access them from anywhere.
+
+### Python side
 ````python
 
 import gfort2py as gf
@@ -30,7 +36,7 @@ x=gf.fFort(SHARED_LIB_NAME,MOD_FILE_NAME)
 
 ````
 
-x now contains all variables, parameters and functions from the module (tab completable)
+x now contains all variables, parameters and functions from the module (tab completable). 
 
 ### Functions
 ````python
