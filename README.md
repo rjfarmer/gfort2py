@@ -10,8 +10,14 @@ ipython3 setup.py install --user
 ````
 
 ## Using
+Compile code with -fPIC and -shared as options, then link togthter as a shared lib at the end
 
-Compile code normnally (parsing -shared -fPIC as compile options to make a shared library at the end)
+````bash
+gfortran -fPIC -shared -c file.f90
+gfortran -fPIC -shared -o libfile file.f90
+````
+If your code comes as  program that does everything, then just turn the program into a function call inside a module,
+then create a new file with your program that uses the module and calls the function you just made.
 
 ````python
 
@@ -63,6 +69,9 @@ z.y
 
 Optional arguments are handled by not passing anything for that item (python side), but
 they must be at the end of the argument list (on the fortran side)
+
+Array arguments must pass a numpy array, either pre filled (if the array is intent(in)) or made with zeros
+if the array is intent out or allocatable.
 
 ### Variables
 
