@@ -40,7 +40,6 @@ setup(name='gfort2py',
 		    'Topic :: Software Development :: Code Generators',
 		    
       ],
-      python_requires='>2.6, >=3.3',
       test_suite = 'tests',
       ext_modules=cythonize(ext),
       extras_require={
