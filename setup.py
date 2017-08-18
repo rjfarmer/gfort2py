@@ -17,15 +17,16 @@ ext = Extension("**/*",["**/*.pyx"],include_dirs=[np.get_include(),PY_INCLUDE])
 				
 
 setup(name='gfort2py',
-      version='0.0',
+      version='1.0.0',
       description='Python bindings for Fortran',
       license="GPLv2+",
       author='Robert Farmer',
       author_email='rjfarmer@asu.edu',
       url='https://github.com/rjfarmer/gfort2py',
+      keywords='python fortran binding',
       packages=find_packages(),
       classifiers=[
-			"Development Status :: 1 - Planning",
+			"Development Status :: 3 - Alpha",
 			"License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
 			"Programming Language :: Fortran",
 		    'Programming Language :: Python :: 2.7',
@@ -35,7 +36,11 @@ setup(name='gfort2py',
 		    'Programming Language :: Python :: 3.4',
 		    'Programming Language :: Python :: 3.5',
 		    'Programming Language :: Python :: 3.6',
+		    'Intended Audience :: Science/Research',
+		    'Topic :: Software Development :: Code Generators',
+		    
       ],
+      python_requires='>=2.7, >=3.3',
       test_suite = 'tests',
       ext_modules=cythonize(ext),
       extras_require={
