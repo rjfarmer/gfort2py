@@ -11,21 +11,10 @@ import numpy as np
 import os
 import sysconfig
 
-try:
-	import unittest as unittest
-except ImportError:
-	import unittest2 as unittest
-
-
 PY_INCLUDE = sysconfig.get_paths()['include']
 
 ext = Extension("**/*",["**/*.pyx"],include_dirs=[np.get_include(),PY_INCLUDE])
 				
-
-def my_test_suite():
-    test_loader = unittest.TestLoader()
-    test_suite = test_loader.discover('tests', pattern='*_test.py')
-    return test_suite
 
 setup(name='gfort2py',
       version='0.0',
@@ -48,5 +37,6 @@ setup(name='gfort2py',
 		    'Programming Language :: Python :: 3.6',
       ],
       test_suite = 'tests',
+      tests_require = ['unittest2']
       ext_modules=cythonize(ext)
      )
