@@ -37,7 +37,7 @@ setup(name='gfort2py',
 		    'Programming Language :: Python :: 3.6',
       ],
       test_suite = 'tests',
-      ext_modules=cythonize(ext)
+      ext_modules=cythonize(ext),
       extras_require={
 		'dev': [
 			'coveralls',
