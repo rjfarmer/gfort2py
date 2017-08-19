@@ -9,6 +9,12 @@ Library to allow calling fortran code from python. Requires gfortran>=5.3.1
 ipython3 setup.py install --user
 ````
 
+or install via pip
+````bash
+pip install --user gfort2py
+````
+
+
 ## Using
 ### Fortran side
 Compile code with -fPIC and -shared as options, then link togthter as a shared lib at the end
