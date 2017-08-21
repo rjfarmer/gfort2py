@@ -1,6 +1,8 @@
 ![Build status](https://travis-ci.org/rjfarmer/gfort2py.svg?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/rjfarmer/gfort2py/badge.svg?branch=master)](https://coveralls.io/github/rjfarmer/gfort2py?branch=master)
-![Zenodo](https://zenodo.org/badge/72889348.svg)
+[![DOI](https://zenodo.org/badge/72889348.svg)](https://zenodo.org/badge/latestdoi/72889348)
+
+
 
 # gfort2py
 Library to allow calling fortran code from python. Requires gfortran>=5.3.1
