@@ -176,7 +176,9 @@ class parseModBase(object):
         symbol = symbol.strip()
         #things to skip
 
-        if '__' in symbol or '(intrinsic)' in symbol or 'INTRINSIC' in symbol or len(symbol)==0:
+        if ('__' in symbol or '(intrinsic)' in symbol or 
+            'INTRINSIC' in symbol or len(symbol)==0 or
+            ' RESULT' in symbol):
             return {}
 
         r = {}
@@ -211,6 +213,7 @@ class parseModBase(object):
                 #r['dt_type'] = self.parseDTType(info)
             else:
                 r['proc'] = self.parseProc(info)
+                r['arg']=[]
         elif 'MODULE ' in type_line:
             r['module_info'] = self.parseModule(info)
         elif 'PARAMETER ' in type_line:
@@ -287,6 +290,8 @@ class parseModBase(object):
         #Return value
         res['ret'] = self.parseVar(info)
         
+        func_args = info[3].split()
+        res['func_arg_id'] = int(func_args[0])
         
         if 'ABSTRACT 'in type_info:
             res={}
@@ -311,7 +316,7 @@ class parseModBase(object):
             dtEl={}
             dtEl['num'], dtEl['name'] = i.split()[0:2]
             info_el = split_brackets(i[i.index("(")-1:],remove_b=False)
-            #Re-roder to be the same as everything else
+            #Re-order to be the same as everything else
             newL = [info_el[2],'()',info_el[0],'()',info_el[1]]
             dtEl['var'] = self.parseVar(newL)
             res['arg'].append(dtEl)
@@ -531,19 +536,17 @@ class parseModBase(object):
         for idx,i in enumerate(self.all_symbols):
             if 'proc' in i:
                 ind_funcs.append(idx)
-                func_nums.append([int(x) for x in i['proc']['arg_nums']])
+                func_nums.append(int(i['proc']['func_arg_id']))
             if 'func_arg' in i:
                 ind_func_args.append(idx)
-                func_arg_num.append(int(i['num']))
-        
-        for i,idx in zip(func_nums,ind_funcs):
-            self.all_symbols[idx]['arg']=[]
-            if len(i)>0:
-                for j in i:
-                    for k,kdx in zip(func_arg_num,ind_func_args):
-                        if j==k:
-                            self.all_symbols[idx]['arg'].append(self.all_symbols[kdx])
+                func_arg_num.append(int(i['parent_id']))
 
+        s_f = np.argsort(func_nums,kind='heapsort')
+
+        sorted_index = np.searchsorted(func_nums,func_arg_num,sorter=s_f,side='left')
+        
+        for fAind,val in zip(s_f[sorted_index],ind_func_args):
+            self.all_symbols[ind_funcs[fAind]]['arg'].append(self.all_symbols[val])
 
 
 

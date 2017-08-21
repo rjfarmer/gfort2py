@@ -431,61 +431,61 @@ module tester
          write(output_unit,'(I2,1X,5(I1,1X),I2,1X)') y,x,z
       end subroutine sub_exp_array_int_1d_multi
       
-      logical function func_return_res(x) result(res)
+      logical function func_return_res(x) result(res1)
          integer, intent(in) :: x
-         res =.false.
-         if(x==2) res = .true.
+         res1 =.false.
+         if(x==2) res1 = .true.
       end function func_return_res
       
       
-      logical function func_assumed_shape_arr_1d(x) result(res)
+      logical function func_assumed_shape_arr_1d(x) result(res2)
          integer, dimension(:), intent(inout) :: x
-         res =.false.
-         if(x(1)==2) res = .true.
+         res2 =.false.
+         if(x(1)==2) res2 = .true.
       end function func_assumed_shape_arr_1d
       
-      logical function func_assumed_shape_arr_2d(x) result(res)
+      logical function func_assumed_shape_arr_2d(x) result(res3)
          integer, dimension(:,:), intent(inout) :: x
-         res =.false.
-         if(x(2,1)==2) res = .true.
+         res3 =.false.
+         if(x(2,1)==2) res3 = .true.
       end function func_assumed_shape_arr_2d
       
-      logical function func_assumed_shape_arr_3d(x) result(res)
+      logical function func_assumed_shape_arr_3d(x) result(res4)
          integer, dimension(:,:,:), intent(inout) :: x
-         res =.false.
-         if(x(3,2,1)==2) res = .true.
+         res4 =.false.
+         if(x(3,2,1)==2) res4 = .true.
       end function func_assumed_shape_arr_3d
       
-      logical function func_assumed_shape_arr_4d(x) result(res)
+      logical function func_assumed_shape_arr_4d(x) result(res5)
          integer, dimension(:,:,:,:), intent(inout) :: x
-         res =.false.
-         if(x(4,3,2,1)==2) res = .true.
+         res5 =.false.
+         if(x(4,3,2,1)==2) res5 = .true.
       end function func_assumed_shape_arr_4d
       
-      logical function func_assumed_shape_arr_5d(x) result(res)
+      logical function func_assumed_shape_arr_5d(x) result(res6)
          integer, dimension(:,:,:,:,:), intent(inout) :: x
-         res =.false.
-         if(x(5,4,3,2,1)==2) res = .true.
+         res6 =.false.
+         if(x(5,4,3,2,1)==2) res6 = .true.
       end function func_assumed_shape_arr_5d
       
 
-      logical function func_assumed_size_arr_1d(x) result(res)
+      logical function func_assumed_size_arr_1d(x) result(res7)
          integer, intent(inout) :: x(*)
-         res =.false.
-         if(x(2)==2) res = .true.
+         res7 =.false.
+         if(x(2)==2) res7 = .true.
       end function func_assumed_size_arr_1d
    
  
-      logical function func_assumed_size_arr_real_1d(x) result(res)
+      logical function func_assumed_size_arr_real_1d(x) result(res8)
          real, intent(inout) :: x(*)
-         res =.false.
-         if(x(2)==2) res = .true.
+         res8 =.false.
+         if(x(2)==2) res8 = .true.
       end function func_assumed_size_arr_real_1d
       
-      logical function func_assumed_size_arr_real_dp_1d(x) result(res)
+      logical function func_assumed_size_arr_real_dp_1d(x) result(res9)
          real(dp), intent(inout) :: x(*)
-         res =.false.
-         if(x(2)==2) res = .true.
+         res9 =.false.
+         if(x(2)==2) res9 = .true.
       end function func_assumed_size_arr_real_dp_1d 
       
       subroutine sub_alloc_arr_1d(x)
@@ -566,7 +566,12 @@ module tester
             write(*,*) 200
          end if  
       end subroutine sub_int_opt
-      
+
+      logical function func_check_nested_dt() result(res10)
+         res10=.false.
+         if(g_struct%a_int==10 .and. &
+            g_struct%f_struct%a_int==8) res10=.True.
+      end function func_check_nested_dt      
       
       subroutine sub_use_mod()
       
@@ -576,14 +581,5 @@ module tester
       
       end subroutine sub_use_mod
       
-      
-      logical function func_check_nested_dt() result(res)
-      
-         res=.false.
-         
-         if(g_struct%a_int==10 .and. &
-            g_struct%f_struct%a_int==8) res=.True.
-         
-      end function func_check_nested_dt
       
 end module tester
