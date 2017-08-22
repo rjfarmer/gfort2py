@@ -114,7 +114,10 @@ class fFunc(fVar):
         """
         The ctype type of this object
         """
-        return getattr(ctypes, self.proc['ret']['ctype'])
+        if '_cached_ctype' not in self.__dict__:
+            self._cached_ctype = getattr(ctypes, self.proc['ret']['ctype'])
+        
+        return self._cached_ctype
     
     def _ctypes_to_return(self,args_out):
     
@@ -131,7 +134,7 @@ class fFunc(fVar):
                     else:
                         self.args_out[i.name]=j
         else:
-        # Copy arguments into a dict for returning
+            # Copy arguments into a dict for returning
             for i,j in zip(self._arg_vars,args_out):
                 if 'out' in i.var['intent'] or i.var['intent']=='na':
                     if hasattr(j,'contents'):
@@ -176,7 +179,10 @@ class fFunc(fVar):
             self.save_args=False
             
     def returnPytype(self):
-        return getattr(__builtin__, self.proc['ret']['pytype'])
+        if '_cached_pytype' not in self.__dict__:
+            self._cached_pytype = getattr(__builtin__, self.proc['ret']['pytype'])
+        
+        return self._cached_pytype
             
     def __str__(self):
         return str("Function: " + self.name)
