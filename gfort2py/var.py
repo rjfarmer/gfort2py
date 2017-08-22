@@ -79,13 +79,19 @@ class fVar(object):
 
 
     def pytype_def(self):
-        return getattr(__builtin__, self.pytype)
+        if '_cached_pytype' not in self.__dict__:
+            self._cached_pytype = getattr(__builtin__, self.pytype)
+        
+        return self._cached_pytype
 
     def ctype_def(self):
         """
         The ctype type of this object
         """
-        return getattr(ctypes, self.ctype)
+        if '_cached_ctype' not in self.__dict__:
+            self._cached_ctype = getattr(ctypes, self.ctype)
+        
+        return self._cached_ctype
 
     def ctype_def_func(self,pointer=False,intent=''):
         """

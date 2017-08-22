@@ -63,7 +63,10 @@ class fExplicitArray(fVar):
         """
         The ctype type of this object
         """
-        return getattr(ctypes, self.ctype)
+        if '_cached_ctype' not in self.__dict__:
+            self._cached_ctype = getattr(ctypes, self.ctype)
+        
+        return self._cached_ctype
 
     def ctype_def_func(self,pointer=False,intent=''):
         """
