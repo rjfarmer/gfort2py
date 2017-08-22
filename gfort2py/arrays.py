@@ -6,6 +6,70 @@ from .utils import *
 from .fnumpy import *
 from .errors import *
 
+_index_t = ctypes.c_int64
+_size_t = ctypes.c_int64
+
+# Pre generate alloc array descriptors
+class _bounds(ctypes.Structure):
+    _fields_=[("stride",_index_t),
+              ("lbound",_index_t),
+              ("ubound",_index_t)]
+
+class _fAllocArray1D(ctypes.Structure):
+    _fields_=[('base_addr',ctypes.c_void_p), 
+              ('offset',_size_t), 
+              ('dtype',_index_t),
+              ('dims',_bounds*1)
+              ]
+
+class _fAllocArray2D(ctypes.Structure):
+    _fields_=[('base_addr',ctypes.c_void_p), 
+              ('offset',_size_t), 
+              ('dtype',_index_t),
+              ('dims',_bounds*2)
+              ]
+              
+class _fAllocArray3D(ctypes.Structure):
+    _fields_=[('base_addr',ctypes.c_void_p), 
+              ('offset',_size_t), 
+              ('dtype',_index_t),
+              ('dims',_bounds*3)
+              ]
+              
+class _fAllocArray4D(ctypes.Structure):
+    _fields_=[('base_addr',ctypes.c_void_p), 
+              ('offset',_size_t), 
+              ('dtype',_index_t),
+              ('dims',_bounds*4)
+              ]
+class _fAllocArray5D(ctypes.Structure):
+    _fields_=[('base_addr',ctypes.c_void_p), 
+              ('offset',_size_t), 
+              ('dtype',_index_t),
+              ('dims',_bounds*5)
+              ]
+              
+class _fAllocArray6D(ctypes.Structure):
+    _fields_=[('base_addr',ctypes.c_void_p), 
+              ('offset',_size_t), 
+              ('dtype',_index_t),
+              ('dims',_bounds*6)
+              ]
+              
+class _fAllocArray7D(ctypes.Structure):
+    _fields_=[('base_addr',ctypes.c_void_p), 
+              ('offset',_size_t), 
+              ('dtype',_index_t),
+              ('dims',_bounds*7)
+              ]
+
+# None is in there so we can do 1 based indexing
+_listFAllocArrays=[None,_fAllocArray1D,_fAllocArray2D,_fAllocArray3D,
+                    _fAllocArray4D,_fAllocArray5D,_fAllocArray6D,
+                    _fAllocArray7D] 
+
+              
+
 class fExplicitArray(fVar):
 
     def __init__(self, lib, obj, TEST_FLAG=False):
@@ -141,8 +205,6 @@ class fDummyArray(fVar):
     _BT_VOID = _BT_HOLLERITH + 1
     _BT_ASSUMED = _BT_VOID + 1
 
-    _index_t = ctypes.c_int64
-    _size_t = ctypes.c_int64
 
     def __init__(self, lib, obj, TEST_FLAG=False):
         self.__dict__.update(obj)
@@ -163,19 +225,7 @@ class fDummyArray(fVar):
         
 
     def _setup_desc(self):
-        class bounds(ctypes.Structure):
-            _fields_=[("stride",self._index_t),
-                      ("lbound",self._index_t),
-                      ("ubound",self._index_t)]
-        
-        class fAllocArray(ctypes.Structure):
-            _fields_=[('base_addr',ctypes.c_void_p), 
-                      ('offset',self._size_t), 
-                      ('dtype',self._index_t),
-                      ('dims',bounds*self.ndim)
-                      ]
-
-        return fAllocArray
+        return _listFAllocArrays[self.ndim]
 
     def _get_pointer(self):
         return self._ctype_desc.from_address(ctypes.addressof(getattr(self._lib,self.mangled_name)))
@@ -215,14 +265,14 @@ class fDummyArray(fVar):
             raise ValueError("Array too big")
         
         p.base_addr = value.ctypes.get_data()
-        p.offset = self._size_t(-1)
+        p.offset = _size_t(-1)
         
         p.dtype = self._get_dtype()
         
         for i in range(self.ndim):
-            p.dims[i].stride = self._index_t(value.strides[i]//ctypes.sizeof(self._ctype_single))
-            p.dims[i].lbound = self._index_t(1)
-            p.dims[i].ubound = self._index_t(value.shape[i])
+            p.dims[i].stride = _index_t(value.strides[i]//ctypes.sizeof(self._ctype_single))
+            p.dims[i].lbound = _index_t(1)
+            p.dims[i].ubound = _index_t(value.shape[i])
             
         return
 
