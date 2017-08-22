@@ -1,0 +1,4 @@
+
+class NotInLib(Exception):
+    pass
+
