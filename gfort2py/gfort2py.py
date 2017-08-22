@@ -17,6 +17,7 @@ from .strings import fStr
 from .types import fDerivedType
 from .utils import *
 from .var import fVar, fParam
+from .errors import *
 
 from . import parseMod as pm
 
@@ -71,12 +72,15 @@ class fFort(object):
         
         for i in self._mod_vars:
             self._all_names.append(i['name'])
+        
 
         for i in self._param:
             self._all_names.append(i['name'])
             
         for i in self._funcs:
             self._all_names.append(i['name'])
+            
+        self._all_names = set(self._all_names)
             
         for i in self._dt_defs:
             i['name']=i['name'].lower().replace("'","")

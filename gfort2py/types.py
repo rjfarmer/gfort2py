@@ -5,7 +5,7 @@ from .var import fVar
 from .cmplx import fComplex
 from .arrays import fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize, fAllocatableArray
 from .strings import fStr
-
+from .errors import *
 
 class fDerivedType(fVar):
     def __init__(self, lib, obj,dt_defs,TEST_FLAG=False,_dt_contained=[]):
@@ -27,18 +27,23 @@ class fDerivedType(fVar):
         self.intent=None
         self.pointer=None
         
+        #Store the ref to the lib object
+        try:   
+            self._ref = self._get_from_lib()
+        except NotInLib:
+            self._ref = None
+        
     def get(self,copy=True):
         res={}
-        r = self._get_from_lib()
         if copy:
             for name,i in zip(self._nameArgs,self._args):
-                x=getattr(r,name)
+                x=getattr(self._ref,name)
                 res[name]=i.ctype_to_py_f(x)
         else:
-            if hasattr(r,'contents'):
-                res =r.contents
+            if hasattr(self._ref,'contents'):
+                res =self._ref.contents
             else:
-                res = r
+                res = self._ref
         return res
             
     def set_mod(self,value):
@@ -50,9 +55,7 @@ class fDerivedType(fVar):
             self.set_single(name,value[name])
             
     def set_single(self,name,value):
-        v = self._get_from_lib()
-        
-        self._setSingle(v,name,value)
+        self._setSingle(self._ref,name,value)
         
     def _setSingle(self,v,name,value):
         if isinstance(value,dict):
@@ -251,8 +254,7 @@ class fDerivedType(fVar):
             raise KeyError("Name not in struct")
         
         if self._value is None:
-            v = self._get_from_lib()
-            return getattr(v,name)
+            return getattr(self._ref,name)
         else:
             return getattr(self._value,name)
         

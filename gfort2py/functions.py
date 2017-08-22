@@ -13,8 +13,8 @@ from .cmplx import fComplex
 from .arrays import fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize, fAllocatableArray
 from .strings import fStr
 from .types import fDerivedType
-
 from .utils import *
+from .errors import *
 
 
 class fFunc(fVar):

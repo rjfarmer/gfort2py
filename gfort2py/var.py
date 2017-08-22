@@ -6,13 +6,10 @@ except ImportError:
 
 import ctypes
 import numpy as np
+from .errors import *
 
 # Hacky, yes
 __builtin__.quad = np.longdouble
-
-
-class NotInLib(Exception):
-    pass
 
 
 class fVar(object):
@@ -36,6 +33,12 @@ class fVar(object):
         
         #True if struct member
         self._dt_arg=False
+        
+        #Store the ref to the lib object
+        try:   
+            self._ref = self._get_from_lib()
+        except NotInLib:
+            self._ref = None
         
         self.TEST_FLAG=TEST_FLAG
 
@@ -111,28 +114,29 @@ class fVar(object):
         """
         Set a module level variable
         """
-        r = self._get_from_lib()
-        r.value = self._pytype(value)
+        self._ref.value = self._pytype(value)
 
     def get(self,copy=True):
         """
         Get a module level variable
         """
-        r = self._get_from_lib()
         if copy:
-            res = self.ctype_to_py(r)
+            res = self.ctype_to_py(self._ref)
         else:
             if hasattr(r,'contents'):
-                res =r.contents
+                res =self._ref.contents
             else:
-                res = r
+                res = self._ref
         
         return res
 
     def _get_from_lib(self):
         if 'mangled_name' in self.__dict__ and '_lib' in self.__dict__:
-            return self._ctype.in_dll(self._lib, self.mangled_name)
-        raise NotInLib   
+            try:
+                return self._ctype.in_dll(self._lib, self.mangled_name)
+            except ValueError:
+                raise NotInLib
+        raise NotInLib
         
 
     def _get_var_by_iter(self, value, size=-1):
@@ -193,11 +197,15 @@ class fVar(object):
         if '_dt_arg' in self.__dict__:
             if self._dt_arg:
                 return 
-                 
-        try:
-            return getattr(self.get(), name)
-        except:
-            return None
+                
+        if '_ref' in self.__dict__:
+            if self._ref is None:
+                return None
+            else:
+                try:
+                    return getattr(self.get(), name)
+                except:
+                    return None
 
     #Stuff to call the result of self.get() (a python object int/str etc)
 

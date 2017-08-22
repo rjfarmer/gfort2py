@@ -1,7 +1,7 @@
 from __future__ import print_function
 import ctypes
 from .var import fVar
-
+from .errors import *
 
 class fStr(fVar):
 
@@ -15,6 +15,11 @@ class fStr(fVar):
         
         self.char_len = self.var['len']
 
+        #Store the ref to the lib object
+        try:   
+            self._ref = self._get_from_lib()
+        except NotInLib:
+            self._ref = None
 
     def py_to_ctype(self, value):
         """
@@ -90,15 +95,13 @@ class fStr(fVar):
         """
         Set a module level variable
         """
-        r = self._get_from_lib()
-        self._set_var_from_iter(r, value.encode(), self.char_len)
+        self._set_var_from_iter(self._ref, value.encode(), self.char_len)
 
     def get(self,copy=True):
         """
         Get a module level variable
         """
-        r = self._get_from_lib()
-        s = self.ctype_to_py(r)
+        s = self.ctype_to_py(self._ref)
         if not copy:
             raise ValueError("Must copy a string")
         

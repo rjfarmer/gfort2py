@@ -4,7 +4,7 @@ from .var import fVar, fParam
 import numpy as np
 from .utils import *
 from .fnumpy import *
-
+from .errors import *
 
 class fExplicitArray(fVar):
 
@@ -23,6 +23,12 @@ class fExplicitArray(fVar):
         #self._ctype_f = self.ctype_def_func()
         self.TEST_FLAG=TEST_FLAG
         self._dtype=self.pytype+str(8*ctypes.sizeof(self._ctype))
+
+        #Store the ref to the lib object
+        try:   
+            self._ref = self._get_from_lib()
+        except NotInLib:
+            self._ref = None
 
     def ctype_to_py(self, value):
         """
@@ -80,16 +86,14 @@ class fExplicitArray(fVar):
         """
         Set a module level variable
         """
-        r = self._get_from_lib()
         v = value.flatten(order='C')
-        self._set_var_from_iter(r, v, self._array_size())
+        self._set_var_from_iter(self._ref, v, self._array_size())
         
     def get(self,copy=True):
         """
         Get a module level variable
         """
-        r = self._get_from_lib()
-        s = self.ctype_to_py(r)
+        s = self.ctype_to_py(self._ref)
         shape = self._make_array_shape()
         return np.reshape(s, shape)
 

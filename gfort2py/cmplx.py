@@ -1,7 +1,7 @@
 from __future__ import print_function
 import ctypes
 from .var import fVar, fParam
-
+from .errors import *
 
 class fComplex(fVar):
 
@@ -16,14 +16,19 @@ class fComplex(fVar):
         #self._ctype_f = self.ctype_def_func()
         self._pytype = self.pytype_def()
         self.TEST_FLAG=TEST_FLAG
+        
+        #Store the ref to the lib object
+        try:   
+            self._ref = self._get_from_lib()
+        except NotInLib:
+            self._ref = None
 
     def py_to_ctype(self, value):
         """
         Pass in a python value returns the ctype representation of it
         """
-        r = self._get_from_lib()
         x = [value.real, value.imag]
-        return self._set_var_from_iter(r, x, 2)
+        return self._set_var_from_iter(self._ref, x, 2)
 
     def ctype_to_py(self, value):
         """
@@ -48,8 +53,7 @@ class fComplex(fVar):
             raise ValueError("Not complex")
 
     def get(self,copy=True):
-        r = self._get_from_lib()
-        s = self.ctype_to_py(r)
+        s = self.ctype_to_py(self._ref)
         if not copy:
             raise ValueError("Must copy complex number")
         
