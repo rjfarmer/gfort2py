@@ -3,14 +3,14 @@ import numpy as np
 
 
 def clean_list(l, idx):
-	return [i for j, i in enumerate(l) if j not in idx]
-	
+    return [i for j, i in enumerate(l) if j not in idx]
+    
 def output(filename, *args):
     with open(filename, 'wb') as f:
         for i in args:
             pickle.dump(i, f, protocol=2)
 
-	
+    
 #def split_brackets(value, remove_b=True):
     #'''
     #Split a string based on pairs of brackets, nested brackets are not split
@@ -22,10 +22,8 @@ def output(filename, *args):
         #['abc (def')', '(fgh () ())']
     #'''
     #if remove_b:
-        #if value.startswith('('):
-            #value = value[1:]
-        #if value.endswith(')'):
-            #value = value[:-1]
+        #if value.startswith('(') and value.endswith(')'):
+            #value = value[1:-1]
     
     #res = []
     #start = False
@@ -39,10 +37,14 @@ def output(filename, *args):
             #count = count - 1
         #if start:
             #if count == 0:
-                #res.append(value[j:idx+1])
-                #j=idx+1
+                #j2=idx+1
+                #res.append(value[j:j2])
+                #j=j2
                 #start = False
-
+                
+    #if not j == len(value):
+        #res.append(value[j:])
+        
     #return res
 
 def hextofloat(s):

@@ -111,10 +111,9 @@ class parseModBase(object):
             z = i.split()
             r['name'] = z[0]
             r['module'] = z[1]
-            r['num'] = z[2]
+            r['num'] = int(z[2])
             if(len(z))> 3:
                 r['num_alts']=z[2:]
-            r['num'] = int(r['num'])
             self.dt_defines.append(r)
             
             
@@ -159,10 +158,7 @@ class parseModBase(object):
         
     
     def parseAllSymbols(self):
-        #x = self.data[6].strip()[1:-1].strip()
         split_data = self.data[6]
-        #Breaks the single list of items into pairs of info for each symbol
-        #split_data = split_brackets(x,remove_b=False)
         
         if PARALLEL:
             with mp.Pool() as pool:
