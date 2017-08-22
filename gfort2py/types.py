@@ -106,29 +106,30 @@ class fDerivedType(fVar):
         if 'array' in obj['var']:
             array = obj['var']['array']
         
-        if obj['var']['pytype'] == 'str':
-            x = fStr(self._lib, obj,self.TEST_FLAG)
-        elif obj['var']['pytype'] == 'complex':
-            x = fComplex(self._lib, obj,self.TEST_FLAG)
+        pytype = obj['var']['pytype'] 
+        
+        if pytype in 'str':
+            return fStr(self._lib, obj,self.TEST_FLAG)
+        elif pytype in 'complex':
+            return fComplex(self._lib, obj,self.TEST_FLAG)
         elif array is not None:
-            if array['atype'] == 'explicit':
-                x = fExplicitArray(self._lib, obj,self.TEST_FLAG)
-            elif array['atype'] == 'alloc':
-                x = fAllocatableArray(self._lib, obj, self.TEST_FLAG)
-            elif array['atype'] == 'assumed_shape' or array['atype'] == 'pointer':
-                x = fAssumedShape(self._lib, obj, self.TEST_FLAG)
-            elif array['atype'] == 'assumed_size':
-                x = fAssumedSize(self._lib, obj, self.TEST_FLAG)
+            atype = array['atype']
+            if atype in 'explicit':
+                return fExplicitArray(self._lib, obj,self.TEST_FLAG)
+            elif atype in 'alloc':
+               return fAllocatableArray(self._lib, obj, self.TEST_FLAG)
+            elif atype in 'assumed_shape' or atype in 'pointer':
+                return fAssumedShape(self._lib, obj, self.TEST_FLAG)
+            elif atype in 'assumed_size':
+                return fAssumedSize(self._lib, obj, self.TEST_FLAG)
             else:
                 raise ValueError("Unknown array: "+str(obj))
         else:
-            x = fVar(self._lib, obj)
+           return fVar(self._lib, obj)
 
-        return x
  
     def set_fields(self, nameArgs, typeArgs):
-        self.fields = [(i, j) for i, j in zip(nameArgs, typeArgs)]
-
+        self.fields = list(zip(nameArgs, typeArgs))
 
     def py_to_ctype(self, value):
         """
