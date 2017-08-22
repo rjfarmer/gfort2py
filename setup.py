@@ -17,7 +17,7 @@ ext = Extension("**/*",["**/*.pyx"],include_dirs=[np.get_include(),PY_INCLUDE])
 				
 
 setup(name='gfort2py',
-      version='1.0.0',
+      version='1.0.2',
       description='Python bindings for Fortran',
       license="GPLv2+",
       author='Robert Farmer',
