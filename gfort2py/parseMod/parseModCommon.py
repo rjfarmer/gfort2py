@@ -233,6 +233,7 @@ class parseModBase(object):
         res={}
 
         type_info = info[2]
+        symbol_info = info[0]
         p, c, s=self.getVarType(type_info)
         
         res['pytype'] = p
@@ -242,21 +243,21 @@ class parseModBase(object):
         if res['pytype'] == 'str':
             res['len'] = self.getStrLen(info)
         
-        if 'DIMENSION' in info[0]:
+        if 'DIMENSION' in symbol_info:
             #Array
             res['array'] = self.processArray(info)
         if 'DERIVED' in type_info:
             #Both dts but sometimes the definition moves
             res['dt'] = self.processDTVar(info)
             
-        if 'POINTER' in info[0]:
+        if 'POINTER' in symbol_info:
             res['pointer']=True
-        if 'TARGET' in info[0]:
+        if 'TARGET' in symbol_info:
             res['target']=True
-        if 'OPTIONAL' in info[0]:
+        if 'OPTIONAL' in symbol_info:
             res['optional']=True
-        if 'DUMMY' in info[0]:
-            res['intent'] = self.parseIntent(info[0])
+        if 'DUMMY' in symbol_info:
+            res['intent'] = self.parseIntent(symbol_info)
 
         return res
         
