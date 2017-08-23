@@ -1,16 +1,23 @@
 
-cpdef split_brackets(value, bint remove_b=True):
+
+def split_brackets(value,remove_b=True):
+    return split_brackets_c(value,remove_b)
+
+cdef split_brackets_c(str value, bint remove_b=True):
     '''
     Split a string based on pairs of brackets, nested brackets are not split
-
+    
     Input:
         'abc (def) (fgh () ())'
-
+    
     Outputs:
         ['abc (def')', '(fgh () ())']
     '''
-    cdef int idx,j,j2,count,lvalue
-    cdef bint start
+    cdef:
+        int idx,j,j2,count,lvalue
+        bint start
+        str i
+        list res
     
     if remove_b:
         if value.startswith('(') and value.endswith(')'):
@@ -35,5 +42,6 @@ cpdef split_brackets(value, bint remove_b=True):
                 
     if not j == len(value):
         res.append(value[j:])
-
+    
     return res
+    
