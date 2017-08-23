@@ -1,7 +1,11 @@
 
 
+
 def split_brackets(value,remove_b=True):
-    return split_brackets_c(value,remove_b)
+    if isinstance(value,unicode):
+        return split_brackets_c(str(value),remove_b)
+    else:
+        return split_brackets_c(value,remove_b)
 
 cdef split_brackets_c(str value, bint remove_b=True):
     '''
