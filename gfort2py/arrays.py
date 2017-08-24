@@ -72,7 +72,7 @@ _listFAllocArrays=[None,_fAllocArray1D,_fAllocArray2D,_fAllocArray3D,
 
 class fExplicitArray(fVar):
 
-    def __init__(self, lib, obj, TEST_FLAG=False):
+    def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
         self._pytype = np.array
@@ -85,7 +85,6 @@ class fExplicitArray(fVar):
         
         self.ndims = int(self.array['ndims'])
         #self._ctype_f = self.ctype_def_func()
-        self.TEST_FLAG=TEST_FLAG
         self._dtype=self.pytype+str(8*ctypes.sizeof(self._ctype))
 
         #Store the ref to the lib object
@@ -206,7 +205,7 @@ class fDummyArray(fVar):
     _BT_ASSUMED = _BT_VOID + 1
 
 
-    def __init__(self, lib, obj, TEST_FLAG=False):
+    def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
 

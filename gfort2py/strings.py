@@ -5,13 +5,12 @@ from .errors import *
 
 class fStr(fVar):
 
-    def __init__(self, lib, obj,TEST_FLAG=False):
+    def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
         self._ctype = self.ctype_def()
        # self._ctype_f = self.ctype_def_func()
         self._pytype = str
-        self.TEST_FLAG=TEST_FLAG
         
         self.char_len = self.var['len']
 

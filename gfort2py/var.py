@@ -14,7 +14,7 @@ __builtin__.quad = np.longdouble
 
 class fVar(object):
 
-    def __init__(self, lib, obj,TEST_FLAG=False):
+    def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
         self.ctype=self.var['ctype']
@@ -39,8 +39,6 @@ class fVar(object):
             self._ref = self._get_from_lib()
         except NotInLib:
             self._ref = None
-        
-        self.TEST_FLAG=TEST_FLAG
 
     def py_to_ctype(self, value):
         """
@@ -354,10 +352,9 @@ class fVar(object):
 
 
 class fParam(fVar):
-    def __init__(self, lib, obj,TEST_FLAG=False):
+    def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
-        self.TEST_FLAG=TEST_FLAG
         self.value = self.param['value']
         self.pytype = self.param['pytype']
         self._pytype = self.pytype_def()

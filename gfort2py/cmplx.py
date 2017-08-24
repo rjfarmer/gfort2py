@@ -5,7 +5,7 @@ from .errors import *
 
 class fComplex(fVar):
 
-    def __init__(self, lib, obj,TEST_FLAG=False):
+    def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
         
@@ -15,7 +15,6 @@ class fComplex(fVar):
         self._ctype = self.ctype_def()
         #self._ctype_f = self.ctype_def_func()
         self._pytype = self.pytype_def()
-        self.TEST_FLAG=TEST_FLAG
         
         #Store the ref to the lib object
         try:   

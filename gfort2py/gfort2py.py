@@ -27,8 +27,7 @@ WARN_ON_SKIP=False
 
 class fFort(object):
 
-    def __init__(self, libname, ffile, rerun=False,TEST_FLAG=False):
-        self.TEST_FLAG=TEST_FLAG
+    def __init__(self, libname, ffile, rerun=False):
         self._lib = ctypes.CDLL(libname)
         self._all_names=[]
         self._libname = libname
@@ -108,23 +107,23 @@ class fFort(object):
     def _init_var(self, obj):
         x=None
         if obj['var']['pytype'] == 'str':
-            x = fStr(self._lib, obj,self.TEST_FLAG)
+            x = fStr(self._lib, obj)
         elif obj['var']['pytype'] == 'complex':
-            x = fComplex(self._lib, obj,self.TEST_FLAG)
+            x = fComplex(self._lib, obj)
         elif 'dt' in obj['var'] and obj['var']['dt']:
-            x = fDerivedType(self._lib, obj,self._dt_defs,self.TEST_FLAG)
+            x = fDerivedType(self._lib, obj,self._dt_defs)
         elif 'array' in obj['var']:
             array = obj['var']['array']['atype'] 
             if array == 'explicit':
-                x = fExplicitArray(self._lib, obj,self.TEST_FLAG)
+                x = fExplicitArray(self._lib, obj)
             elif array == 'alloc' or array == 'pointer':
-                x = fDummyArray(self._lib, obj, self.TEST_FLAG)
+                x = fDummyArray(self._lib, obj)
             elif array == 'assumed_shape':
-                x =  fAssumedShape(self._lib, obj, self.TEST_FLAG)
+                x =  fAssumedShape(self._lib, obj)
             elif array == 'assumed_size':
-                x = fAssumedSize(self._lib, obj, self.TEST_FLAG)
+                x = fAssumedSize(self._lib, obj)
         else:
-            x = fVar(self._lib, obj,self.TEST_FLAG)
+            x = fVar(self._lib, obj)
 
         if x is not None:
             self.__dict__[x.name] = x
@@ -142,7 +141,7 @@ class fFort(object):
         self.__dict__[x.name] = x
 
     def _init_func(self, obj):
-        x = fFunc(self._lib, obj,self._dt_defs,self.TEST_FLAG)
+        x = fFunc(self._lib, obj,self._dt_defs)
         self.__dict__[x.name] = x
 
     def __getattr__(self, name):

@@ -17,9 +17,11 @@ from .utils import *
 from .errors import *
 
 
+_TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
+
 class fFunc(fVar):
 
-    def __init__(self, lib, obj, dt_defs, TEST_FLAG=False):
+    def __init__(self, lib, obj, dt_defs):
         self.__dict__.update(obj)
         self._lib = lib
         self._sub = self.proc['sub']
@@ -32,7 +34,6 @@ class fFunc(fVar):
         self._dt_defs = dt_defs
         self._set_return()
         self._set_arg_ctypes()
-        self.TEST_FLAG=TEST_FLAG
         self.save_args=False
         self.args_out = None
 
@@ -63,20 +64,20 @@ class fFunc(fVar):
             array = obj['var']['array']
         
         if obj['var']['pytype'] == 'str':
-            x = fStr(self._lib, obj,self.TEST_FLAG)
+            x = fStr(self._lib, obj)
         elif obj['var']['pytype'] == 'complex':
-            x = fComplex(self._lib, obj,self.TEST_FLAG)
+            x = fComplex(self._lib, obj)
         elif 'dt' in obj['var']:
-            x = fDerivedType(self._lib, obj,self._dt_defs,self.TEST_FLAG)
+            x = fDerivedType(self._lib, obj,self._dt_defs)
         elif array is not None:
             if array['atype'] == 'explicit':
-                x = fExplicitArray(self._lib, obj,self.TEST_FLAG)
+                x = fExplicitArray(self._lib, obj)
             elif array['atype'] == 'alloc':
-                x = fAllocatableArray(self._lib, obj, self.TEST_FLAG)
+                x = fAllocatableArray(self._lib, obj)
             elif array['atype'] == 'assumed_shape' or array['atype'] == 'pointer':
-                x = fAssumedShape(self._lib, obj, self.TEST_FLAG)
+                x = fAssumedShape(self._lib, obj)
             elif array['atype'] == 'assumed_size':
-                x = fAssumedSize(self._lib, obj, self.TEST_FLAG)
+                x = fAssumedSize(self._lib, obj)
             else:
                 raise ValueError("Unknown array: "+str(obj))
         else:
@@ -150,7 +151,7 @@ class fFunc(fVar):
         
         # Capture stdout messages
         # Cant call python print() untill after the read_pipe call
-        if self.TEST_FLAG:
+        if _TEST_FLAG:
             pipe_out, pipe_in = os.pipe()
             stdout = os.dup(1)
             os.dup2(pipe_in, 1)
@@ -158,7 +159,7 @@ class fFunc(fVar):
             res = self._call(*args_in)
         else:
             res = self._call()
-        if self.TEST_FLAG:
+        if _TEST_FLAG:
             # Print stdout
             os.dup2(stdout, 1)
             print(read_pipe(pipe_out))

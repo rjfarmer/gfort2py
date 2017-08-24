@@ -8,7 +8,7 @@ from .strings import fStr
 from .errors import *
 
 class fDerivedType(fVar):
-    def __init__(self, lib, obj,dt_defs,TEST_FLAG=False,_dt_contained=[]):
+    def __init__(self, lib, obj,dt_defs,_dt_contained=[]):
         self.__dict__.update(obj)
         self._lib = lib
         self._args = []
@@ -23,7 +23,6 @@ class fDerivedType(fVar):
         
         self._ctype = self._desc
         self._ctype_desc = ctypes.POINTER(self._ctype)
-        self.TEST_FLAG=TEST_FLAG
         self.intent=None
         self.pointer=None
         
@@ -87,7 +86,7 @@ class fDerivedType(fVar):
                     self._args.append(emptyfDerivedType(name))
                     self._args[-1].create_struct()
                 else:
-                    self._args.append(fDerivedType(self._lib,i,self._dt_defs,self.TEST_FLAG,self._dt_contained))
+                    self._args.append(fDerivedType(self._lib,i,self._dt_defs,self._dt_contained))
                     self._args[-1].setup_desc()
             else:
                 self._args.append(self._init_var(i))
@@ -109,19 +108,19 @@ class fDerivedType(fVar):
         pytype = obj['var']['pytype'] 
         
         if pytype in 'str':
-            return fStr(self._lib, obj,self.TEST_FLAG)
+            return fStr(self._lib, obj)
         elif pytype in 'complex':
-            return fComplex(self._lib, obj,self.TEST_FLAG)
+            return fComplex(self._lib, obj)
         elif array is not None:
             atype = array['atype']
             if atype in 'explicit':
-                return fExplicitArray(self._lib, obj,self.TEST_FLAG)
+                return fExplicitArray(self._lib, obj)
             elif atype in 'alloc':
-               return fAllocatableArray(self._lib, obj, self.TEST_FLAG)
+               return fAllocatableArray(self._lib, obj)
             elif atype in 'assumed_shape' or atype in 'pointer':
-                return fAssumedShape(self._lib, obj, self.TEST_FLAG)
+                return fAssumedShape(self._lib, obj)
             elif atype in 'assumed_size':
-                return fAssumedSize(self._lib, obj, self.TEST_FLAG)
+                return fAssumedSize(self._lib, obj)
             else:
                 raise ValueError("Unknown array: "+str(obj))
         else:
@@ -280,8 +279,7 @@ class emptyfDerivedType(fDerivedType):
         self._ctype_desc = ctypes.POINTER(self._ctype)
 
     def create_struct(self):
-        class fDerivedTypeDesc(ctypes.Structure):
-            pass
+        fDerivedTypeDesc = _emptyDT
         fDerivedTypeDesc.__name__ = str(self.name)
         return fDerivedTypeDesc
         

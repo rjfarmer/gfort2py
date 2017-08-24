@@ -1,4 +1,7 @@
 import os, sys
+
+os.environ["_GFORT2PY_TEST_FLAG"] = "1"
+
 import numpy as np
 import gfort2py as gf
 
@@ -20,7 +23,7 @@ except ImportError:
 
 os.chdir('tests')
 subprocess.check_output(["make"])
-x=gf.fFort('./tester.so','tester.mod',rerun=True,TEST_FLAG=True)
+x=gf.fFort('./tester.so','tester.mod',rerun=True)
 
 #Decreases recursion depth to make debugging easier
 #sys.setrecursionlimit(100)
