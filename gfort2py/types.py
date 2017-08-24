@@ -7,94 +7,22 @@ from .arrays import fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize, fA
 from .strings import fStr
 from .errors import *
 
-
-_dictAllDtDescs={}
-
-
-def getEmptyDT(name):
-    class emptyDT(ctypes.Structure):
-        pass
-    emptyDT.__name__ = name
-    return emptyDT
-        
-class _DTDesc(object):
-    def __init__(self,dt_def):
-        self._lib = None
-        self.dt_def = dt_def['dt_def']['arg']
-        self.dt_name = dt_def['name'].lower().replace("'","")
-        
-        self.names = [i['name'].lower().replace("'","") for i in self.dt_def]
-        self.args = []
-        for i in self.dt_def:
-            self.args.append(self._init_var(i))
-            
-        self.ctypes = []
-        for i in self.args:
-            try:
-                self.ctypes.append(i.ctype_def())
-            except AttributeError:
-                if hasattr(i,'dt_desc'):
-                    self.ctypes.append(i.dt_desc)
-                else:
-                    self.ctypes.append(ctypes.POINTER(getEmptyDT(self.dt_name)))
-                
-        self.dt_desc = self._create_dt()
-             
-    def _create_dt(self):
-        class fDerivedTypeDesc(ctypes.Structure):
-            _fields_ = list(zip(self.names,self.ctypes))
-        fDerivedTypeDesc.__name__ = self.dt_name
-        return fDerivedTypeDesc
-        
-    def _init_var(self, obj):
-        # Placeholder for a dt
-        if 'dt' in obj['var']:
-            name = obj['var']['dt']['name'].lower().replace("'","")
-            return _dictAllDtDescs[name]
-        
-        array = None
-        if 'array' in obj['var']:
-            array = obj['var']['array']
-        
-        pytype = obj['var']['pytype'] 
-        
-        if pytype in 'str':
-            return fStr(self._lib, obj)
-        elif pytype in 'complex':
-            return fComplex(self._lib, obj)
-        elif array is not None:
-            atype = array['atype']
-            if atype in 'explicit':
-                return fExplicitArray(self._lib, obj)
-            elif atype in 'alloc':
-               return fAllocatableArray(self._lib, obj)
-            elif atype in 'assumed_shape' or atype in 'pointer':
-                return fAssumedShape(self._lib, obj)
-            elif atype in 'assumed_size':
-                return fAssumedSize(self._lib, obj)
-            else:
-                raise ValueError("Unknown array: "+str(obj))
-        else:
-           return fVar(self._lib, obj)
-
-
-
 class fDerivedType(fVar):
-    def __init__(self, lib, obj):
+    def __init__(self, lib, obj,dt_defs,_dt_contained=[]):
         self.__dict__.update(obj)
         self._lib = lib
-        self._dt_type = self.var['dt']['name'].lower().replace("'","")
-
-        self._dt_desc = _dictAllDtDescs[self._dt_type]
-        self._desc = self._dt_desc.dt_desc
+        self._args = []
+        self._nameArgs = []
+        self._typeArgs = []
+        self._dt_defs = dt_defs
+        self._dt_contained=[]
+        self._dt_contained=self._dt_contained+_dt_contained
+        self._resolveDT()
+        
+        self._desc = self.create_struct()
+        
         self._ctype = self._desc
         self._ctype_desc = ctypes.POINTER(self._ctype)
-
-
-        self._args = self._dt_desc.args
-        self._nameArgs = self._dt_desc.names
-        self._typeArgs = self._dt_desc.ctypes
-
         self.intent=None
         self.pointer=None
         
@@ -103,8 +31,6 @@ class fDerivedType(fVar):
             self._ref = self._get_from_lib()
         except NotInLib:
             self._ref = None
-        
-        self._value = {}
         
     def get(self,copy=True):
         res={}
@@ -136,6 +62,73 @@ class fDerivedType(fVar):
                 self._setSingle(getattr(v,name),i,value[i])
         else:
             setattr(v,name,value)
+
+    def create_struct(self):
+        self.setup_desc()
+        class fDerivedTypeDesc(ctypes.Structure):
+            _fields_ = self.fields
+        fDerivedTypeDesc.__name__ = str(self._dt_def['name'])
+        return fDerivedTypeDesc
+        
+    def setup_desc(self):
+        for i in self._dt_def['dt_def']['arg']:            
+            ct = i['var']['ctype']
+            if ct == 'c_void_p' and 'dt' in i['var']:
+                self._dt_contained.append((int(self._dt_def['num']),self._dt_def['name']))
+                name=None
+                for j in self._dt_contained:
+                    if j[0] == int(i['var']['dt']['num']):
+                        name=j[1]
+
+                if name is not None:
+                    # when nesting dt's we want to prevent recurisve loops if either a dt conatins itself
+                    # it contains dt_A contains dt_b which contains dt_A
+                    self._args.append(emptyfDerivedType(name))
+                    self._args[-1].create_struct()
+                else:
+                    self._args.append(fDerivedType(self._lib,i,self._dt_defs,self._dt_contained))
+                    self._args[-1].setup_desc()
+            else:
+                self._args.append(self._init_var(i))
+                ct=self._args[-1]._ctype
+                
+            self._args[-1]._dt_arg=True         
+            self._nameArgs.append(self._args[-1].name.replace("\'", ''))
+            #Overload the mangled name so we can use the get from fVar 
+            self._args[-1].mangled_name=self._nameArgs[-1]
+            self._typeArgs.append(self._args[-1]._ctype)
+                
+        self.set_fields(self._nameArgs, self._typeArgs)
+        
+    def _init_var(self, obj):
+        array = None
+        if 'array' in obj['var']:
+            array = obj['var']['array']
+        
+        pytype = obj['var']['pytype'] 
+        
+        if pytype in 'str':
+            return fStr(self._lib, obj)
+        elif pytype in 'complex':
+            return fComplex(self._lib, obj)
+        elif array is not None:
+            atype = array['atype']
+            if atype in 'explicit':
+                return fExplicitArray(self._lib, obj)
+            elif atype in 'alloc':
+               return fAllocatableArray(self._lib, obj)
+            elif atype in 'assumed_shape' or atype in 'pointer':
+                return fAssumedShape(self._lib, obj)
+            elif atype in 'assumed_size':
+                return fAssumedSize(self._lib, obj)
+            else:
+                raise ValueError("Unknown array: "+str(obj))
+        else:
+           return fVar(self._lib, obj)
+
+ 
+    def set_fields(self, nameArgs, typeArgs):
+        self.fields = list(zip(nameArgs, typeArgs))
 
     def py_to_ctype(self, value):
         """
@@ -223,10 +216,10 @@ class fDerivedType(fVar):
         return self._nameArgs
 
     def __str__(self):
-        return self.name+" <"+self._dt_type+" dt>"
+        return self._dt_def['name']+" <dt>"
         
     def __repr__(self):
-        return self.name+" <"+self._dt_type+" dt>"
+        return self._dt_def['name']+" <dt>"
         
     def __getattr__(self, name): 
         if name in self.__dict__:
@@ -260,8 +253,33 @@ class fDerivedType(fVar):
         if name not in self._nameArgs:
             raise KeyError("Name not in struct")
         
-        if self._value is None or len(self._value)==0:
+        if self._value is None:
             return getattr(self._ref,name)
         else:
             return getattr(self._value,name)
+        
+    def _resolveDT(self):
+        name = self.var['dt']['name']
+        name = name.lower().replace("\'","")
+        for j in self._dt_defs:
+            if j['name']==name:
+                self._dt_def = j
+                return
+        raise KeyError("Couldn't match "+ str(name))
+
+
+
+class emptyfDerivedType(fDerivedType):
+    def __init__(self,name, *args,**kwargs):
+        self._desc = self.create_struct()
+        self.name = name
+        
+        self._desc = self.create_struct()
+        self._ctype = self._desc
+        self._ctype_desc = ctypes.POINTER(self._ctype)
+
+    def create_struct(self):
+        fDerivedTypeDesc = _emptyDT
+        fDerivedTypeDesc.__name__ = str(self.name)
+        return fDerivedTypeDesc
         

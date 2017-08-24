@@ -21,7 +21,7 @@ _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
 class fFunc(fVar):
 
-    def __init__(self, lib, obj):
+    def __init__(self, lib, obj, dt_defs):
         self.__dict__.update(obj)
         self._lib = lib
         self._sub = self.proc['sub']
@@ -31,6 +31,7 @@ class fFunc(fVar):
             print("Skipping "+self.mangled_name)
             return
             
+        self._dt_defs = dt_defs
         self._set_return()
         self._set_arg_ctypes()
         self.save_args=False
@@ -67,7 +68,7 @@ class fFunc(fVar):
         elif obj['var']['pytype'] == 'complex':
             x = fComplex(self._lib, obj)
         elif 'dt' in obj['var']:
-            x = fDerivedType(self._lib, obj)
+            x = fDerivedType(self._lib, obj,self._dt_defs)
         elif array is not None:
             if array['atype'] == 'explicit':
                 x = fExplicitArray(self._lib, obj)
