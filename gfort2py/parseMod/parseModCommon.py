@@ -109,7 +109,7 @@ class parseModBase(object):
             i=i.replace("(","").replace(")",'').strip()
             r={}
             z = i.split()
-            r['name'] = z[0]
+            r['name'] = z[0].lower().replace("'","")
             r['module'] = z[1]
             r['num'] = int(z[2])
             if(len(z))> 3:
@@ -174,14 +174,14 @@ class parseModBase(object):
 
         if ('__' in symbol or '(intrinsic)' in symbol or 
             'INTRINSIC' in symbol or len(symbol)==0 or
-            ' RESULT' in symbol):
+            ' RESULT' in symbol or 'BODY' in symbol):
             return {}
 
         r = {}
         r['num'], r['name'],r['module'], _, r['parent_id']  =  symbol.split()[0:5]
         
         for i in ['num','name','module','parent_id']:
-            r[i]=r[i].replace("'","")
+            r[i]=r[i].lower().replace("'","")
         
         if len(r['name'])==0:
             return {}
@@ -198,7 +198,7 @@ class parseModBase(object):
         type_line = info[0]
         # need spaces on end of names as sometimes we have name-something etc
         if 'VARIABLE ' in type_line or 'DUMMY ' in type_line:
-            if r['parent_id']=='1':
+            if len(r['module'])>0:
                 r['var'] = self.parseVar(info)
             else:
                 r['var'] = self.parseFuncArg(info)
@@ -312,6 +312,7 @@ class parseModBase(object):
             i=i.strip()[1:-1]
             dtEl={}
             dtEl['num'], dtEl['name'] = i.split()[0:2]
+            dtEl['name'] = dtEl['name'].lower().replace("'","")
             info_el = split_brackets(i[i.index("(")-1:],remove_b=False)
             #Re-order to be the same as everything else
             newL = [info_el[2],'()',info_el[0],'()',info_el[1]]
@@ -453,8 +454,7 @@ class parseModBase(object):
             pytype='None'
             ctype='c_void_p'
         elif "DERIVED" in x:
-            #Skip these
-            pytype='None'
+            pytype='dict'
             ctype='c_void_p'
         else:
             pytype='None'
@@ -541,10 +541,17 @@ class parseModBase(object):
         s_f = np.argsort(func_nums,kind='heapsort')
 
         sorted_index = np.searchsorted(func_nums,func_arg_num,sorter=s_f,side='left')
-        
-        for fAind,val in zip(s_f[sorted_index],ind_func_args):
-            self.all_symbols[ind_funcs[fAind]]['arg'].append(self.all_symbols[val])
+                
+        lenfn=len(s_f)
+        # Things with index greater than the length of the function nums are
+        # arguments to functions that are argument to funcs
+        sorted_index = [i if i<lenfn else None for i in sorted_index]
 
+        for i,j in zip(sorted_index,ind_func_args):
+            if i is not None:
+                fAind=s_f[i]
+                self.all_symbols[ind_funcs[fAind]]['arg'].append(self.all_symbols[j])
+        
 
 
 
