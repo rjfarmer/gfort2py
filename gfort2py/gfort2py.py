@@ -14,7 +14,7 @@ from .cmplx import fComplex, fParamComplex
 from .arrays import fExplicitArray, fDummyArray, fParamArray, fAssumedShape , fAssumedSize
 from .functions import fFunc
 from .strings import fStr
-from .types import fDerivedType
+from .types import fDerivedType, _dictAllDtDescs, _DTDesc, getEmptyDT
 from .utils import *
 from .var import fVar, fParam
 from .errors import *
@@ -83,22 +83,14 @@ class fFort(object):
             
         for i in self._dt_defs:
             i['name']=i['name'].lower().replace("'","")
+            
+        self._init_dt_defs()
         
         for i in self._mod_vars:
             self._init_var(i)
 
         for i in self._param:
             self._init_param(i)
-
-    
-        for i in self._funcs:
-            if 'arg' in i and len(i['arg'])>0:
-                for k in i['arg']:
-                    if 'dt' in k['var']:
-                        k['var']['dt']['name']=k['var']['dt']['name'].lower().replace("'","")
-                        for j in self._dt_defs:
-                            if k['var']['dt']['name'].lower() == j['name'].lower():
-                                k['_dt_def'] = j  
 
         # Must come last after the derived types are setup
         for i in self._funcs:
@@ -111,7 +103,7 @@ class fFort(object):
         elif obj['var']['pytype'] == 'complex':
             x = fComplex(self._lib, obj)
         elif 'dt' in obj['var'] and obj['var']['dt']:
-            x = fDerivedType(self._lib, obj,self._dt_defs)
+            x = fDerivedType(self._lib, obj)
         elif 'array' in obj['var']:
             array = obj['var']['array']['atype'] 
             if array == 'explicit':
@@ -141,8 +133,56 @@ class fFort(object):
         self.__dict__[x.name] = x
 
     def _init_func(self, obj):
-        x = fFunc(self._lib, obj,self._dt_defs)
+        x = fFunc(self._lib, obj)
         self.__dict__[x.name] = x
+        
+    def _init_dt_defs(self):
+        all_dt_defs=self._dt_defs
+        
+        completed = [False]*len(all_dt_defs)
+        # First pass, do the very simple stuff (things wih no dt's inside them)
+        for idx,i in enumerate(all_dt_defs):
+            flag=True
+            for j in i['dt_def']['arg']:
+                if 'dt' in j['var']:
+                    flag=False
+            if flag:
+                _dictAllDtDescs[i['name']]=_DTDesc(i)
+                completed[idx]=True
+                
+        progress = True
+        while True:     
+            if all(completed):
+                break
+            if not progress:
+                break
+            progress=False
+            for idx,i in enumerate(all_dt_defs):
+                if completed[idx]:
+                    continue
+                flag=True
+                for j in i['dt_def']['arg']:
+                    if 'dt' in j['var']:
+                        if j['var']['dt']['name'] not in _dictAllDtDescs:
+                            flag=False
+                            
+                #All elements are either not dt's or allready in the alldict
+                if flag:
+                    progress = True
+                    _dictAllDtDescs[i['name']]=_DTDesc(i)
+                    completed[idx]=True
+        
+                   
+        # Anything left not completed is likely to be a recurisive type
+        for i,status in zip(all_dt_defs,completed):
+            if not status:
+                _dictAllDtDescs[i['name']]=getEmptyDT(i['name'])
+        
+        
+        # Re-do the recurivse ones now we can add the empty dt's to them
+        for i,status in zip(all_dt_defs,completed):
+            if not status:
+                _dictAllDtDescs[i['name']] = _DTDesc(i)
 
     def __getattr__(self, name):
         if name.lower() in self.__dict__:

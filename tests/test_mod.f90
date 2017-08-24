@@ -162,6 +162,20 @@ module tester
       ! From second module
       TYPE(s_simple2) :: f_struct_simple2
       
+      TYPE s_recursive
+         integer           :: a_int
+         TYPE(s_recursive),pointer :: s_recur
+      end TYPE s_recursive
+      
+      TYPE s_recursive_2
+         integer           :: a_int
+         TYPE(s_recursive_1),pointer :: s_recur
+      end TYPE s_recursive_2  
+      
+      TYPE s_recursive_1
+         integer           :: a_int
+         TYPE(s_recursive_2),pointer :: s_recur
+      end TYPE s_recursive_1
       
       TYPE(s_struct_basic) :: f_struct
       TYPE(s_struct_basic),dimension(2) :: f_struct_exp_2d
@@ -194,6 +208,11 @@ module tester
       TYPE(s_struct_nested_2),dimension(:,:),pointer :: h_struct_point_2d => null()
       TYPE(s_struct_nested_2),dimension(2),  target :: h_struct_target_1d
       TYPE(s_struct_nested_2),dimension(2,2),target :: h_struct_target_2d
+
+
+      TYPE(s_recursive) :: r_recur
+      TYPE(s_recursive_1) :: r_recur_1
+      TYPE(s_recursive_2) :: r_recur_2
 
       contains
       
