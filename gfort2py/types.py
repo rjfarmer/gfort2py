@@ -50,6 +50,8 @@ class _DTDesc(object):
         # Placeholder for a dt
         if 'dt' in obj['var']:
             name = obj['var']['dt']['name'].lower().replace("'","")
+            #By the time we get here we should have allready filled _dictAllDtDescs
+            # with all the dt defs
             return _dictAllDtDescs[name]
         
         array = None

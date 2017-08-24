@@ -176,10 +176,8 @@ class fVar(object):
         return str(self.name) + " <" + str(self.pytype) + ">"
 
     def __str__(self):
-        try:
-            return str(self.get())
-        except NotInLib:
-            return None
+        return str(self.name)
+
 
     def __repr__(self):
         s=''

@@ -51,11 +51,12 @@ class fFunc(fVar):
                 else:
                     pointer=False
                 x,y=self._arg_vars[-1].ctype_def_func(pointer=pointer,intent=i['var']['intent'])
-                    
                 self._arg_ctypes.append(x)
                 if y is not None:
                     tmp.append(y)
+                    
             self._call.argtypes = self._arg_ctypes+tmp
+            
 
     def _init_var(self, obj):
         array = None
@@ -69,6 +70,7 @@ class fFunc(fVar):
         elif 'dt' in obj['var']:
             x = fDerivedType(self._lib, obj)
         elif array is not None:
+            #print(self.name,array)
             if array['atype'] == 'explicit':
                 x = fExplicitArray(self._lib, obj)
             elif array['atype'] == 'alloc':
@@ -94,7 +96,6 @@ class fFunc(fVar):
     def _args_to_ctypes(self,args):
         tmp = []
         args_in = []
-        
         for vout, vin, fctype, a in six.moves.zip_longest(self._arg_vars, args, self._arg_ctypes, self.arg):
             if 'optional' in a['var'] and vin is None:
                 #Missing optional arguments 
@@ -145,11 +146,10 @@ class fFunc(fVar):
         return r
     
     def __call__(self, *args):
-        #print("call ",args)
         args_in = self._args_to_ctypes(args)
-        
         # Capture stdout messages
         # Cant call python print() untill after the read_pipe call
+        print(args_in)
         if _TEST_FLAG:
             pipe_out, pipe_in = os.pipe()
             stdout = os.dup(1)
@@ -162,8 +162,8 @@ class fFunc(fVar):
             # Print stdout
             os.dup2(stdout, 1)
             print(read_pipe(pipe_out))
-            
         # Python print available now
+        print("end")
         if self._sub:
             return self._ctypes_to_return(args_in)
         else:

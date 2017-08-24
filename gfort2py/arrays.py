@@ -165,7 +165,11 @@ class fExplicitArray(fVar):
 
     def _make_array_shape(self,bounds=None):
         if bounds is None:
-            bounds = self.array['bounds']
+            if 'bounds' in self.array:
+                bounds = self.array['bounds']
+            else:
+                #Assumed size array we dont know the size
+                bounds = [1,2]
         
         shape = []
         for i, j in zip(bounds[0::2], bounds[1::2]):
@@ -222,6 +226,7 @@ class fDummyArray(fVar):
         self._ctype_desc = ctypes.POINTER(self._desc)
         self.npdtype=self.pytype+str(8*ctypes.sizeof(self._ctype_single))
         
+        self._value=None
 
     def _setup_desc(self):
         return _listFAllocArrays[self.ndim]
@@ -252,11 +257,8 @@ class fDummyArray(fVar):
         return 
         
     def set_func_arg(self,value):
-        #Create an allocatable array
-        self._value_array = self._desc()
-
         self._value = np.asfortranarray(value).astype(self.npdtype)
-        self._set_to_pointer(self._value,self._value_array)
+        self._set_to_pointer(self._value,self._desc())
         
         
     def _set_to_pointer(self,value,p):
@@ -286,11 +288,11 @@ class fDummyArray(fVar):
         return self._get_from_pointer(p.contents,copy)
         
     def _get_from_pointer(self,p,copy=False):
-        base_addr = p.base_addr
         if not self._isallocated():
             return np.zeros(1)
             #raise ValueError("Array not allocated yet")
         
+        base_addr = p.base_addr
         offset = p.offset
         dtype = p.dtype
         
@@ -455,6 +457,10 @@ class fDummyArray(fVar):
         return x.ctypes.data
    
 class fAssumedShape(fDummyArray):
+    def __init__(self,*args,**kwargs):
+        super(fAssumedShape,self).__init__(*args,**kwargs)
+        self._ctype_desc = self._desc
+    
     def _get_pointer(self):
         return self._ctype_desc.from_address(ctypes.addressof(self._value_array))
     
@@ -481,17 +487,17 @@ class fAssumedShape(fDummyArray):
             #self._value_array.dims[i].lbound=0
             
     def __str__(self):
-        return str(self._value_array)
+        return str(self._desc())
         
     def __repr__(self):
-        return repr(self._value_array)
+        return repr(self._desc())
 
     def py_to_ctype(self, value):
         """
         Pass in a python value returns the ctype representation of it
         """
         self.set_func_arg(value)
-        return self._value_array
+        return self._desc()
         
     def py_to_ctype_f(self, value):
         """
