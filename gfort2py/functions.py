@@ -149,7 +149,6 @@ class fFunc(fVar):
         args_in = self._args_to_ctypes(args)
         # Capture stdout messages
         # Cant call python print() untill after the read_pipe call
-        print(args_in)
         if _TEST_FLAG:
             pipe_out, pipe_in = os.pipe()
             stdout = os.dup(1)
@@ -163,7 +162,6 @@ class fFunc(fVar):
             os.dup2(stdout, 1)
             print(read_pipe(pipe_out))
         # Python print available now
-        print("end")
         if self._sub:
             return self._ctypes_to_return(args_in)
         else:
