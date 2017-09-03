@@ -7,6 +7,7 @@ except ImportError:
 import ctypes
 import os
 import six
+import select
 
 from .var import fVar
 from .cmplx import fComplex
@@ -18,6 +19,32 @@ from .errors import *
 
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
+
+
+
+class captureStdOut():
+    def read_pipe(self,pipe_out):
+        def more_data():
+            r, _, _ = select.select([pipe_out], [], [], 0)
+            return bool(r)
+        out = b''
+        while more_data():
+            out += os.read(pipe_out, 1024)
+        return out.decode()
+    
+    def __enter__(self):
+        if _TEST_FLAG:
+            self.pipe_out, self.pipe_in = os.pipe()
+            self.stdout = os.dup(1)
+            os.dup2(self.pipe_in, 1)
+    
+    def __exit__(self,*args,**kwargs):
+        if _TEST_FLAG:
+            os.dup2(self.stdout, 1)
+            print(self.read_pipe(self.pipe_out))
+            os.close(self.pipe_in)
+            os.close(self.pipe_out)
+            os.close(self.stdout)
 
 class fFunc(fVar):
 
@@ -147,21 +174,14 @@ class fFunc(fVar):
     
     def __call__(self, *args):
         args_in = self._args_to_ctypes(args)
+        
         # Capture stdout messages
-        # Cant call python print() untill after the read_pipe call
-        if _TEST_FLAG:
-            pipe_out, pipe_in = os.pipe()
-            stdout = os.dup(1)
-            os.dup2(pipe_in, 1)
-        if len(args_in) > 0:
-            res = self._call(*args_in)
-        else:
-            res = self._call()
-        if _TEST_FLAG:
-            # Print stdout
-            os.dup2(stdout, 1)
-            print(read_pipe(pipe_out))
-        # Python print available now
+        with captureStdOut() as cs:        
+            if len(args_in) > 0:
+                res = self._call(*args_in)
+            else:
+                res = self._call()
+
         if self._sub:
             return self._ctypes_to_return(args_in)
         else:
