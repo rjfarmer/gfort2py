@@ -166,9 +166,10 @@ To run unit tests
 - [x] Derived types
 - [x] Nested derived types
 - [ ] Arrays of derived types
-- [ ] Functions in derived types
+- [ ] Functions inside derived types
+- [ ] Arrays with dimesnion (:) (pointer, allocatable) insider derived types (it doesnt break if their there, but you cant access them easily)
 - [ ] Classes
-- [ ] Abstract
+- [ ] Abstract interfaces
 - [ ] Common blocks
 - [ ] Equivalences
 - [ ] Namelists
