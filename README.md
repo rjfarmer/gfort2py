@@ -104,6 +104,11 @@ x.some_var.get()
 
 First will print the value in some_var while get() will return the value
 
+### Arrays
+
+Remember that fortran by defaulthas 1-based array numbering while numpy
+is 0-based.
+
 
 ### Derived types
 
