@@ -200,7 +200,11 @@ To run unit tests
 - [ ] Generic/Elemental functions
 - [ ] Functions as an argument
 
+## Contributing
 
-
-
+Pull requests should target the maint branch for fixing issues, please check the test suite
+passes before sending a pull request.
+Maint will be periodically merged with master for new releases, master should never have 
+a broken test suite.
+The dev branch is a longer term rewrite that is likely to be constantly broken.
 
