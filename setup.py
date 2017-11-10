@@ -19,7 +19,7 @@ Extension("gfort2py.fnumpy",["gfort2py/fnumpy.pyx"],include_dirs=[np.get_include
 ]				
 
 setup(name='gfort2py',
-      version='1.0.7',
+      version='1.0.8',
       description='Python bindings for Fortran',
       license="GPLv2+",
       author='Robert Farmer',
