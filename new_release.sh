@@ -12,8 +12,10 @@ if [[ $VERSION == v* ]];then
 fi
 
 sed -i "s/\(^.*version=.*$\)/\ \ \ \ \ \ version='$VERSION',/" setup.py
+sed -i "s/Current\ stable\ version\ is\ .*/Current\ stable\ version\ is\ $VERSION/" README.md
 
-git commit setup.py -m "New release"
+
+git commit setup.py README.md -m "New release"
 git tag "v$VERSION"
 git push
 git push origin "v$VERSION"
