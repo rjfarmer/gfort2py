@@ -1,4 +1,6 @@
 include requirements.txt
 include README.md
 include COPYING.txt
-recurisve-include *.f90 Makefile *.pyx
+include setup.py
+recursive-include gfort2py *.f90 *.pyx *.py *.c Makefile
+recursive-include tests *.f90 *.pyx *.py *.c Makefile
