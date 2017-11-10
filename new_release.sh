@@ -27,5 +27,5 @@ git tag v$VERSION
 git push
 git push origin v$VERSION
 python setup.py sdist
-twine --upload dist/gfort2py-$VERSION.tar.gz
+twine upload dist/gfort2py-$VERSION.tar.gz
 
