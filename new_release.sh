@@ -5,6 +5,13 @@ if [[ -z "$1" ]]; then
 	exit 1
 fi
 
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$BRANCH" != "master" ]]; then
+  echo 'Not on master branch'
+  exit 1
+fi
+
+
 VERSION=$1
 
 if [[ $VERSION == v* ]];then
@@ -16,9 +23,9 @@ sed -i "s/Current\ stable\ version\ is\ .*/Current\ stable\ version\ is\ $VERSIO
 
 
 git commit setup.py README.md -m "New release"
-git tag "v$VERSION"
+git tag v$VERSION
 git push
-git push origin "v$VERSION"
+git push origin v$VERSION
 python setup.py sdist
 twine --upload dist/gfort2py-$VERSION.tar.gz
 
