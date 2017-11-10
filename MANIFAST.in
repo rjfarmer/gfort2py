@@ -1,0 +1,4 @@
+include requirements.txt
+include README.md
+include COPYING.txt
+recurisve-include *.f90 Makefile *.pyx
