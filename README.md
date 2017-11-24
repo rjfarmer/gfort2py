@@ -8,7 +8,7 @@
 # gfort2py
 Library to allow calling fortran code from python. Requires gfortran>=5.3.1
 
-Current stable version is 1.0.8
+Current stable version is 1.0.9
 
 ## Build
 ````bash
