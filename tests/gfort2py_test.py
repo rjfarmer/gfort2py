@@ -933,6 +933,17 @@ class TestStringMethods(unittest.TestCase):
 		y=x.func_check_nested_dt()
 		self.assertEqual(y,True)
 	
+	def test_logical_arr(self):
+		xarr=np.zeros(10)
+		x2arr=np.zeros(10)
+		x2arr[:]=False
+		xarr[:]=True
+		
+		y=x.func_alltrue_arr_1d(xarr)
+		y2=x.func_allfalse_arr_1d(x2arr)
+		self.assertEqual(y,True)
+		self.assertEqual(y2,True)
+
 
 if __name__ == '__main__':
 	unittest.main() 

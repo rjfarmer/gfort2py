@@ -456,6 +456,27 @@ module tester
          if(x==2) res1 = .true.
       end function func_return_res
       
+      logical function func_alltrue_arr_1d(x) result(res2)
+         logical, dimension(:), intent(in) :: x
+         res2 =.false.
+         if(all(x.eqv..true.)) res2 = .true.
+!         write(*,*) "1",x,"*",res2
+      end function func_alltrue_arr_1d
+      
+      logical function func_allfalse_arr_1d(x) result(res2)
+         logical, dimension(:), intent(in) :: x
+         res2 =.false.
+         if(all(x.eqv..false.)) res2 = .true.
+!         write(*,*) "2",x,"*",res2
+      end function func_allfalse_arr_1d
+      
+      logical function func_allfalse_arr_1d_inout(x) result(res2)
+         logical, dimension(:), intent(inout) :: x
+         res2 =.false.
+         if(all(x.eqv..false.)) res2 = .true.
+         x=.True.
+      end function func_allfalse_arr_1d_inout
+      
       
       logical function func_assumed_shape_arr_1d(x) result(res2)
          integer, dimension(:), intent(inout) :: x

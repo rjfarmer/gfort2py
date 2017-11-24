@@ -215,6 +215,11 @@ class fDummyArray(fVar):
         self.ndim = int(self.array['ndims'])
         self._lib = lib
         
+        if self.pytype is 'bool':
+            self.ctype='c_int32'
+            self.pytype='int'
+        
+        
         self._desc = self._setup_desc()
         self._ctype_single = getattr(ctypes,self.ctype)
         #self._ctype = getattr(ctypes,self.ctype)

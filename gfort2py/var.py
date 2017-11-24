@@ -19,11 +19,16 @@ class fVar(object):
         self._lib = lib
         self.ctype=self.var['ctype']
         self.pytype=self.var['pytype']
-        self._ctype = self.ctype_def()
-        #self._ctype_f = self.ctype_def_func()
+        
         self._pytype = self.pytype_def()
         if self.pytype == 'quad':
             self.pytype = np.longdouble
+        elif self.pytype=='bool':
+            self.pytype=int
+            self.ctype='c_int32'
+        
+        self._ctype = self.ctype_def()
+        #self._ctype_f = self.ctype_def_func()
 
         # if true for things that are fortran things
         self._fortran = True
