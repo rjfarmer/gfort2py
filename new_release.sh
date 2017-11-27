@@ -27,5 +27,8 @@ git tag v$VERSION
 git push
 git push origin v$VERSION
 python setup.py sdist
-twine upload dist/gfort2py-$VERSION.tar.gz
 
+echo "Now do: twine upload dist/gfort2py-$VERSION.tar.gz"
+
+git checkout maint
+git merge master
