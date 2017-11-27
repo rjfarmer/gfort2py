@@ -18,7 +18,7 @@ if [[ $VERSION == v* ]];then
 	export VERSION=${VERSION#"v"}
 fi
 
-sed -i "s/\(^.*version=.*$\)/\ \ \ \ \ \ version='$VERSION',/" setup.py
+sed -i "s/__version__\ =.*/__version__\ =\ '$VERSION'/" gfort2py/version.py
 sed -i "s/Current\ stable\ version\ is\ .*/Current\ stable\ version\ is\ $VERSION/" README.md
 
 

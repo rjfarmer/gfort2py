@@ -18,8 +18,15 @@ Extension("gfort2py.parseMod.utils_cpython",["gfort2py/parseMod/utils_cpython.py
 Extension("gfort2py.fnumpy",["gfort2py/fnumpy.pyx"],include_dirs=[np.get_include(),PY_INCLUDE])
 ]				
 
+
+def get_version():
+	with open("gfort2py/version.py") as f:
+		l=f.readlines()
+	return l[0].split("=")[-1].strip().replace("'","")
+
+
 setup(name='gfort2py',
-      version='1.0.9',
+      version=get_version(),
       description='Python bindings for Fortran',
       license="GPLv2+",
       author='Robert Farmer',
