@@ -449,7 +449,7 @@ class parseModBase(object):
             pytype='complex'
         elif 'LOGICAL' in x:
             pytype='bool'
-            ctype='c_bool'
+            ctype='c_int32'
         elif 'UNKNOWN' in x:
             pytype='None'
             ctype='c_void_p'

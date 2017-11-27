@@ -463,6 +463,14 @@ module tester
 !         write(*,*) "1",x,"*",res2
       end function func_alltrue_arr_1d
       
+      logical function func_logical_multi(a,b,x,c,d) result(res2)
+         real(dp),intent(in) :: a,b,c,d
+         logical, dimension(5), intent(in) :: x
+         res2 =.false.
+         if(all(x.eqv..true.)) res2 = .true.
+!         write(*,*) "1",x,"*",res2
+      end function func_logical_multi
+      
       logical function func_allfalse_arr_1d(x) result(res2)
          logical, dimension(:), intent(in) :: x
          res2 =.false.

@@ -945,6 +945,13 @@ class TestStringMethods(unittest.TestCase):
 		self.assertEqual(y2,True)
 
 
+	def test_logical_arr_multi(self):
+		xarr=np.zeros(5)
+		xarr[:]=True
+		
+		y=x.func_logical_multi(1.0,2.0,xarr,3.0,4.0)
+		self.assertEqual(y,True)
+
 if __name__ == '__main__':
 	unittest.main() 
 

@@ -75,16 +75,22 @@ class fExplicitArray(fVar):
     def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
-        self._pytype = np.array
-        self.ctype = self.var['array']['ctype']
-        
-        self._ctype = self.ctype_def()
         
         if 'array' in self.var:
           self.__dict__.update(obj['var'])
         
+        self._pytype = np.array
+        self.ctype = self.var['array']['ctype']
+
+        if self.pytype is 'bool':
+            self.ctype='c_int32'
+            self.pytype='int'
+        
+        self._ctype = self.ctype_def()
+        
         self.ndims = int(self.array['ndims'])
         #self._ctype_f = self.ctype_def_func()
+
         self._dtype=self.pytype+str(8*ctypes.sizeof(self._ctype))
 
         #Store the ref to the lib object
