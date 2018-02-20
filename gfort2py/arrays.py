@@ -252,9 +252,9 @@ class fDummyArray(fVar):
         self._value = value.astype(self.npdtype)
         
         #Did we make a copy?
-        # if self._id(self._value)==self._id(value):
-            # remove_ownership(value)
-        #remove_ownership(self._value)
+        if self._id(self._value)==self._id(value):
+            remove_ownership(value)
+        remove_ownership(self._value)
         
         p = self._get_pointer()
         if p:
@@ -444,10 +444,10 @@ class fDummyArray(fVar):
             
             #By calling remove_ownership we tell numpy it dosn't own the data
             #thus is shouldn't call free(ptr).
-            #remove_ownership(self._value)
+            remove_ownership(self._value)
             
             #Maybe leaks if fortran doesn't dealloc the array
-            pass
+                
                 
     def _isallocated(self):
         
