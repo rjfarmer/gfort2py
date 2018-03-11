@@ -8,13 +8,15 @@ from .strings import fStr
 from .errors import *
 
 
-_dictAllDtDescs={}
+_dictAllDtDescs = {}
+_dictDTDefs = {}
 
 
 def getEmptyDT(name):
     class emptyDT(ctypes.Structure):
         pass
     emptyDT.__name__ = name
+    emptyDT.empty = True
     return emptyDT
         
 class _DTDesc(object):
@@ -22,6 +24,7 @@ class _DTDesc(object):
         self._lib = None
         self.dt_def = dt_def['dt_def']['arg']
         self.dt_name = dt_def['name'].lower().replace("'","")
+        self.empty = False
         
         self.names = [i['name'].lower().replace("'","") for i in self.dt_def]
         self.args = []
@@ -50,8 +53,8 @@ class _DTDesc(object):
         # Placeholder for a dt
         if 'dt' in obj['var']:
             name = obj['var']['dt']['name'].lower().replace("'","")
-            #By the time we get here we should have allready filled _dictAllDtDescs
-            # with all the dt defs
+            if _dictAllDtDescs[name].empty:
+                _dictAllDtDescs[name] = _DTDesc(_dictDTDefs[name])
             return _dictAllDtDescs[name]
         
         array = None
@@ -87,7 +90,11 @@ class fDerivedType(fVar):
         self._lib = lib
         self._dt_type = self.var['dt']['name'].lower().replace("'","")
 
+        if _dictAllDtDescs[self._dt_type].empty:
+            _dictAllDtDescs[self._dt_type] = _DTDesc(_dictDTDefs[self._dt_type])
+
         self._dt_desc = _dictAllDtDescs[self._dt_type]
+
         self._desc = self._dt_desc.dt_desc
         self._ctype = self._desc
         self._ctype_desc = ctypes.POINTER(self._ctype)

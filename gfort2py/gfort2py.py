@@ -13,7 +13,7 @@ from .cmplx import fComplex, fParamComplex
 from .arrays import *
 from .functions import fFunc
 from .strings import fStr
-from .types import fDerivedType, _dictAllDtDescs, _DTDesc, getEmptyDT
+from .types import fDerivedType, _dictAllDtDescs, getEmptyDT, _dictDTDefs
 from .utils import *
 from .var import fVar, fParam
 from .errors import *
@@ -118,10 +118,8 @@ class fFort(object):
         # Make empty dts first
         for i in self._dt_defs.keys():
             _dictAllDtDescs[i] = getEmptyDT(i)
-        
-        # Re-do so we can handle recursive/nested ones
-        for key, value in self._dt_defs.items():
-            _dictAllDtDescs[key] = _DTDesc(value)
+            _dictDTDefs[i] = self._dt_defs[i]
+
 
     def __getattr__(self, name):
         if name in self.__dict__:
