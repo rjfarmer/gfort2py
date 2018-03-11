@@ -116,50 +116,14 @@ class fFort(object):
         self.__dict__[x.name.lower()] = x
         
     def _init_dt_defs(self):
-        completed = {key:False for key in self._dt_defs}
-        # First pass, do the very simple stuff (things wih no dt's inside them)
-        for key,value in self._dt_defs.items():
-            flag=True
-            for j in value['dt_def']['arg']:
-                if 'dt' in j['var']:
-                    flag=False
-            if flag:
-                _dictAllDtDescs[key]=_DTDesc(value)
-                completed[key]=True
 
-        progress = True
-        while True:     
-            if all(v for v in completed.values()):
-                break
-            if not progress:
-                break
-            progress=False
-            for key,value in self._dt_defs.items():
-                if completed[key]:
-                    continue
-                flag=True
-                for j in value['dt_def']['arg']:
-                    if 'dt' in j['var']:
-                        if j['var']['dt']['name'] not in _dictAllDtDescs:
-                            flag=False
-
-                #All elements are either not dt's or allready in the alldict
-                if flag:
-                    progress = True
-                    _dictAllDtDescs[key]=_DTDesc(value)
-                    completed[key]=True
-        
-                   
-        # Anything left not completed is likely to be a recurisive type
+        #Make empty dts first
         for i in self._dt_defs.keys():
-            if not completed[i]:
                 _dictAllDtDescs[i]=getEmptyDT(i)
         
-        
-        # Re-do the recurivse ones now we can add the empty dt's to them
+        # Re-do so we can handle recursive/nested ones
         for key,value in self._dt_defs.items():
-            if not completed[key]:
-                _dictAllDtDescs[key] = _DTDesc(value)
+            _dictAllDtDescs[key] = _DTDesc(value)
 
     def __getattr__(self, name):
         if name in self.__dict__:

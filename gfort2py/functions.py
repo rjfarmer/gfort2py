@@ -129,7 +129,6 @@ class fFunc(fVar):
                 args_in.append(None)            
             else:
                 x,y=vout.py_to_ctype_f(vin)
-                print(a['var'])
                 if 'pointer' in a['var']:
                     args_in.append(vout.py_to_ctype_p(vin))
                 else:
