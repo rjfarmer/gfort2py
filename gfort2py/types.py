@@ -205,8 +205,8 @@ class fDerivedType(fVar):
         self.pointer=pointer
         if pointer and intent is not 'na':
             f=ctypes.POINTER(self._ctype_desc)
-        elif intent=='na':
-            f=ctypes.POINTER(self._ctype_desc)
+        # elif intent=='na':
+            # f=ctypes.POINTER(self._ctype_desc)
         else:
             f=self._ctype_desc
             

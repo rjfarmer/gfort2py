@@ -952,6 +952,11 @@ class TestStringMethods(unittest.TestCase):
 		y=x.func_logical_multi(1.0,2.0,xarr,3.0,4.0)
 		self.assertEqual(y,True)
 
+	def test_sub_dt_alloc_ar(self):
+		y={}
+		z = x.sub_dt_alloc_ar(y)
+		print(z)
+
 if __name__ == '__main__':
 	unittest.main() 
 

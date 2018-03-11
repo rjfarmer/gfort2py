@@ -177,6 +177,11 @@ module tester
          TYPE(s_recursive_2),pointer :: s_recur
       end TYPE s_recursive_1
       
+      TYPE s_alloc_array
+         real(dp), allocatable, dimension(:,:) :: alloc_arr
+      END TYPE s_alloc_array
+      
+      
       TYPE(s_struct_basic) :: f_struct
       TYPE(s_struct_basic),dimension(2) :: f_struct_exp_2d
       TYPE(s_struct_basic),dimension(2,2) :: f_struct_exp_1d
@@ -213,7 +218,7 @@ module tester
       TYPE(s_recursive) :: r_recur
       TYPE(s_recursive_1) :: r_recur_1
       TYPE(s_recursive_2) :: r_recur_2
-
+      
       contains
       
       
@@ -629,5 +634,11 @@ module tester
       
       end subroutine sub_use_mod
       
+      subroutine sub_dt_alloc_ar(x)
+         type(s_alloc_array) :: x
       
+         allocate(x%alloc_arr(1:10,1:10))
+         x%alloc_arr=99.d0
+      
+      end subroutine sub_dt_alloc_ar
 end module tester
