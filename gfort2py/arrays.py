@@ -88,7 +88,7 @@ class fExplicitArray(fVar):
         
         self._ctype = self.ctype_def()
         
-        self.ndims = int(self.array['ndims'])
+        self.ndims = int(self.array['ndim'])
         #self._ctype_f = self.ctype_def_func()
 
         self._dtype=self.pytype+str(8*ctypes.sizeof(self._ctype))
@@ -171,7 +171,7 @@ class fExplicitArray(fVar):
 
     def _make_array_shape(self,bounds=None):
         if bounds is None:
-            bounds = self.array['bounds']
+            bounds = self.array['shape']
         
         shape = []
         for i, j in zip(bounds[0::2], bounds[1::2]):
@@ -218,7 +218,7 @@ class fDummyArray(fVar):
         if 'array' in self.var:
           self.__dict__.update(obj['var'])
 
-        self.ndim = int(self.array['ndims'])
+        self.ndim = int(self.array['ndim'])
         self._lib = lib
         
         if self.pytype is 'bool':

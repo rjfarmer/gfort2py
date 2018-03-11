@@ -26,6 +26,7 @@ WARN_ON_SKIP=False
 #https://gcc.gnu.org/onlinedocs/gcc-6.1.0/gfortran/Argument-passing-conventions.html
 
 class fFort(object):
+    _initialized = False
 
     def __init__(self, libname, ffile, rerun=False):
         self._lib = ctypes.CDLL(libname)
@@ -34,6 +35,7 @@ class fFort(object):
         self._fpy = pm.fpyname(ffile)
         self._load_data(ffile, rerun)
         self._init()
+        self._initialized = True
 
     def _load_data(self, ffile, rerun=False):
         try:
@@ -45,56 +47,33 @@ class fFort(object):
             pm.run(ffile,save=True)
         else:
             f.close()
-
+    
         with open(self._fpy, 'rb') as f:
             self.version = pickle.load(f)
-            if self.version == 1:
+            if self.version == pm.PYFILE_VERSION:
                 self._mod_data = pickle.load(f)
-
+    
                 if self._mod_data["checksum"] != pm.hashFile(ffile) or rerun:
-                    x = pm.run(ffile,save=True,unpack=True)
-                    self._mod_data = x[0]
-                    self._mod_vars = x[1]
-                    self._param = x[2]
-                    self._funcs = x[3]
-                    self._dt_defs = x[4]
+                    self._rerun(ffile)
                 else:
                     self._mod_vars = pickle.load(f)
                     self._param = pickle.load(f)
                     self._funcs = pickle.load(f)
                     self._dt_defs = pickle.load(f)
+            else:
+                self._rerun(ffile)
+                
+    def _rerun(self,ffile):
+        x = pm.run(ffile,save=True,unpack=True)
+        self._mod_data = x[0]
+        self._mod_vars = x[1]
+        self._param = x[2]
+        self._funcs = x[3]
+        self._dt_defs = x[4]
 
-    def _init(self):
-        self._listVars = []
-        self._listParams = []
-        self._listFuncs = []
-        
-        for i in self._mod_vars:
-            self._all_names.append(i['name'])
-        
 
-        for i in self._param:
-            self._all_names.append(i['name'])
-            
-        for i in self._funcs:
-            self._all_names.append(i['name'])
-            
-        self._all_names = set(self._all_names)
-            
-        for i in self._dt_defs:
-            i['name']=i['name'].lower().replace("'","")
-            
+    def _init(self):                    
         self._init_dt_defs()
-        
-        for i in self._mod_vars:
-            self._init_var(i)
-
-        for i in self._param:
-            self._init_param(i)
-
-        # Must come last after the derived types are setup
-        for i in self._funcs:
-            self._init_func(i)
 
     def _init_var(self, obj):
         x=None
@@ -118,7 +97,7 @@ class fFort(object):
             x = fVar(self._lib, obj)
 
         if x is not None:
-            self.__dict__[x.name] = x
+            self.__dict__[x.name.lower()] = x
         else:
             print("Skipping init "+obj['name'])
 
@@ -130,75 +109,102 @@ class fFort(object):
         else:
             x = fParam(self._lib, obj)
 
-        self.__dict__[x.name] = x
+        self.__dict__[x.name.lower()] = x
 
     def _init_func(self, obj):
         x = fFunc(self._lib, obj)
-        self.__dict__[x.name] = x
+        self.__dict__[x.name.lower()] = x
         
     def _init_dt_defs(self):
-        all_dt_defs=self._dt_defs
-        
-        completed = [False]*len(all_dt_defs)
+        completed = {key:False for key in self._dt_defs}
         # First pass, do the very simple stuff (things wih no dt's inside them)
-        for idx,i in enumerate(all_dt_defs):
+        for key,value in self._dt_defs.items():
             flag=True
-            for j in i['dt_def']['arg']:
+            for j in value['dt_def']['arg']:
                 if 'dt' in j['var']:
                     flag=False
             if flag:
-                _dictAllDtDescs[i['name']]=_DTDesc(i)
-                completed[idx]=True
-                
+                _dictAllDtDescs[key]=_DTDesc(value)
+                completed[key]=True
+
         progress = True
         while True:     
-            if all(completed):
+            if all(v for v in completed.values()):
                 break
             if not progress:
                 break
             progress=False
-            for idx,i in enumerate(all_dt_defs):
-                if completed[idx]:
+            for key,value in self._dt_defs.items():
+                if completed[key]:
                     continue
                 flag=True
-                for j in i['dt_def']['arg']:
+                for j in value['dt_def']['arg']:
                     if 'dt' in j['var']:
                         if j['var']['dt']['name'] not in _dictAllDtDescs:
                             flag=False
-                            
+
                 #All elements are either not dt's or allready in the alldict
                 if flag:
                     progress = True
-                    _dictAllDtDescs[i['name']]=_DTDesc(i)
-                    completed[idx]=True
+                    _dictAllDtDescs[key]=_DTDesc(value)
+                    completed[key]=True
         
                    
         # Anything left not completed is likely to be a recurisive type
-        for i,status in zip(all_dt_defs,completed):
-            if not status:
-                _dictAllDtDescs[i['name']]=getEmptyDT(i['name'])
+        for i in self._dt_defs.keys():
+            if not completed[i]:
+                _dictAllDtDescs[i]=getEmptyDT(i)
         
         
         # Re-do the recurivse ones now we can add the empty dt's to them
-        for i,status in zip(all_dt_defs,completed):
-            if not status:
-                _dictAllDtDescs[i['name']] = _DTDesc(i)
+        for key,value in self._dt_defs.items():
+            if not completed[key]:
+                _dictAllDtDescs[key] = _DTDesc(value)
 
     def __getattr__(self, name):
-        if name.lower() in self.__dict__:
-            return self.__dict__[name.lower()]
-
-        if '_all_names' in self.__dict__:
-            if name.lower() in self._all_names:
-                return self.__dict__[name.lower()].get()
+        if name in self.__dict__:
+            return self.__dict__[name]
+        else:
+            if self._initialized:
+                nl = name.lower()
+                if '_mod_vars' in self.__dict__:
+                    if nl in self._mod_vars:
+                        self._init_var(self._mod_vars[nl])
+                        return self.__dict__[name]
+                if '_param' in self.__dict__:
+                    if nl in self._param:
+                        self._init_param(self._param[nl])
+                        return self.__dict__[name]
+                if '_funcs' in self.__dict__:
+                    if nl in self._funcs:
+                        self._init_func(self._funcs[nl])
+                        return self.__dict__[name]
 
         raise AttributeError("No variable " + name)
 
     def __setattr__(self, name, value):
-        if '_all_names' in self.__dict__:
-            if name in self._all_names:
-                self.__dict__[name].set_mod(value)
-                return
+        nl = name.lower()
+        if name in self.__dict__ or nl in self.__dict__:
+            if hasattr(self.__dict__[nl],'set_mod'):
+                self.__dict__[nl].set_mod(value)
+            else:
+                self.__dict__[name] = value
+        else:
+            if self._initialized:
+                if '_mod_vars' in self.__dict__:
+                    if nl in self._mod_vars:
+                            self._init_var(self._mod_vars[nl])
+                            self.__dict__[nl].set_mod(value)
+                    return
+                if '_param' in self.__dict__:
+                    if nl in self._param:
+                        self._init_param(self._param[nl])
+                        self.__dict__[nl].set_mod(value)
+                    return
        
-        self.__dict__[name] = value
+            self.__dict__[name] = value
         return
+        
+    def __dir__(self):
+        if self._initialized:
+            return list(self._mod_vars.keys())+list(self._param.keys())+list(self._funcs.keys())

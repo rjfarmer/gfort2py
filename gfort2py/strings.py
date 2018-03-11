@@ -12,7 +12,7 @@ class fStr(fVar):
        # self._ctype_f = self.ctype_def_func()
         self._pytype = str
         
-        self.char_len = self.var['len']
+        self.char_len = self.var['length']
 
         #Store the ref to the lib object
         try:   

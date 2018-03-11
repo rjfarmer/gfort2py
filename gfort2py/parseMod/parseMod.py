@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0+
+
 from __future__ import print_function
 import gzip
 import os
@@ -5,7 +7,7 @@ import pickle
 import sys
 import subprocess
 
-PYFILE_VERSION = 1
+PYFILE_VERSION = 2
 
 class VersionError(Exception):
     pass
