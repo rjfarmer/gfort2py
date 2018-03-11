@@ -9,9 +9,8 @@ import pickle
 import numpy as np
 import errno
 
-#from .parseMod import run_and_save, hash_file, fpyname
 from .cmplx import fComplex, fParamComplex
-from .arrays import fExplicitArray, fDummyArray, fParamArray, fAssumedShape , fAssumedSize
+from .arrays import *
 from .functions import fFunc
 from .strings import fStr
 from .types import fDerivedType, _dictAllDtDescs, _DTDesc, getEmptyDT
@@ -23,14 +22,15 @@ from . import parseMod as pm
 
 WARN_ON_SKIP=False
 
-#https://gcc.gnu.org/onlinedocs/gcc-6.1.0/gfortran/Argument-passing-conventions.html
+# https://gcc.gnu.org/onlinedocs/gcc-6.1.0/gfortran/Argument-passing-conventions.html
+
 
 class fFort(object):
     _initialized = False
 
     def __init__(self, libname, ffile, rerun=False):
         self._lib = ctypes.CDLL(libname)
-        self._all_names=[]
+        self._all_names = []
         self._libname = libname
         self._fpy = pm.fpyname(ffile)
         self._load_data(ffile, rerun)
@@ -44,7 +44,7 @@ class fFort(object):
         except (OSError, IOError) as e: 
             if e.errno != errno.ENOENT:
                 raise
-            pm.run(ffile,save=True)
+            pm.run(ffile, save=True)
         else:
             f.close()
     
@@ -63,20 +63,19 @@ class fFort(object):
             else:
                 self._rerun(ffile)
                 
-    def _rerun(self,ffile):
-        x = pm.run(ffile,save=True,unpack=True)
+    def _rerun(self, ffile):
+        x = pm.run(ffile, save=True, unpack=True)
         self._mod_data = x[0]
         self._mod_vars = x[1]
         self._param = x[2]
         self._funcs = x[3]
         self._dt_defs = x[4]
 
-
-    def _init(self):                    
+    def _init(self):      
         self._init_dt_defs()
 
     def _init_var(self, obj):
-        x=None
+        x = None
         if obj['var']['pytype'] == 'str':
             x = fStr(self._lib, obj)
         elif obj['var']['pytype'] == 'complex':
@@ -84,13 +83,13 @@ class fFort(object):
         elif 'dt' in obj['var'] and obj['var']['dt']:
             x = fDerivedType(self._lib, obj)
         elif 'array' in obj['var']:
-            array = obj['var']['array']['atype'] 
+            array = obj['var']['array']['atype']
             if array == 'explicit':
                 x = fExplicitArray(self._lib, obj)
             elif array == 'alloc' or array == 'pointer':
                 x = fDummyArray(self._lib, obj)
             elif array == 'assumed_shape':
-                x =  fAssumedShape(self._lib, obj)
+                x = fAssumedShape(self._lib, obj)
             elif array == 'assumed_size':
                 x = fAssumedSize(self._lib, obj)
         else:
@@ -99,10 +98,10 @@ class fFort(object):
         if x is not None:
             self.__dict__[x.name.lower()] = x
         else:
-            print("Skipping init "+obj['name'])
+            print("Skipping init " + obj['name'])
 
     def _init_param(self, obj):
-        if obj['param']['pytype']=='complex':
+        if obj['param']['pytype'] == 'complex':
             x = fParamComplex(self._lib, obj)
         elif obj['param']['array']:
             x = fParamArray(self._lib, obj)
@@ -116,13 +115,12 @@ class fFort(object):
         self.__dict__[x.name.lower()] = x
         
     def _init_dt_defs(self):
-
-        #Make empty dts first
+        # Make empty dts first
         for i in self._dt_defs.keys():
-                _dictAllDtDescs[i]=getEmptyDT(i)
+            _dictAllDtDescs[i] = getEmptyDT(i)
         
         # Re-do so we can handle recursive/nested ones
-        for key,value in self._dt_defs.items():
+        for key, value in self._dt_defs.items():
             _dictAllDtDescs[key] = _DTDesc(value)
 
     def __getattr__(self, name):
@@ -149,9 +147,9 @@ class fFort(object):
     def __setattr__(self, name, value):
         nl = name.lower()
         if name in self.__dict__ or nl in self.__dict__:
-            if hasattr(self.__dict__[nl],'set_mod'):
+            try:
                 self.__dict__[nl].set_mod(value)
-            else:
+            except AttributeError:
                 self.__dict__[name] = value
         else:
             if self._initialized:
@@ -171,4 +169,7 @@ class fFort(object):
         
     def __dir__(self):
         if self._initialized:
-            return list(self._mod_vars.keys())+list(self._param.keys())+list(self._funcs.keys())
+            l = list(self._mod_vars.keys()) 
+            l.extend(list(self._param.keys()))
+            l.extend(list(self._funcs.keys()))
+            return l
