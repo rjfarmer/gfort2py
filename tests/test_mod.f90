@@ -621,9 +621,15 @@ module tester
       end subroutine sub_int_opt
 
       logical function func_check_nested_dt() result(res10)
-         res10=.false.
+
          if(g_struct%a_int==10 .and. &
-            g_struct%f_struct%a_int==8) res10=.True.
+            g_struct%f_struct%a_int==8) then
+               res10=.True.
+         else
+            write(*,*) g_struct%a_int, g_struct%f_struct%a_int
+            res10=.false.
+         end if
+            
       end function func_check_nested_dt      
       
       subroutine sub_use_mod()

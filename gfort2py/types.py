@@ -1,6 +1,7 @@
 from __future__ import print_function
 import ctypes
 import functools
+import collections
 from .var import fVar
 from .cmplx import fComplex
 from .arrays import fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize, fAllocatableArray
@@ -84,7 +85,7 @@ class _DTDesc(object):
 
 
 
-class fDerivedType(fVar):
+class fDerivedType(fVar):    
     def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
@@ -99,10 +100,13 @@ class fDerivedType(fVar):
         self._ctype = self._desc
         self._ctype_desc = ctypes.POINTER(self._ctype)
 
+        self._elems=collections.OrderedDict()
+        for i,j,k in zip(self._dt_desc.args,self._dt_desc.names,self._dt_desc.ctypes):
+            self._elems[j]={'ctype':k,'args':i}
 
-        self._args = self._dt_desc.args
-        self._nameArgs = self._dt_desc.names
-        self._typeArgs = self._dt_desc.ctypes
+        # self._args = self._dt_desc.args
+        # self._nameArgs = self._dt_desc.names
+        # self._typeArgs = self._dt_desc.ctypes
 
         self.intent=None
         self.pointer=None
@@ -113,25 +117,31 @@ class fDerivedType(fVar):
         except NotInLib:
             self._ref = None
         
-        self._value = {}
+        self._value = collections.OrderedDict()
         
     def get(self,copy=True):
-        res={}
+        res=collections.OrderedDict()
         if copy:
-            for name,i in zip(self._nameArgs,self._args):
-                x=getattr(self._ref,name)
-                res[name]=i.ctype_to_py_f(x)
+            for k,v in self._elems.items():
+                x = getattr(self._ref,k)
+                res[k] = v['args'].ctype_to_py_f(x)
+            # for name,i in zip(self._nameArgs,self._args):
+                # x=getattr(self._ref,name)
+                # res[name]=i.ctype_to_py_f(x)
         else:
             if hasattr(self._ref,'contents'):
                 res =self._ref.contents
             else:
                 res = self._ref
         return res
+        
+    def _set_check(self, value):
+        if not all(i in self._elems.keys() for i in value.keys()):
+            raise ValueError("Dict contains elements not in struct")
             
     def set_mod(self,value):
         # Wants a dict
-        if not all(i in self._nameArgs for i in value.keys()):
-            raise ValueError("Dict contains elements not in struct")
+        self._set_check(value)
         
         for name in value:
             self.set_single(name,value[name])
@@ -154,8 +164,7 @@ class fDerivedType(fVar):
 
         # Wants a dict
         if isinstance(value,dict):
-            if not all(i in self._nameArgs for i in value.keys()):
-                raise ValueError("Dict contains elements not in struct")
+            self._set_check(value)
             
             for name in value.keys():
                 setattr(self._value,name,value[name])
@@ -179,10 +188,10 @@ class fDerivedType(fVar):
         """
         Pass in a ctype value returns the python representation of it
         """
-        res={}
-        for name,i in zip(self._nameArgs,self._args):
-            x=getattr(value,name)
-            res[name]=i.ctype_to_py_f(x)
+        res=collections.OrderedDict()            
+        for k,v in self._elems.items():
+            x = getattr(value,k)
+            res[k] = v['args'].ctype_to_py_f(x)
 
         return res
         
@@ -212,8 +221,8 @@ class fDerivedType(fVar):
         self.pointer=pointer
         if pointer and intent is not 'na':
             f=ctypes.POINTER(self._ctype_desc)
-        # elif intent=='na':
-            # f=ctypes.POINTER(self._ctype_desc)
+        elif intent=='na':
+            f=ctypes.POINTER(self._ctype_desc)
         else:
             f=self._ctype_desc
             
@@ -241,13 +250,13 @@ class fDerivedType(fVar):
         if name in self.__dict__:
             return self.__dict__[name]
 
-        if '_args' in self.__dict__ and '_nameArgs' in self.__dict__:
-            if name in self._nameArgs:
+        if '_elems' in self.__dict__:
+            if name in self._elems:
                 return self.__getitem__(name)
 
     def __setattr__(self, name, value):
-        if '_nameArgs' in self.__dict__:
-            if name in self._nameArgs:
+        if '_elems' in self.__dict__:
+            if name in self._elems:
                 self.set_single(name,value)
                 return
         
@@ -258,19 +267,24 @@ class fDerivedType(fVar):
         """
         Return a dict with the keys set suitable for this dt
         """
-        x={}
-        for i in self._nameArgs:
+        x=collections.OrderedDict()
+        for i in self._elems:
             x[i]=0
         return x
         
     def __getitem__(self,name=None):
         if name is None:
             raise KeyError
-        if name not in self._nameArgs:
+        if name not in self._elems:
             raise KeyError("Name not in struct")
         
         if self._value is None or len(self._value)==0:
-            return getattr(self._ref,name)
+            r = getattr(self._ref,name)
         else:
-            return getattr(self._value,name)
+            r = getattr(self._value,name)
         
+        if type(self._elems[name]['args']) is _DTDesc:
+            #TODO: FIX
+            return self._elems[name]['ctype']
+        else:
+            return self._elems[name]['args'].ctype_to_py(r)
