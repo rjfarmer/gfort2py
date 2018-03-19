@@ -186,7 +186,12 @@ class fDerivedType(fVar):
         res=collections.OrderedDict()            
         for k,v in self._elems.items():
             x = getattr(value,k)
-            res[k] = v['args'].ctype_to_py_f(x)
+            try:
+                res[k] = v['args'].ctype_to_py_f(x)
+            except AttributeError:
+                res[k] = v['args']
+            
+            
 
         return res
         
@@ -278,14 +283,13 @@ class fDerivedType(fVar):
         else:
             r = getattr(self._value,name)
         
-        return r
+        try:
+            return self._elems[name]['args'].ctype_to_py(r)
+        except AttributeError:
+            return r
         
-        # if type(self._elems[name]['args']) is _DTDesc:
-            # x = {}
-            # print("aa")
-            # return self._elems[name]['args']
-        # else:
-            # return self._elems[name]['args'].ctype_to_py(r)
+        return r
+
             
     def keys(self):
         return self._elems.keys()
