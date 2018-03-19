@@ -153,8 +153,8 @@ class fFort(object):
             if self._initialized:
                 if '_mod_vars' in self.__dict__:
                     if nl in self._mod_vars:
-                            self._init_var(self._mod_vars[nl])
-                            self.__dict__[nl].set_mod(value)
+                        self._init_var(self._mod_vars[nl])
+                        self.__dict__[nl].set_mod(value)
                     return
                 if '_param' in self.__dict__:
                     if nl in self._param:

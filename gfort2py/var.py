@@ -34,10 +34,10 @@ class fVar(object):
         self._fortran = True
         
         # True if its a function argument
-        self._func_arg=False
+        self._func_arg = False
         
         #True if struct member
-        self._dt_arg=False
+        self._dt_arg = False
         
         #Store the ref to the lib object
         try:   

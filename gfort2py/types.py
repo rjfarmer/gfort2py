@@ -21,6 +21,7 @@ def getEmptyDT(name):
     return emptyDT
         
 class _DTDesc(object):
+    _init = False
     def __init__(self,dt_def):
         self._lib = None
         self.dt_def = dt_def['dt_def']['arg']
@@ -82,14 +83,15 @@ class _DTDesc(object):
                 raise ValueError("Unknown array: "+str(obj))
         else:
            return fVar(self._lib, obj)
-
-
-
+            
 class fDerivedType(fVar):    
     def __init__(self, lib, obj):
-        self.__dict__.update(obj)
+        
         self._lib = lib
+
+        self.__dict__.update(obj)
         self._dt_type = self.var['dt']['name'].lower().replace("'","")
+
 
         if _dictAllDtDescs[self._dt_type].empty:
             _dictAllDtDescs[self._dt_type] = _DTDesc(_dictDTDefs[self._dt_type])
@@ -103,10 +105,6 @@ class fDerivedType(fVar):
         self._elems=collections.OrderedDict()
         for i,j,k in zip(self._dt_desc.args,self._dt_desc.names,self._dt_desc.ctypes):
             self._elems[j]={'ctype':k,'args':i}
-
-        # self._args = self._dt_desc.args
-        # self._nameArgs = self._dt_desc.names
-        # self._typeArgs = self._dt_desc.ctypes
 
         self.intent=None
         self.pointer=None
@@ -125,9 +123,6 @@ class fDerivedType(fVar):
             for k,v in self._elems.items():
                 x = getattr(self._ref,k)
                 res[k] = v['args'].ctype_to_py_f(x)
-            # for name,i in zip(self._nameArgs,self._args):
-                # x=getattr(self._ref,name)
-                # res[name]=i.ctype_to_py_f(x)
         else:
             if hasattr(self._ref,'contents'):
                 res =self._ref.contents
@@ -149,7 +144,7 @@ class fDerivedType(fVar):
     def set_single(self,name,value):
         self._setSingle(self._ref,name,value)
         
-    def _setSingle(self,v,name,value):
+    def _setSingle(self,v,name,value):       
         if isinstance(value,dict):
             for i in value:
                 self._setSingle(getattr(v,name),i,value[i])
@@ -283,8 +278,14 @@ class fDerivedType(fVar):
         else:
             r = getattr(self._value,name)
         
-        if type(self._elems[name]['args']) is _DTDesc:
-            #TODO: FIX
-            return self._elems[name]['ctype']
-        else:
-            return self._elems[name]['args'].ctype_to_py(r)
+        return r
+        
+        # if type(self._elems[name]['args']) is _DTDesc:
+            # x = {}
+            # print("aa")
+            # return self._elems[name]['args']
+        # else:
+            # return self._elems[name]['args'].ctype_to_py(r)
+            
+    def keys(self):
+        return self._elems.keys()
