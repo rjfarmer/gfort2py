@@ -1,5 +1,6 @@
 from __future__ import print_function
 import ctypes
+import sys
 from .var import fVar, fParam
 import numpy as np
 from .utils import *
@@ -68,7 +69,14 @@ _listFAllocArrays=[None,_fAllocArray1D,_fAllocArray2D,_fAllocArray3D,
                     _fAllocArray4D,_fAllocArray5D,_fAllocArray6D,
                     _fAllocArray7D] 
 
-              
+if sys.byteorder is 'little':
+    _byte_order=">"
+else:
+    _byte_order="<"
+    
+class BadFortranArray(Exception):
+    pass
+    
 
 class fExplicitArray(fVar):
 
@@ -209,6 +217,14 @@ class fDummyArray(fVar):
     _BT_HOLLERITH = _BT_PROCEDURE + 1
     _BT_VOID = _BT_HOLLERITH + 1
     _BT_ASSUMED = _BT_VOID + 1
+    
+    _BT_TYPESPEC = {_BT_UNKNOWN:'v',_BT_INTEGER:'i',_BT_LOGICAL:'b',
+                    _BT_REAL:'f',_BT_COMPLEX:'c',_BT_DERIVED:'v',
+                    _BT_CHARACTER:'v',_BT_CLASS:'v',_BT_PROCEDURE:'v',
+                    _BT_HOLLERITH:'v',_BT_VOID:'v',_BT_ASSUMED:'v'}
+                    
+    _PY_TO_BT = {'int':_BT_INTEGER,'float':_BT_REAL,'bool':_BT_LOGICAL,
+                'str':_BT_CHARACTER,'bytes':_BT_CHARACTER}
 
 
     def __init__(self, lib, obj):
@@ -232,7 +248,6 @@ class fDummyArray(fVar):
         self._ctype = self._desc
         self._ctype_desc = ctypes.POINTER(self._desc)
         self.npdtype=self.pytype+str(8*ctypes.sizeof(self._ctype_single))
-        
 
     def _setup_desc(self):
         return _listFAllocArrays[self.ndim]
@@ -252,8 +267,8 @@ class fDummyArray(fVar):
         self._value = value.astype(self.npdtype)
         
         #Did we make a copy?
-        if self._id(self._value)==self._id(value):
-            remove_ownership(value)
+        # if self._id(self._value)==self._id(value):
+            # remove_ownership(value)
         remove_ownership(self._value)
         
         p = self._get_pointer()
@@ -463,6 +478,42 @@ class fDummyArray(fVar):
         
     def _id(self,x):
         return x.ctypes.data
+        
+    def _create_dtype(self,ndim,itemsize,ftype):
+        ftype=self._get_BT(ftype)
+        d=ndim
+        d=d|(ftype<<self._GFC_DTYPE_TYPE_SHIFT)
+        d=d|int(itemsize)<<self._GFC_DTYPE_SIZE_SHIFT
+        return d
+    
+    def _get_BT(self,ftype):
+        if 'int' in ftype:
+            BT=self._BT_INTEGER
+        elif 'float' in ftype:
+            BT=self._BT_REAL
+        elif 'bool' in ftype:
+            BT=self._BT_LOGICAL
+        elif 'str' in ftype or 'bytes' in ftype:
+            BT=self._BT_CHARACTER
+        else:
+            raise ValueError("Cant match dtype, got "+ftype)
+        return BT
+        
+    def _BT_to_typestr(self,BT):
+        try:
+            res = self._BT_TYPESPEC[BT]
+        except KeyError:
+            raise BadFortranArray("Bad BT value "+str(BT))
+            
+        return _byte_order+res
+    
+
+    def _split_dtype(self,dtype):
+        itemsize = dtype >> self._GFC_DTYPE_SIZE_SHIFT
+        BT = (dtype >> self._GFC_DTYPE_TYPE_SHIFT ) & (self._GFC_DTYPE_RANK_MASK)
+        ndim = dtype & self._GFC_DTYPE_RANK_MASK
+        
+        return ndim,BT,int(itemsize)
    
 class fAssumedShape(fDummyArray):
     def _get_pointer(self):

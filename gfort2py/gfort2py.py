@@ -130,15 +130,15 @@ class fFort(object):
                 if '_mod_vars' in self.__dict__:
                     if nl in self._mod_vars:
                         self._init_var(self._mod_vars[nl])
-                        return self.__dict__[name]
+                        return self.__dict__[nl]
                 if '_param' in self.__dict__:
                     if nl in self._param:
                         self._init_param(self._param[nl])
-                        return self.__dict__[name]
+                        return self.__dict__[nl]
                 if '_funcs' in self.__dict__:
                     if nl in self._funcs:
                         self._init_func(self._funcs[nl])
-                        return self.__dict__[name]
+                        return self.__dict__[nl]
 
         raise AttributeError("No variable " + name)
 

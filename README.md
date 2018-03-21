@@ -20,10 +20,20 @@ or install via pip
 pip install --user gfort2py
 ````
 
+## Why us this over other fortran to python translations?
+
+gfort2py use gfortran .mod files to translate your fortran code's ABI to python 
+compatible types using python's ctype library. The advantage here is that it can
+(in principle) handle anything the compiler can compile. gfort2py is almost entirely
+python and there are no changes needed to your fortran source code (some changes in the build
+process may be needed, as gfort2py needs your code compiled as a shared library). Disadvantage
+means we are tied to gfortran and can't support other compilers and may break when
+gfortran updates its .mod file format, though this happens rarely.
+
 
 ## Using
 ### Fortran side
-Compile code with -fPIC and -shared as options, then link togthter as a shared lib at the end
+Compile code with -fPIC and -shared as options, then link togethter as a shared lib at the end
 
 ````bash
 gfortran -fPIC -shared -c file.f90
@@ -33,7 +43,7 @@ If your code comes as  program that does everything, then just turn the program 
 then create a new file with your program that uses the module and calls the function you just made.
 
 If the shared library needs other
-shared libraries you will need to set LD_LIBRARY_PATH enviroment variable, and its also recommended is to run chrpath on the 
+shared libraries you will need to set LD_LIBRARY_PATH environment variable, and its also recommended is to run chrpath on the 
 shared libraries so you can access them from anywhere.
 
 ### Python side
@@ -55,35 +65,8 @@ x now contains all variables, parameters and functions from the module (tab comp
 y = x.func_name(a,b,c)
 ````
 
-Will call the fortran function with varaibles a,b,c and will return the result in y,
+Will call the fortran function with variables a,b,c and will return the result in y,
 subroutines will return a dict (possibly empty) with any intent out, inout or undefined intent variables.
-
-
-Most of the time the function will copy the intent out variables before returning,
-(arrays sometimes copy) and derived types are copied into a dict. To stop this from
-happening (say with very large arrays/derived types)
-
-````python
-x.func_name.saveArgs(True)
-y = x.func_name(a,b,c)
-````
-
-Now the return value in y is a dict of only the intent out names. The data
-is stored in:
-
-````python
-x.func_name.args_out
-````
-
-Which is a dict containg ctype data, derived types can be accessed 
-(lets say variable *a* as was derived type with components (x,y)) using
-a decimal point followed by the component name.
-
-````python
-z=x.func_name.args_out`["a"]`
-z.x
-z.y
-````
 
 Optional arguments are handled by not passing anything for that item (python side), but
 they must be at the end of the argument list (on the fortran side)
@@ -108,7 +91,7 @@ First will print the value in some_var while get() will return the value
 
 ### Arrays
 
-Remember that fortran by defaulthas 1-based array numbering while numpy
+Remember that fortran by default has 1-based array numbering while numpy
 is 0-based.
 
 
@@ -143,6 +126,7 @@ To get a dict back, or:
 
 ````python
 x.my_dt.y.a
+x.my_dt['a']
 ````
 
 To get a single value.
@@ -175,7 +159,7 @@ To run unit tests
 - [x] Nested derived types
 - [ ] Arrays of derived types
 - [ ] Functions inside derived types
-- [ ] Arrays with dimesnion (:) (pointer, allocatable) insider derived types (it doesnt break if their there, but you cant access them easily)
+- [ ] Arrays with dimension (:) (pointer, allocatable) insider derived types (it doesn't break if their there, but you cant access them easily)
 - [ ] Classes
 - [ ] Abstract interfaces
 - [ ] Common blocks

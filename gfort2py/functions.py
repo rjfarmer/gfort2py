@@ -188,13 +188,11 @@ class fFunc(fVar):
             return self.returnPytype()(res)
             
     def saveArgs(self,v=False):
-        """ Instead of copying arguments back we save them
+        """ 
+        Instead of copying arguments back we save them
         inside the func object so we dont need to copy them
         """
-        if v:
-            self.save_args=True
-        else:
-            self.save_args=False
+        self.save_args=False
             
     def returnPytype(self):
         if '_cached_pytype' not in self.__dict__:

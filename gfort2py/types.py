@@ -191,8 +191,6 @@ class fDerivedType(fVar):
             except AttributeError:
                 res[k] = v['args']
             
-            
-
         return res
         
     def ctype_to_py_f(self, value):
