@@ -20,7 +20,7 @@ or install via pip
 pip install --user gfort2py
 ````
 
-## Why us this over other fortran to python translations?
+## Why use this over other fortran to python translators?
 
 gfort2py use gfortran .mod files to translate your fortran code's ABI to python 
 compatible types using python's ctype library. The advantage here is that it can
