@@ -32,6 +32,7 @@ class _DTDesc(object):
         self.args = []
         for i in self.dt_def:
             self.args.append(self._init_var(i))
+            self.args[-1]._dt_arg = True
             
         self.ctypes = []
         for i in self.args:
@@ -149,7 +150,10 @@ class fDerivedType(fVar):
             for i in value:
                 self._setSingle(getattr(v,name),i,value[i])
         else:
-            setattr(v,name,value)
+            if self._elems[name]['args']._array:
+                setattr(v,name,self._elems[name]['args'].py_to_ctype_p(value))
+            else:
+                setattr(v,name,self._elems[name]['args'].py_to_ctype(value))
 
     def py_to_ctype(self, value):
         """
@@ -236,7 +240,7 @@ class fDerivedType(fVar):
         return str(self.name) + " <" + str(self._dt_def['name']) + ">"
 
     def __dir__(self):
-        return self._nameArgs
+        return self._elems.keys()
 
     def __str__(self):
         return self.name+" <"+self._dt_type+" dt>"

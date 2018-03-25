@@ -83,6 +83,7 @@ class fExplicitArray(fVar):
     def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
+        self._array = True
         
         if 'array' in self.var:
           self.__dict__.update(obj['var'])
@@ -112,6 +113,22 @@ class fExplicitArray(fVar):
         Pass in a ctype value returns the python representation of it
         """
         return self._get_var_by_iter(value, self._array_size())
+        
+    def py_to_ctype(self, value):
+        """
+        Pass in a python value returns the ctype representation of it
+        
+        """        
+        self._data = np.asfortranarray(value.T.astype(self._dtype))
+
+        # if '_dt_arg' in self.__dict__:
+            # if self._dt_arg:
+                # ct = getattr(ctypes, self.ctype)
+                # addr = self._data.ctypes.get_data()
+                # t = ctypes.POINTER(ct)
+                # return ctypes.cast(addr,t)
+
+        return self._data
         
     def py_to_ctype_f(self, value):
         """
@@ -143,6 +160,10 @@ class fExplicitArray(fVar):
         if '_cached_ctype' not in self.__dict__:
             self._cached_ctype = getattr(ctypes, self.ctype)
         
+        if '_dt_arg' in self.__dict__:
+            if self._dt_arg:
+                self._cached_ctype = ctypes.POINTER(getattr(ctypes, self.ctype))
+        
         return self._cached_ctype
 
     def ctype_def_func(self,pointer=False,intent=''):
@@ -155,9 +176,10 @@ class fExplicitArray(fVar):
         arg list, like a string len
         """
         if pointer:
-            raise ValueError("Cant have explicit array as a pointer")
+            raise ValueError("Can't have explicit array as a pointer")
         
         x=np.ctypeslib.ndpointer(dtype=self._dtype,ndim=self.ndims,
+                                shape=tuple(self._make_array_shape()),
                                 flags='F_CONTIGUOUS')
         y=None
         return x,y        
@@ -191,10 +213,10 @@ class fExplicitArray(fVar):
        
     def py_to_ctype_p(self,value):
         """
-        The ctype represnation suitable for function arguments wanting a pointer
+        The ctype representation suitable for function arguments wanting a pointer
         """
+        return np.ctypeslib.as_ctypes(value)
 
-        raise AttributeError("Cant have explicit array as a pointer")
 
 
 class fDummyArray(fVar):
@@ -230,6 +252,7 @@ class fDummyArray(fVar):
     def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
+        self._array = True
 
         if 'array' in self.var:
           self.__dict__.update(obj['var'])
@@ -305,7 +328,7 @@ class fDummyArray(fVar):
         """
         Get a module level variable
         """
-        if self._func_arg:
+        if self._dt_arg:
             return self._value
            
         p = self._get_pointer()
@@ -565,8 +588,43 @@ class fAssumedShape(fDummyArray):
         return self.py_to_ctype(value),None    
     
 class fAssumedSize(fExplicitArray):
-    pass
     
+    
+    def ctype_def_func(self,pointer=False,intent=''):
+        """
+        The ctype type of a value suitable for use as an argument of a function
+
+        May just call ctype_def
+        
+        Second return value is anythng that needs to go at the end of the
+        arg list, like a string len
+        """
+        
+        x=ctypes.POINTER(getattr(ctypes, self.ctype))
+        y=None
+        return x,y  
+    
+    def _make_array_shape(self,bounds=None):
+        
+        return [99]*self.ndims
+    
+    
+    def py_to_ctype_p(self,value):
+        """
+        The ctype representation suitable for function arguments wanting a pointer
+        """
+        self._data = value
+        ct = getattr(ctypes, self.ctype)
+        addr = self._data.ctypes.get_data()
+        t = ctypes.POINTER(ct)
+        return ctypes.cast(addr,t)
+        
+    def py_to_ctype_f(self,value):
+        """
+        The ctype representation suitable for function arguments wanting a pointer
+        """
+        return self.py_to_ctype_p(value),None
+
 class fAllocatableArray(fDummyArray):
     def py_to_ctype(self, value):
         """
@@ -603,6 +661,8 @@ class fAllocatableArray(fDummyArray):
         p=ctypes.POINTER(self._ctype_single)
         res=ctypes.cast(value.base_addr,p)
         return np.ctypeslib.as_array(res,shape=shape)
+        
+
     
 class fParamArray(fParam):
     def get(self):

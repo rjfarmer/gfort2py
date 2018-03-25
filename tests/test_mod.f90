@@ -647,4 +647,42 @@ module tester
          x%alloc_arr=99.d0
       
       end subroutine sub_dt_alloc_ar
+      
+      
+      logical function func_set_f_struct()
+         f_struct%a_int=5
+         f_struct%a_int_lp=6_lp         
+         f_struct%a_real = 7.0
+         f_struct%a_real_dp=8.0_dp
+         f_struct%b_int_exp_1d=(/9,10,11,12,13/)
+         
+         if (allocated(f_struct%c_int_alloc_1d)) deallocate(f_struct%c_int_alloc_1d)
+         allocate(f_struct%c_int_alloc_1d(1:10))
+         f_struct%c_int_alloc_1d=(/1,2,3,4,5,6,7,8,9,10/)
+
+         e_int_target_1d = (/9,10,11,12,13/)
+         nullify(f_struct%d_int_point_1d)
+         f_struct%d_int_point_1d => e_int_target_1d
+      
+      end function func_set_f_struct
+      
+      logical function func_check_f_struct()
+      
+         write(*,*)         f_struct%a_int,loc(f_struct%a_int)
+         write(*,*)         f_struct%a_int_lp  ,loc(f_struct%a_int_lp)      
+         write(*,*)         f_struct%a_real,loc(f_struct%a_real)
+         write(*,*)         f_struct%a_real_dp,loc(f_struct%a_real_dp)
+         write(*,*)         f_struct%b_int_exp_1d,loc(f_struct%b_int_exp_1d)
+         
+         if (allocated(f_struct%c_int_alloc_1d))then
+            write(*,*)      f_struct%c_int_alloc_1d,loc(f_struct%c_int_alloc_1d)
+         end if
+
+         if(associated(f_struct%d_int_point_1d))then
+            write(*,*)      f_struct%d_int_point_1d,loc(f_struct%d_int_point_1d)
+            write(*,*)      e_int_target_1d,loc(e_int_target_1d)
+         end if        
+
+      end function func_check_f_struct
+      
 end module tester

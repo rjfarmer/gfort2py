@@ -952,10 +952,25 @@ class TestStringMethods(unittest.TestCase):
 		y=x.func_logical_multi(1.0,2.0,xarr,3.0,4.0)
 		self.assertEqual(y,True)
 
-	# def test_sub_dt_alloc_ar(self):
-		# y={}
-		# z = x.sub_dt_alloc_ar(y)
-		# print(z)
+	def test_func_set_f_struct(self):
+		y = x.func_set_f_struct()
+		self.assertEqual(y,True)
+		
+		self.assertEqual(x.f_struct.a_int,5)
+		self.assertEqual(x.f_struct.a_int_lp,6)
+		self.assertEqual(x.f_struct.a_real,7.0)
+		self.assertEqual(x.f_struct.a_real_dp,8.0)		
+		
+		v=np.array([9,10,11,12,13],dtype='int32')
+		np_test.assert_array_equal(x.f_struct.b_int_exp_1d,v)
+		
+		# v=np.array([1,2,3,4,5,6,7,8,9,10],dtype='int32')
+		# np_test.assert_array_equal(x.f_struct.c_int_alloc_1d,v)
+		
+		# v=np.array([9,10,11,12,13],dtype='int32')
+		# np_test.assert_array_equal(x.f_struct.d_int_point_1d)		
+		
+		
 
 if __name__ == '__main__':
 	unittest.main() 
