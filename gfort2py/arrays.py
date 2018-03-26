@@ -112,7 +112,10 @@ class fExplicitArray(fVar):
         """
         Pass in a ctype value returns the python representation of it
         """
-        return self._get_var_by_iter(value, self._array_size())
+        v = np.array(self._get_var_by_iter(value, size=self._array_size()))
+        arr = v.reshape(self._make_array_shape())
+        
+        return arr
         
     def py_to_ctype(self, value):
         """
