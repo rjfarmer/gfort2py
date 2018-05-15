@@ -6,7 +6,7 @@
 
 
 # gfort2py
-Library to allow calling fortran code from python. Requires gfortran>=5.3.1
+Library to allow calling fortran code from python. Requires gfortran>=5.3.1 && gfortran < 8.0
 
 Current stable version is 1.0.12
 
