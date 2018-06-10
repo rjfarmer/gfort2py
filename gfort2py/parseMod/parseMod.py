@@ -43,6 +43,8 @@ def parseInput(x, filename):
     
     if res['version'] == 14:
             from . import parseMod14 as p
+    elif res['version'] == 15:
+            raise VersionError("gfortran 8 support comming soon")
     else:
             raise VersionError("Only supports mod version 14")
     
