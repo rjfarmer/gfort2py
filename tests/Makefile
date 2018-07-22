@@ -2,7 +2,7 @@
 FC = gfortran
 
 ifdef TRAVIS
-	FC = gfortran-6
+	FC = $(TRAVIS_GFORTRAN)
 endif
 
 OPTIONS=-fvar-tracking-assignments -ggdb -fdump-tree-all -fPIC -shared
