@@ -80,8 +80,8 @@ matrix:
         env:
           - TRAVIS_GFORTRAN="gfortran-8"
 install: 
-  - pip install --user -r requirements.txt
-  - pip install --user -e .[dev]
+  - pip install -r requirements.txt
+  - pip install -e .[dev]
   - python setup.py install
 # command to run tests
 script: 
