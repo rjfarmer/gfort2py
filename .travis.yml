@@ -1,60 +1,93 @@
 language: python
-dist: trusty
-python:
-  - "2.7"
-  - "3.3"
-  - "3.4"
-  - "3.5"
-  - "3.6"
-  - "3.7-dev
-  - "nightly" # currently points to 3.7-dev
 matrix:
   include:
-# cython is currently broken with these
-  allow_failures:
-    - python: "3.7-dev"
-    - python: "nightly"
-# command to install dependencies
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - gfortran-6
-            - gzip
-      env:
-        - TRAVIS_GFORTRAN="gfortran-6"
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - gfortran-7
-            - gzip
-      env:
-        - TRAVIS_GFORTRAN="gfortran-7"
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - gfortran-8
-            - gzip
-      env:
-        - TRAVIS_GFORTRAN="gfortran-8"
+  # command to install dependencies
+      - os: linux
+        python: 3.6
+        addons:
+          apt:
+            sources:
+              - ubuntu-toolchain-r-test
+            packages:
+              - gfortran-6
+              - gzip
+        env:
+          - TRAVIS_GFORTRAN="gfortran-6"
+      - os: linux
+        python: 2.7
+        addons:
+          apt:
+            sources:
+              - ubuntu-toolchain-r-test
+            packages:
+              - gfortran-7
+              - gzip
+        env:
+          - TRAVIS_GFORTRAN="gfortran-7"
+      - os: linux
+        python: 3.3
+        addons:
+          apt:
+            sources:
+              - ubuntu-toolchain-r-test
+            packages:
+              - gfortran-7
+              - gzip
+        env:
+          - TRAVIS_GFORTRAN="gfortran-7"
+      - os: linux
+        python: 3.6
+        addons:
+          apt:
+            sources:
+              - ubuntu-toolchain-r-test
+            packages:
+              - gfortran-7
+              - gzip
+        env:
+          - TRAVIS_GFORTRAN="gfortran-7"
+      - os: linux
+        python: 2.7
+        addons:
+          apt:
+            sources:
+              - ubuntu-toolchain-r-test
+            packages:
+              - gfortran-8
+              - gzip
+        env:
+          - TRAVIS_GFORTRAN="gfortran-8"
+      - os: linux
+        python: 3.3
+        addons:
+          apt:
+            sources:
+              - ubuntu-toolchain-r-test
+            packages:
+              - gfortran-8
+              - gzip
+        env:
+          - TRAVIS_GFORTRAN="gfortran-8"
+      - os: linux
+        python: 3.6
+        addons:
+          apt:
+            sources:
+              - ubuntu-toolchain-r-test
+            packages:
+              - gfortran-8
+              - gzip
+        env:
+          - TRAVIS_GFORTRAN="gfortran-8"
 install: 
-  - pip install -r requirements.txt
-  - pip install -e .[dev]
+  - pip install --user -r requirements.txt
+  - pip install --user -e .[dev]
   - python setup.py install
 before_install:
   - eval "${TRAVIS_GFORTRAN}"
 # command to run tests
 script: 
   - coverage run --source=gfort2py setup.py test
-sudo: required
 env: 
   TRAVIS=1
 after_success:
