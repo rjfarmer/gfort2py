@@ -85,13 +85,13 @@ class fFort(object):
         elif 'array' in obj['var']:
             array = obj['var']['array']['atype']
             if array == 'explicit':
-                x = fExplicitArray(self._lib, obj)
+                x = fExplicitArray(self._lib, obj,self._mod_data['version'])
             elif array == 'alloc' or array == 'pointer':
-                x = fDummyArray(self._lib, obj)
+                x = fDummyArray(self._lib, obj,self._mod_data['version'])
             elif array == 'assumed_shape':
-                x = fAssumedShape(self._lib, obj)
+                x = fAssumedShape(self._lib, obj,self._mod_data['version'])
             elif array == 'assumed_size':
-                x = fAssumedSize(self._lib, obj)
+                x = fAssumedSize(self._lib, obj,self._mod_data['version'])
         else:
             x = fVar(self._lib, obj)
 

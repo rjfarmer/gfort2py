@@ -9,6 +9,7 @@ from .errors import *
 
 _index_t = ctypes.c_int64
 _size_t = ctypes.c_int64
+_default_mod = 14
 
 # Pre generate alloc array descriptors
 class _bounds(ctypes.Structure):
@@ -26,9 +27,8 @@ def _make_fAlloc(ndims):
     return _fAllocArray
     
 
-
 # None is in there so we can do 1 based indexing
-_listFAllocArrays=[None] + [_make_fAlloc(i) for i in range(1,8)] 
+_listFAllocArrays=[None] + [_make_fAlloc(i) for i in range(1,16)] 
 
 
 if sys.byteorder is 'little':
@@ -42,7 +42,7 @@ class BadFortranArray(Exception):
 
 class fExplicitArray(fVar):
 
-    def __init__(self, lib, obj):
+    def __init__(self, lib, obj, mod_version=_default_mod):
         self.__dict__.update(obj)
         self._lib = lib
         self._array = True
@@ -190,13 +190,13 @@ class fExplicitArray(fVar):
 
 
 class fDummyArray(fVar):
-    _GFC_MAX_DIMENSIONS = 7
-
+    _GFC_MAX_DIMENSIONS = -1
+    
     _GFC_DTYPE_RANK_MASK = 0x07
     _GFC_DTYPE_TYPE_SHIFT = 3
     _GFC_DTYPE_TYPE_MASK = 0x38
     _GFC_DTYPE_SIZE_SHIFT = 6
-
+    
     _BT_UNKNOWN = 0
     _BT_INTEGER = _BT_UNKNOWN + 1
     _BT_LOGICAL = _BT_INTEGER + 1
@@ -211,18 +211,18 @@ class fDummyArray(fVar):
     _BT_ASSUMED = _BT_VOID + 1
     
     _BT_TYPESPEC = {_BT_UNKNOWN:'v',_BT_INTEGER:'i',_BT_LOGICAL:'b',
-                    _BT_REAL:'f',_BT_COMPLEX:'c',_BT_DERIVED:'v',
-                    _BT_CHARACTER:'v',_BT_CLASS:'v',_BT_PROCEDURE:'v',
-                    _BT_HOLLERITH:'v',_BT_VOID:'v',_BT_ASSUMED:'v'}
-                    
+                _BT_REAL:'f',_BT_COMPLEX:'c',_BT_DERIVED:'v',
+                _BT_CHARACTER:'v',_BT_CLASS:'v',_BT_PROCEDURE:'v',
+                _BT_HOLLERITH:'v',_BT_VOID:'v',_BT_ASSUMED:'v'}
+                
     _PY_TO_BT = {'int':_BT_INTEGER,'float':_BT_REAL,'bool':_BT_LOGICAL,
-                'str':_BT_CHARACTER,'bytes':_BT_CHARACTER}
+            'str':_BT_CHARACTER,'bytes':_BT_CHARACTER}
 
-
-    def __init__(self, lib, obj):
+    def __init__(self, lib, obj,mod_version=_default_mod):
         self.__dict__.update(obj)
         self._lib = lib
         self._array = True
+        self._setMaxArraySize(mod_version)
 
         if 'array' in self.var:
           self.__dict__.update(obj['var'])
@@ -507,6 +507,14 @@ class fDummyArray(fVar):
         ndim = dtype & self._GFC_DTYPE_RANK_MASK
         
         return ndim,BT,int(itemsize)
+        
+    def _setMaxArraySize(self,mod_version):
+        if mod_version==14:
+            self._GFC_MAX_DIMENSIONS=7
+        elif mod_verison==15:
+            self._GFC_MAX_DIMENSIONS = 15
+        else:
+            raise ValueError("Bad mod version "+str(mod_version))
    
 class fAssumedShape(fDummyArray):
     def _get_pointer(self):
