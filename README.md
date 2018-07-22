@@ -6,9 +6,9 @@
 
 
 # gfort2py
-Library to allow calling fortran code from python. Requires gfortran>=5.3.1
+Library to allow calling fortran code from python. Requires gfortran>=5.3.1 && gfortran < 8.0
 
-Current stable version is 1.0.11
+Current stable version is 1.0.12
 
 ## Build
 ````bash
@@ -20,7 +20,7 @@ or install via pip
 pip install --user gfort2py
 ````
 
-## Why us this over other fortran to python translations?
+## Why use this over other fortran to python translators?
 
 gfort2py use gfortran .mod files to translate your fortran code's ABI to python 
 compatible types using python's ctype library. The advantage here is that it can
