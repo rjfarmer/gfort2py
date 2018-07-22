@@ -130,7 +130,6 @@ module tester
       real(dp), target, dimension(5,5,5,5) :: e_real_dp_target_4d
       real(dp), target, dimension(5,5,5,5,5) :: e_real_dp_target_5d
       
-      
       TYPE s_struct_basic
          integer           :: a_int
          integer(lp)       :: a_int_lp
@@ -138,6 +137,7 @@ module tester
          real(dp)          :: a_real_dp
          character(len=10) :: a_str    
          integer, dimension(5) :: b_int_exp_1d 
+         real(dp), dimension(5) :: b_real_dp_exp_1d 
          integer, allocatable, dimension(:) :: c_int_alloc_1d
          integer, pointer, dimension(:) :: d_int_point_1d => null()
       END TYPE s_struct_basic
@@ -161,6 +161,7 @@ module tester
       
       ! From second module
       TYPE(s_simple2) :: f_struct_simple2
+      TYPE(s_struct_AA) :: f_struct_AA
       
       TYPE s_recursive
          integer           :: a_int
@@ -178,6 +179,13 @@ module tester
       end TYPE s_recursive_1
       
       TYPE s_alloc_array
+         integer           :: a_int
+         real              :: a_real
+         real(dp)          :: a_real_dp
+!         integer, dimension(0:15) :: bb
+         character(len=20) :: a_str   
+         integer,dimension(:,:,:),allocatable :: arr
+         integer           :: a_int2
          real(dp), allocatable, dimension(:,:) :: alloc_arr
       END TYPE s_alloc_array
       
@@ -684,5 +692,21 @@ module tester
          end if        
 
       end function func_check_f_struct
+      
+      
+      subroutine sub_s_struct_inout(s)
+         type(s_struct_basic), intent(inout) :: s
+      
+         s% a_int = 99
+         s% a_int_lp = 99_lp
+         s% a_real = 99.0
+         s% a_real_dp = 99.0_dp
+         s% a_str ='1234567890'
+         s% b_int_exp_1d = (/1,2,3,4,5/)
+         s% b_real_dp_exp_1d = (/1.0,2.0,3.0,4.0,5.0/)
+         if (.not. allocated(s% c_int_alloc_1d)) allocate(s% c_int_alloc_1d(1:10))
+         s% c_int_alloc_1d = 99
+         
+      end subroutine sub_s_struct_inout
       
 end module tester

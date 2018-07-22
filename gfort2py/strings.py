@@ -11,6 +11,7 @@ class fStr(fVar):
         self._ctype = self.ctype_def()
        # self._ctype_f = self.ctype_def_func()
         self._pytype = str
+        self._dt_arg = False
         
         self.char_len = self.var['length']
 
@@ -45,7 +46,10 @@ class fStr(fVar):
         return self._get_var_by_iter(value, self.char_len)
         
     def ctype_def(self):
-        return ctypes.c_char
+        if self._dt_arg:
+            return ctypes.c_char_p
+        else:
+            return ctypes.c_char
 
     def ctype_def_func(self,pointer=False,intent=''):
         """

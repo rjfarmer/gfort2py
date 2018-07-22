@@ -195,7 +195,7 @@ class fDerivedType(fVar):
             except AttributeError:
                 res[k] = v['args']
             except ValueError:
-                res[k] = v['args'].ctype_to_py(x)  
+                res[k] = v['args'].ctype_to_py(x) 
             
         return res
         

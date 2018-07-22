@@ -921,7 +921,7 @@ class TestStringMethods(unittest.TestCase):
 		x.f_struct_simple2.x=99
 		y=x.sub_use_mod()
 		self.assertEqual(x.test2_x.get(),1)
-		self.assertEqual(x.f_struct_simple2.get(),{'x':5,'y':6})
+		self.assertEqual(x.f_struct_simple2.get(),{'x':5,'y':6,'z':0})
 	
 	def test_nested_dts(self):
 		x.g_struct.a_int=10
@@ -970,10 +970,10 @@ class TestStringMethods(unittest.TestCase):
 		# v=np.array([9,10,11,12,13],dtype='int32')
 		# np_test.assert_array_equal(x.f_struct.d_int_point_1d)		
 		
-		
-
 if __name__ == '__main__':
 	unittest.main() 
+
+	# pahole -aAdEIpr tester.so |& tee tester.pahole	
 
 
 

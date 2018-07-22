@@ -16,58 +16,20 @@ class _bounds(ctypes.Structure):
               ("lbound",_index_t),
               ("ubound",_index_t)]
 
-class _fAllocArray1D(ctypes.Structure):
-    _fields_=[('base_addr',ctypes.c_void_p), 
-              ('offset',_size_t), 
-              ('dtype',_index_t),
-              ('dims',_bounds*1)
-              ]
+def _make_fAlloc(ndims):
+    class _fAllocArray(ctypes.Structure):
+        _fields_=[('base_addr',ctypes.c_void_p), 
+                ('offset',_size_t), 
+                ('dtype',_index_t),
+                ('dims',_bounds*ndims)
+                ]
+    return _fAllocArray
+    
 
-class _fAllocArray2D(ctypes.Structure):
-    _fields_=[('base_addr',ctypes.c_void_p), 
-              ('offset',_size_t), 
-              ('dtype',_index_t),
-              ('dims',_bounds*2)
-              ]
-              
-class _fAllocArray3D(ctypes.Structure):
-    _fields_=[('base_addr',ctypes.c_void_p), 
-              ('offset',_size_t), 
-              ('dtype',_index_t),
-              ('dims',_bounds*3)
-              ]
-              
-class _fAllocArray4D(ctypes.Structure):
-    _fields_=[('base_addr',ctypes.c_void_p), 
-              ('offset',_size_t), 
-              ('dtype',_index_t),
-              ('dims',_bounds*4)
-              ]
-class _fAllocArray5D(ctypes.Structure):
-    _fields_=[('base_addr',ctypes.c_void_p), 
-              ('offset',_size_t), 
-              ('dtype',_index_t),
-              ('dims',_bounds*5)
-              ]
-              
-class _fAllocArray6D(ctypes.Structure):
-    _fields_=[('base_addr',ctypes.c_void_p), 
-              ('offset',_size_t), 
-              ('dtype',_index_t),
-              ('dims',_bounds*6)
-              ]
-              
-class _fAllocArray7D(ctypes.Structure):
-    _fields_=[('base_addr',ctypes.c_void_p), 
-              ('offset',_size_t), 
-              ('dtype',_index_t),
-              ('dims',_bounds*7)
-              ]
 
 # None is in there so we can do 1 based indexing
-_listFAllocArrays=[None,_fAllocArray1D,_fAllocArray2D,_fAllocArray3D,
-                    _fAllocArray4D,_fAllocArray5D,_fAllocArray6D,
-                    _fAllocArray7D] 
+_listFAllocArrays=[None] + [_make_fAlloc(i) for i in range(1,8)] 
+
 
 if sys.byteorder is 'little':
     _byte_order=">"
@@ -112,7 +74,12 @@ class fExplicitArray(fVar):
         """
         Pass in a ctype value returns the python representation of it
         """
-        v = np.array(self._get_var_by_iter(value, size=self._array_size()))
+        if self._dt_arg:
+            offset = 4
+        else:
+            offset = 0
+        
+        v = np.array(self._get_var_by_iter(value, size=self._array_size(),offset=offset))
         arr = v.reshape(self._make_array_shape())
         
         return arr

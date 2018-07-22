@@ -148,9 +148,9 @@ class fVar(object):
         raise NotInLib
         
 
-    def _get_var_by_iter(self, value, size=-1):
+    def _get_var_by_iter(self, value, size=-1,offset=0):
         """ Gets a variable where we have to iterate to get multiple elements"""
-        base_address = ctypes.addressof(value)
+        base_address = ctypes.addressof(value) + offset
         return self._get_var_from_address(base_address, size=size)
 
     def _get_var_from_address(self, ctype_address, size=-1):
