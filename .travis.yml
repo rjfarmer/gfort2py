@@ -6,12 +6,11 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
-  - "3.7-dev" # 3.7 development branch
+  - "3.7"
   - "nightly" # currently points to 3.7-dev
 matrix:
 # cython is currently broken with these
   allow_failures:
-    - python: "3.7-dev" 
     - python: "nightly"
   
 # command to install dependencies
