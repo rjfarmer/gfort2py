@@ -83,8 +83,6 @@ install:
   - pip install --user -r requirements.txt
   - pip install --user -e .[dev]
   - python setup.py install
-before_install:
-  - eval "${TRAVIS_GFORTRAN}"
 # command to run tests
 script: 
   - coverage run --source=gfort2py setup.py test
