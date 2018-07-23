@@ -18,7 +18,7 @@ class _bounds14(ctypes.Structure):
               ("ubound",_index_t)]
               
 class _dtype_type(ctypes.Structure):
-    _fileds_=[("elem_len",_size_t),
+    _fields_=[("elem_len",_size_t),
                 ('version', ctypes.c_int),
                 ('rank',ctypes.c_byte),
                 ('type',ctypes.c_byte),
@@ -303,18 +303,25 @@ class fDummyArray(fVar):
             raise ValueError("Array too big")
         
         p.base_addr = value.ctypes.get_data()
-        p.offset = _size_t(-1)
+        #p.offset = _size_t(-1)
+        
+        strides = []
+        for i in range(self.ndim):
+            p.dims[i].lbound = _index_t(1)
+            p.dims[i].ubound = _index_t(value.shape[i])
+            strides.append(p.dims[i].ubound-p.dims[i].lbound+1)
         
         if hasattr(p,'span'):
             p.span = ctypes.sizeof(self._ctype_single)
             p.dtype = self._get_dtype15()
+            for i in range(self.ndim):
+                p.dims[i].stride = int(np.product(strides[:i]))
         else:
             p.dtype = self._get_dtype14()
-        
-        for i in range(self.ndim):
-            p.dims[i].stride = _index_t(value.strides[i]//ctypes.sizeof(self._ctype_single))
-            p.dims[i].lbound = _index_t(1)
-            p.dims[i].ubound = _index_t(value.shape[i])
+            for i in range(self.ndim):
+                p.dims[i].stride = _index_t(value.strides[i]//ctypes.sizeof(self._ctype_single))
+                
+        p.offset = _size_t(int(np.sum(strides)))
             
         return
 
@@ -437,10 +444,10 @@ class fDummyArray(fVar):
         ftype = self._get_ftype()
         x = _dtype_type()
         x.elem_len = ctypes.sizeof(self._ctype_single)
-        x.version = 0 # Unknown need to find the default value
+        x.version = 0 
         x.rank = self.ndim
         x.type = ftype
-        x.attribute = 0 # Unknown need to find the default value
+        x.attribute = 0 
         
         return x
 
