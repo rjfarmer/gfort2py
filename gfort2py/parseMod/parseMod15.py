@@ -3,6 +3,7 @@
 from . import parseModCommon as pmc
 from .utils import *
 from .utils_cpython import *
+import ctypes
 
 class parseMod(pmc.parseModBase):
     def __init__(self,*args):
@@ -28,3 +29,24 @@ class parseMod(pmc.parseModBase):
             
         return p
 
+    def parseDT(self,info):
+        res={}
+        res['arg']=[]
+        
+        e = split_brackets(info[1].strip())
+        for i in e:
+            #Remove whitespace and the first and last bracket
+            i=i.strip()[1:-1]
+            dtEl={}
+            dtEl['num'], dtEl['name'] = i.split()[0:2]
+            dtEl['name'] = dtEl['name'].lower().replace("'","")
+            info_el = split_brackets(i[i.index("(")-1:],remove_b=False)
+            #Re-order to be the same as everything else
+            newL = [info_el[-2],'()',info_el[0],'()',info_el[1]]
+            dtEl['var'] = self.parseVar(newL)
+            #Fix size 
+            if 'dt' in dtEl['var']:
+                dtEl['var']['bytes'] = ctypes.sizeof(ctypes.c_void_p)
+            res['arg'].append(dtEl)
+
+        return res

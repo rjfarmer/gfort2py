@@ -584,7 +584,6 @@ class fAssumedShape(fDummyArray):
     
     
     def set_func_arg(self,value):
-        
         super(fAssumedShape,self).set_func_arg(value)
         
         #Fix up bounds
@@ -674,7 +673,7 @@ class fAllocatableArray(fDummyArray):
         
         # self._value_array needs to be empty if the array is allocatable and not
         # allready allocated
-        self._value_array.base_addr=ctypes.c_void_p(0)
+        self._value_array.base_addr=ctypes.c_void_p(None)
         
         return self._value_array
         
