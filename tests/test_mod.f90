@@ -503,6 +503,7 @@ module tester
          integer, dimension(:), intent(inout) :: x
          res2 =.false.
          if(x(1)==2) res2 = .true.
+         x=9
       end function func_assumed_shape_arr_1d
       
       logical function func_assumed_shape_arr_2d(x) result(res3)
@@ -611,12 +612,25 @@ module tester
       end subroutine sub_str_p
       
       subroutine sub_arr_assumed_rank_int_1d(zzz)
+         integer,dimension(:),pointer, intent(inout) :: zzz
+         
+         write(*,*) zzz(1:5)
+         zzz(1:5) = 100
+      end subroutine sub_arr_assumed_rank_int_1d
+ 
+      subroutine sub_arr_assumed_rank_real_1d(zzz)
          real,dimension(:),pointer, intent(inout) :: zzz
          
          write(*,*) zzz(1:5)
          zzz(1:5) = 100.0
-      end subroutine sub_arr_assumed_rank_int_1d
+      end subroutine sub_arr_assumed_rank_real_1d
       
+      subroutine sub_arr_assumed_rank_dp_1d(zzz)
+         real(dp),dimension(:),pointer, intent(inout) :: zzz
+         
+         write(*,*) zzz(1:5)
+         zzz(1:5) = 100.0_dp
+      end subroutine sub_arr_assumed_rank_dp_1d
       
       subroutine sub_int_opt(x)
          integer, optional, intent(in) :: x

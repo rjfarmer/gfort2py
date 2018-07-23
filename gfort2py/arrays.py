@@ -48,7 +48,8 @@ def _make_fAlloc15(ndims):
 # None is in there so we can do 1 based indexing
 _listFAllocArrays = []
 def init_mod_arrays(mod_version):
-    global _listFAllocArrays, _GFC_MAX_DIMENSIONS
+    global _listFAllocArrays, _GFC_MAX_DIMENSIONS, _mod_version
+    _mod_version = mod_version
     if mod_version==14:
         _GFC_MAX_DIMENSIONS=7
         if _listFAllocArrays is not None:
@@ -176,7 +177,7 @@ class fExplicitArray(fVar):
 
         May just call ctype_def
         
-        Second return value is anythng that needs to go at the end of the
+        Second return value is anything that needs to go at the end of the
         arg list, like a string len
         """
         if pointer:
@@ -345,7 +346,10 @@ class fDummyArray(fVar):
             return self._value
            
         p = self._get_pointer()
-        return self._get_from_pointer(p.contents,copy)
+        if hasattr(p,'contents'):
+            return self._get_from_pointer(p.contents,copy)
+        else:
+            return self._get_from_pointer(p,copy)
         
     def _get_from_pointer(self,p,copy=False):
         if not self._isallocated():
@@ -378,7 +382,7 @@ class fDummyArray(fVar):
             # When we want to pointer to the underlaying fortran memoray
             # will leak as we dont have a deallocate call to call in a del func
             ptr = ctypes.cast(base_addr,ctypes.POINTER(self._ctype_single))
-            res = np.ctypeslib.as_array(ptr,shape= self._shape)
+            res = np.ctypeslib.as_array(ptr,shape = self._shape)
         
         return res
         
@@ -575,61 +579,65 @@ class fDummyArray(fVar):
         
     def _split_dtype15(self,dtype):
         return dtype.rank,dtype.type,dtype.elem_len
+    
+#From gcc source code
+#Parsed       Lower   Upper  Returned
+#------------------------------------
+  #:           NULL    NULL   AS_DEFERRED (*)
+  #x            1       x     AS_EXPLICIT
+  #x:           x      NULL   AS_ASSUMED_SHAPE
+  #x:y          x       y     AS_EXPLICIT
+  #x:*          x      NULL   AS_ASSUMED_SIZE
+  #*            1      NULL   AS_ASSUMED_SIZE
            
 class fAssumedShape(fDummyArray):
-    def _get_pointer(self):
-        return self._ctype_desc.from_address(ctypes.addressof(self._value_array))
-    
-    
-    def set_func_arg(self,value):
-        super(fAssumedShape,self).set_func_arg(value)
-        print(hasattr(self,'_setMaxArraySize'))
-        print(self._value_array)
+    def _get_pointer(self):        
+        x = self._ctype_desc.from_address(ctypes.addressof(self._value_array))
+        return x
         
+    def _get_from_pointer(self,p,copy=False):
+        if not self._isallocated():
+            return np.zeros(1)
+            #raise ValueError("Array not allocated yet")
+        base_addr = p.base_addr
+        offset = p.offset
+        dtype = p.dtype
         
-        #Fix up bounds
-    
-        #From gcc source code
-        #Parsed       Lower   Upper  Returned
-        #------------------------------------
-          #:           NULL    NULL   AS_DEFERRED (*)
-          #x            1       x     AS_EXPLICIT
-          #x:           x      NULL   AS_ASSUMED_SHAPE
-          #x:y          x       y     AS_EXPLICIT
-          #x:*          x      NULL   AS_ASSUMED_SIZE
-          #*            1      NULL   AS_ASSUMED_SIZE
-          
-       # for i in range(self.ndim):
-            #print(self._value_array.dims[i].lbound,self._value_array.dims[i].ubound)
-            #self._value_array.dims[i].ubound=0
-            #self._value_array.dims[i].lbound=0
+        if hasattr(p,'span'):
+            span=p.span
+        else:
+            span=1
+        
+        dims=[]
+        shape=[]
+        for i in range(self.ndim):
+            dims.append({})
+            dims[i]['stride'] = p.dims[i].stride
+            dims[i]['lbound'] = p.dims[i].lbound
+            dims[i]['ubound'] = p.dims[i].ubound
             
-    def __str__(self):
-        return str(self._value_array)
+        for i in range(self.ndim):
+            shape.append(dims[i]['ubound']-dims[i]['lbound']+1)
+            
+        self._shape=tuple(shape)
+        size = np.product(shape)
         
-    def __repr__(self):
-        return repr(self._value_array)
-
-    def py_to_ctype(self, value):
-        """
-        Pass in a python value returns the ctype representation of it
-        """
-        self.set_func_arg(value)
-        return self._value_array
+        addr = base_addr+offset*span + ctypes.sizeof(self._ctype_single)
         
-    def py_to_ctype_f(self, value):
-        """
-        Pass in a python value returns the ctype representation of it, 
-        suitable for a function
+        if copy:
+            # When we want a copy of the array not a pointer to the fortran memoray
+            res = self._get_var_from_address(addr,size=size)
+            res = np.asfortranarray(res)
+            res = res.reshape(shape).astype(self.npdtype)
+        else:
+            # When we want to pointer to the underlaying fortran memoray
+            # will leak as we dont have a deallocate call to call in a del func
+            ptr = ctypes.cast(addr,ctypes.POINTER(self._ctype_single))
+            res = np.ctypeslib.as_array(ptr,shape = self._shape)
         
-        Second return value is anything that needs to go at the end of the
-        arg list, like a string len
-        """
-        return self.py_to_ctype(value),None    
+        return res
     
 class fAssumedSize(fExplicitArray):
-    
-    
     def ctype_def_func(self,pointer=False,intent=''):
         """
         The ctype type of a value suitable for use as an argument of a function

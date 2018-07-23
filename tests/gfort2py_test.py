@@ -823,8 +823,7 @@ class TestStringMethods(unittest.TestCase):
 		v[1]=2.0
 		y=x.func_assumed_size_arr_real_dp_1d(v)
 		self.assertEqual(y,True)
-		
-	@unittest.skip("Skipping")	
+			
 	def test_sub_alloc_arr_1d(self):
 		v=0
 		y=x.sub_alloc_arr_1d(v)
@@ -890,12 +889,28 @@ class TestStringMethods(unittest.TestCase):
 		output=out.getvalue().strip()	
 		self.assertEqual(output,o.strip())
 	
-	@unittest.skip("Skipping")	
+	#@unittest.skip("Skipping")	
 	def test_sub_arr_assumed_rank_int_1d(self):
-		v=np.arange(10.0,15.0)
+		v=np.arange(10,15)
 		o=' '.join([str(i) for i in v.flatten()])
 		with captured_output() as (out,err):
 			y=x.sub_arr_assumed_rank_int_1d(v)
+		output=out.getvalue().strip()	
+		np_test.assert_array_equal(y['zzz'],np.array([100]*5))
+		
+	def test_sub_arr_assumed_rank_real_1d(self):
+		v=np.arange(10.0,15.0)
+		o=' '.join([str(i) for i in v.flatten()])
+		with captured_output() as (out,err):
+			y=x.sub_arr_assumed_rank_real_1d(v)
+		output=out.getvalue().strip()	
+		np_test.assert_array_equal(y['zzz'],np.array([100.0]*5))
+		
+	def test_sub_arr_assumed_rank_dp_1d(self):
+		v=np.arange(10.0,15.0)
+		o=' '.join([str(i) for i in v.flatten()])
+		with captured_output() as (out,err):
+			y=x.sub_arr_assumed_rank_dp_1d(v)
 		output=out.getvalue().strip()	
 		np_test.assert_array_equal(y['zzz'],np.array([100.0]*5))
 	
