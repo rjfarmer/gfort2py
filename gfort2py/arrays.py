@@ -291,16 +291,12 @@ class fDummyArray(fVar):
         
         
         self._value = value.astype(self.npdtype)
-        
-        #Did we make a copy?
-        # if self._id(self._value)==self._id(value):
-            # remove_ownership(value)
         remove_ownership(self._value)
         
         p = self._get_pointer()
         if p:
             self._set_to_pointer(self._value,p.contents)
-        
+                
         return 
         
     def set_func_arg(self,value):
@@ -309,6 +305,7 @@ class fDummyArray(fVar):
 
         self._value = np.asfortranarray(value).astype(self.npdtype)
         self._set_to_pointer(self._value,self._value_array)
+        remove_ownership(self._value)
         
         
     def _set_to_pointer(self,value,p):
@@ -316,7 +313,6 @@ class fDummyArray(fVar):
             raise ValueError("Array too big")
         
         p.base_addr = value.ctypes.get_data()
-        #p.offset = _size_t(-1)
         
         strides = []
         for i in range(self.ndim):
@@ -370,7 +366,7 @@ class fDummyArray(fVar):
         for i in range(self.ndim):
             shape.append(dims[i]['ubound']-dims[i]['lbound']+1)
             
-        self._shape=tuple(shape)
+        self._shape = tuple(shape)
         size = np.product(shape)
         
         if copy:
@@ -383,6 +379,8 @@ class fDummyArray(fVar):
             # will leak as we dont have a deallocate call to call in a del func
             ptr = ctypes.cast(base_addr,ctypes.POINTER(self._ctype_single))
             res = np.ctypeslib.as_array(ptr,shape = self._shape)
+        
+        remove_ownership(res)
         
         return res
         
@@ -505,11 +503,12 @@ class fDummyArray(fVar):
         
     def __del__(self):
         if '_value' in self.__dict__:
+
             #Problem occurs as both fortran and numpy are pointing to same memory address
             #Thus if fortran deallocates the array numpy will try to free the pointer
             #when del is called casuing a double free error
             
-            #By calling remove_ownership we tell numpy it dosn't own the data
+            #By calling #remove_ownership we tell numpy it dosn't own the data
             #thus is shouldn't call free(ptr).
             remove_ownership(self._value)
             
@@ -622,7 +621,8 @@ class fAssumedShape(fDummyArray):
         self._shape=tuple(shape)
         size = np.product(shape)
         
-        addr = base_addr+offset*span + ctypes.sizeof(self._ctype_single)
+        #Counting starts at 1
+        addr = base_addr + offset*span + ctypes.sizeof(self._ctype_single)
         
         if copy:
             # When we want a copy of the array not a pointer to the fortran memoray
@@ -635,8 +635,10 @@ class fAssumedShape(fDummyArray):
             ptr = ctypes.cast(addr,ctypes.POINTER(self._ctype_single))
             res = np.ctypeslib.as_array(ptr,shape = self._shape)
         
+        remove_ownership(res)      
+
         return res
-    
+        
 class fAssumedSize(fExplicitArray):
     def ctype_def_func(self,pointer=False,intent=''):
         """
