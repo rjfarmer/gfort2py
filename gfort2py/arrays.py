@@ -12,23 +12,42 @@ _size_t = ctypes.c_int64
 _default_mod = 14
 
 # Pre generate alloc array descriptors
-class _bounds(ctypes.Structure):
+class _bounds14(ctypes.Structure):
     _fields_=[("stride",_index_t),
               ("lbound",_index_t),
               ("ubound",_index_t)]
-
-def _make_fAlloc(ndims):
+              
+class _dtype_type(ctypes.Structure):
+    _fileds_=[("elem_len",_size_t),
+                ('version', ctypes.c_int),
+                ('rank',ctypes.c_byte),
+                ('type',ctypes.c_byte),
+                ('attribute',ctypes.c_ushort)]
+              
+def _make_fAlloc14(ndims):
     class _fAllocArray(ctypes.Structure):
         _fields_=[('base_addr',ctypes.c_void_p), 
                 ('offset',_size_t), 
                 ('dtype',_index_t),
-                ('dims',_bounds*ndims)
+                ('dims',_bounds14*ndims)
+                ]
+    return _fAllocArray
+    
+def _make_fAlloc15(ndims):
+    class _fAllocArray(ctypes.Structure):
+        _fields_=[('base_addr',ctypes.c_void_p), 
+                ('offset',_size_t), 
+                ('dtype',_dtype_type),
+                ('span',_index_t),
+                ('dims',_bounds14*ndims)
                 ]
     return _fAllocArray
     
 
 # None is in there so we can do 1 based indexing
-_listFAllocArrays=[None] + [_make_fAlloc(i) for i in range(1,16)] 
+_listFAllocArrays = []
+
+# gfortran 8 needs https://gcc.gnu.org/wiki/ArrayDescriptorUpdate
 
 
 if sys.byteorder is 'little':
@@ -222,7 +241,7 @@ class fDummyArray(fVar):
         self.__dict__.update(obj)
         self._lib = lib
         self._array = True
-        self._setMaxArraySize(mod_version)
+        self._mod_v = mod_version
 
         if 'array' in self.var:
           self.__dict__.update(obj['var'])
@@ -234,6 +253,7 @@ class fDummyArray(fVar):
             self.ctype='c_int32'
             self.pytype='int'
         
+        self._setMaxArraySize(mod_version)
         
         self._desc = self._setup_desc()
         self._ctype_single = getattr(ctypes,self.ctype)
@@ -285,7 +305,11 @@ class fDummyArray(fVar):
         p.base_addr = value.ctypes.get_data()
         p.offset = _size_t(-1)
         
-        p.dtype = self._get_dtype()
+        if hasattr(p,'span'):
+            p.span = ctypes.sizeof(self._ctype_single)
+            p.dtype = self._get_dtype15()
+        else:
+            p.dtype = self._get_dtype14()
         
         for i in range(self.ndim):
             p.dims[i].stride = _index_t(value.strides[i]//ctypes.sizeof(self._ctype_single))
@@ -402,16 +426,28 @@ class fDummyArray(fVar):
 
         return self.ctype_def(),None
 
-    def _get_dtype(self):
+    def _get_dtype14(self):
         ftype=self._get_ftype()
         d=self.ndim
         d=d|(ftype<<self._GFC_DTYPE_TYPE_SHIFT)
         d=d|(ctypes.sizeof(self._ctype_single)<<self._GFC_DTYPE_SIZE_SHIFT)
         return d
 
+    def _get_dtype15(self):
+        ftype = self._get_ftype()
+        x = _dtype_type()
+        x.elem_len = ctypes.sizeof(self._ctype_single)
+        x.version = 0 # Unknown need to find the default value
+        x.rank = self.ndim
+        x.type = ftype
+        x.attribute = 0 # Unknown need to find the default value
+        
+        return x
+
+
     def _get_ftype(self):
-        ftype=None
-        dtype=self.ctype
+        ftype = None
+        dtype = self.ctype
         if 'c_int' in dtype:
             ftype=self._BT_INTEGER
         elif 'c_double' in dtype or 'c_real' in dtype or 'c_float' in dtype:
@@ -472,12 +508,22 @@ class fDummyArray(fVar):
     def _id(self,x):
         return x.ctypes.data
         
-    def _create_dtype(self,ndim,itemsize,ftype):
+    def _create_dtype14(self,ndim,itemsize,ftype):
         ftype=self._get_BT(ftype)
         d=ndim
         d=d|(ftype<<self._GFC_DTYPE_TYPE_SHIFT)
         d=d|int(itemsize)<<self._GFC_DTYPE_SIZE_SHIFT
         return d
+        
+    def _create_dtype15(self,ndim,itemsize,ftype):
+        ftype=self._get_BT(ftype)
+        x = _dtype_type()
+        x.elem_len = itemsize
+        x.version = 0 # Unknown need to find the default value
+        x.rank = ndim
+        x.type = ftype
+        x.attribute = 0 # Unknown need to find the default value
+        return x
     
     def _get_BT(self,ftype):
         if 'int' in ftype:
@@ -501,18 +547,27 @@ class fDummyArray(fVar):
         return _byte_order+res
     
 
-    def _split_dtype(self,dtype):
+    def _split_dtype14(self,dtype):
         itemsize = dtype >> self._GFC_DTYPE_SIZE_SHIFT
         BT = (dtype >> self._GFC_DTYPE_TYPE_SHIFT ) & (self._GFC_DTYPE_RANK_MASK)
         ndim = dtype & self._GFC_DTYPE_RANK_MASK
         
         return ndim,BT,int(itemsize)
         
+    def _split_dtype15(self,dtype):
+        return dtype.rank,dtype.type,dtype.elem_len
+        
     def _setMaxArraySize(self,mod_version):
+        global _listFAllocArrays
         if mod_version==14:
             self._GFC_MAX_DIMENSIONS=7
-        elif mod_verison==15:
+            if _listFAllocArrays is not None:
+            # None is in there so we can do 1 based indexing
+                _listFAllocArrays=[None] + [_make_fAlloc14(i) for i in range(1,8)] 
+        elif mod_version==15:
             self._GFC_MAX_DIMENSIONS = 15
+            if _listFAllocArrays is not None:
+                _listFAllocArrays=[None] + [_make_fAlloc15(i) for i in range(1,16)] 
         else:
             raise ValueError("Bad mod version "+str(mod_version))
    
