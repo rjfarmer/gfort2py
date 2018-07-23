@@ -9,7 +9,8 @@ from .errors import *
 
 _index_t = ctypes.c_int64
 _size_t = ctypes.c_int64
-_default_mod = 14
+_mod_version = 14
+_GFC_MAX_DIMENSIONS = -1
 
 # Pre generate alloc array descriptors
 class _bounds14(ctypes.Structure):
@@ -46,6 +47,20 @@ def _make_fAlloc15(ndims):
 
 # None is in there so we can do 1 based indexing
 _listFAllocArrays = []
+def init_mod_arrays(mod_version):
+    global _listFAllocArrays, _GFC_MAX_DIMENSIONS
+    if mod_version==14:
+        _GFC_MAX_DIMENSIONS=7
+        if _listFAllocArrays is not None:
+        # None is in there so we can do 1 based indexing
+            _listFAllocArrays=[None] + [_make_fAlloc14(i) for i in range(1,_GFC_MAX_DIMENSIONS+1)] 
+    elif mod_version==15:
+        _GFC_MAX_DIMENSIONS = 15
+        if _listFAllocArrays is not None:
+            _listFAllocArrays=[None] + [_make_fAlloc15(i) for i in range(1,_GFC_MAX_DIMENSIONS+1)] 
+    else:
+        raise ValueError("Bad mod version "+str(mod_version))
+
 
 # gfortran 8 needs https://gcc.gnu.org/wiki/ArrayDescriptorUpdate
 
@@ -61,7 +76,7 @@ class BadFortranArray(Exception):
 
 class fExplicitArray(fVar):
 
-    def __init__(self, lib, obj, mod_version=_default_mod):
+    def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
         self._array = True
@@ -237,11 +252,10 @@ class fDummyArray(fVar):
     _PY_TO_BT = {'int':_BT_INTEGER,'float':_BT_REAL,'bool':_BT_LOGICAL,
             'str':_BT_CHARACTER,'bytes':_BT_CHARACTER}
 
-    def __init__(self, lib, obj,mod_version=_default_mod):
+    def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
         self._array = True
-        self._mod_v = mod_version
 
         if 'array' in self.var:
           self.__dict__.update(obj['var'])
@@ -252,8 +266,6 @@ class fDummyArray(fVar):
         if self.pytype is 'bool':
             self.ctype='c_int32'
             self.pytype='int'
-        
-        self._setMaxArraySize(mod_version)
         
         self._desc = self._setup_desc()
         self._ctype_single = getattr(ctypes,self.ctype)
@@ -299,7 +311,7 @@ class fDummyArray(fVar):
         
         
     def _set_to_pointer(self,value,p):
-        if value.ndim > self._GFC_MAX_DIMENSIONS:
+        if value.ndim > _GFC_MAX_DIMENSIONS:
             raise ValueError("Array too big")
         
         p.base_addr = value.ctypes.get_data()
@@ -563,21 +575,7 @@ class fDummyArray(fVar):
         
     def _split_dtype15(self,dtype):
         return dtype.rank,dtype.type,dtype.elem_len
-        
-    def _setMaxArraySize(self,mod_version):
-        global _listFAllocArrays
-        if mod_version==14:
-            self._GFC_MAX_DIMENSIONS=7
-            if _listFAllocArrays is not None:
-            # None is in there so we can do 1 based indexing
-                _listFAllocArrays=[None] + [_make_fAlloc14(i) for i in range(1,8)] 
-        elif mod_version==15:
-            self._GFC_MAX_DIMENSIONS = 15
-            if _listFAllocArrays is not None:
-                _listFAllocArrays=[None] + [_make_fAlloc15(i) for i in range(1,16)] 
-        else:
-            raise ValueError("Bad mod version "+str(mod_version))
-   
+           
 class fAssumedShape(fDummyArray):
     def _get_pointer(self):
         return self._ctype_desc.from_address(ctypes.addressof(self._value_array))
@@ -585,6 +583,9 @@ class fAssumedShape(fDummyArray):
     
     def set_func_arg(self,value):
         super(fAssumedShape,self).set_func_arg(value)
+        print(hasattr(self,'_setMaxArraySize'))
+        print(self._value_array)
+        
         
         #Fix up bounds
     

@@ -10,7 +10,7 @@ import numpy as np
 import errno
 
 from .cmplx import fComplex, fParamComplex
-from .arrays import *
+from .arrays import init_mod_arrays, fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize, fParamArray
 from .functions import fFunc
 from .strings import fStr
 from .types import fDerivedType, _dictAllDtDescs, getEmptyDT, _dictDTDefs
@@ -72,6 +72,7 @@ class fFort(object):
         self._dt_defs = x[4]
 
     def _init(self):      
+        init_mod_arrays(self._mod_data['version'])
         self._init_dt_defs()
 
     def _init_var(self, obj):
@@ -85,13 +86,13 @@ class fFort(object):
         elif 'array' in obj['var']:
             array = obj['var']['array']['atype']
             if array == 'explicit':
-                x = fExplicitArray(self._lib, obj,self._mod_data['version'])
+                x = fExplicitArray(self._lib, obj)
             elif array == 'alloc' or array == 'pointer':
-                x = fDummyArray(self._lib, obj,self._mod_data['version'])
+                x = fDummyArray(self._lib, obj)
             elif array == 'assumed_shape':
-                x = fAssumedShape(self._lib, obj,self._mod_data['version'])
+                x = fAssumedShape(self._lib, obj)
             elif array == 'assumed_size':
-                x = fAssumedSize(self._lib, obj,self._mod_data['version'])
+                x = fAssumedSize(self._lib, obj)
         else:
             x = fVar(self._lib, obj)
 
