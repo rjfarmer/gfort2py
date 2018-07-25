@@ -62,6 +62,10 @@ class fFunc(fVar):
         self._set_arg_ctypes()
         self.save_args=False
         self.args_out = None
+        
+        self._num_opt = self._count_optionals()
+        self._num_args = len(self._arg_vars) - self._num_opt
+        
 
     def _set_arg_ctypes(self):
         self._arg_ctypes = []
@@ -124,9 +128,10 @@ class fFunc(fVar):
         tmp = []
         args_in = []
         for vout, vin, fctype, a in six.moves.zip_longest(self._arg_vars, args, self._arg_ctypes, self.arg):
-            if 'optional' in a['var'] and vin is None:
-                #Missing optional arguments 
-                args_in.append(None)            
+            if 'optional' in a['var']:
+                if a['var']['optional'] and vin is None:
+                    #Missing optional arguments 
+                    args_in.append(None)            
             else:
                 x,y=vout.py_to_ctype_f(vin)
                 if 'pointer' in a['var']:
@@ -173,6 +178,11 @@ class fFunc(fVar):
         return r
     
     def __call__(self, *args):
+        if len(args) < self._num_args:
+            raise TypeError(str(self.name)+" takes atleast "+str(self._num_args) + " arguments got "+str(len(args)))
+        if len(args) > len(self.arg):
+            raise TypeError(str(self.name)+" takes atmost "+str(len(self.arg)) + " arguments got "+str(len(args)))
+            
         args_in = self._args_to_ctypes(args)
         
         # Capture stdout messages
@@ -233,3 +243,13 @@ class fFunc(fVar):
         
     def __len__(self):
         return 1
+        
+    def _count_optionals(self):
+        count = 0
+        for  a in self.arg:
+            if 'optional' in a['var']:
+                if a['var']['optional']:
+                    count = count + 1 
+        return count
+        
+        
