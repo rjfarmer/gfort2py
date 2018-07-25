@@ -252,4 +252,6 @@ class fFunc(fVar):
                     count = count + 1 
         return count
         
-        
+    def __dir__(self):
+        return ['saveArgs']
+    
