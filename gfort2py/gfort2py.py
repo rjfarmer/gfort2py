@@ -32,6 +32,7 @@ class fFort(object):
         self._lib = ctypes.CDLL(libname)
         self._all_names = []
         self._libname = libname
+        self._ffle = ffile
         self._fpy = pm.fpyname(ffile)
         self._load_data(ffile, rerun)
         self._init()
@@ -172,3 +173,10 @@ class fFort(object):
             l.extend(list(self._param.keys()))
             l.extend(list(self._funcs.keys()))
             return l
+            
+    def __getstate__(self):
+        return self._libname, self._ffle
+
+    def __setstate__(self,state):
+        self.__init__(*state)
+
