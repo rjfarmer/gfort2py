@@ -128,8 +128,7 @@ class fFunc(fVar):
         tmp = []
         args_in = []
         for vout, vin, fctype, a in six.moves.zip_longest(self._arg_vars, args, self._arg_ctypes, self.arg):
-            if 'optional' in a['var']:
-                if a['var']['optional'] and vin is None:
+            if a['var']['optional'] and vin is None:
                     #Missing optional arguments 
                     args_in.append(None)            
             else:
