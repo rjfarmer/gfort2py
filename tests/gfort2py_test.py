@@ -993,9 +993,17 @@ class TestStringMethods(unittest.TestCase):
 		y = x.func_func_arg('func_func_run')
 		self.assertEqual(y,10)
 		
-		
 	def test_func_func_ffunc(self):
 		y = x.func_func_arg(x.func_func_run)
+		self.assertEqual(y,10)
+		
+	def test_func_func_py(self):
+		def my_py_func(x):
+			xv=x.contents.value
+			return 10*xv
+		
+		x.func_func_run.load()
+		y = x.func_func_arg([my_py_func,'func_func_run'])
 		self.assertEqual(y,10)
 		
 		

@@ -182,8 +182,7 @@ To run unit tests
 - [x] Optional arguments
 - [ ] Keyword arguments
 - [ ] Generic/Elemental functions
-- [x] Functions as an argument (Partial, only existing fortran functions)
-
+- [x] Functions as an argument
 
 ### Accessing common block elements
 
@@ -231,6 +230,22 @@ x.my_func(x.func_arg) # With the functin itself
 ````
 
 Its left the the user to make sure that the function func_arg takes the correct inputs and returns the correct output
+
+
+If instead you want func_arg to be a python function then things are a little different:
+
+````python
+def my_py_func(x): # Python function that will be func_arg
+	xv=x.contents.value # Values are passed by reference, this works for ints, floats. Characters, arrays and derived types are more complex
+	return 10*xv
+
+# We must "pair" the python function with an existing fortran function that has the same inputs/oupts.
+x.func_func_run.load() # This function call forces func_func_run to be initliazed without callling the function
+y = x.func_func_arg([my_py_func,'func_func_run']) # This "pairs" the python function with a fortran function
+
+````
+
+
 
 
 

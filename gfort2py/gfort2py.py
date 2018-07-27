@@ -11,7 +11,7 @@ import errno
 
 from .cmplx import fComplex, fParamComplex
 from .arrays import init_mod_arrays, fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize, fParamArray
-from .functions import fFunc
+from .functions import fFunc, _allFuncs
 from .strings import fStr
 from .types import fDerivedType, _dictAllDtDescs, getEmptyDT, _dictDTDefs
 from .utils import *
@@ -114,6 +114,7 @@ class fFort(object):
 
     def _init_func(self, obj):
         x = fFunc(self._lib, obj)
+        _allFuncs[x.name.lower()] = x
         self.__dict__[x.name.lower()] = x
         
     def _init_dt_defs(self):

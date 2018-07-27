@@ -21,7 +21,7 @@ from .errors import *
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
-
+_allFuncs = {}
 
 class captureStdOut():
     def read_pipe(self,pipe_out):
@@ -66,7 +66,6 @@ class fFunc(fVar):
         
         self._num_opt = self._count_optionals()
         self._num_args = len(self._arg_vars) - self._num_opt
-        
 
     def _get_ptr_func(self,name):
         return getattr(self._lib, name)
@@ -87,6 +86,7 @@ class fFunc(fVar):
                     # See https://stackoverflow.com/questions/25014191/python-ctypes-function-pointer
                     # Dont set argtypes if we want function ponters
                     set_args = False
+                    self._arg_ctypes.append(None)
                 else:
                     if 'pointer' in i['var']:
                         pointer=True
@@ -139,7 +139,8 @@ class fFunc(fVar):
     def _args_to_ctypes(self,args):
         tmp = []
         args_in = []
-        for vout, vin, fctype, a in six.moves.zip_longest(self._arg_vars, args, self._arg_ctypes, self.arg):
+        for idx, x in enumerate(six.moves.zip_longest(self._arg_vars, args, self._arg_ctypes, self.arg)):
+            vout, vin, fctype, a = x
             if a['var']['optional'] and vin is None:
                     #Missing optional arguments 
                     args_in.append(None)            
@@ -154,9 +155,13 @@ class fFunc(fVar):
                     # ptr = ctypes.pointer(ctypes.c_int(f_addr))
                     # print(f_addr,ptr)
                     args_in.append(self._get_ptr_func(vin.mangled_name))
-                elif isinstance(vin, collections.Callable):
+                elif isinstance(vin, list):
+                    func = vin[0]
+                    func_name = vin[1]
                     # Passed a python function
-                    raise ValueError("Cant handle passing a python function")
+                    print(func_name)
+                    self._arg_ctypes[idx] = ctypes.CFUNCTYPE(_allFuncs[func_name]._restype,*_allFuncs[func_name]._arg_ctypes)
+                    args_in.append(self._arg_ctypes[idx](func))
                 else:
                     raise TypeError("Expecting either a name of function (str) or a fFort function")
             else:
@@ -167,7 +172,7 @@ class fFunc(fVar):
                     args_in.append(x)
                 if y is not None:
                     tmp.append(y)
-                
+
         return args_in + tmp
         
     def ctype_def(self):
@@ -275,7 +280,7 @@ class fFunc(fVar):
         
     def _count_optionals(self):
         count = 0
-        for  a in self.arg:
+        for a in self.arg:
             if 'optional' in a['var']:
                 if a['var']['optional']:
                     count = count + 1 
@@ -283,4 +288,8 @@ class fFunc(fVar):
         
     def __dir__(self):
         return ['saveArgs']
+        
+    def load(self):
+        # empty function call it to trigger the load in gfort2py without do anything
+        pass
     
