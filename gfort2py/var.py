@@ -148,6 +148,10 @@ class fVar(object):
         raise NotInLib
         
 
+    def _mangle_name(self,module,name):
+        return '__' + str(module) + '_MOD_' +str(name).lower()
+        
+
     def _get_var_by_iter(self, value, size=-1,offset=0):
         """ Gets a variable where we have to iterate to get multiple elements"""
         base_address = ctypes.addressof(value) + offset

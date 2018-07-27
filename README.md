@@ -182,7 +182,7 @@ To run unit tests
 - [x] Optional arguments
 - [ ] Keyword arguments
 - [ ] Generic/Elemental functions
-- [ ] Functions as an argument
+- [x] Functions as an argument (Partial, only existing fortran functions)
 
 
 ### Accessing common block elements
@@ -202,10 +202,35 @@ module my_mod
 Elements in the common block can thus be accessed as:
 
 ````python
-my_mod.a
-my_mod.b
-my_mod.c
+x.a
+x.b
+x.c
 ````
+
+### Functions as arguments:
+
+Consider:
+
+````fortran
+integer function my_func(func_arg)
+	integer func_arg
+	
+	my_func = func_arg(5)
+end function my_func
+	
+````
+
+Assuming that func_arg is another fortran function then we can call my_func as:
+
+
+````python
+
+x.my_func('func_arg') # With a string of the name of the argument of the function
+#or
+x.my_func(x.func_arg) # With the functin itself
+````
+
+Its let the the user to make sure that the function func_arg takes the correct inputs and returns the correct output
 
 
 

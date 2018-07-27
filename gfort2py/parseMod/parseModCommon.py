@@ -267,6 +267,8 @@ class parseModBase(object):
             res['optional']=True
         if 'DUMMY' in symbol_info:
             res['intent'] = self.parseIntent(symbol_info)
+        if 'DUMMY-PROC' in symbol_info:
+            res['is_func'] = True
     
         return res
         

@@ -8,6 +8,7 @@ import ctypes
 import os
 import six
 import select
+import collections
 
 from .var import fVar
 from .cmplx import fComplex
@@ -53,7 +54,7 @@ class fFunc(fVar):
         self._lib = lib
         self._sub = self.proc['sub']
         try:
-            self._call = getattr(self._lib, self.mangled_name)
+            self._call = self._get_ptr_func(self.mangled_name)
         except AttributeError:
             print("Skipping "+self.mangled_name)
             return
@@ -67,26 +68,37 @@ class fFunc(fVar):
         self._num_args = len(self._arg_vars) - self._num_opt
         
 
+    def _get_ptr_func(self,name):
+        return getattr(self._lib, name)
+        
+
     def _set_arg_ctypes(self):
         self._arg_ctypes = []
         self._arg_vars = []
         
         tmp=[]
+        set_args = True
         if len(self.proc['arg_nums'])>0:
             for i in self.arg:
                 self._arg_vars.append(self._init_var(i))
                 self._arg_vars[-1]._func_arg=True
                 
-                if 'pointer' in i['var']:
-                    pointer=True
+                if 'is_func' in i['var']:
+                    # See https://stackoverflow.com/questions/25014191/python-ctypes-function-pointer
+                    # Dont set argtypes if we want function ponters
+                    set_args = False
                 else:
-                    pointer=False
-                x,y=self._arg_vars[-1].ctype_def_func(pointer=pointer,intent=i['var']['intent'])
-                self._arg_ctypes.append(x)
-                if y is not None:
-                    tmp.append(y)
+                    if 'pointer' in i['var']:
+                        pointer=True
+                    else:
+                        pointer=False                    
+                    x,y=self._arg_vars[-1].ctype_def_func(pointer=pointer,intent=i['var']['intent'])
+                    self._arg_ctypes.append(x)
+                    if y is not None:
+                        tmp.append(y)
                     
-            self._call.argtypes = self._arg_ctypes+tmp
+            if set_args:
+                self._call.argtypes = self._arg_ctypes+tmp
             
 
     def _init_var(self, obj):
@@ -131,6 +143,22 @@ class fFunc(fVar):
             if a['var']['optional'] and vin is None:
                     #Missing optional arguments 
                     args_in.append(None)            
+            elif 'is_func' in a['var']:
+                if isinstance(vin, six.string_types):
+                    # String name of the function
+                    # f_addr = ctypes.addressof(self._get_ptr_func(self._mangle_name(self.module,vin)))
+                    args_in.append(self._get_ptr_func(self._mangle_name(self.module,vin)))
+                elif isinstance(vin,fFunc):
+                    # Passed a fortran function 
+                    # f_addr = ctypes.addressof(self._get_ptr_func(vin.mangled_name))
+                    # ptr = ctypes.pointer(ctypes.c_int(f_addr))
+                    # print(f_addr,ptr)
+                    args_in.append(self._get_ptr_func(vin.mangled_name))
+                elif isinstance(vin, collections.Callable):
+                    # Passed a python function
+                    raise ValueError("Cant handle passing a python function")
+                else:
+                    raise TypeError("Expecting either a name of function (str) or a fFort function")
             else:
                 x,y=vout.py_to_ctype_f(vin)
                 if 'pointer' in a['var']:
@@ -169,7 +197,9 @@ class fFunc(fVar):
             # Copy arguments into a dict for returning
             for i,j in zip(self._arg_vars,args_out):
                 if 'out' in i.var['intent'] or i.var['intent']=='na':
-                    if hasattr(j,'contents'):
+                    if 'is_func' in i.var:
+                        r[i.name] = None
+                    elif hasattr(j,'contents'):
                         r[i.name]=i.ctype_to_py_f(j.contents)
                     else:
                         r[i.name]=i.ctype_to_py_f(j)

@@ -723,4 +723,19 @@ module tester
          
       end subroutine sub_s_struct_inout
       
+      
+      integer function func_func_arg(func)
+         integer :: func
+         func_func_arg = func(1)
+      end function func_func_arg
+      
+      
+      integer function func_func_run(x)
+         integer :: x
+         
+         func_func_run = 10*x
+         
+      end function func_func_run   
+      
+      
 end module tester

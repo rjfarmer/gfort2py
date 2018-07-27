@@ -985,8 +985,19 @@ class TestStringMethods(unittest.TestCase):
 		# v=np.array([1,2,3,4,5,6,7,8,9,10],dtype='int32')
 		# np_test.assert_array_equal(x.f_struct.c_int_alloc_1d,v)
 		
-		# v=np.array([9,10,11,12,13],dtype='int32')
-		# np_test.assert_array_equal(x.f_struct.d_int_point_1d)		
+		v=np.array([9,10,11,12,13],dtype='int32')
+		np_test.assert_array_equal(x.e_int_target_1d,v)
+		# np_test.assert_array_equal(x.f_struct.d_int_point_1d,v)		
+		
+	def test_func_func_str(self):
+		y = x.func_func_arg('func_func_run')
+		self.assertEqual(y,10)
+		
+		
+	def test_func_func_ffunc(self):
+		y = x.func_func_arg(x.func_func_run)
+		self.assertEqual(y,10)
+		
 		
 if __name__ == '__main__':
 	unittest.main() 
