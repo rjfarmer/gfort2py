@@ -406,7 +406,10 @@ class fDummyArray(fVar):
         """
         Pass in a ctype value returns the python representation of it
         """
-        return self.ctype_to_py_f(value.contents)
+        if value:
+            return self.ctype_to_py_f(value.contents)
+        else:
+            return None
         
     def ctype_to_py_f(self, value):
         """
