@@ -162,7 +162,7 @@ To run unit tests
 - [ ] Arrays with dimension (:) (pointer, allocatable) inside derived types (it doesn't break if their there, but you cant access them easily)
 - [ ] Classes
 - [ ] Abstract interfaces
-- [ ] Common blocks
+- [x] Common blocks (parital)
 - [x] Equivalences 
 - [ ] Namelists
 
@@ -183,6 +183,31 @@ To run unit tests
 - [ ] Keyword arguments
 - [ ] Generic/Elemental functions
 - [ ] Functions as an argument
+
+
+### Accessing common block elements
+
+Theres no direct way to access the common block elements, but if you declare the the common block as a module variable you may acccess the elements by their name:
+
+
+````fortran
+module my_mod
+	implicit none
+	
+	integer :: a,b,c
+	common /comm1/ a,b,c
+	
+````
+
+Elements in the common block can thus be accessed as:
+
+````python
+my_mod.a
+my_mod.b
+my_mod.c
+````
+
+
 
 ## Contributing
 
