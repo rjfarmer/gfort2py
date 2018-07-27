@@ -230,7 +230,7 @@ x.my_func('func_arg') # With a string of the name of the argument of the functio
 x.my_func(x.func_arg) # With the functin itself
 ````
 
-Its let the the user to make sure that the function func_arg takes the correct inputs and returns the correct output
+Its left the the user to make sure that the function func_arg takes the correct inputs and returns the correct output
 
 
 
