@@ -74,7 +74,8 @@ class parseModBase(object):
     def unpackData(self):
         self._unpacked = True
         
-        for i in self.all_symbols:
+        for key in self.all_symbols:
+            i = self.all_symbols[key]
             if len(i):
                 try:
                     name = i['name']
@@ -168,11 +169,16 @@ class parseModBase(object):
     def parseAllSymbols(self):
         split_data = self.data[6]
         
-        if PARALLEL:
-            with mp.Pool() as pool:
-                all_symbols = pool.map(self.parseSymbol,split_data)
-        else:
-            all_symbols = [self.parseSymbol(i) for i in split_data]
+        # if PARALLEL:
+            # with mp.Pool() as pool:
+                # all_symbols = pool.map(self.parseSymbol,split_data)
+        # else:
+            # all_symbols = [self.parseSymbol(i) for i in split_data]
+        all_symbols = {}
+        for i in split_data:
+            x = self.parseSymbol(i)
+            if 'num' in x:
+                all_symbols[x['num']] = self.parseSymbol(i)
             
         self.all_symbols = all_symbols
         
@@ -204,6 +210,8 @@ class parseModBase(object):
         info = split_brackets(info)
         r['info'] = info
         type_line = info[0]
+        
+        
         # need spaces on end of names as sometimes we have name-something etc
         if 'VARIABLE ' in type_line or 'DUMMY ' in type_line:
             if len(r['module'])>0:
@@ -230,7 +238,7 @@ class parseModBase(object):
         else:
             raise ValueError("Unknown object "+symbol)
             
-        r['mangled_name']=self.mangleName(r)
+        r['mangled_name'] = self.mangleName(r)
             
         r.pop('info')
     
@@ -539,33 +547,12 @@ class parseModBase(object):
         print("Cant match dt definition "+str(num))
     
     def matchFuncArgs(self):
-        ind_funcs=[]
-        ind_func_args=[]
-        
-        func_nums=[]
-        func_arg_num=[]
-        
-        for idx,i in enumerate(self.all_symbols):
-            if 'proc' in i:
-                ind_funcs.append(idx)
-                func_nums.append(int(i['proc']['func_arg_id']))
-            if 'func_arg' in i:
-                ind_func_args.append(idx)
-                func_arg_num.append(int(i['parent_id']))
-    
-        s_f = np.argsort(func_nums,kind='heapsort')
-    
-        sorted_index = np.searchsorted(func_nums,func_arg_num,sorter=s_f,side='left')
-                
-        lenfn=len(s_f)
-        # Things with index greater than the length of the function nums are
-        # arguments to functions that are argument to funcs
-        sorted_index = [i if i<lenfn else None for i in sorted_index]
-    
-        for i,j in zip(sorted_index,ind_func_args):
-            if i is not None:
-                fAind=s_f[i]
-                self.all_symbols[ind_funcs[fAind]]['arg'].append(self.all_symbols[j])
+        for key in self.all_symbols:
+            value = self.all_symbols[key]
+            if 'proc' in value:
+                self.all_symbols[key]['arg'] = []
+                for i in value['proc']['arg_nums']:
+                    self.all_symbols[key]['arg'].append(self.all_symbols[i])
         
     
     
