@@ -289,7 +289,4 @@ class fFunc(fVar):
     def __dir__(self):
         return ['saveArgs']
         
-    def load(self):
-        # empty function call it to trigger the load in gfort2py without do anything
-        pass
     

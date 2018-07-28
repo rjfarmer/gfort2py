@@ -218,6 +218,10 @@ class fVar(object):
                 except:
                     return None
 
+    def load(self):
+        # empty function call it to trigger the load in gfort2py without do anything
+        pass
+
     #Stuff to call the result of self.get() (a python object int/str etc)
 
     def __add__(self, other):
