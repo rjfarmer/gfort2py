@@ -11,7 +11,7 @@ import errno
 
 from .cmplx import fComplex, fParamComplex
 from .arrays import init_mod_arrays, fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize, fParamArray
-from .functions import fFunc, _allFuncs
+from .functions import fFunc, fFuncPtr, _allFuncs
 from .strings import fStr
 from .types import fDerivedType, _dictAllDtDescs, getEmptyDT, _dictDTDefs
 from .utils import *
@@ -61,6 +61,7 @@ class fFort(object):
                     self._param = pickle.load(f)
                     self._funcs = pickle.load(f)
                     self._dt_defs = pickle.load(f)
+                    self._func_ptrs = pickle.load(f)
             else:
                 self._rerun(ffile)
                 
@@ -71,6 +72,7 @@ class fFort(object):
         self._param = x[2]
         self._funcs = x[3]
         self._dt_defs = x[4]
+        self._func_ptrs = x[5]
 
     def _init(self):      
         init_mod_arrays(self._mod_data['version'])
@@ -117,6 +119,10 @@ class fFort(object):
         _allFuncs[x.name.lower()] = x
         self.__dict__[x.name.lower()] = x
         
+    def _init_func_ptr(self, obj):
+        x =  fFuncPtr(self._lib, obj)
+        self.__dict__[x.name.lower()] = x
+        
     def _init_dt_defs(self):
         # Make empty dts first
         for i in self._dt_defs.keys():
@@ -142,6 +148,10 @@ class fFort(object):
                     if nl in self._funcs:
                         self._init_func(self._funcs[nl])
                         return self.__dict__[nl]
+                if '_func_ptrs' in self.__dict__:
+                    if nl in self._func_ptrs:
+                        self._init_func_ptr(self._func_ptrs[nl])
+                        return self.__dict__[nl]
 
         raise AttributeError("No variable " + name)
 
@@ -158,12 +168,17 @@ class fFort(object):
                     if nl in self._mod_vars:
                         self._init_var(self._mod_vars[nl])
                         self.__dict__[nl].set_mod(value)
-                    return
+                        return
                 if '_param' in self.__dict__:
                     if nl in self._param:
                         self._init_param(self._param[nl])
                         self.__dict__[nl].set_mod(value)
-                    return
+                        return
+                if '_func_ptrs' in self.__dict__:
+                    if nl in self._func_ptrs:
+                        self._init_func_ptr(self._func_ptrs[nl])
+                        self.__dict__[nl].set_mod(value)
+                        return
        
             self.__dict__[name] = value
         return
@@ -173,6 +188,7 @@ class fFort(object):
             l = list(self._mod_vars.keys()) 
             l.extend(list(self._param.keys()))
             l.extend(list(self._funcs.keys()))
+            l.extend(list(self._func_ptrs.keys()))
             return l
             
     def __getstate__(self):

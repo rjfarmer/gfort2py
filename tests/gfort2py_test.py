@@ -1006,6 +1006,25 @@ class TestStringMethods(unittest.TestCase):
 		y = x.func_func_arg([my_py_func,'func_func_run'])
 		self.assertEqual(y,10)
 		
+	def test_proc_ptr_str(self):
+		x.sub_null_proc_ptr()
+		x.p_func_func_run_ptr = 'func_func_run'
+		y = x.p_func_func_run_ptr(1)
+		self.assertEqual(y,10)
+		
+	def test_proc_ptr_ffunc(self):
+		x.p_func_func_run_ptr = x.func_func_run
+		y = x.p_func_func_run_ptr(1)
+		self.assertEqual(y,10)
+		
+	def test_proc_ptr_py(self):
+		def my_py_func(x):
+			xv=x.contents.value
+			return 10*xv
+		
+		x.p_func_func_run_ptr = my_py_func
+		y = x.p_func_func_run_ptr(1)
+		self.assertEqual(y,10)		
 		
 if __name__ == '__main__':
 	unittest.main() 

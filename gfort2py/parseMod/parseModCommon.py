@@ -28,6 +28,7 @@ class parseModBase(object):
         self.PYFILE_VERSION = PYFILE_VERSION
         
         self.funcs={}
+        self.func_ptrs={}
         self.mod_vars={}
         self.param={}
         self.dt_defs={}
@@ -53,6 +54,9 @@ class parseModBase(object):
         self.parseAllSymbols()
         
         self.matchFuncArgs()
+        # Must match func ptrs after function args so we get all the inputs/outputs correct
+        self.matchFuncPtrs()
+        
         self.data=None
         
         self.unpackData()
@@ -63,7 +67,7 @@ class parseModBase(object):
         
         self.pickler(output, self.PYFILE_VERSION, 
                     self.mod_data, self.mod_vars, self.param, 
-                    self.funcs, self.dt_defs)
+                    self.funcs, self.dt_defs, self.func_ptrs)
     
     
     def pickler(self,filename, *args):   
@@ -82,7 +86,9 @@ class parseModBase(object):
                 except KeyError:
                     print(i)
                     name = i['mangled_name']
-                if 'proc' in i:
+                if 'proc' in i and 'var' in i:
+                    self.func_ptrs[name] = i
+                elif 'proc' in i:
                     self.funcs[name] = i
                 elif 'var' in i and 'func_arg' not in i:
                     self.mod_vars[name] = i
@@ -95,7 +101,7 @@ class parseModBase(object):
         if not self._unpacked:
             self.unpackData()
             
-        return  self.mod_data, self.mod_vars, self.param, self.funcs, self.dt_defs
+        return  self.mod_data, self.mod_vars, self.param, self.funcs, self.dt_defs, self.func_ptrs
     
     def mangleName(self,item):
         return '__' + item['module'] + '_MOD_' + item['name'].lower()
@@ -188,7 +194,7 @@ class parseModBase(object):
     
         if ('__' in symbol or '(intrinsic)' in symbol or 
             'INTRINSIC' in symbol or len(symbol)==0 or
-            ' RESULT' in symbol or 'BODY' in symbol):
+            ' RESULT' in symbol):
             return {}
     
         r = {}
@@ -223,6 +229,11 @@ class parseModBase(object):
             if 'GENERIC' in type_line:
                 pass #Uneeded
                 #r['dt_type'] = self.parseDTType(info)
+            elif 'PROC_POINTER' in type_line:
+                # prcoedure pointers treat as vars and funcs
+                r['var'] = self.parseVar(info)
+                r['proc'] = self.parseProc(info)
+                r['arg'] = []
             else:
                 r['proc'] = self.parseProc(info)
                 r['arg']=[]
@@ -277,6 +288,9 @@ class parseModBase(object):
             res['intent'] = self.parseIntent(symbol_info)
         if 'DUMMY-PROC' in symbol_info:
             res['is_func'] = True
+            
+        if 'PROC_POINTER' in symbol_info:
+            res['proc_ptr_id'] = type_info.split()[2]
     
         return res
         
@@ -554,7 +568,10 @@ class parseModBase(object):
                 for i in value['proc']['arg_nums']:
                     self.all_symbols[key]['arg'].append(self.all_symbols[i])
         
-    
-    
-    
-    
+    def matchFuncPtrs(self):
+        for key in self.all_symbols:
+            value = self.all_symbols[key]
+            if 'proc' in value and 'var' in value:
+                self.all_symbols[key]['arg'] = self.all_symbols[value['var']['proc_ptr_id']]['arg']
+                self.all_symbols[key]['proc']['arg_nums'] = [-1] * len(self.all_symbols[key]['arg'])
+            

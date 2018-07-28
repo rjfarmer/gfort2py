@@ -227,6 +227,8 @@ module tester
       TYPE(s_recursive_1) :: r_recur_1
       TYPE(s_recursive_2) :: r_recur_2
       
+      procedure(func_func_run), pointer:: p_func_func_run_ptr => NULL()
+      
       contains
       
       
@@ -737,5 +739,26 @@ module tester
          
       end function func_func_run   
       
+      integer function func_func_run2(x)
+         integer :: x
+         
+         func_func_run2 = 2*x
+         
+      end function func_func_run2   
+      
+      
+      integer function func_proc_ptr(x)
+         integer :: x
+      
+         func_proc_ptr = p_func_func_run_ptr(x)
+      end function func_proc_ptr
+  
+      subroutine sub_proc_ptr2()      
+         p_func_func_run_ptr => func_func_run2
+      end subroutine sub_proc_ptr2
+      
+      subroutine sub_null_proc_ptr()
+         p_func_func_run_ptr => null()
+      end subroutine sub_null_proc_ptr
       
 end module tester

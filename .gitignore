@@ -6,6 +6,7 @@ __pycache__/
 # C extensions
 *.so
 *.c
+tests/*.f90.*
 
 # Distribution / packaging
 .Python

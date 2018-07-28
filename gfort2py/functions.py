@@ -53,11 +53,6 @@ class fFunc(fVar):
         self.__dict__.update(obj)
         self._lib = lib
         self._sub = self.proc['sub']
-        try:
-            self._call = self._get_ptr_func(self.mangled_name)
-        except AttributeError:
-            print("Skipping "+self.mangled_name)
-            return
             
         self._set_return()
         self._set_arg_ctypes()
@@ -69,7 +64,10 @@ class fFunc(fVar):
 
     def _get_ptr_func(self,name):
         return getattr(self._lib, name)
-        
+
+    @property
+    def _call(self):
+        return self._get_ptr_func(self.mangled_name)        
 
     def _set_arg_ctypes(self):
         self._arg_ctypes = []
@@ -98,7 +96,11 @@ class fFunc(fVar):
                         tmp.append(y)
                     
             if set_args:
-                self._call.argtypes = self._arg_ctypes+tmp
+                self._arg_types = self._arg_ctypes + tmp
+            else:
+                self._arg_types = None
+                # print(self._arg_types)
+                # self._call.argtypes = self._arg_types
             
 
     def _init_var(self, obj):
@@ -133,8 +135,8 @@ class fFunc(fVar):
 
     def _set_return(self):
         if not self._sub:
-            self._restype = self.ctype_def()
-            self._call.restype = self._restype
+            self._res_type = self.ctype_def()
+            # self._call.restype = self.res_type
             
     def _args_to_ctypes(self,args):
         tmp = []
@@ -159,8 +161,7 @@ class fFunc(fVar):
                     func = vin[0]
                     func_name = vin[1]
                     # Passed a python function
-                    print(func_name)
-                    self._arg_ctypes[idx] = ctypes.CFUNCTYPE(_allFuncs[func_name]._restype,*_allFuncs[func_name]._arg_ctypes)
+                    self._arg_ctypes[idx] = ctypes.CFUNCTYPE(_allFuncs[func_name]._res_type,*_allFuncs[func_name]._arg_ctypes)
                     args_in.append(self._arg_ctypes[idx](func))
                 else:
                     raise TypeError("Expecting either a name of function (str) or a fFort function")
@@ -218,6 +219,9 @@ class fFunc(fVar):
             raise TypeError(str(self.name)+" takes atmost "+str(len(self.arg)) + " arguments got "+str(len(args)))
             
         args_in = self._args_to_ctypes(args)
+        
+        self._call.argtypes = self._arg_types
+        self._call.restype = self._res_type
         
         # Capture stdout messages
         with captureStdOut() as cs:        
@@ -288,5 +292,35 @@ class fFunc(fVar):
         
     def __dir__(self):
         return ['saveArgs']
+
+
+
+class fFuncPtr(fFunc):
+    def __init__(self,*args,**kwargs):
+        super(fFuncPtr,self).__init__(*args,**kwargs)
+        self._func_ptr = None
         
+    
+    def set_mod(self,func_obj):
+        if isinstance(func_obj, six.string_types):
+            # String name of the function
+            self._func_ptr = self._get_ptr_func(self._mangle_name(self.module,func_obj))
+        elif isinstance(func_obj,fFunc):
+            # Passed a fortran function 
+            self._func_ptr = self._get_ptr_func(func_obj.mangled_name)
+        elif callable(func_obj):
+            # Passed a python function
+            self._ctype = ctypes.CFUNCTYPE(self._res_type,*self._arg_ctypes)
+            self._func_ptr =  self._ctype(func_obj)
+        else:
+            raise TypeError("Expecting either a name of function (str), a fFort function, or a python callable")      
+        
+        self._set_return()
+        
+    @property
+    def _call(self):
+        if self._func_ptr is not None:
+            return self._func_ptr
+        else:
+            raise AttributeError("Must call set a function to be pointed to")
     

@@ -206,7 +206,9 @@ x.b
 x.c
 ````
 
-### Functions as arguments:
+### Functions pointers:
+
+#### Functions as arguments
 
 Consider:
 
@@ -245,8 +247,41 @@ y = x.func_func_arg([my_py_func,'func_func_run']) # This "pairs" the python func
 
 ````
 
+#### Procedure pointers
+
+Consider a prcoedure like:
+
+````fortran
+procedure(my_func), pointer:: func_ptr => NULL()
+
+````
+
+We can, similiar to the functions as arguments, set func_ptr by either:
 
 
+````python
+
+x.func_ptr = 'my_func' # With a string of the name of the argument of the function (any function that has the same iterface as my_func)
+#or
+x.func_ptr = x.my_func # With the functin itself
+
+def my_py_func(x): # Python function that will be func_arg
+	xv=x.contents.value # Values are passed by reference, this works for ints, floats. Characters, arrays and derived types are more complex
+	return 10*xv
+
+x.func_ptr = my_py_func
+````
+
+We can then call the function (in python) with:
+
+````python
+
+x.func_ptr(1)
+````
+
+It will however currenlty crash python if you try to call func_ptr on the fortran side.
+
+Its left to the user to enforce that the function has the correct interface
 
 
 ## Contributing
@@ -255,5 +290,5 @@ Pull requests should target the maint branch for fixing issues, please check the
 passes before sending a pull request.
 Maint will be periodically merged with master for new releases, master should never have 
 a broken test suite.
-The dev branch is a longer term rewrite that is likely to be constantly broken.
+
 
