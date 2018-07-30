@@ -6,8 +6,8 @@ import os
 import pickle
 import sys
 import subprocess
+from .. import version
 
-PYFILE_VERSION = 2
 
 class VersionError(Exception):
     pass
@@ -48,7 +48,7 @@ def parseInput(x, filename):
     else:
             raise VersionError("Only supports mod version 14")
     
-    pm = p.parseMod(x,filename,res,PYFILE_VERSION)
+    pm = p.parseMod(x,filename,res,version.__version__)
     
     return pm
 	

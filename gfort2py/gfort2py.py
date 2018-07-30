@@ -17,6 +17,7 @@ from .types import fDerivedType, _dictAllDtDescs, getEmptyDT, _dictDTDefs
 from .utils import *
 from .var import fVar, fParam
 from .errors import *
+from . import version
 
 from . import parseMod as pm
 
@@ -51,7 +52,7 @@ class fFort(object):
     
         with open(self._fpy, 'rb') as f:
             self.version = pickle.load(f)
-            if self.version == pm.PYFILE_VERSION:
+            if self.version == version.__version__:
                 self._mod_data = pickle.load(f)
     
                 if self._mod_data["checksum"] != pm.hashFile(ffile) or rerun:
