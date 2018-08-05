@@ -238,12 +238,12 @@ If instead you want func_arg to be a python function then things are a little di
 
 ````python
 def my_py_func(x): # Python function that will be func_arg
-	xv=x.contents.value # Values are passed by reference, this works for ints, floats. Characters, arrays and derived types are more complex
+	xv=x.contents.value # Values are passed by reference, this works for ints, floats. Characters, arrays and derived types are more complicated.
 	return 10*xv
 
-# We must "pair" the python function with an existing fortran function that has the same inputs/oupts.
+# We must "pair" the python function with an existing fortran function that has the same inputs/oupts and return type.
 x.func_func_run.load() # This function call forces func_func_run to be initliazed without callling the function
-y = x.func_func_arg([my_py_func,'func_func_run']) # This "pairs" the python function with a fortran function
+y = x.func_func_arg([my_py_func,'func_func_run']) # This "pairs" the python function with a fortran function that has been loaded
 
 ````
 
@@ -256,30 +256,8 @@ procedure(my_func), pointer:: func_ptr => NULL()
 
 ````
 
-We can, similiar to the functions as arguments, set func_ptr by either:
-
-
-````python
-
-x.func_ptr = 'my_func' # With a string of the name of the argument of the function (any function that has the same iterface as my_func)
-#or
-x.func_ptr = x.my_func # With the functin itself
-
-def my_py_func(x): # Python function that will be func_arg
-	xv=x.contents.value # Values are passed by reference, this works for ints, floats. Characters, arrays and derived types are more complex
-	return 10*xv
-
-x.func_ptr = my_py_func
-````
-
-We can then call the function (in python) with:
-
-````python
-
-x.func_ptr(1)
-````
-
-It will however currenlty crash python if you try to call func_ptr on the fortran side.
+We can not at this time set func_ptr from python, instead it must be set by fortran. The func_ptr can however be called from python if set, if it has not been set
+then we raise ValueError.
 
 Its left to the user to enforce that the function has the correct interface
 

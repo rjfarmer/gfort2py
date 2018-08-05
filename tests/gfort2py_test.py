@@ -1006,25 +1006,45 @@ class TestStringMethods(unittest.TestCase):
 		y = x.func_func_arg([my_py_func,'func_func_run'])
 		self.assertEqual(y,10)
 		
+	@unittest.skip("Skipping as we cant set the ptr yet")
 	def test_proc_ptr_str(self):
 		x.sub_null_proc_ptr()
 		x.p_func_func_run_ptr = 'func_func_run'
 		y = x.p_func_func_run_ptr(1)
 		self.assertEqual(y,10)
 		
+	@unittest.skip("Skipping as we cant set the ptr yet")
 	def test_proc_ptr_ffunc(self):
 		x.p_func_func_run_ptr = x.func_func_run
 		y = x.p_func_func_run_ptr(1)
 		self.assertEqual(y,10)
 		
+	@unittest.skip("Skipping as we cant set the ptr yet")
 	def test_proc_ptr_py(self):
 		def my_py_func(x):
-			xv=x.contents.value
-			return 10*xv
+			return 10*x
 		
 		x.p_func_func_run_ptr = my_py_func
 		y = x.p_func_func_run_ptr(1)
-		self.assertEqual(y,10)		
+		self.assertEqual(y,10)
+		
+	def test_call_set_proc_ptr(self):
+		x.sub_null_proc_ptr()
+		x.sub_proc_ptr2()
+		y = x.p_func_func_run_ptr(1)
+		self.assertEqual(y,2)
+		
+	def test_call_null_proc_ptr(self):
+		x.sub_null_proc_ptr()
+		with self.assertRaises(ValueError) as cm:
+			y = x.p_func_func_run_ptr(1)
+
+		x.sub_null_proc_ptr()
+		x.sub_proc_ptr2()
+		x.sub_null_proc_ptr()
+		with self.assertRaises(ValueError) as cm:
+			y = x.p_func_func_run_ptr(1)
+		
 		
 if __name__ == '__main__':
 	unittest.main() 
