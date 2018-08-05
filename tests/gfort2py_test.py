@@ -981,13 +981,24 @@ class TestStringMethods(unittest.TestCase):
 		
 		v=np.array([9,10,11,12,13],dtype='int32')
 		np_test.assert_array_equal(x.f_struct.b_int_exp_1d,v)
-		
-		# v=np.array([1,2,3,4,5,6,7,8,9,10],dtype='int32')
-		# np_test.assert_array_equal(x.f_struct.c_int_alloc_1d,v)
-		
+	
 		v=np.array([9,10,11,12,13],dtype='int32')
 		np_test.assert_array_equal(x.e_int_target_1d,v)
-		# np_test.assert_array_equal(x.f_struct.d_int_point_1d,v)		
+		
+	@unittest.skip("Skipping due to seg faults")	
+	def test_func_set_f_struct_array_alloc(self):
+		y = x.func_set_f_struct()
+		
+		v=np.array([1,2,3,4,5,6,7,8,9,10],dtype='int32')
+		np_test.assert_array_equal(x.f_struct.c_int_alloc_1d,v)
+
+		
+	@unittest.skip("Skipping due to seg faults")	
+	def test_func_set_f_struct_array_ptr(self):
+		y = x.func_set_f_struct()
+				
+		v=np.array([9,10,11,12,13],dtype='int32')
+		np_test.assert_array_equal(x.f_struct.d_int_point_1d,v)
 		
 	def test_func_func_str(self):
 		y = x.func_func_arg('func_func_run')
