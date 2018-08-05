@@ -273,7 +273,7 @@ class fDummyArray(fVar):
         #self._ctype = getattr(ctypes,self.ctype)
         self._ctype = self._desc
         self._ctype_desc = ctypes.POINTER(self._desc)
-        self.npdtype=self.pytype+str(8*ctypes.sizeof(self._ctype_single))
+        self.npdtype = self.pytype+str(8 * ctypes.sizeof(self._ctype_single))
 
     def _setup_desc(self):
         return _listFAllocArrays[self.ndim]
@@ -324,14 +324,14 @@ class fDummyArray(fVar):
             p.span = ctypes.sizeof(self._ctype_single)
             p.dtype = self._get_dtype15()
             for i in range(self.ndim):
-                p.dims[i].stride = int(np.product(strides[:i]))
+                p.dims[i].stride = _index_t(int(np.product(strides[:i])))
         else:
             p.dtype = self._get_dtype14()
             for i in range(self.ndim):
                 p.dims[i].stride = _index_t(value.strides[i]//ctypes.sizeof(self._ctype_single))
                 
         p.offset = _size_t(int(np.sum(strides)))
-            
+
         return
 
     def get(self,copy=False):
@@ -524,7 +524,12 @@ class fDummyArray(fVar):
             p = self._get_pointer()
         except TypeError:
             return False
-        if p.contents.base_addr:
+            
+        pp = p
+        if hasattr(p,'contents'):
+            pp = p.contents
+            
+        if pp.base_addr:
             #Base addr is NULL if deallocated
             return True
         else:
@@ -625,8 +630,15 @@ class fAssumedShape(fDummyArray):
         size = np.product(shape)
         
         #Counting starts at 1
-        addr = base_addr + offset*span + ctypes.sizeof(self._ctype_single)
+        # addr = base_addr + offset*span + ctypes.sizeof(self._ctype_single)
+        addr = base_addr + (p.dims[0].stride + offset) * span
+        # print(base_addr,offset,span,ctypes.sizeof(self._ctype_single))
+        # print(addr)
+        # print(self._ctype_single.from_address(base_addr),self._ctype_single.from_address(addr))
         
+        # print(p.base_addr,p.offset,p.span,p.dims,p.dims[0].stride)
+        # print(p.dtype.elem_len,p.dtype.version,p.dtype.rank,p.dtype.type,p.dtype.attribute)
+
         if copy:
             # When we want a copy of the array not a pointer to the fortran memoray
             res = self._get_var_from_address(addr,size=size)

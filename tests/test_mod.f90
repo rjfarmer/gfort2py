@@ -630,9 +630,23 @@ module tester
       subroutine sub_arr_assumed_rank_dp_1d(zzz)
          real(dp),dimension(:),pointer, intent(inout) :: zzz
          
-         write(*,*) zzz(1:5)
-         zzz(1:5) = 100.0_dp
+         write(*,*) zzz(1:5),lbound(zzz),ubound(zzz),size(zzz)
+         zzz(1:4) = 100.0_dp
+         zzz(5) = 100_dp
       end subroutine sub_arr_assumed_rank_dp_1d
+      
+      subroutine testing()
+         real(dp),dimension(1:5),target :: zzz
+         real(dp),dimension(:),pointer :: zzzp
+      
+         zzz = 0d0
+         zzzp => zzz
+         call sub_arr_assumed_rank_dp_1d(zzzp)
+         write(*,*) zzzp
+         write(*,*) zzz
+       
+      end subroutine testing
+      
       
       subroutine sub_int_opt(x)
          integer, optional, intent(in) :: x
