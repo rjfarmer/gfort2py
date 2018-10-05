@@ -287,11 +287,15 @@ class TestStringMethods(unittest.TestCase):
 		self.assertEqual(x.a_int_lp.get(),99)
 		self.assertEqual(x.a_real.get(),99.0)
 		self.assertEqual(x.a_real_dp.get(),99.0)
-		#self.assertEqual(x.a_real_qp.get(),99.0)
 		self.assertEqual(x.a_str.get(),"9999999999")
 		self.assertEqual(x.a_cmplx.get(),complex(99.0,99.0))
 		self.assertEqual(x.a_cmplx_dp.get(),complex(99.0,99.0))
-		#self.assertEqual(x.a_cmplx_qp.get(),complex(99.0,99.0))	
+		
+	@unittest.skip("Skipping due to quad support")	
+	def test_sub_alter_mod_qp(self):
+		y=x.sub_alter_mod()
+		self.assertEqual(x.a_real_qp.get(),99.0)
+		self.assertEqual(x.a_cmplx_qp.get(),complex(99.0,99.0))	
 		
 	def test_sub_alloc_1d_arrs(self):
 		y=x.sub_alloc_int_1d_arrs()

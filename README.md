@@ -165,6 +165,7 @@ To run unit tests
 - [x] Common blocks (parital)
 - [x] Equivalences 
 - [ ] Namelists
+- [ ] Quad precision variables
 
 ### Functions/subroutines
 

@@ -1,5 +1,5 @@
 module tester
-   use iso_fortran_env, only: output_unit
+   use iso_fortran_env, only: output_unit, real128
    use test2
 
 
@@ -7,7 +7,7 @@ module tester
       
       ! Parameters
       integer, parameter :: dp = selected_real_kind(p=15)
-      integer, parameter :: qp = selected_real_kind(p=31)
+      integer, parameter :: qp = selected_real_kind(p=30)
       integer, parameter :: lp = selected_int_kind(8)
       
       integer, parameter      :: const_int=1
