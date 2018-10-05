@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 *.c
+*.s
+tests/tester
 tests/*.f90.*
 
 # Distribution / packaging
