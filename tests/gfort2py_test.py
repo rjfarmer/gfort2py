@@ -353,6 +353,14 @@ class TestStringMethods(unittest.TestCase):
 			y=x.sub_str_multi(v,u,w)
 		output=out.getvalue().strip()	
 		self.assertEqual(output,str(v+w)+' '+u)	
+
+	def test_sub_array_n_int_1d(self):
+		v=np.arange(0,5)
+		o=' '.join([str(i) for i in v.flatten()])
+		with captured_output() as (out,err):
+			y=x.sub_array_n_int_1d(np.size(v),v)
+		output=out.getvalue().strip()	
+		self.assertEqual(output,o.strip())
 		
 		
 	def test_sub_exp_array_int_1d(self):

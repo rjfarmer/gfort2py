@@ -410,6 +410,12 @@ module tester
 
       end subroutine sub_alloc_real_dp_1d_cleanup  
       
+      subroutine sub_array_n_int_1d(n,x)
+         integer,intent(in) :: n
+         integer,dimension(n), intent(in) :: x
+         
+         write(output_unit,'(5(I1,1X))') x
+      end subroutine sub_array_n_int_1d
       
       subroutine sub_exp_array_int_1d(x)
          integer,dimension(5), intent(in) :: x
