@@ -183,7 +183,12 @@ class fExplicitArray(fVar):
         if pointer:
             raise ValueError("Can't have explicit array as a pointer")
         
-        x=np.ctypeslib.ndpointer(dtype=self._dtype,ndim=self.ndims,
+        shape = tuple(self._make_array_shape())
+        if shape[0] == -1:
+            x=np.ctypeslib.ndpointer(dtype=self._dtype,ndim=self.ndims,
+                                flags='F_CONTIGUOUS')
+        else:
+            x=np.ctypeslib.ndpointer(dtype=self._dtype,ndim=self.ndims,
                                 shape=tuple(self._make_array_shape()),
                                 flags='F_CONTIGUOUS')
         y=None
@@ -209,8 +214,11 @@ class fExplicitArray(fVar):
             bounds = self.array['shape']
         
         shape = []
-        for i, j in zip(bounds[0::2], bounds[1::2]):
-            shape.append(j - i + 1)
+        if len(bounds) == self.ndims:
+            shape = [-1] * self.ndims
+        else:        
+            for i, j in zip(bounds[0::2], bounds[1::2]):
+                shape.append(j - i + 1)
         return shape
 
     def _array_size(self,bounds=None):

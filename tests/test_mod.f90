@@ -417,6 +417,13 @@ module tester
          write(output_unit,'(5(I1,1X))') x
       end subroutine sub_array_n_int_1d
       
+      subroutine sub_array_n_int_2d(n,m,x)
+         integer,intent(in) :: n, m
+         integer,dimension(n,m), intent(in) :: x
+         
+         write(output_unit,'(25(I1,1X))') x
+      end subroutine sub_array_n_int_2d
+      
       subroutine sub_exp_array_int_1d(x)
          integer,dimension(5), intent(in) :: x
          
