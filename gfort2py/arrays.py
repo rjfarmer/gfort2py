@@ -652,7 +652,7 @@ class fAssumedShape(fDummyArray):
             addr = base_addr + (p.dims[0].stride + offset) * span
         else:
             # do this with 8 byte ints
-            print(offset,p.dims[0].stride)
+            #print(offset,p.dims[0].stride)
             addr = base_addr + offset + p.dims[0].stride*ctypes.sizeof(self._ctype_single)
         # print(base_addr,offset,span,ctypes.sizeof(self._ctype_single))
         # print(addr)
