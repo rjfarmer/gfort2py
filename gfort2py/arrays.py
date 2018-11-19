@@ -265,6 +265,7 @@ class fDummyArray(fVar):
         self.__dict__.update(obj)
         self._lib = lib
         self._array = True
+        self._zero_offset = False
 
         if 'array' in self.var:
           self.__dict__.update(obj['var'])
@@ -337,8 +338,11 @@ class fDummyArray(fVar):
             p.dtype = self._get_dtype14()
             for i in range(self.ndim):
                 p.dims[i].stride = _index_t(value.strides[i]//ctypes.sizeof(self._ctype_single))
-                
-        p.offset = _size_t(int(np.sum(strides)))
+          
+        if self._zero_offset:
+            p.offset = 0
+        else:
+            p.offset = _size_t(int(np.sum(strides)))
 
         return
 
@@ -606,6 +610,11 @@ class fDummyArray(fVar):
   #*            1      NULL   AS_ASSUMED_SIZE
            
 class fAssumedShape(fDummyArray):
+    def __init__(self, lib, obj):
+        super().__init__(lib,obj)
+        self._zero_offset = True
+    
+    
     def _get_pointer(self):        
         x = self._ctype_desc.from_address(ctypes.addressof(self._value_array))
         return x
@@ -621,7 +630,7 @@ class fAssumedShape(fDummyArray):
         if hasattr(p,'span'):
             span=p.span
         else:
-            span=1
+            span=-1
         
         dims=[]
         shape=[]
@@ -639,7 +648,12 @@ class fAssumedShape(fDummyArray):
         
         #Counting starts at 1
         # addr = base_addr + offset*span + ctypes.sizeof(self._ctype_single)
-        addr = base_addr + (p.dims[0].stride + offset) * span
+        if span > 0:
+            addr = base_addr + (p.dims[0].stride + offset) * span
+        else:
+            # do this with 8 byte ints
+            print(offset,p.dims[0].stride)
+            addr = base_addr + offset + p.dims[0].stride*ctypes.sizeof(self._ctype_single)
         # print(base_addr,offset,span,ctypes.sizeof(self._ctype_single))
         # print(addr)
         # print(self._ctype_single.from_address(base_addr),self._ctype_single.from_address(addr))
