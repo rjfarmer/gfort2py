@@ -611,7 +611,7 @@ class fDummyArray(fVar):
            
 class fAssumedShape(fDummyArray):
     def __init__(self, lib, obj):
-        super().__init__(lib,obj)
+        super(fAssumedShape, self).__init__(lib,obj)
         self._zero_offset = True
     
     
