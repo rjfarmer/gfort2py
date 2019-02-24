@@ -464,6 +464,8 @@ class parseModBase(object):
             y=-1
         else:
             y=y[0]
+            if len(y) == 0:
+                y = -1
         return int(y)
     
     def processDTVar(self,info):
