@@ -747,7 +747,9 @@ class fAllocatableArray(fDummyArray):
         
         p=ctypes.POINTER(self._ctype_single)
         res=ctypes.cast(value.base_addr,p)
-        return np.ctypeslib.as_array(res,shape=shape)
+        z = np.ctypeslib.as_array(res,shape=shape)
+        remove_ownership(z)
+        return z
         
 
     
