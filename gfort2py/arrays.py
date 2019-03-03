@@ -276,7 +276,7 @@ class fDummyArray(fVar):
         if self.pytype is 'bool':
             self.ctype='c_int32'
             self.pytype='int'
-        print("H4")
+        #print("H4")
         self._desc = self._setup_desc()
         self._ctype_single = getattr(ctypes,self.ctype)
         #self._ctype = getattr(ctypes,self.ctype)
