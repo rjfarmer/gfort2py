@@ -7,7 +7,7 @@ import ctypes
 
 class parseMod(pmc.parseModBase):
     def __init__(self,*args):
-        self.mod_version=14
+        self.mod_version=15
         super(parseMod,self).__init__(*args)
 
     def getParamValue(self,x,typ):
