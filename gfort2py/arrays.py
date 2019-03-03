@@ -276,7 +276,7 @@ class fDummyArray(fVar):
         if self.pytype is 'bool':
             self.ctype='c_int32'
             self.pytype='int'
-        
+        print("H4")
         self._desc = self._setup_desc()
         self._ctype_single = getattr(ctypes,self.ctype)
         #self._ctype = getattr(ctypes,self.ctype)
@@ -322,6 +322,7 @@ class fDummyArray(fVar):
             raise ValueError("Array too big")
         
         p.base_addr = value.ctypes.get_data()
+        #p.base_addr = ctypes.cast(value.ctypes.get_data(), ctypes.POINTER(ctypes.c_void_p))
         
         strides = []
         for i in range(self.ndim):
@@ -340,7 +341,7 @@ class fDummyArray(fVar):
                 p.dims[i].stride = _index_t(value.strides[i]//ctypes.sizeof(self._ctype_single))
           
         if self._zero_offset:
-            p.offset = 0
+            p.offset = -1
         else:
             p.offset = _size_t(int(np.sum(strides)))
 
@@ -366,7 +367,7 @@ class fDummyArray(fVar):
         base_addr = p.base_addr
         offset = p.offset
         dtype = p.dtype
-        
+        #print("H3")
         dims=[]
         shape=[]
         for i in range(self.ndim):
@@ -626,7 +627,7 @@ class fAssumedShape(fDummyArray):
         base_addr = p.base_addr
         offset = p.offset
         dtype = p.dtype
-        
+        #print("h2")
         if hasattr(p,'span'):
             span=p.span
         else:
@@ -648,12 +649,15 @@ class fAssumedShape(fDummyArray):
         
         #Counting starts at 1
         # addr = base_addr + offset*span + ctypes.sizeof(self._ctype_single)
-        if span > 0:
-            addr = base_addr + (p.dims[0].stride + offset) * span
-        else:
+       # if span > 0:
+        #    addr = base_addr + (p.dims[0].stride + offset) * span
+        #else:
             # do this with 8 byte ints
             #print(offset,p.dims[0].stride)
-            addr = base_addr + offset + p.dims[0].stride*ctypes.sizeof(self._ctype_single)
+         #   addr = base_addr + offset + p.dims[0].stride*ctypes.sizeof(self._ctype_single)
+        addr = base_addr
+        
+        print(base_addr,addr,span)
         # print(base_addr,offset,span,ctypes.sizeof(self._ctype_single))
         # print(addr)
         # print(self._ctype_single.from_address(base_addr),self._ctype_single.from_address(addr))
@@ -686,7 +690,7 @@ class fAssumedSize(fExplicitArray):
         Second return value is anythng that needs to go at the end of the
         arg list, like a string len
         """
-        
+        #print("h1")
         x=ctypes.POINTER(getattr(ctypes, self.ctype))
         y=None
         return x,y  
@@ -744,7 +748,7 @@ class fAllocatableArray(fDummyArray):
         for i in value.dims:
             shape.append(i.ubound-i.lbound+1)
         shape=tuple(shape)
-        
+        #print("here")
         p=ctypes.POINTER(self._ctype_single)
         res=ctypes.cast(value.base_addr,p)
         z = np.ctypeslib.as_array(res,shape=shape)
