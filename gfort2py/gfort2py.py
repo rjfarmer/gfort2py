@@ -8,6 +8,7 @@ import ctypes
 import pickle
 import numpy as np
 import errno
+import sys
 
 from .cmplx import fComplex, fParamComplex
 from .arrays import init_mod_arrays, fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize, fParamArray
@@ -24,6 +25,9 @@ from . import parseMod as pm
 WARN_ON_SKIP=False
 
 # https://gcc.gnu.org/onlinedocs/gcc-6.1.0/gfortran/Argument-passing-conventions.html
+
+if sys.version_info[0] < 3:
+    FileNotFoundError = IOError
 
 
 class fFort(object):
@@ -42,10 +46,9 @@ class fFort(object):
     def _load_data(self, ffile, rerun=False):
         try:
             f = open(self._fpy, 'rb')
-        # FileNotFoundError does not exist on Python < 3.3
-        except (OSError, IOError) as e: 
+        except FileNotFoundError as e: 
             if e.errno != errno.ENOENT:
-                raise
+                raise 
             pm.run(ffile, save=True)
         else:
             f.close()
