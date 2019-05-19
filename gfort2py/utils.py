@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0+
 from __future__ import print_function
 
 def find_key_val(list_dicts, key, value):
