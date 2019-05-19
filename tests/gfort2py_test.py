@@ -1074,6 +1074,9 @@ class TestStringMethods(unittest.TestCase):
 		with self.assertRaises(ValueError) as cm:
 			y = x.p_func_func_run_ptr(1)
 		
+	def test_sub_man_args(self):
+		x.sub_many_args(1,2,3,4,True,False,True,
+				'abc','def','ghj','qwerty','zxcvb')
 		
 if __name__ == '__main__':
 	unittest.main() 

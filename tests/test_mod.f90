@@ -788,4 +788,12 @@ module tester
          p_func_func_run_ptr => null()
       end subroutine sub_null_proc_ptr
       
+      subroutine sub_many_args(a,b,c,d,e,f,g,h,i,j,k,l)
+         real :: a,b,c,d
+         logical :: e,f,g
+         character(len=*) :: h,i,j,k,l
+      
+         write(*,*) a,b,c,d,e,f,g,h,i,j,k,l
+      end subroutine sub_many_args
+      
 end module tester
