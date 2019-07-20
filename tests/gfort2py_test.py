@@ -1075,6 +1075,7 @@ class TestStringMethods(unittest.TestCase):
 			y = x.p_func_func_run_ptr(1)
 		
 	def test_sub_man_args(self):
+		# if this doesnt seg fault we are good
 		x.sub_many_args(1,2,3,4,True,False,True,
 				'abc','def','ghj','qwerty','zxcvb')
 		

@@ -793,7 +793,7 @@ module tester
          logical :: e,f,g
          character(len=*) :: h,i,j,k,l
       
-         write(*,*) a,b,c,d,e,f,g,h,i,j,k,l
+         !write(*,*) a,b,c,d,e,f,g,h,i,j,k,l
       end subroutine sub_many_args
       
 end module tester

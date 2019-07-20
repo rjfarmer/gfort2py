@@ -65,7 +65,7 @@ class fStr(fVar):
         if pointer:
             f = ctypes.POINTER(f)
         
-        return f,ctypes.c_int
+        return f,ctypes.c_long
         
     def py_to_ctype_p(self,value):
         """
