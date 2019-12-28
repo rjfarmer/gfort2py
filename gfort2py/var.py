@@ -378,7 +378,7 @@ class fVar(object):
         return getattr(self.get(), '__index__')()
 
     def __round__(self, ndigits=None):
-        return self.round(self.get(),ndigits)
+        return round(self.get(),ndigits)
 
     def __trunc__(self):
         return getattr(self.get(), '__trunc__')()
