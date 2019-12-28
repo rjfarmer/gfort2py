@@ -20,28 +20,28 @@ class fVar(object):
         self._lib = lib
         self.ctype=self.var['ctype']
         self.pytype=self.var['pytype']
-        
+
         self._pytype = self.pytype_def()
         if self.pytype == 'quad':
             self.pytype = np.longdouble
         elif self.pytype=='bool':
             self.pytype=int
             self.ctype='c_int32'
-        
+
         self._ctype = self.ctype_def()
         #self._ctype_f = self.ctype_def_func()
 
         # if true for things that are fortran things
         self._fortran = True
-        
+
         # True if its a function argument
         self._func_arg = False
-        
+
         #True if struct member
         self._dt_arg = False
-        
+
         #Store the ref to the lib object
-        try:   
+        try:
             self._ref = self._get_from_lib()
         except NotInLib:
             self._ref = None
@@ -51,12 +51,12 @@ class fVar(object):
         Pass in a python value returns the ctype representation of it
         """
         return self.ctype_def()(value)
-        
+
     def py_to_ctype_f(self, value):
         """
-        Pass in a python value returns the ctype representation of it, 
+        Pass in a python value returns the ctype representation of it,
         suitable for a function
-        
+
         Second return value is anythng that needs to go at the end of the
         arg list, like a string len
         """
@@ -68,7 +68,7 @@ class fVar(object):
         Pass in a ctype value returns the python representation of it
         """
         return self.ctype_to_py_f(value)
-        
+
     def ctype_to_py_f(self, value):
         """
         Pass in a ctype value returns the python representation of it,
@@ -85,7 +85,7 @@ class fVar(object):
     def pytype_def(self):
         if '_cached_pytype' not in self.__dict__:
             self._cached_pytype = getattr(__builtin__, self.pytype)
-        
+
         return self._cached_pytype
 
     def ctype_def(self):
@@ -94,7 +94,7 @@ class fVar(object):
         """
         if '_cached_ctype' not in self.__dict__:
             self._cached_ctype = getattr(ctypes, self.ctype)
-        
+
         return self._cached_ctype
 
     def ctype_def_func(self,pointer=False,intent=''):
@@ -102,7 +102,7 @@ class fVar(object):
         The ctype type of a value suitable for use as an argument of a function
 
         May just call ctype_def
-        
+
         Second return value is anything that needs to go at the end of the
         arg list, like a string len
         """
@@ -111,14 +111,14 @@ class fVar(object):
             f = ctypes.POINTER(f)
 
         return f,None
-        
+
     def py_to_ctype_p(self,value):
         """
         The ctype represnation suitable for function arguments wanting a pointer
         """
 
         return ctypes.POINTER(self.ctype_def())(self.py_to_ctype(value))
-        
+
 
     def set_mod(self, value):
         """
@@ -137,7 +137,7 @@ class fVar(object):
                 res =self._ref.contents
             else:
                 res = self._ref
-        
+
         return res
 
     def _get_from_lib(self):
@@ -147,11 +147,11 @@ class fVar(object):
             except ValueError:
                 raise NotInLib
         raise NotInLib
-        
+
 
     def _mangle_name(self,module,name):
         return '__' + str(module) + '_MOD_' +str(name).lower()
-        
+
 
     def _get_var_by_iter(self, value, size=-1,offset=0):
         """ Gets a variable where we have to iterate to get multiple elements"""
@@ -197,19 +197,19 @@ class fVar(object):
             # Skip for things that aren't in the module (function arg)
             s=" <" + str(self.pytype) + ">"
         return s
-    
-    def __getattr__(self, name): 
+
+    def __getattr__(self, name):
         if name in self.__dict__:
             return self.__dict__[name]
-            
+
         if '_func_arg' in self.__dict__:
             if self._func_arg:
-                return   
-        
+                return
+
         if '_dt_arg' in self.__dict__:
             if self._dt_arg:
-                return 
-                
+                return
+
         if '_ref' in self.__dict__:
             if self._ref is None:
                 return None
@@ -239,7 +239,7 @@ class fVar(object):
 
     def __truediv__(self, other):
         return getattr(self.get(), '__truediv__')(other)
-        
+
     def __floordiv__(self,other):
         return getattr(self.get(), '__floordiv__')(other)
 
@@ -247,23 +247,23 @@ class fVar(object):
         return getattr(self.get(), '__pow__')(other,modulo)
 
     def __mod__(self,other):
-        return getattr(self.get(), '__mod__')(other)        
-        
+        return getattr(self.get(), '__mod__')(other)
+
     def __lshift__(self,other):
-        return getattr(self.get(), '__lshift__')(other)        
+        return getattr(self.get(), '__lshift__')(other)
 
     def __rshift__(self,other):
         return getattr(self.get(), '__rshift__')(other)
 
     def __and__(self,other):
         return getattr(self.get(), '__and__')(other)
-        
+
     def __xor__(self,other):
         return getattr(self.get(), '__xor__')(other)
-        
+
     def __or__(self,other):
         return getattr(self.get(), '__or__')(other)
-        
+
     def __radd__(self, other):
         return getattr(self.get(), '__radd__')(other)
 
@@ -278,7 +278,7 @@ class fVar(object):
 
     def __rtruediv__(self, other):
         return getattr(self.get(), '__rtruediv__')(other)
-        
+
     def __rfloordiv__(self,other):
         return getattr(self.get(), '__rfloordiv__')(other)
 
@@ -286,20 +286,20 @@ class fVar(object):
         return getattr(self.get(), '__rpow__')(other)
 
     def __rmod__(self,other):
-        return getattr(self.get(), '__rmod__')(other)        
-        
+        return getattr(self.get(), '__rmod__')(other)
+
     def __rlshift__(self,other):
-        return getattr(self.get(), '__rlshift__')(other)        
+        return getattr(self.get(), '__rlshift__')(other)
 
     def __rrshift__(self,other):
         return getattr(self.get(), '__rrshift__')(other)
 
     def __rand__(self,other):
         return getattr(self.get(), '__rand__')(other)
-        
+
     def __rxor__(self,other):
         return getattr(self.get(), '__rxor__')(other)
-        
+
     def __ror__(self,other):
         return getattr(self.get(), '__ror__')(other)
 
@@ -343,25 +343,63 @@ class fVar(object):
 
     def __ge__(self, other):
         return getattr(self.get(), '__ge__')(other)
-        
+
     def __format__(self, other):
         return getattr(self.get(), '__format__')(other)
-  
+
     def __bytes__(self):
-        return getattr(self.get(), '__bytes__')()  
-        
+        return getattr(self.get(), '__bytes__')()
+
     def __bool__(self):
         return getattr(self.get(), '__bool__')()
-   
+
     def __len__(self):
         return getattr(self.get(), '__len__')()
- 
+
     def __length_hint__(self):
-        return getattr(self.get(), '__length_hint__')()       
-        
+        return getattr(self.get(), '__length_hint__')()
+
     def __dir__(self):
         return list(self.__dict__.keys()) + list(dir(self.get()))
 
+    def __int__(self):
+        return getattr(self.get(), '__int__')()
+
+    def __float__(self):
+        return getattr(self.get(), '__float__')()
+
+    def __complex__(self):
+        return getattr(self.get(), '__complex__')()
+
+    def __neg__(self):
+        return getattr(self.get(), '__neg__')()
+
+    def __index__(self):
+        return getattr(self.get(), '__index__')()
+
+    def __round__(self, ndigits=None):
+        return getattr(self.get(), '__round__')(ndigits)
+
+    def __trunc__(self):
+        return getattr(self.get(), '__trunc__')()
+
+    def __ceil__(self):
+        return getattr(self.get(), '__ceil__')()
+
+    def __floor__(self):
+        return getattr(self.get(), '__floor__')()
+
+    def __neg__(self):
+        return getattr(self.get(), '__neg__')()
+
+    def __pos__(self):
+        return getattr(self.get(), '__pos__')()
+
+    def __abs__(self):
+        return getattr(self.get(), '__abs__')()
+
+    def __invert__(self):
+        return getattr(self.get(), '__invert__')()
 
 class fParam(fVar):
     def __init__(self, lib, obj):
@@ -379,7 +417,7 @@ class fParam(fVar):
 
     def get(self):
         """
-        A parameters value is stored in the dict, as we cant access them 
+        A parameters value is stored in the dict, as we cant access them
         from the shared lib.
         """
         return self._pytype(self.value)
