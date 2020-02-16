@@ -2,7 +2,7 @@
 from __future__ import print_function
 import ctypes
 import sys
-from .var import fVar, fParam
+from .var import fVar
 import numpy as np
 from .utils import *
 from .fnumpy import *
@@ -756,16 +756,3 @@ class fAllocatableArray(fDummyArray):
         remove_ownership(z)
         return z
         
-
-    
-class fParamArray(fParam):
-    def get(self):
-        """
-        A parameters value is stored in the dict, as we cant access them
-        from the shared lib.
-        """
-        return np.array(self.value, dtype=self.pytype)
-
-
-
-

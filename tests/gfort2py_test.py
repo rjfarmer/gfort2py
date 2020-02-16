@@ -86,35 +86,35 @@ class TestStringMethods(unittest.TestCase):
 			x.const_int=2
 			
 	def test_const_int(self):	
-		self.assertEqual(x.const_int.get(),1)	
+		self.assertEqual(x.const_int,1)	
 
 	def test_const_int_p1(self):	
-		self.assertEqual(x.const_int_p1.get(),2)	
+		self.assertEqual(x.const_int_p1,2)	
 
 	def test_const_int_long(self):	
-		self.assertEqual(x.const_int_lp.get(),1)	
+		self.assertEqual(x.const_int_lp,1)	
 
 	def test_const_real_dp(self):	
-		self.assertEqual(x.const_real_dp.get(),1.0)
+		self.assertEqual(x.const_real_dp,1.0)
 		
 	def test_const_real_pi_dp(self):	
-		self.assertEqual(x.const_real_pi_dp.get(),3.14)
+		self.assertEqual(x.const_real_pi_dp,3.14)
 		
 	def test_const_real_qp(self):	
-		self.assertEqual(x.const_real_qp.get(),1.0)
+		self.assertEqual(x.const_real_qp,1.0)
 
 	def test_const_int_arr_error(self):	
 		with self.assertRaises(ValueError) as cm:
 			x.const_int_arr='abc'
 		
 	def test_const_int_arr(self):	
-		np_test.assert_array_equal(x.const_int_arr.get(),np.array([1,2,3,4,5,6,7,8,9,0],dtype='int'))
+		np_test.assert_array_equal(x.const_int_arr,np.array([1,2,3,4,5,6,7,8,9,0],dtype='int'))
 
 	def test_const_real_arr(self):	
-		np_test.assert_array_equal(x.const_real_arr.get(),np.array([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,0.0],dtype='float'))
+		np_test.assert_array_equal(x.const_real_arr,np.array([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,0.0],dtype='float'))
 
 	def test_const_dp_arr(self):	
-		np_test.assert_array_equal(x.const_real_dp_arr.get(),np.array([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,0.0],dtype='float'))
+		np_test.assert_array_equal(x.const_real_dp_arr,np.array([1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,0.0],dtype='float'))
 
 	def test_b_int_exp_1d(self):
 		v=np.random.randint(0,100,size=(5))
@@ -252,13 +252,13 @@ class TestStringMethods(unittest.TestCase):
 		self.assertEqual(x.a_str_target.get(),v)
 
 	def test_a_const_cmplx(self):
-		self.assertEqual(x.const_cmplx.get(),complex(1.0,1.0))
+		self.assertEqual(x.const_cmplx,complex(1.0,1.0))
 		
 	def test_a_const_cmplx_dp(self):
-		self.assertEqual(x.const_cmplx_dp.get(),complex(1.0,1.0))
+		self.assertEqual(x.const_cmplx_dp,complex(1.0,1.0))
 		
 	def test_a_const_cmplx_qp(self):
-		self.assertEqual(x.const_cmplx_qp.get(),complex(1.0,1.0))
+		self.assertEqual(x.const_cmplx_qp,complex(1.0,1.0))
 		
 	def test_a_cmplx(self):
 		v=complex(1.0,1.0)

@@ -14,7 +14,6 @@ __builtin__.quad = np.longdouble
 
 
 class fVar(object):
-
     def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
@@ -400,24 +399,3 @@ class fVar(object):
 
     def __invert__(self):
         return getattr(self.get(), '__invert__')()
-
-class fParam(fVar):
-    def __init__(self, lib, obj):
-        self.__dict__.update(obj)
-        self._lib = lib
-        self.value = self.param['value']
-        self.pytype = self.param['pytype']
-        self._pytype = self.pytype_def()
-
-    def set_mod(self, value):
-        """
-        Cant set a parameter
-        """
-        raise ValueError("Can't alter a parameter")
-
-    def get(self):
-        """
-        A parameters value is stored in the dict, as we cant access them
-        from the shared lib.
-        """
-        return self._pytype(self.value)

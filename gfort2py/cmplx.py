@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 from __future__ import print_function
 import ctypes
-from .var import fVar, fParam
+from .var import fVar
 from .errors import *
 
 class fComplex(fVar):
@@ -65,12 +65,3 @@ class fComplex(fVar):
     def __repr__(self):
         return str(self.get()) + " <complex>"
 
-
-class fParamComplex(fParam):
-
-    def get(self):
-        """
-        A parameters value is stored in the dict, as we cant access them 
-        from the shared lib.
-        """
-        return self.value
