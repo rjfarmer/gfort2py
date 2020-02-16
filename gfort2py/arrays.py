@@ -806,11 +806,60 @@ class fExplicitArrayMod(fVar):
 
     def set(self, value, copy=False):
         addr = value.__array_interface__['data'][0]
-        #TODO: Add checking for shape and type
+        #TODO: Add checking for shape and type and for copying the data
         if not copy:
             ctypes.memmove(self._addr, addr, ctypes.sizeof(ctypes.c_void_p))
             self._addr = addr
 
+class fAllocArrayMod(fVar):
+
+    def __init__(self, lib, obj):
+        self.__dict__.update(obj)
+        self._lib = lib
+        self._array = True
+        
+        if 'array' in self.var:
+          self.__dict__.update(obj['var'])
+        
+        self._pytype = np.array
+        self._ctype_name = self.var['array']['ctype']
+
+        if self.pytype is 'bool':
+            self.ctype='c_int32'
+            self.pytype='int'
+        
+        self._ctype =  getattr(ctypes, self._ctype_name)
+        self._dtype=self.pytype+str(8*ctypes.sizeof(self._ctype))
+        self._ctype = ctypes.c_void_p
+        
+        self._ndims = int(self.array['ndim'])
+
+        #Store the ref to the lib object
+        self._ref = self._get_from_lib()
+        print(self._ref,self._dtype)
+        self._addr = self._ref.value
+
+        self._shape=[] # Need to get shape from array descriptor
+        #for l,u in zip(self.array['shape'][0::2],self.array['shape'][1::2]):
+        #    self._shape.append(u-l+1)
+        #self._shape = tuple(self._shape)
+        self._shape = (5,)
+
+
+    def get(self, copy=False):
+        if self._addr is None:
+            return None
+        
+        return arr_from_ptr(self._addr, self._dtype, self._shape, copy=copy)
+
+    def set(self, value, copy=False):
+        # This might leak memory if we don't delete the old array first?
+        
+        addr = value.__array_interface__['data'][0]
+        #TODO: Add checking for shape and type and for copying the data
+        if not copy:
+            ctypes.memmove(self._addr, addr, ctypes.sizeof(ctypes.c_void_p))
+            self._addr = addr
 
 def arr_from_ptr(pointer, typestr, shape, copy=False,
                  read_only_flag=False):

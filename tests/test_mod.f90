@@ -353,7 +353,16 @@ module tester
          if(allocated(c_int_alloc_4d)) deallocate(c_int_alloc_4d)
          if(allocated(c_int_alloc_5d)) deallocate(c_int_alloc_5d)
 
-      end subroutine sub_alloc_int_1d_cleanup     
+      end subroutine sub_alloc_int_1d_cleanup   
+      
+      
+      subroutine sub_alter_int_1d()
+      
+         write(*,*) c_int_alloc_1d
+         c_int_alloc_1d = 5
+         write(*,*) c_int_alloc_1d
+      
+      end subroutine sub_alter_int_1d  
       
       
       subroutine sub_alloc_real_1d_arrs()
