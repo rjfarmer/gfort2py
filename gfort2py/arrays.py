@@ -2,7 +2,7 @@
 from __future__ import print_function
 import ctypes
 import sys
-from .var import fVar
+from .var import fVar, fParam
 import numpy as np
 from .utils import *
 from .fnumpy import *
@@ -756,3 +756,113 @@ class fAllocatableArray(fDummyArray):
         remove_ownership(z)
         return z
         
+
+    
+class fParamArray(fParam):
+    def get(self):
+        """
+        A parameters value is stored in the dict, as we cant access them
+        from the shared lib.
+        """
+        return np.array(self.value, dtype=self.pytype)
+
+
+
+
+class fExplicitArrayMod(fVar):
+
+    def __init__(self, lib, obj):
+        self.__dict__.update(obj)
+        self._lib = lib
+        self._array = True
+        
+        if 'array' in self.var:
+          self.__dict__.update(obj['var'])
+        
+        self._pytype = np.array
+        self._ctype_name = self.var['array']['ctype']
+
+        if self.pytype is 'bool':
+            self.ctype='c_int32'
+            self.pytype='int'
+        
+        self._ctype = getattr(ctypes, self._ctype_name)
+        self._dtype=self.pytype+str(8*ctypes.sizeof(self._ctype))
+        
+        self._ndims = int(self.array['ndim'])
+
+        #Store the ref to the lib object
+        self._ref = self._get_from_lib()
+        self._addr = ctypes.addressof(self._ref)
+
+        self._shape=[]
+        for l,u in zip(self.array['shape'][0::2],self.array['shape'][1::2]):
+            self._shape.append(u-l+1)
+        self._shape = tuple(self._shape)
+
+
+    def get(self, copy=False):
+        return arr_from_ptr(self._addr, self._dtype, self._shape, copy=copy)
+
+    def set(self, value, copy=False):
+        addr = value.__array_interface__['data'][0]
+        #TODO: Add checking for shape and type
+        if not copy:
+            ctypes.memmove(self._addr, addr, ctypes.sizeof(ctypes.c_void_p))
+            self._addr = addr
+
+
+def arr_from_ptr(pointer, typestr, shape, copy=False,
+                 read_only_flag=False):
+    """Generates numpy array from memory address
+    https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.interface.html
+
+    Parameters
+    ----------
+    pointer : int
+        Memory address
+
+    typestr : str
+        A string providing the basic type of the homogenous array The
+        basic string format consists of 3 parts: a character
+        describing the byteorder of the data (<: little-endian, >:
+        big-endian, |: not-relevant), a character code giving the
+        basic type of the array, and an integer providing the number
+        of bytes the type uses.
+
+        The basic type character codes are:
+
+        - t Bit field (following integer gives the number of bits in the bit field).
+        - b Boolean (integer type where all values are only True or False)
+        - i Integer
+        - u Unsigned integer
+        - f Floating point
+        - c Complex floating point
+        - m Timedelta
+        - M Datetime
+        - O Object (i.e. the memory contains a pointer to PyObject)
+        - S String (fixed-length sequence of char)
+        - U Unicode (fixed-length sequence of Py_UNICODE)
+        - V Other (void * – each item is a fixed-size chunk of memory)
+
+        See https://docs.scipy.org/doc/numpy-1.13.0/reference/arrays.interface.html#__array_interface__
+
+    shape : tuple
+        Shape of array.
+
+    copy : bool
+        Copy array.  Default False
+
+    read_only_flag : bool
+        Read only array.  Default False.
+    """
+    buff = {'data': (pointer, read_only_flag),
+            'typestr': typestr,
+            'shape': shape}
+
+    class numpy_holder():
+        pass
+
+    holder = numpy_holder()
+    holder.__array_interface__ = buff
+    return np.array(holder, copy=copy)
