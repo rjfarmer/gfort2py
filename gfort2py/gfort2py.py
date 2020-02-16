@@ -17,7 +17,7 @@ from .functions import fFunc, fFuncPtr, _allFuncs
 from .strings import fStr
 from .types import fDerivedType, _dictAllDtDescs, getEmptyDT, _dictDTDefs
 from .utils import *
-from .var import fVar
+from .var import fVar,fModVar
 from .errors import *
 from . import version
 
@@ -143,8 +143,7 @@ class fFort(object):
                 nl = name.lower()
                 if '_mod_vars' in self.__dict__:
                     if nl in self._mod_vars:
-                        self._init_var(self._mod_vars[nl])
-                        return self.__dict__[nl]
+                        return fModVar(self._lib,self._mod_vars[nl]).get()
                 if '_param' in self.__dict__:
                     if nl in self._param:
                         return self._get_param(self._param[nl])
@@ -170,9 +169,8 @@ class fFort(object):
             if self._initialized:
                 if '_mod_vars' in self.__dict__:
                     if nl in self._mod_vars:
-                        self._init_var(self._mod_vars[nl])
-                        self.__dict__[nl].set_mod(value)
-                        return
+                        x = fModVar(self._lib,self._mod_vars[nl])
+                        x.set_mod(value)
                 if '_param' in self.__dict__:
                     if nl in self._param:
                         raise ValueError("Can't alter a parameter")
@@ -210,4 +208,5 @@ class fFort(object):
         if p['array']:
             v = np.array(v, dtype=p['pytype'])
         return v
+
 

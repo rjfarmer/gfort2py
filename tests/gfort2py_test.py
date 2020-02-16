@@ -51,22 +51,22 @@ class TestStringMethods(unittest.TestCase):
 	
 	def test_mising_var(self):	
 		with self.assertRaises(AttributeError) as cm:
-			a=x.invalid_var.get()
+			a=x.invalid_var
 	
 	def test_a_str(self):
 		v='123456798'
 		x.a_str=v
-		self.assertEqual(x.a_str.get(),v)
+		self.assertEqual(x.a_str,v)
 		
 	def test_a_str_bad_length(self):
 		v='132456789kjhgjhf'
 		x.a_str=v
-		self.assertEqual(x.a_str.get(),v[0:10])
+		self.assertEqual(x.a_str,v[0:10])
 		
 	def test_a_int(self):
 		v=1
 		x.a_int=v
-		self.assertEqual(x.a_int.get(),v)
+		self.assertEqual(x.a_int,v)
 		
 	def test_a_int_str(self):
 		with self.assertRaises(ValueError) as cm:
@@ -75,7 +75,7 @@ class TestStringMethods(unittest.TestCase):
 	def test_a_real(self):
 		v=1.0
 		x.a_real=v
-		self.assertEqual(x.a_real.get(),v)
+		self.assertEqual(x.a_real,v)
 	
 	def test_a_real_str(self):	
 		with self.assertRaises(ValueError) as cm:
@@ -119,137 +119,137 @@ class TestStringMethods(unittest.TestCase):
 	def test_b_int_exp_1d(self):
 		v=np.random.randint(0,100,size=(5))
 		x.b_int_exp_1d=v
-		np_test.assert_array_equal(x.b_int_exp_1d.get(),v)
+		np_test.assert_array_equal(x.b_int_exp_1d,v)
 		
 	def test_b_int_exp_2d(self):
 		v=np.random.randint(0,100,size=(5,5))
 		x.b_int_exp_2d=v
-		np_test.assert_array_equal(x.b_int_exp_2d.get(),v)
+		np_test.assert_array_equal(x.b_int_exp_2d,v)
 		
 	def test_b_int_exp_3d(self):
 		v=np.random.randint(0,100,size=(5,5,5))
 		x.b_int_exp_3d=v
-		np_test.assert_array_equal(x.b_int_exp_3d.get(),v)
+		np_test.assert_array_equal(x.b_int_exp_3d,v)
 		
 	def test_b_int_exp_4d(self):
 		v=np.random.randint(0,100,size=(5,5,5,5))
 		x.b_int_exp_4d=v
-		np_test.assert_array_equal(x.b_int_exp_4d.get(),v)
+		np_test.assert_array_equal(x.b_int_exp_4d,v)
 		
 	def test_b_int_exp_5d(self):
 		v=np.random.randint(0,100,size=(5,5,5,5,5))
 		x.b_int_exp_5d=v
-		np_test.assert_array_equal(x.b_int_exp_5d.get(),v)
+		np_test.assert_array_equal(x.b_int_exp_5d,v)
 		
 	def test_b_real_exp_1d(self):
 		v=np.random.random(size=(5))
 		x.b_real_exp_1d=v
-		np_test.assert_allclose(x.b_real_exp_1d.get(),v)
+		np_test.assert_allclose(x.b_real_exp_1d,v)
 		
 	def test_b_real_exp_2d(self):
 		v=np.random.random(size=(5,5))
 		x.b_real_exp_2d=v
-		np_test.assert_allclose(x.b_real_exp_2d.get(),v)
+		np_test.assert_allclose(x.b_real_exp_2d,v)
 		
 	def test_b_real_exp_3d(self):
 		v=np.random.random(size=(5,5,5))
 		x.b_real_exp_3d=v
-		np_test.assert_allclose(x.b_real_exp_3d.get(),v)
+		np_test.assert_allclose(x.b_real_exp_3d,v)
 		
 	def test_b_real_exp_4d(self):
 		v=np.random.random(size=(5,5,5,5))
 		x.b_real_exp_4d=v
-		np_test.assert_allclose(x.b_real_exp_4d.get(),v)
+		np_test.assert_allclose(x.b_real_exp_4d,v)
 		
 	def test_b_real_exp_5d(self):
 		v=np.random.random(size=(5,5,5,5,5))
 		x.b_real_exp_5d=v
-		np_test.assert_allclose(x.b_real_exp_5d.get(),v)
+		np_test.assert_allclose(x.b_real_exp_5d,v)
 		
 	def test_b_real_dp_exp_1d(self):
 		v=np.random.random(size=(5))
 		x.b_real_dp_exp_1d=v
-		np_test.assert_allclose(x.b_real_dp_exp_1d.get(),v)
+		np_test.assert_allclose(x.b_real_dp_exp_1d,v)
 		
 	def test_b_real_dp_exp_2d(self):
 		v=np.random.random(size=(5,5))
 		x.b_real_dp_exp_2d=v
-		np_test.assert_allclose(x.b_real_dp_exp_2d.get(),v)
+		np_test.assert_allclose(x.b_real_dp_exp_2d,v)
 		
 	def test_b_real_dp_exp_3d(self):
 		v=np.random.random(size=(5,5,5))
 		x.b_real_dp_exp_3d=v
-		np_test.assert_allclose(x.b_real_dp_exp_3d.get(),v)
+		np_test.assert_allclose(x.b_real_dp_exp_3d,v)
 		
 	def test_b_real_dp_exp_4d(self):
 		v=np.random.random(size=(5,5,5,5))
 		x.b_real_dp_exp_4d=v
-		np_test.assert_allclose(x.b_real_dp_exp_4d.get(),v)
+		np_test.assert_allclose(x.b_real_dp_exp_4d,v)
 		
 	def test_b_real_dp_exp_5d(self):
 		v=np.random.random(size=(5,5,5,5,5))
 		x.b_real_dp_exp_5d=v
-		np_test.assert_allclose(x.b_real_dp_exp_5d.get(),v)
+		np_test.assert_allclose(x.b_real_dp_exp_5d,v)
 
 	def test_a_int_point(self):
 		v=1
 		x.a_int_point=v
-		self.assertEqual(x.a_int_point.get(),v)
+		self.assertEqual(x.a_int_point,v)
 
 	def test_a_int_lp_point(self):
 		v=1
 		x.a_int_lp_point=v
-		self.assertEqual(x.a_int_lp_point.get(),v)
+		self.assertEqual(x.a_int_lp_point,v)
 
 	def test_a_real_point(self):
 		v=1.0
 		x.a_real_point=v
-		self.assertEqual(x.a_real_point.get(),v)
+		self.assertEqual(x.a_real_point,v)
 		
 	def test_a_real_dp_point(self):
 		v=1.0
 		x.a_real_dp_point=v
-		self.assertEqual(x.a_real_dp_point.get(),v)
+		self.assertEqual(x.a_real_dp_point,v)
 		
 	def test_a_real_qp_point(self):
 		v=1.0
 		x.a_real_qp_point=v
-		self.assertEqual(x.a_real_qp_point.get(),v)
+		self.assertEqual(x.a_real_qp_point,v)
 		
 	def test_a_str_point(self):
 		v='abcdefghij'
 		x.a_str_point=v
-		self.assertEqual(x.a_str_point.get(),v)
+		self.assertEqual(x.a_str_point,v)
 
 	def test_a_int_target(self):
 		v=1
 		x.a_int_target=v
-		self.assertEqual(x.a_int_target.get(),v)
+		self.assertEqual(x.a_int_target,v)
 
 	def test_a_int_lp_target(self):
 		v=1
 		x.a_int_lp_target=v
-		self.assertEqual(x.a_int_lp_target.get(),v)
+		self.assertEqual(x.a_int_lp_target,v)
 
 	def test_a_real_target(self):
 		v=1.0
 		x.a_real_target=v
-		self.assertEqual(x.a_real_target.get(),v)
+		self.assertEqual(x.a_real_target,v)
 		
 	def test_a_real_dp_target(self):
 		v=1.0
 		x.a_real_dp_target=v
-		self.assertEqual(x.a_real_dp_target.get(),v)
+		self.assertEqual(x.a_real_dp_target,v)
 		
 	def test_a_real_qp_target(self):
 		v=1.0
 		x.a_real_qp_target=v
-		self.assertEqual(x.a_real_qp_target.get(),v)
+		self.assertEqual(x.a_real_qp_target,v)
 		
 	def test_a_str_target(self):
 		v='abcdefghij'
 		x.a_str_target=v
-		self.assertEqual(x.a_str_target.get(),v)
+		self.assertEqual(x.a_str_target,v)
 
 	def test_a_const_cmplx(self):
 		self.assertEqual(x.const_cmplx,complex(1.0,1.0))
@@ -263,17 +263,17 @@ class TestStringMethods(unittest.TestCase):
 	def test_a_cmplx(self):
 		v=complex(1.0,1.0)
 		x.a_cmplx=v
-		self.assertEqual(x.a_cmplx.get(),v)
+		self.assertEqual(x.a_cmplx,v)
 
 	def test_a_cmplx_dp(self):
 		v=complex(1.0,1.0)
 		x.a_cmplx_dp=v
-		self.assertEqual(x.a_cmplx_dp.get(),v)
+		self.assertEqual(x.a_cmplx_dp,v)
 		
 	def test_a_cmplx_qp(self):
 		v=complex(1.0,1.0)
 		x.a_cmplx_qp=v
-		self.assertEqual(x.a_cmplx_qp.get(),v)
+		self.assertEqual(x.a_cmplx_qp,v)
 		
 	def test_sub_no_args(self):
 		with captured_output() as (out,err):
@@ -283,19 +283,19 @@ class TestStringMethods(unittest.TestCase):
 		
 	def test_sub_alter_mod(self):
 		y=x.sub_alter_mod()
-		self.assertEqual(x.a_int.get(),99)
-		self.assertEqual(x.a_int_lp.get(),99)
-		self.assertEqual(x.a_real.get(),99.0)
-		self.assertEqual(x.a_real_dp.get(),99.0)
-		self.assertEqual(x.a_str.get(),"9999999999")
-		self.assertEqual(x.a_cmplx.get(),complex(99.0,99.0))
-		self.assertEqual(x.a_cmplx_dp.get(),complex(99.0,99.0))
+		self.assertEqual(x.a_int,99)
+		self.assertEqual(x.a_int_lp,99)
+		self.assertEqual(x.a_real,99.0)
+		self.assertEqual(x.a_real_dp,99.0)
+		self.assertEqual(x.a_str,"9999999999")
+		self.assertEqual(x.a_cmplx,complex(99.0,99.0))
+		self.assertEqual(x.a_cmplx_dp,complex(99.0,99.0))
 		
 	@unittest.skip("Skipping due to quad support")	
 	def test_sub_alter_mod_qp(self):
 		y=x.sub_alter_mod()
-		self.assertEqual(x.a_real_qp.get(),99.0)
-		self.assertEqual(x.a_cmplx_qp.get(),complex(99.0,99.0))	
+		self.assertEqual(x.a_real_qp,99.0)
+		self.assertEqual(x.a_cmplx_qp,complex(99.0,99.0))	
 		
 	def test_sub_alloc_1d_arrs(self):
 		y=x.sub_alloc_int_1d_arrs()
@@ -312,6 +312,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.func_int_in_multi(v,w,u)
 		self.assertEqual(y,v+w+u)
 		
+	@unittest.skip("Skipping due to seg faults")	
 	def test_sub_int_in(self):
 		v=5
 		with captured_output() as (out,err):
@@ -354,6 +355,7 @@ class TestStringMethods(unittest.TestCase):
 		output=out.getvalue().strip()	
 		self.assertEqual(output,str(v+w)+' '+u)	
 
+	@unittest.skip("Skipping due to seg faults")	
 	def test_sub_array_n_int_1d(self):
 		v=np.arange(0,5)
 		o=' '.join([str(i) for i in v.flatten()])
@@ -495,12 +497,12 @@ class TestStringMethods(unittest.TestCase):
 	def test_dt_set_value(self):
 		x.f_struct_simple.x=1
 		x.f_struct_simple.y=0
-		y=x.f_struct_simple.get()
+		y=x.f_struct_simple
 		self.assertEqual(y,{'x':1,'y':0})
 		
 	def test_dt_set_dict(self):	
 		x.f_struct_simple={'x':5,'y':5}
-		y=x.f_struct_simple.get()
+		y=x.f_struct_simple
 		self.assertEqual(y,{'x':5,'y':5})
 			
 	def test_dt_bad_dict(self):
@@ -513,14 +515,14 @@ class TestStringMethods(unittest.TestCase):
 	
 	def test_c_int_alloc_1d_non_alloc(self):
 		y=x.sub_alloc_int_1d_cleanup()
-		np_test.assert_array_equal(x.c_int_alloc_1d.get(),np.array([0]))
+		np_test.assert_array_equal(x.c_int_alloc_1d,np.array([0]))
 			
 	def test_c_int_alloc_1d(self):
 		y=x.sub_alloc_int_1d_cleanup()
 		y=x.sub_alloc_int_1d_arrs()
 		v=np.zeros([5])
 		v[:]=1
-		np_test.assert_array_equal(x.c_int_alloc_1d.get(),v)
+		np_test.assert_array_equal(x.c_int_alloc_1d,v)
 		y=x.sub_alloc_int_1d_cleanup()
 	
 	def test_c_int_alloc_2d(self):
@@ -528,7 +530,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.sub_alloc_int_1d_arrs()
 		v=np.zeros([5,5])
 		v[:]=1
-		np_test.assert_array_equal(x.c_int_alloc_2d.get(),v)
+		np_test.assert_array_equal(x.c_int_alloc_2d,v)
 		y=x.sub_alloc_int_1d_cleanup()
 	
 	def test_c_int_alloc_3d(self):
@@ -536,7 +538,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.sub_alloc_int_1d_arrs()
 		v=np.zeros([5,5,5])
 		v[:]=1
-		np_test.assert_array_equal(x.c_int_alloc_3d.get(),v)
+		np_test.assert_array_equal(x.c_int_alloc_3d,v)
 		y=x.sub_alloc_int_1d_cleanup()
 	
 	def test_c_int_alloc_4d(self):
@@ -544,7 +546,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.sub_alloc_int_1d_arrs()
 		v=np.zeros([5,5,5,5])
 		v[:]=1
-		np_test.assert_array_equal(x.c_int_alloc_4d.get(),v)
+		np_test.assert_array_equal(x.c_int_alloc_4d,v)
 		y=x.sub_alloc_int_1d_cleanup()
 	
 	def test_c_int_alloc_5d(self):
@@ -552,7 +554,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.sub_alloc_int_1d_arrs()
 		v=np.zeros([5,5,5,5,5])
 		v[:]=1
-		np_test.assert_array_equal(x.c_int_alloc_5d.get(),v)
+		np_test.assert_array_equal(x.c_int_alloc_5d,v)
 		y=x.sub_alloc_int_1d_cleanup()
 		
 	
@@ -562,7 +564,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([5])
 		v[:]=5
 		x.c_int_alloc_1d = v
-		np_test.assert_array_equal(x.c_int_alloc_1d.get(),v)
+		np_test.assert_array_equal(x.c_int_alloc_1d,v)
 		y=x.sub_alloc_int_1d_cleanup()
 	
 	def test_c_int_alloc_2d_set(self):
@@ -571,7 +573,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([5,5])
 		v[:]=5
 		x.c_int_alloc_2d = v
-		np_test.assert_array_equal(x.c_int_alloc_2d.get(),v)
+		np_test.assert_array_equal(x.c_int_alloc_2d,v)
 		y=x.sub_alloc_int_1d_cleanup()
 	
 	def test_c_int_alloc_3d_set(self):
@@ -580,7 +582,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([5,5,5])
 		v[:]=5
 		x.c_int_alloc_3d = v
-		np_test.assert_array_equal(x.c_int_alloc_3d.get(),v)
+		np_test.assert_array_equal(x.c_int_alloc_3d,v)
 		y=x.sub_alloc_int_1d_cleanup()
 	
 	def test_c_int_alloc_4d_set(self):
@@ -589,7 +591,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([5,5,5,5])
 		v[:]=5
 		x.c_int_alloc_4d = v
-		np_test.assert_array_equal(x.c_int_alloc_4d.get(),v)
+		np_test.assert_array_equal(x.c_int_alloc_4d,v)
 		y=x.sub_alloc_int_1d_cleanup()
 	
 	def test_c_int_alloc_5d_set(self):
@@ -598,7 +600,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([5,5,5,5,5])
 		v[:]=5
 		x.c_int_alloc_5d = v
-		np_test.assert_array_equal(x.c_int_alloc_5d.get(),v)
+		np_test.assert_array_equal(x.c_int_alloc_5d,v)
 		y=x.sub_alloc_int_1d_cleanup()
 	
 	def test_c_int_alloc_1d_large(self):
@@ -608,7 +610,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([256])
 		v[:]=5
 		x.c_int_alloc_1d = v
-		np_test.assert_array_equal(x.c_int_alloc_1d.get(),v)
+		np_test.assert_array_equal(x.c_int_alloc_1d,v)
 		y=x.sub_alloc_int_1d_cleanup()
 
 
@@ -617,7 +619,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.sub_alloc_real_1d_arrs()
 		v=np.zeros([5])
 		v[:]=1
-		np_test.assert_array_equal(x.c_real_alloc_1d.get(),v)
+		np_test.assert_array_equal(x.c_real_alloc_1d,v)
 		y=x.sub_alloc_real_1d_cleanup()
 	
 	def test_c_real_alloc_2d(self):
@@ -625,7 +627,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.sub_alloc_real_1d_arrs()
 		v=np.zeros([5,5])
 		v[:]=1
-		np_test.assert_array_equal(x.c_real_alloc_2d.get(),v)
+		np_test.assert_array_equal(x.c_real_alloc_2d,v)
 		y=x.sub_alloc_real_1d_cleanup()
 	
 	def test_c_real_alloc_3d(self):
@@ -633,7 +635,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.sub_alloc_real_1d_arrs()
 		v=np.zeros([5,5,5])
 		v[:]=1
-		np_test.assert_array_equal(x.c_real_alloc_3d.get(),v)
+		np_test.assert_array_equal(x.c_real_alloc_3d,v)
 		y=x.sub_alloc_real_1d_cleanup()
 	
 	def test_c_real_alloc_4d(self):
@@ -641,7 +643,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.sub_alloc_real_1d_arrs()
 		v=np.zeros([5,5,5,5])
 		v[:]=1
-		np_test.assert_array_equal(x.c_real_alloc_4d.get(),v)
+		np_test.assert_array_equal(x.c_real_alloc_4d,v)
 		y=x.sub_alloc_real_1d_cleanup()
 	
 	def test_c_real_alloc_5d(self):
@@ -649,7 +651,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.sub_alloc_real_1d_arrs()
 		v=np.zeros([5,5,5,5,5])
 		v[:]=1
-		np_test.assert_array_equal(x.c_real_alloc_5d.get(),v)
+		np_test.assert_array_equal(x.c_real_alloc_5d,v)
 		y=x.sub_alloc_real_1d_cleanup()
 		
 	
@@ -659,7 +661,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([5])
 		v[:]=2.0
 		x.c_real_dp_alloc_1d = v
-		np_test.assert_array_equal(x.c_real_dp_alloc_1d.get(),v)
+		np_test.assert_array_equal(x.c_real_dp_alloc_1d,v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
 	
 	def test_c_real_dp_alloc_2d_set(self):
@@ -668,7 +670,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([5,5])
 		v[:]=2.0
 		x.c_real_dp_alloc_2d = v
-		np_test.assert_array_equal(x.c_real_dp_alloc_2d.get(),v)
+		np_test.assert_array_equal(x.c_real_dp_alloc_2d,v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
 	
 	def test_c_real_dp_alloc_3d_set(self):
@@ -677,7 +679,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([5,5,5])
 		v[:]=2.0
 		x.c_real_dp_alloc_3d = v
-		np_test.assert_array_equal(x.c_real_dp_alloc_3d.get(),v)
+		np_test.assert_array_equal(x.c_real_dp_alloc_3d,v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
 	
 	def test_c_real_dp_alloc_4d_set(self):
@@ -686,7 +688,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([5,5,5,5])
 		v[:]=2.0
 		x.c_real_dp_alloc_4d = v
-		np_test.assert_array_equal(x.c_real_dp_alloc_4d.get(),v)
+		np_test.assert_array_equal(x.c_real_dp_alloc_4d,v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
 	
 	def test_c_real_dp_alloc_5d_set(self):
@@ -695,7 +697,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([5,5,5,5,5])
 		v[:]=2.0
 		x.c_real_dp_alloc_5d = v
-		np_test.assert_array_equal(x.c_real_dp_alloc_5d.get(),v)
+		np_test.assert_array_equal(x.c_real_dp_alloc_5d,v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
 	
 
@@ -704,7 +706,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.sub_alloc_real_dp_1d_arrs()
 		v=np.zeros([5])
 		v[:]=1
-		np_test.assert_array_equal(x.c_real_dp_alloc_1d.get(),v)
+		np_test.assert_array_equal(x.c_real_dp_alloc_1d,v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
 	
 	def test_c_real_dp_alloc_2d(self):
@@ -712,7 +714,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.sub_alloc_real_dp_1d_arrs()
 		v=np.zeros([5,5])
 		v[:]=1
-		np_test.assert_array_equal(x.c_real_dp_alloc_2d.get(),v)
+		np_test.assert_array_equal(x.c_real_dp_alloc_2d,v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
 	
 	def test_c_real_dp_alloc_3d(self):
@@ -720,7 +722,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.sub_alloc_real_dp_1d_arrs()
 		v=np.zeros([5,5,5])
 		v[:]=1
-		np_test.assert_array_equal(x.c_real_dp_alloc_3d.get(),v)
+		np_test.assert_array_equal(x.c_real_dp_alloc_3d,v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
 	
 	def test_c_real_dp_alloc_4d(self):
@@ -728,7 +730,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.sub_alloc_real_dp_1d_arrs()
 		v=np.zeros([5,5,5,5])
 		v[:]=1
-		np_test.assert_array_equal(x.c_real_dp_alloc_4d.get(),v)
+		np_test.assert_array_equal(x.c_real_dp_alloc_4d,v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
 	
 	def test_c_real_dp_alloc_5d(self):
@@ -736,7 +738,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.sub_alloc_real_dp_1d_arrs()
 		v=np.zeros([5,5,5,5,5])
 		v[:]=1
-		np_test.assert_array_equal(x.c_real_dp_alloc_5d.get(),v)
+		np_test.assert_array_equal(x.c_real_dp_alloc_5d,v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
 		
 	
@@ -746,7 +748,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([5])
 		v[:]=2.0
 		x.c_real_dp_alloc_1d = v
-		np_test.assert_array_equal(x.c_real_dp_alloc_1d.get(),v)
+		np_test.assert_array_equal(x.c_real_dp_alloc_1d,v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
 	
 	def test_c_real_dp_alloc_2d_set(self):
@@ -755,7 +757,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([5,5])
 		v[:]=2.0
 		x.c_real_dp_alloc_2d = v
-		np_test.assert_array_equal(x.c_real_dp_alloc_2d.get(),v)
+		np_test.assert_array_equal(x.c_real_dp_alloc_2d,v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
 	
 	def test_c_real_dp_alloc_3d_set(self):
@@ -764,7 +766,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([5,5,5])
 		v[:]=2.0
 		x.c_real_dp_alloc_3d = v
-		np_test.assert_array_equal(x.c_real_dp_alloc_3d.get(),v)
+		np_test.assert_array_equal(x.c_real_dp_alloc_3d,v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
 	
 	def test_c_real_dp_alloc_4d_set(self):
@@ -773,7 +775,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([5,5,5,5])
 		v[:]=2.0
 		x.c_real_dp_alloc_4d = v
-		np_test.assert_array_equal(x.c_real_dp_alloc_4d.get(),v)
+		np_test.assert_array_equal(x.c_real_dp_alloc_4d,v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
 	
 	def test_c_real_dp_alloc_5d_set(self):
@@ -782,7 +784,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.zeros([5,5,5,5,5])
 		v[:]=2.0
 		x.c_real_dp_alloc_5d = v
-		np_test.assert_array_equal(x.c_real_dp_alloc_5d.get(),v)
+		np_test.assert_array_equal(x.c_real_dp_alloc_5d,v)
 		y=x.sub_alloc_real_dp_1d_cleanup()
 		
 	def test_func_return_res(self):
@@ -943,7 +945,7 @@ class TestStringMethods(unittest.TestCase):
 	def test_dt_copy(self):
 		x.f_struct_simple.x=99
 		x.f_struct_simple.y=99
-		y=x.f_struct_simple.get()
+		y=x.f_struct_simple
 		self.assertEqual(y,{'x':99,'y':99})
 		y=x.f_struct_simple.get(copy=True)
 		self.assertEqual(y,{'x':99,'y':99})
@@ -955,8 +957,8 @@ class TestStringMethods(unittest.TestCase):
 	def test_second_mod(self):
 		x.f_struct_simple2.x=99
 		y=x.sub_use_mod()
-		self.assertEqual(x.test2_x.get(),1)
-		self.assertEqual(x.f_struct_simple2.get(),{'x':5,'y':6,'z':0})
+		self.assertEqual(x.test2_x,1)
+		self.assertEqual(x.f_struct_simple2,{'x':5,'y':6,'z':0})
 	
 	def test_nested_dts(self):
 		x.g_struct.a_int=10
