@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 from __future__ import print_function
 import ctypes
+from ctypes.util import find_library
 import sys
 from .var import fVar, fParam
 import numpy as np
@@ -12,6 +13,8 @@ _index_t = ctypes.c_int64
 _size_t = ctypes.c_int64
 _mod_version = 14
 _GFC_MAX_DIMENSIONS = -1
+
+_libc = ctypes.CDLL(find_library("c"))
 
 # Pre generate alloc array descriptors
 class _bounds14(ctypes.Structure):
@@ -783,33 +786,54 @@ class fExplicitArrayMod(fVar):
         self._ctype_name = self.var['array']['ctype']
 
         if self.pytype is 'bool':
-            self.ctype='c_int32'
-            self.pytype='int'
+            self.ctype = 'c_int32'
+            self.pytype = 'int'
         
         self._ctype = getattr(ctypes, self._ctype_name)
         self._dtype=self.pytype+str(8*ctypes.sizeof(self._ctype))
         
         self._ndims = int(self.array['ndim'])
 
-        #Store the ref to the lib object
-        self._ref = self._get_from_lib()
-        self._addr = ctypes.addressof(self._ref)
+    @property
+    def _get_ref(self):
+        return self._get_from_lib()
 
-        self._shape=[]
+    @property
+    def _get_addr(self):
+        return ctypes.addressof(self._get_ref())
+        
+    @property
+    def shape(self):
+        shape = []
         for l,u in zip(self.array['shape'][0::2],self.array['shape'][1::2]):
-            self._shape.append(u-l+1)
-        self._shape = tuple(self._shape)
-
+            shape.append(u-l+1)
+        return tuple(shape)
 
     def get(self, copy=False):
-        return arr_from_ptr(self._addr, self._dtype, self._shape, copy=copy)
+        self._value = arr_from_ptr(self._get_addr(), self._dtype, self._shape, copy=copy)
+        if copy:
+            self._value  = np.copy(self._value)
+        return self._value
+
 
     def set(self, value, copy=False):
         addr = value.__array_interface__['data'][0]
+        
+        if value.ndim != self._ndims:
+            raise AttributeError("Bad ndims for array")
+        
+        if value.shape != self.shape:
+            raise AttributeError("Bad shape for array")
+        
         #TODO: Add checking for shape and type and for copying the data
         if not copy:
-            ctypes.memmove(self._addr, addr, ctypes.sizeof(ctypes.c_void_p))
-            self._addr = addr
+            self._value = np.copy(arr)
+            addr = self._value.__array_interface__['data'][0]
+            
+
+        ctypes.memmove(self._addr, addr, ctypes.sizeof(ctypes.c_void_p))
+        self._addr = addr
+
 
 class fAllocArrayMod(fVar):
 
@@ -836,8 +860,12 @@ class fAllocArrayMod(fVar):
 
         #Store the ref to the lib object
         self._ref = self._get_from_lib()
-        print(self._ref,self._dtype)
-        self._addr = self._ref.value
+        if len(_listFAllocArrays) == 0:
+            init_mod_arrays(15) 
+            
+        self._arr_desc = _listFAllocArrays[1]
+        self._arr_ptr = self._arr_desc.from_address(ctypes.addressof(self._ref))
+        self._addr = self._arr_ptr.base_addr
 
         self._shape=[] # Need to get shape from array descriptor
         #for l,u in zip(self.array['shape'][0::2],self.array['shape'][1::2]):
@@ -853,7 +881,8 @@ class fAllocArrayMod(fVar):
         return arr_from_ptr(self._addr, self._dtype, self._shape, copy=copy)
 
     def set(self, value, copy=False):
-        # This might leak memory if we don't delete the old array first?
+        # if self._addr is not None:
+            # _libc.free(self._addr)
         
         addr = value.__array_interface__['data'][0]
         #TODO: Add checking for shape and type and for copying the data
