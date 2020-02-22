@@ -11,13 +11,13 @@ import numpy as np
 import errno
 import sys
 
-from .cmplx import fComplex
-from .arrays import init_mod_arrays, fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize
+from .cmplx import fComplex, fParamComplex
+from .arrays import init_mod_arrays, fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize, fParamArray
 from .functions import fFunc, fFuncPtr, _allFuncs
 from .strings import fStr
 from .types import fDerivedType, _dictAllDtDescs, getEmptyDT, _dictDTDefs
 from .utils import *
-from .var import fVar,fModVar
+from .var import fVar, fParam
 from .errors import *
 from . import version
 
@@ -143,10 +143,12 @@ class fFort(object):
                 nl = name.lower()
                 if '_mod_vars' in self.__dict__:
                     if nl in self._mod_vars:
-                        return fModVar(self._lib,self._mod_vars[nl]).get()
+                        self._init_var(self._mod_vars[nl])
+                        return self.__dict__[nl]
                 if '_param' in self.__dict__:
                     if nl in self._param:
-                        return self._get_param(self._param[nl])
+                        self._init_param(self._param[nl])
+                        return self.__dict__[nl]
                 if '_funcs' in self.__dict__:
                     if nl in self._funcs:
                         self._init_func(self._funcs[nl])
@@ -169,11 +171,14 @@ class fFort(object):
             if self._initialized:
                 if '_mod_vars' in self.__dict__:
                     if nl in self._mod_vars:
-                        x = fModVar(self._lib,self._mod_vars[nl])
-                        x.set_mod(value)
+                        self._init_var(self._mod_vars[nl])
+                        self.__dict__[nl].set_mod(value)
+                        return
                 if '_param' in self.__dict__:
                     if nl in self._param:
-                        raise ValueError("Can't alter a parameter")
+                        self._init_param(self._param[nl])
+                        self.__dict__[nl].set_mod(value)
+                        return
                 if '_func_ptrs' in self.__dict__:
                     if nl in self._func_ptrs:
                         self._init_func_ptr(self._func_ptrs[nl])
@@ -196,17 +201,4 @@ class fFort(object):
 
     def __setstate__(self,state):
         self.__init__(*state)
-
-
-    def _get_param(self, obj):
-        p = obj['param']
-        if p['pytype'] == 'quad':
-            pytype = np.longdouble
-        else:
-            pytype = getattr(__builtin__, p['pytype'])
-        v = p['value']
-        if p['array']:
-            v = np.array(v, dtype=p['pytype'])
-        return v
-
 
