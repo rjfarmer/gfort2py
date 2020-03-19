@@ -773,7 +773,34 @@ class fParamArray(fParam):
 
 
 class fExplicitArrayMod(fVar):
-
+    _GFC_MAX_DIMENSIONS = -1
+    
+    _GFC_DTYPE_RANK_MASK = 0x07
+    _GFC_DTYPE_TYPE_SHIFT = 3
+    _GFC_DTYPE_TYPE_MASK = 0x38
+    _GFC_DTYPE_SIZE_SHIFT = 6
+    
+    _BT_UNKNOWN = 0
+    _BT_INTEGER = _BT_UNKNOWN + 1
+    _BT_LOGICAL = _BT_INTEGER + 1
+    _BT_REAL = _BT_LOGICAL + 1
+    _BT_COMPLEX = _BT_REAL + 1
+    _BT_DERIVED = _BT_COMPLEX + 1
+    _BT_CHARACTER = _BT_DERIVED + 1
+    _BT_CLASS = _BT_CHARACTER + 1
+    _BT_PROCEDURE = _BT_CLASS + 1
+    _BT_HOLLERITH = _BT_PROCEDURE + 1
+    _BT_VOID = _BT_HOLLERITH + 1
+    _BT_ASSUMED = _BT_VOID + 1
+    
+    _BT_TYPESPEC = {_BT_UNKNOWN:'v',_BT_INTEGER:'i',_BT_LOGICAL:'b',
+                _BT_REAL:'f',_BT_COMPLEX:'c',_BT_DERIVED:'v',
+                _BT_CHARACTER:'v',_BT_CLASS:'v',_BT_PROCEDURE:'v',
+                _BT_HOLLERITH:'v',_BT_VOID:'v',_BT_ASSUMED:'v'}
+                
+    _PY_TO_BT = {'int':_BT_INTEGER,'float':_BT_REAL,'bool':_BT_LOGICAL,
+            'str':_BT_CHARACTER,'bytes':_BT_CHARACTER}
+            
     def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
@@ -889,6 +916,72 @@ class fAllocArrayMod(fVar):
         if not copy:
             ctypes.memmove(self._addr, addr, ctypes.sizeof(ctypes.c_void_p))
             self._addr = addr
+        
+    def _create_dtype15(self,ndim,itemsize,ftype):
+        ftype=self._get_BT(ftype)
+        x = _dtype_type()
+        x.elem_len = itemsize
+        x.version = 0 # Unknown need to find the default value
+        x.rank = ndim
+        x.type = ftype
+        x.attribute = 0 # Unknown need to find the default value
+        return x
+    
+    def _get_BT(self,ftype):
+        if 'int' in ftype:
+            BT=self._BT_INTEGER
+        elif 'float' in ftype:
+            BT=self._BT_REAL
+        elif 'bool' in ftype:
+            BT=self._BT_LOGICAL
+        elif 'str' in ftype or 'bytes' in ftype:
+            BT=self._BT_CHARACTER
+        else:
+            raise ValueError("Cant match dtype, got "+ftype)
+        return BT
+        
+    def _BT_to_typestr(self,BT):
+        try:
+            res = self._BT_TYPESPEC[BT]
+        except KeyError:
+            raise BadFortranArray("Bad BT value "+str(BT))
+            
+        return _byte_order+res
+        
+    def _split_dtype15(self,dtype):
+        return dtype.rank,dtype.type,dtype.elem_len
+       
+
+    def _isallocated(self):
+        try:
+            p = self._get_pointer()
+        except TypeError:
+            return False
+            
+        pp = p
+        if hasattr(p,'contents'):
+            pp = p.contents
+            
+        if pp.base_addr:
+            #Base addr is NULL if deallocated
+            return True
+        else:
+            return False
+            
+    def _get_ftype(self):
+        ftype = None
+        dtype = self.ctype
+        if 'c_int' in dtype:
+            ftype=self._BT_INTEGER
+        elif 'c_double' in dtype or 'c_real' in dtype or 'c_float' in dtype:
+            ftype=self._BT_REAL
+        elif 'c_bool' in dtype:
+            ftype=self._BT_LOGICAL
+        elif 'c_char' in dtype:
+            ftype=self._BT_CHARACTER
+        else:
+            raise ValueError("Cant match dtype, got "+dtype)
+        return ftype
 
 def arr_from_ptr(pointer, typestr, shape, copy=False,
                  read_only_flag=False):
