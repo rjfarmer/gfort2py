@@ -769,6 +769,11 @@ module tester
       end function func_check_f_struct
       
       
+      subroutine print_test_array()
+			write(*,*) b_int_exp_4d(1,1,1,:)
+      end subroutine print_test_array
+      
+      
       subroutine sub_s_struct_inout(s)
          type(s_struct_basic), intent(inout) :: s
       

@@ -414,4 +414,24 @@ class fParentArray(fParent):
     def view(self, *args, **kwargs):
         return getattr(self.get(),"view")(*args,**kwargs)
     
- 
+    def __eq__(self, other):
+        return getattr(self.get(), '__eq__')(np.asfortranarray(other))
+    
+    def __neq__(self, other):
+        return getattr(self.get(), '__new__')(np.asfortranarray(other))
+    
+    def __lt__(self, other):
+        return getattr(self.get(), '__lt__')(np.asfortranarray(other))
+    
+    def __le__(self, other):
+        return getattr(self.get(), '__le__')(np.asfortranarray(other))
+    
+    def __gt__(self, other):
+        return getattr(self.get(), '__gt__')(np.asfortranarray(other))
+    
+    def __ge__(self, other):
+        return getattr(self.get(), '__ge__')(np.asfortranarray(other))
+    
+    def __getitem__(self, key):
+        return self.get()[key]
+    

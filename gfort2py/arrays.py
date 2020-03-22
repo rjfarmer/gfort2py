@@ -123,7 +123,8 @@ class fExplicitArray(fParentArray, np.lib.mixins.NDArrayOperatorsMixin):
 
         holder = numpy_holder()
         holder.__array_interface__ = buff
-        return np.array(holder)
+        
+        return np.asfortranarray(holder)
         
         
     def sizeof(self):
@@ -152,13 +153,13 @@ class fExplicitArray(fParentArray, np.lib.mixins.NDArrayOperatorsMixin):
         if v.shape != self._shape:
             raise AttributeError("Bad shape for array")
             
-        v = np.asfortranarray(v.astype(self._dtype))
+        v = np.asfortranarray(v.astype(self._dtype)).T
         v_addr = v.ctypes.data
 
         ctypes.memmove(ctypes.addressof(c), v_addr, self.sizeof())
 
     def get(self):
-        return self.from_address(ctypes.addressof(self.in_dll()))        
+        return self.from_address(ctypes.addressof(self.in_dll())).T       
 
     def set(self, value):
         self._set(self.in_dll(), value)
