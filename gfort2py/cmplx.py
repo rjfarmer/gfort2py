@@ -1,76 +1,85 @@
 # SPDX-License-Identifier: GPL-2.0+
 from __future__ import print_function
 import ctypes
+
+try:
+    import __builtin__
+except ImportError:
+    import builtins as __builtin__
+
 from .var import fVar, fParam
 from .errors import *
+from .utils import *
 
-class fComplex(fVar):
 
+class fComplex(fParent):
     def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
-        
         self.ctype=self.var['ctype']
         self.pytype=self.var['pytype']
-        
-        self._ctype = self.ctype_def()
-        #self._ctype_f = self.ctype_def_func()
-        self._pytype = self.pytype_def()
-        
-        #Store the ref to the lib object
-        try:   
-            self._ref = self._get_from_lib()
-        except NotInLib:
-            self._ref = None
 
-    def py_to_ctype(self, value):
-        """
-        Pass in a python value returns the ctype representation of it
-        """
-        x = [value.real, value.imag]
-        return self._set_var_from_iter(self._ref, x, 2)
-
-    def ctype_to_py(self, value):
-        """
-        Pass in a ctype value returns the python representation of it
-        """
-        x = self._get_var_by_iter(value, 2)
-        return self._pytype(x[0], x[1])
-
-    def pytype_def(self):
-        return complex
-
-    def ctype_def(self):
-        """
-        The ctype type of this object
-        """
-        if '_cached_ctype' not in self.__dict__:
-            self._cached_ctype = getattr(ctypes, self.ctype)
-        
-        return self._cached_ctype
-
-    def set_mod(self, value):
-        if isinstance(value, complex):
-            self.py_to_ctype(value)
+        if self.pytype == 'quad':
+            self.pytype = np.longdouble
+        elif self.pytype=='bool':
+            self.pytype=int
+            self.ctype='c_int32'
         else:
-            raise ValueError("Not complex")
+             self.pytype = getattr(__builtin__, self.pytype)
 
-    def get(self,copy=True):
-        s = self.ctype_to_py(self._ref)
-        if not copy:
-            raise ValueError("Must copy complex number")
+        self.ctype = getattr(ctypes, self.ctype)*2
+
+    def in_dll(self):
+        if 'mangled_name' in self.__dict__ and '_lib' in self.__dict__:
+            try:
+                return self.ctype.in_dll(self._lib, self.mangled_name)
+            except ValueError:
+                raise NotInLib
+        raise NotInLib 
         
-        return s
+    def from_address(self, addr):
+        return self.ctype.from_address(addr)
+        
+    def set_from_address(self, addr, value):
+        ctype = self.from_address(addr)
+        self._set(ctype, value)
+        
+    def _set(self, c, v):
+        c[0] = v.real
+        c[1] = v.imag 
+        
+    def sizeof(self):
+        return ctypes.sizeof(self.ctype)
 
-    def __repr__(self):
-        return str(self.get()) + " <complex>"
+    def get(self):
+        return complex(*self.from_address(ctypes.addressof(self.in_dll())))
+
+    def set(self, value):      
+        self.set_from_address(ctypes.addressof(self.in_dll()),value)
+        
+    def from_param(self, value):
+        ctype  = self.ctype()
+        self._set(ctype, value)
+        return ctype
 
 
-class fParamComplex(fParam):
+class fParamComplex(fParent):
+    def __init__(self, lib, obj):
+        self.__dict__.update(obj)
+        self._lib = lib
+        self.value = self.param['value']
+        self.pytype = self.param['pytype']
+        self.pytype = complex
+		
+    def set(self, value):
+        """
+        Cant set a parameter
+        """
+        raise ValueError("Can't alter a parameter")
 
     def get(self):
         """
-        A parameters value is stored in the dict, as we cant access them 
+        A parameters value is stored in the dict, as we cant access them
         from the shared lib.
         """
-        return self.value
+        return self.pytype(self.value)

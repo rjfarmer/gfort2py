@@ -12,25 +12,26 @@ import errno
 import sys
 
 from .cmplx import fComplex, fParamComplex
-from .arrays import init_mod_arrays, fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize, fParamArray
-from .functions import fFunc, fFuncPtr, _allFuncs
+from .arrays import fExplicitArray, fDummyArray, fParamArray
+from .functions import fFunc,  _allFuncs
 from .strings import fStr
-from .types import fDerivedType, _dictAllDtDescs, getEmptyDT, _dictDTDefs
+# from .types import fDerivedType, _dictAllDtDescs, getEmptyDT, _dictDTDefs
 from .utils import *
 from .var import fVar, fParam
 from .errors import *
+
+from .selector import _selectVar
+
 from . import version
 
 from . import parseMod as pm
 
 WARN_ON_SKIP=False
 
-# https://gcc.gnu.org/onlinedocs/gcc-6.1.0/gfortran/Argument-passing-conventions.html
-
 if sys.version_info[0] < 3:
     FileNotFoundError = IOError
-
-
+    
+    
 class fFort(object):
     _initialized = False
 
@@ -80,44 +81,17 @@ class fFort(object):
         self._func_ptrs = x[5]
 
     def _init(self):      
-        init_mod_arrays(self._mod_data['version'])
-        self._init_dt_defs()
+        #init_mod_arrays(self._mod_data['version'])
+        #self._init_dt_defs()
+        pass
 
     def _init_var(self, obj):
-        x = None
-        if obj['var']['pytype'] == 'str':
-            x = fStr(self._lib, obj)
-        elif obj['var']['pytype'] == 'complex':
-            x = fComplex(self._lib, obj)
-        elif 'dt' in obj['var'] and obj['var']['dt']:
-            x = fDerivedType(self._lib, obj)
-        elif 'array' in obj['var']:
-            array = obj['var']['array']['atype']
-            if array == 'explicit':
-                x = fExplicitArray(self._lib, obj)
-            elif array == 'alloc' or array == 'pointer':
-                x = fDummyArray(self._lib, obj)
-            elif array == 'assumed_shape':
-                x = fAssumedShape(self._lib, obj)
-            elif array == 'assumed_size':
-                x = fAssumedSize(self._lib, obj)
-        else:
-            x = fVar(self._lib, obj)
+        x = _selectVar(obj)(self._lib, obj)
 
         if x is not None:
             self.__dict__[x.name.lower()] = x
         else:
             print("Skipping init " + obj['name'])
-
-    def _init_param(self, obj):
-        if obj['param']['pytype'] == 'complex':
-            x = fParamComplex(self._lib, obj)
-        elif obj['param']['array']:
-            x = fParamArray(self._lib, obj)
-        else:
-            x = fParam(self._lib, obj)
-
-        self.__dict__[x.name.lower()] = x
 
     def _init_func(self, obj):
         x = fFunc(self._lib, obj)
@@ -136,27 +110,32 @@ class fFort(object):
 
 
     def __getattr__(self, name):
+        if '_initialized' in self.__dict__ and self._initialized:
+            nl = name.lower()
+            if '_mod_vars' in self.__dict__:
+                if nl in self._mod_vars:
+                    if nl not in self.__dict__:
+                        self._init_var(self._mod_vars[nl])
+                    return self.__dict__[nl]
+            if '_param' in self.__dict__:
+                if nl in self._param:
+                    if nl not in self.__dict__:
+                        self._init_var(self._param[nl])
+                    return self.__dict__[nl]
+            if '_funcs' in self.__dict__:
+                if nl in self._funcs:
+                    if nl not in self.__dict__:
+                        self._init_func(self._funcs[nl])
+                    return self.__dict__[nl]
+            # if '_func_ptrs' in self.__dict__:
+                # if nl in self._func_ptrs:
+                    # if nl not in self.__dict__:
+                        # self._init_func_ptr(self._func_ptrs[nl])
+                    # return self.__dict__[nl]
+        
         if name in self.__dict__:
             return self.__dict__[name]
-        else:
-            if self._initialized:
-                nl = name.lower()
-                if '_mod_vars' in self.__dict__:
-                    if nl in self._mod_vars:
-                        self._init_var(self._mod_vars[nl])
-                        return self.__dict__[nl]
-                if '_param' in self.__dict__:
-                    if nl in self._param:
-                        self._init_param(self._param[nl])
-                        return self.__dict__[nl]
-                if '_funcs' in self.__dict__:
-                    if nl in self._funcs:
-                        self._init_func(self._funcs[nl])
-                        return self.__dict__[nl]
-                if '_func_ptrs' in self.__dict__:
-                    if nl in self._func_ptrs:
-                        self._init_func_ptr(self._func_ptrs[nl])
-                        return self.__dict__[nl]
+       
 
         raise AttributeError("No variable " + name)
 
@@ -164,7 +143,7 @@ class fFort(object):
         nl = name.lower()
         if name in self.__dict__ or nl in self.__dict__:
             try:
-                self.__dict__[nl].set_mod(value)
+                self.__dict__[nl].set(value)
             except AttributeError:
                 self.__dict__[name] = value
         else:
@@ -172,18 +151,18 @@ class fFort(object):
                 if '_mod_vars' in self.__dict__:
                     if nl in self._mod_vars:
                         self._init_var(self._mod_vars[nl])
-                        self.__dict__[nl].set_mod(value)
+                        self.__dict__[nl].set(value)
                         return
                 if '_param' in self.__dict__:
                     if nl in self._param:
-                        self._init_param(self._param[nl])
-                        self.__dict__[nl].set_mod(value)
+                        self._init_var(self._param[nl])
+                        self.__dict__[nl].set(value)
                         return
-                if '_func_ptrs' in self.__dict__:
-                    if nl in self._func_ptrs:
-                        self._init_func_ptr(self._func_ptrs[nl])
-                        self.__dict__[nl].set_mod(value)
-                        return
+                # if '_func_ptrs' in self.__dict__:
+                    # if nl in self._func_ptrs:
+                        # self._init_func_ptr(self._func_ptrs[nl])
+                        # self.__dict__[nl].set_mod(value)
+                        # return
        
             self.__dict__[name] = value
         return
@@ -193,7 +172,7 @@ class fFort(object):
             l = list(self._mod_vars.keys()) 
             l.extend(list(self._param.keys()))
             l.extend(list(self._funcs.keys()))
-            l.extend(list(self._func_ptrs.keys()))
+            # l.extend(list(self._func_ptrs.keys()))
             return l
             
     def __getstate__(self):

@@ -1,112 +1,79 @@
 # SPDX-License-Identifier: GPL-2.0+
 from __future__ import print_function
 import ctypes
-from .var import fVar
+
 from .errors import *
+from .utils import *
 
-class fStr(fVar):
-
+class fStr(fParent):
     def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
-        self._ctype = self.ctype_def()
-       # self._ctype_f = self.ctype_def_func()
-        self._pytype = str
-        self._dt_arg = False
-        
-        self.char_len = self.var['length']
+        self.ctype=self.var['ctype']
 
-        #Store the ref to the lib object
-        try:   
-            self._ref = self._get_from_lib()
-        except NotInLib:
-            self._ref = None
-
-    def py_to_ctype(self, value):
-        """
-        Pass in a python value returns the ctype representation of it
-        """
-        return ctypes.c_char(value.encode())
+        self.len = int(self.var['length'])
+        self.pytype = str
         
-    def py_to_ctype_f(self, value):
-        """
-        Pass in a python value returns the ctype representation of it, 
-        suitable for a function
-        
-        Second return value is anythng that needs to go at the end of the
-        arg list, like a string len
-        """
-        x,y=self.ctype_def_func()
-        
-        return x(value.encode()),y(len(value))
-
-    def ctype_to_py(self, value):
-        """
-        Pass in a ctype value returns the python representation of it
-        """
-        return self._get_var_by_iter(value, self.char_len)
-        
-    def ctype_def(self):
-        if self._dt_arg:
-            return ctypes.c_char_p
+        if self.len > 0:
+            self.ctype = ctypes.c_char * self.len
         else:
-            return ctypes.c_char
+            self.ctype = ctypes.c_char
+        
+    def in_dll(self):
+        if 'mangled_name' in self.__dict__ and '_lib' in self.__dict__:
+            try:
+                return self.ctype.in_dll(self._lib, self.mangled_name)
+            except ValueError:
+                raise NotInLib
+        raise NotInLib 
+        
+    def from_address(self, addr):
+        return self.ctype.from_address(addr)
+    
+    def set_from_address(self, addr, value):
+        ctype = self.from_address(addr)
+        self._set(ctype, value)
+                
+    def _set(self, c, v):
+        if hasattr(v,'encode'):
+            v = v.encode()
+        for i in range(self.len):
+            if i < len(v):
+                c[i] = v[i]
+            else:
+                c[i] = b' '
+                
+    def str_from_address(self, addr):
+        return ''.join([i.decode() for i in self.from_address(addr)])
+                        
+    def sizeof(self):
+        return ctypes.sizeof(self.ctype)
 
-    def ctype_def_func(self,pointer=False,intent=''):
-        """
-        The ctype type of a value suitable for use as an argument of a function
+    def get(self):
+        return self.str_from_address(ctypes.addressof(self.in_dll()))
+        
+    def set(self, value):            
+       self.set_from_address(ctypes.addressof(self.in_dll()),value)
+  
+    def from_param(self, value):
+        self.len = len(value)
+        self.ctype = ctypes.c_char * self.len
+        
+        self._safe_ctype  = self.ctype()
+        self._set(self._safe_ctype, value)
+        return ctypes.pointer(self._safe_ctype)
 
-        May just call ctype_def
-        
-        Second return value is anything that needs to go at the end of the
-        arg list, like a string len
-        """
-        f = ctypes.c_char_p
-        if pointer:
-            f = ctypes.POINTER(f)
-        
-        return f,ctypes.c_long
-        
-    def py_to_ctype_p(self,value):
-        """
-        The ctype represnation suitable for function arguments wanting a pointer
-        """
-        return ctypes.c_char_p(value.encode())
-        
-    def ctype_to_py_f(self, value):
-        """
-        Pass in a ctype value returns the python representation of it,
-        as returned by a function (may be a pointer)
-        """
-        if hasattr(value,'contents'):
-            r = value.contents.value
-        elif hasattr(value,'value'):
-            r = value.value
-        else:
-            r = value
-            
-        try:
-            r = r.decode()
-        except AttributeError:
-            pass
-        except UnicodeDecodeError:
-            r = ''
-            
-        return r
-            
+    def from_func(self, pointer):
+        return self.str_from_address(ctypes.addressof(pointer.contents))
 
-    def set_mod(self, value):
-        """
-        Set a module level variable
-        """
-        self._set_var_from_iter(self._ref, value.encode(), self.char_len)
 
-    def get(self,copy=True):
-        """
-        Get a module level variable
-        """
-        s = self.ctype_to_py(self._ref)
-        if not copy:
-            raise ValueError("Must copy a string")
+class fStrLen(object):
+    # Handles the hidden string length functions need
+    def __init__(self):
+        pass
         
-        return ''.join([i.decode() for i in s])
+    def from_param(self, value):
+        return ctypes.c_int64(len(value))
+        
+    def from_func(self, pointer):
+        raise IgnoreReturnError

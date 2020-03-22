@@ -40,6 +40,20 @@ module tester
       complex(dp)       :: a_cmplx_dp
       complex(qp)       :: a_cmplx_qp
       
+      
+      ! Set variables
+      integer           :: a_int_set=5
+      integer(lp)       :: a_int_lp_set=6
+      real              :: a_real_set=7.0
+      real(dp)          :: a_real_dp_set=8.0_dp
+      real(qp)          :: a_real_qp_set=9.0_qp
+      character(len=10) :: a_str_set='abcdefghjk'
+      complex           :: a_cmplx_set
+      complex(dp)       :: a_cmplx_dp_set
+      complex(qp)       :: a_cmplx_qp_set
+      
+      
+      
       integer,pointer            :: a_int_point => null()
       integer(lp),pointer        :: a_int_lp_point => null()
       real,pointer               :: a_real_point => null()
@@ -182,7 +196,7 @@ module tester
          integer           :: a_int
          real              :: a_real
          real(dp)          :: a_real_dp
-!         integer, dimension(0:15) :: bb
+         integer, dimension(0:15) :: bb
          character(len=20) :: a_str   
          integer,dimension(:,:,:),allocatable :: arr
          integer           :: a_int2
@@ -692,6 +706,15 @@ module tester
             
       end function func_check_nested_dt      
       
+      
+      subroutine sub_f_struct_simple()
+      
+         write(*,*) f_struct_simple%x,f_struct_simple%y
+         f_struct_simple%x =22
+         f_struct_simple%y =55
+      
+      end subroutine sub_f_struct_simple
+      
       subroutine sub_use_mod()
       
          test2_x = 1
@@ -804,5 +827,37 @@ module tester
       
          !write(*,*) a,b,c,d,e,f,g,h,i,j,k,l
       end subroutine sub_many_args
+      
+      
+      subroutine sub_set_ptrs()
+      
+      if(associated(d_int_point_1d)) write(*,*) d_int_point_1d
+      d_int_point_1d => e_int_target_1d
+      
+      d_int_point_1d = 9
+      
+      
+      end subroutine sub_set_ptrs
+      
+      
+      integer function func_intent_out(y,x)
+		integer, intent(in) :: y
+		integer, intent(out) :: x
+      
+		func_intent_out = y
+		x =y
+      
+      end function func_intent_out
+      
+      function func_result(y,x) result(z)
+		integer, intent(in) :: y
+		integer, intent(out) :: x
+		integer :: z
+      
+		z = y*2
+		x =y
+      
+      end function func_result
+      
       
 end module tester
