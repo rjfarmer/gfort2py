@@ -319,7 +319,6 @@ class TestStringMethods(unittest.TestCase):
         y=x.func_int_in_multi(v,w,u)
         self.assertEqual(y.result,v+w+u)
         
-    @unittest.skip("Skipping due to seg faults")	
     def test_sub_int_in(self):
         v=5
         with captured_output() as (out,err):
@@ -362,7 +361,6 @@ class TestStringMethods(unittest.TestCase):
         output=out.getvalue().strip()	
         self.assertEqual(output,str(v+w)+' '+u)	
 
-    @unittest.skip("Skipping arrays")
     def test_sub_array_n_int_1d(self):
         v=np.arange(0,5)
         o=' '.join([str(i) for i in v.flatten()])
@@ -381,7 +379,6 @@ class TestStringMethods(unittest.TestCase):
         output=out.getvalue().strip()	
         self.assertEqual(output,o.strip())
         
-    @unittest.skip("Skipping arrays")	
     def test_sub_exp_array_int_1d(self):
         v=np.arange(0,5)
         o=' '.join([str(i) for i in v.flatten()])
