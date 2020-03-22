@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0+
 from __future__ import print_function
 
+import numpy as np
+
 def find_key_val(list_dicts, key, value):
     v = value.lower()
     for idx, i in enumerate(list_dicts):
@@ -252,9 +254,6 @@ class fParentArray(fParent):
     def copy(self, *args, **kwargs):
         return getattr(self.get(),"copy")(*args,**kwargs)
 
-    def ctypes(self, *args, **kwargs):
-        return getattr(self.get(),"ctypes")(*args,**kwargs)
-
     def cumprod(self, *args, **kwargs):
         return getattr(self.get(),"cumprod")(*args,**kwargs)
 
@@ -362,12 +361,6 @@ class fParentArray(fParent):
 
     def setflags(self, *args, **kwargs):
         return getattr(self.get(),"setflags")(*args,**kwargs)
-
-    def shape(self, *args, **kwargs):
-        return getattr(self.get(),"shape")(*args,**kwargs)
-
-    def size(self, *args, **kwargs):
-        return getattr(self.get(),"size")(*args,**kwargs)
 
     def sort(self, *args, **kwargs):
         return getattr(self.get(),"sort")(*args,**kwargs)

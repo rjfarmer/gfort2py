@@ -544,7 +544,7 @@ class fParamArray(fParent, np.lib.mixins.NDArrayOperatorsMixin):
         self._lib = lib
         self.pytype = self.param['pytype']
         self.pytype = getattr(__builtin__, self.pytype)
-        self.value = np.array(self.param['value'], dtype=self.pytype, order='FORTRAN')
+        self.value = np.array(self.param['value'], dtype=self.pytype, order='F')
 		
     def set(self, value):
         """
