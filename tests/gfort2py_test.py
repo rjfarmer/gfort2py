@@ -5,21 +5,14 @@ os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 import numpy as np
 import gfort2py as gf
 
-try:
-    import unittest as unittest
-except ImportError:
-    import unittest2 as unittest
+import unittest as unittest
     
 import subprocess
 import numpy.testing as np_test
 
 from contextlib import contextmanager
-try:
-    from StringIO import StringIO
-    from BytesIO import BytesIO
-except ImportError:
-    from io import StringIO
-    from io import BytesIO
+from io import StringIO
+from io import BytesIO
 
 #Decreases recursion depth to make debugging easier
 # sys.setrecursionlimit(10)
