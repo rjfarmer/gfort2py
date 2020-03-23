@@ -3,17 +3,6 @@ matrix:
   include:
   # command to install dependencies
       - os: linux
-        python: 3.6
-        addons:
-          apt:
-            sources:
-              - ubuntu-toolchain-r-test
-            packages:
-              - gfortran-6
-              - gzip
-        env:
-          - TRAVIS_GFORTRAN="gfortran-6"
-      - os: linux
         python: 2.7
         addons:
           apt:
@@ -80,6 +69,28 @@ matrix:
         env:
           - TRAVIS_GFORTRAN="gfortran-8"
       - os: linux
+        python: 3.7
+        addons:
+          apt:
+            sources:
+              - ubuntu-toolchain-r-test
+            packages:
+              - gfortran-8
+              - gzip
+        env:
+          - TRAVIS_GFORTRAN="gfortran-8"
+      - os: linux
+        python: 3.8
+        addons:
+          apt:
+            sources:
+              - ubuntu-toolchain-r-test
+            packages:
+              - gfortran-8
+              - gzip
+        env:
+          - TRAVIS_GFORTRAN="gfortran-8"
+      - os: linux
         python: 2.7
         addons:
           apt:
@@ -112,6 +123,29 @@ matrix:
               - gzip
         env:
           - TRAVIS_GFORTRAN="gfortran-9"
+      - os: linux
+        python: 3.7
+        addons:
+          apt:
+            sources:
+              - ubuntu-toolchain-r-test
+            packages:
+              - gfortran-9
+              - gzip
+        env:
+          - TRAVIS_GFORTRAN="gfortran-9"
+      - os: linux
+        python: 3.8
+        addons:
+          apt:
+            sources:
+              - ubuntu-toolchain-r-test
+            packages:
+              - gfortran-9
+              - gzip
+        env:
+          - TRAVIS_GFORTRAN="gfortran-9"
+
 install: 
   - pip install -r requirements.txt
   - pip install -e .[dev]
