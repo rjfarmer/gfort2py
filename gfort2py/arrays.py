@@ -57,7 +57,7 @@ def _make_fAlloc15(ndims):
 #*            1      NULL   AS_ASSUMED_SIZE
 
 
-if sys.byteorder is 'little':
+if sys.byteorder == 'little':
     _byte_order=">"
 else:
     _byte_order="<"
