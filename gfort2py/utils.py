@@ -2,6 +2,9 @@
 from __future__ import print_function
 
 import numpy as np
+import ctypes
+
+from .errors import *
 
 def find_key_val(list_dicts, key, value):
     v = value.lower()
@@ -10,6 +13,7 @@ def find_key_val(list_dicts, key, value):
             return idx
 
 
+# utility function for generting the long list of dunder methods
 def _makefuncs(listfuncs):
     for i in listfuncs: 
         print('    def '+i+'(self, *args, **kwargs):') 
@@ -17,10 +21,30 @@ def _makefuncs(listfuncs):
         print()
 
 
+
+# These base classes defined all the dunder methods.
+# They assume that self.get() will return a python-like object
+# Then just defers the function call to the python objects version
+
+
 class fParent(object):
+    
+    def in_dll(self):
+        """ Find the variable in the shared library.  """
+        if 'mangled_name' in self.__dict__ and '_lib' in self.__dict__:
+            try:
+                return self.ctype.in_dll(self._lib, self.mangled_name)
+            except ValueError:
+                raise NotInLib
+        raise NotInLib 
+        
+    def sizeof(self):
+        """ Gets the size in bytes of the ctype representation """
+        return ctypes.sizeof(self.ctype)
+    
     def get(self):
         return None
-
+    
     def set(self, value):
         pass
 

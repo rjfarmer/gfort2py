@@ -28,14 +28,6 @@ class fComplex(fParent):
              self.pytype = getattr(__builtin__, self.pytype)
 
         self.ctype = getattr(ctypes, self.ctype)*2
-
-    def in_dll(self):
-        if 'mangled_name' in self.__dict__ and '_lib' in self.__dict__:
-            try:
-                return self.ctype.in_dll(self._lib, self.mangled_name)
-            except ValueError:
-                raise NotInLib
-        raise NotInLib 
         
     def from_address(self, addr):
         return self.ctype.from_address(addr)
@@ -47,9 +39,6 @@ class fComplex(fParent):
     def _set(self, c, v):
         c[0] = v.real
         c[1] = v.imag 
-        
-    def sizeof(self):
-        return ctypes.sizeof(self.ctype)
 
     def get(self):
         return complex(*self.from_address(ctypes.addressof(self.in_dll())))

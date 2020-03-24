@@ -19,14 +19,6 @@ class fStr(fParent):
         else:
             self.ctype = ctypes.c_char
         
-    def in_dll(self):
-        if 'mangled_name' in self.__dict__ and '_lib' in self.__dict__:
-            try:
-                return self.ctype.in_dll(self._lib, self.mangled_name)
-            except ValueError:
-                raise NotInLib
-        raise NotInLib 
-        
     def from_address(self, addr):
         return self.ctype.from_address(addr)
     
@@ -45,9 +37,6 @@ class fStr(fParent):
                 
     def str_from_address(self, addr):
         return ''.join([i.decode() for i in self.from_address(addr)])
-                        
-    def sizeof(self):
-        return ctypes.sizeof(self.ctype)
 
     def get(self):
         return self.str_from_address(ctypes.addressof(self.in_dll()))

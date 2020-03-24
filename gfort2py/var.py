@@ -31,42 +31,78 @@ class fVar(fParent):
              self.pytype = getattr(__builtin__, self.pytype)
 
         self.ctype = getattr(ctypes, self.ctype)
-
-    def in_dll(self):
-        if 'mangled_name' in self.__dict__ and '_lib' in self.__dict__:
-            try:
-                return self.ctype.in_dll(self._lib, self.mangled_name)
-            except ValueError:
-                raise NotInLib
-        raise NotInLib 
         
     def from_address(self, addr):
+        """
+        Given an address, return a ctype object from that address.
+        
+        addr -- integer address
+        
+        Returns:
+        A ctype representation of the variable
+        """
         return self.ctype.from_address(addr)
         
     def set_from_address(self, addr, value):
+        """
+        Given an address set the variable to value
+        
+        addr -- integer address
+        value -- python object that can be coerced into self.pytype
+        
+        """
         self.from_address(addr).value = self.pytype(value)
         
-    def sizeof(self):
-        return ctypes.sizeof(self.ctype)
-
     def get(self):
-        return self.from_address(ctypes.addressof(self.in_dll())).value
+        """
+        Get a fortran module variable from the library
+        
+        Returns:
+        
+        A python representation of the variable
+        """
+        return self.pytype(self.from_address(ctypes.addressof(self.in_dll())).value)
 
     def set(self, value):
+        """
+        Set a fortran module variable from the library to value.
+        
+        value -- python object that can be coerced into self.pytype
+        """
         self.set_from_address(ctypes.addressof(self.in_dll()),value)
         
     def from_param(self, value):
-        if 'optional' in self.var and value is None:
-            if self.var['optional']:
+        """
+        Returns a ctype object needed by a function call
+        
+        This is a pointer to self.ctype(value).
+        
+        If the function argument is optional, and value==None we return None
+        else we return the pointer.
+        
+        value -- python object that can be coerced into self.pytype
+        
+        """
+        
+        if 'optional' in self.var :
+            if self.var['optional'] and value is None:
                 return None
         
-        return ctypes.pointer(self.ctype(value))
+        return ctypes.pointer(self.ctype(self.pytype(value)))
         
     def from_func(self, pointer):
+        """
+        Given the pointer to the variable return the python type
+        
+        We raise IgnoreReturnError when we get something that should not be returned,
+        like the hidden string length that's at the end of the argument list.
+        
+        """       
         try:
-            return pointer.contents.value
+            return self.pytype(pointer.contents.value)
         except AttributeError:
             raise IgnoreReturnError
+
 
 class fParam(fParent):
     def __init__(self, lib, obj):
@@ -75,16 +111,16 @@ class fParam(fParent):
         self.value = self.param['value']
         self.pytype = self.param['pytype']
         self.pytype = getattr(__builtin__, self.pytype)
-		
+        
     def set(self, value):
         """
-        Cant set a parameter
+        Can't set a parameter
         """
         raise ValueError("Can't alter a parameter")
 
     def get(self):
         """
-        A parameters value is stored in the dict, as we cant access them
+        A parameters value is stored in the objects dict, as we can't access them
         from the shared lib.
         """
         return self.pytype(self.value)

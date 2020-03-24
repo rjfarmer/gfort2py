@@ -104,14 +104,6 @@ class fExplicitArray(fParentArray, np.lib.mixins.NDArrayOperatorsMixin):
             self.ctype = self.ctype * self.size()
             
         self._shape = self.shape()
-
-    def in_dll(self):
-        if 'mangled_name' in self.__dict__ and '_lib' in self.__dict__:
-            try:
-                return self.ctype.in_dll(self._lib, self.mangled_name)
-            except ValueError:
-                raise NotInLib
-        raise NotInLib 
         
     def from_address(self, addr):
         buff = {
@@ -127,10 +119,6 @@ class fExplicitArray(fParentArray, np.lib.mixins.NDArrayOperatorsMixin):
         holder.__array_interface__ = buff
         
         return np.asfortranarray(holder)
-        
-        
-    def sizeof(self):
-        return ctypes.sizeof(self.ctype)
 
     def shape(self):
         if len(self.array['shape'])/self._ndims != 2:
@@ -313,15 +301,6 @@ class fDummyArray(fParentArray):
             raise ValueError("Cant match dtype, got "+ctype)
         return ftype               
         
-    
-    def in_dll(self):
-        if 'mangled_name' in self.__dict__ and '_lib' in self.__dict__:
-            try:
-                return self.ctype.in_dll(self._lib, self.mangled_name)
-            except ValueError:
-                raise NotInLib
-        raise NotInLib 
-        
     def from_address(self, addr):
         if self.ctype.from_address(addr).value is None:
             raise AllocationError("Array not allocated yet")
@@ -341,11 +320,6 @@ class fDummyArray(fParentArray):
         holder = numpy_holder()
         holder.__array_interface__ = buff
         return np.array(holder)  
-
-        
-    def sizeof(self):
-        return ctypes.sizeof(self.ctype)
-            
 
     def set_from_address(self, addr, value):
         ctype = self._array_desc.from_address(addr)
