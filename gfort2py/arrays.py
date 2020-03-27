@@ -118,7 +118,10 @@ class fExplicitArray(fParentArray, np.lib.mixins.NDArrayOperatorsMixin):
         holder = numpy_holder()
         holder.__array_interface__ = buff
         
-        return np.asfortranarray(holder)
+        arr = np.asfortranarray(holder)
+        remove_ownership(arr)
+        
+        return arr
 
     def shape(self):
         if len(self.array['shape'])/self._ndims != 2:
@@ -319,7 +322,10 @@ class fDummyArray(fParentArray):
         
         holder = numpy_holder()
         holder.__array_interface__ = buff
-        return np.array(holder)  
+        arr = np.asfortranarray(holder)
+        remove_ownership(arr)
+        
+        return arr
 
     def set_from_address(self, addr, value):
         ctype = self._array_desc.from_address(addr)
