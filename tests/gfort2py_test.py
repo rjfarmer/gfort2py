@@ -971,6 +971,7 @@ class TestStringMethods(unittest.TestCase):
         output=out.getvalue().strip()	
         np_test.assert_array_equal(y['zzz'],np.array([100.0]*5))
     
+    @unittest.skip("Skipping travis")
     def test_sub_opt(self):
         with captured_output() as (out,err):
             y=x.sub_int_opt(1)
