@@ -111,7 +111,8 @@ class fExplicitArray(fParentArray):
             'data': (self._base_holder,
                     False),
                 'typestr': self._dtype,
-                'shape': self._shape
+                'shape': self._shape,
+                'version':3
                 }
 
         class numpy_holder():
@@ -282,7 +283,8 @@ class fDummyArray(fParentArray):
             'data': (self._base_holder,
                     False),
             'typestr': self._dtype,
-            'shape': self._shape_from_bounds(v.dims)
+            'shape': self._shape_from_bounds(v.dims),
+            'version':3
             }
         
         class numpy_holder():
