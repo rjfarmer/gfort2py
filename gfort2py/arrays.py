@@ -127,7 +127,7 @@ class fExplicitArray(fParentArray):
         return arr
 
     def shape(self):
-        if len(self.array['shape'])/self._ndims != 2:
+        if 'shape' not in self.array or len(self.array['shape'])/self._ndims != 2:
             return -1
         
         shape = []
@@ -354,84 +354,11 @@ class fAssumedShape(fDummyArray):
     def from_func(self, pointer):
         return self.from_address(ctypes.addressof(pointer.contents))       
            
-
+class fAssumedSize(fExplicitArray):
+    # Only difference between this and an fExplicitArray is we don't know the shape.
+    # We just pass the pointer to first element
+    pass
         
-# class fAssumedSize(fExplicitArray):
-    # def ctype_def_func(self,pointer=False,intent=''):
-        # """
-        # The ctype type of a value suitable for use as an argument of a function
-
-        # May just call ctype_def
-        
-        # Second return value is anythng that needs to go at the end of the
-        # arg list, like a string len
-        # """
-        # #print("h1")
-        # x=ctypes.POINTER(getattr(ctypes, self.ctype))
-        # y=None
-        # return x,y  
-    
-    # def _make_array_shape(self,bounds=None):
-        
-        # return [99]*self.ndims
-    
-    
-    # def py_to_ctype_p(self,value):
-        # """
-        # The ctype representation suitable for function arguments wanting a pointer
-        # """
-        # self._data = value
-        # ct = getattr(ctypes, self.ctype)
-        # addr = self._data.ctypes.get_data()
-        # t = ctypes.POINTER(ct)
-        # return ctypes.cast(addr,t)
-        
-    # def py_to_ctype_f(self,value):
-        # """
-        # The ctype representation suitable for function arguments wanting a pointer
-        # """
-        # return self.py_to_ctype_p(value),None
-
-# class fAllocatableArray(fDummyArray):
-    # def py_to_ctype(self, value):
-        # """
-        # Pass in a python value returns the ctype representation of it
-        # """
-        # self.set_func_arg(value)
-        
-        # # self._value_array needs to be empty if the array is allocatable and not
-        # # allready allocated
-        # self._value_array.base_addr=ctypes.c_void_p(None)
-        
-        # return self._value_array
-        
-    # def py_to_ctype_f(self, value):
-        # """
-        # Pass in a python value returns the ctype representation of it, 
-        # suitable for a function
-        
-        # Second return value is anything that needs to go at the end of the
-        # arg list, like a string len
-        # """
-        # return self.py_to_ctype(value),None   
-        
-    # def ctype_to_py_f(self, value):
-        # """
-        # Pass in a ctype value returns the python representation of it,
-        # as returned by a function (may be a pointer)
-        # """
-        # shape=[]
-        # for i in value.dims:
-            # shape.append(i.ubound-i.lbound+1)
-        # shape=tuple(shape)
-        # #print("here")
-        # p=ctypes.POINTER(self._ctype_single)
-        # res=ctypes.cast(value.base_addr,p)
-        # z = np.ctypeslib.as_array(res,shape=shape)
-        # remove_ownership(z)
-        # return z
-        
-
     
 class fParamArray(fParent, np.lib.mixins.NDArrayOperatorsMixin):
     _HANDLED_TYPES = (np.ndarray, numbers.Number)
