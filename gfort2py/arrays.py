@@ -106,8 +106,10 @@ class fExplicitArray(fParentArray):
         self._shape = self.shape()
         
     def from_address(self, addr):
+        self._base_holder = addr # Make sure to hold onto the object
         buff = {
-                'data': (addr, True),
+            'data': (self._base_holder,
+                    False),
                 'typestr': self._dtype,
                 'shape': self._shape
                 }
@@ -275,9 +277,10 @@ class fDummyArray(fParentArray):
         
         
         v = self._array_desc.from_address(addr)
+        self._base_holder = v.base_addr # Make sure to hold onto the object
         buff = {
-            'data': (v.base_addr,
-                    True),
+            'data': (self._base_holder,
+                    False),
             'typestr': self._dtype,
             'shape': self._shape_from_bounds(v.dims)
             }
