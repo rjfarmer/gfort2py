@@ -915,7 +915,6 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(output,'abcdef')
         self.assertEqual(y['zzz'],'xyzxyz')
     
-    @unittest.skip("Skipping arrays")		
     def test_sub_arr_exp_p(self):
         v=np.arange(0,5)
         o=' '.join([str(i) for i in v.flatten()])
@@ -948,7 +947,6 @@ class TestStringMethods(unittest.TestCase):
         output=out.getvalue().strip()	
         np_test.assert_array_equal(y.args['zzz'],np.array([100.0]*5))
     
-    @unittest.skip("Skipping travis")
     def test_sub_opt(self):
         with captured_output() as (out,err):
             y=x.sub_int_opt(1)
@@ -989,7 +987,6 @@ class TestStringMethods(unittest.TestCase):
         y=x.func_check_nested_dt()
         self.assertEqual(y,True)
     
-    @unittest.skip("Skipping arrays")	
     def test_logical_arr(self):
         xarr=np.zeros(10)
         x2arr=np.zeros(10)
@@ -998,16 +995,15 @@ class TestStringMethods(unittest.TestCase):
         
         y=x.func_alltrue_arr_1d(xarr)
         y2=x.func_allfalse_arr_1d(x2arr)
-        self.assertEqual(y,True)
-        self.assertEqual(y2,True)
+        self.assertEqual(y.result,True)
+        self.assertEqual(y2.result,True)
 
-    @unittest.skip("Skipping arrays")	
     def test_logical_arr_multi(self):
         xarr=np.zeros(5)
         xarr[:]=True
         
         y=x.func_logical_multi(1.0,2.0,xarr,3.0,4.0)
-        self.assertEqual(y,True)
+        self.assertEqual(y.result,True)
 
     @unittest.skip("Skipping due to failure")
     def test_func_set_f_struct(self):
