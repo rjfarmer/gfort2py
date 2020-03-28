@@ -88,10 +88,16 @@ class fVar(fParent):
             if self.var['optional'] and value is None:
                 return None
                 
-        if 'pointer' in self.var and self.var['pointer']:
-            return ctypes.pointer(ctypes.pointer(self.ctype(self.pytype(value))))
+        ct = self.ctype(self.pytype(value))
+                
+        if 'value' in self.var and self.var['value']:
+            return ct
         else:
-            return ctypes.pointer(self.ctype(self.pytype(value)))
+            ct = ctypes.pointer(ct)
+            if 'pointer' in self.var and self.var['pointer']:
+                return ctypes.pointer(ct)
+            else:
+                return ct
         
     def from_func(self, pointer):
         """

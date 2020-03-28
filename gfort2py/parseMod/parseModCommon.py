@@ -288,6 +288,8 @@ class parseModBase(object):
             res['intent'] = self.parseIntent(symbol_info)
         if 'DUMMY-PROC' in symbol_info:
             res['is_func'] = True
+        if 'VALUE' in symbol_info:
+            res['value'] = True
             
         if 'PROC_POINTER' in symbol_info:
             res['proc_ptr_id'] = type_info.split()[2]

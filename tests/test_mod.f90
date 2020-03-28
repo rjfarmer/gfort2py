@@ -864,5 +864,14 @@ module tester
       
       end function func_result
       
+ 
+      function func_int_value(x) result(z)
+		integer, intent(in),value :: x
+		integer :: z
+      
+		z = x*2
+      
+      end function func_int_value
+      
       
 end module tester

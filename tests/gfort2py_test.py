@@ -1107,7 +1107,11 @@ class TestStringMethods(unittest.TestCase):
     def test_func_result(self):
         y = x.func_result(9,0)
         self.assertEqual(y.result,18)
-        self.assertEqual(y.args['y'],9)       
+        self.assertEqual(y.args['y'],9)      
+        
+    def test_func_value(self):
+        y = x.func_int_value(5)
+        self.assertEqual(y.result,10)
         
 if __name__ == '__main__':
     unittest.main() 
