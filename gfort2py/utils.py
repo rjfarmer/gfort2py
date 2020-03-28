@@ -232,7 +232,7 @@ class fParent(object):
         
         
 
-class fParentArray(fParent):
+class fParentArray(fParent, np.lib.mixins.NDArrayOperatorsMixin):
     def all(self, *args, **kwargs):
         return getattr(self.get(),"all")(*args,**kwargs)
 
@@ -451,4 +451,37 @@ class fParentArray(fParent):
     
     def __getitem__(self, key):
         return self.get()[key]
+        
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+        out = kwargs.get('out', ())
+        for x in inputs + out:
+            # Only support operations with instances of _HANDLED_TYPES.
+            # Use ArrayLike instead of type(self) for isinstance to
+            # allow subclasses that don't override __array_ufunc__ to
+            # handle ArrayLike objects.
+            if not isinstance(x, self._HANDLED_TYPES + (fParenttArray,)):
+                return NotImplemented
+
+        # Defer to the implementation of the ufunc on unwrapped values.
+        inputs = tuple(x.value.get() if isinstance(x, fParenttArray) else x
+                       for x in inputs)
+        if out:
+            kwargs['out'] = tuple(
+                x.get() if isinstance(x, fParenttArray) else x
+                for x in out)
+        result = getattr(ufunc, method)(*inputs, **kwargs)
+
+        if type(result) is tuple:
+            # multiple return values
+            return tuple(type(self)(x) for x in result)
+        elif method == 'at':
+            # no return value
+            return None
+        else:
+            # one return value
+            return type(self)(result)
+
+    @property
+    def __array_interface__(self):
+        return self.get().__array_interface__
     
