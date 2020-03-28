@@ -96,6 +96,8 @@ Remember that fortran by default has 1-based array numbering while numpy
 is 0-based.
 
 
+If a function expects an unallocted array, then pass None as the argument
+
 ### Derived types
 
 Derived types can be set with a dict 

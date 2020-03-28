@@ -852,13 +852,11 @@ class TestStringMethods(unittest.TestCase):
         y=x.func_assumed_size_arr_real_dp_1d(v)
         self.assertEqual(y.result,True)
             
-    @unittest.skip("Skipping arrays")	
     def test_sub_alloc_arr_1d(self):
-        v=0
-        y=x.sub_alloc_arr_1d(v)
+        y=x.sub_alloc_arr_1d(None)
         vTest=np.zeros(10)
         vTest[:]=10
-        np_test.assert_array_equal(y['x'],vTest)
+        np_test.assert_array_equal(y.args['x'],vTest)
         
     @unittest.skip("Skipping as DT")
     def test_sub_dt_in_s_simple(self):

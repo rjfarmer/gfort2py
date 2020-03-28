@@ -14,7 +14,7 @@ def find_key_val(list_dicts, key, value):
             return idx
 
 
-# utility function for generting the long list of dunder methods
+# utility function for generating the long list of dunder methods
 def _makefuncs(listfuncs):
     for i in listfuncs: 
         print('    def '+i+'(self, *args, **kwargs):') 
@@ -23,7 +23,7 @@ def _makefuncs(listfuncs):
 
 
 
-# These base classes defined all the dunder methods.
+# These base classes define all the dunder methods.
 # They assume that self.get() will return a python-like object
 # Then just defers the function call to the python objects version
 
