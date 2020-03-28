@@ -12,7 +12,8 @@ Current stable version is 2.0.0
 
 ## Build
 ````bash
-ipython3 setup.py install --user
+pip3 install -r requirements.txt
+python3 setup.py install --user
 ````
 
 or install via pip
@@ -33,7 +34,7 @@ gfortran updates its .mod file format, though this happens rarely.
 
 ## Using
 ### Fortran side
-Compile code with -fPIC and -shared as options, then link togethter as a shared lib at the end
+Compile code with -fPIC and -shared as options, then link together as a shared lib at the end
 
 ````bash
 gfortran -fPIC -shared -c file.f90
@@ -187,7 +188,7 @@ To run unit tests
 
 ### Accessing common block elements
 
-Theres no direct way to access the common block elements, but if you declare the the common block as a module variable you may acccess the elements by their name:
+There's no direct way to access the common block elements, but if you declare the the common block as a module variable you may access the elements by their name:
 
 
 ````fortran
@@ -242,15 +243,15 @@ def my_py_func(x): # Python function that will be func_arg
 	xv=x.contents.value # Values are passed by reference, this works for ints, floats. Characters, arrays and derived types are more complicated.
 	return 10*xv
 
-# We must "pair" the python function with an existing fortran function that has the same inputs/oupts and return type.
-x.func_func_run.load() # This function call forces func_func_run to be initliazed without callling the function
+# We must "pair" the python function with an existing fortran function that has the same inputs/outputs and return type.
+x.func_func_run.load() # This function call forces func_func_run to be initialized without calling the function
 y = x.func_func_arg([my_py_func,'func_func_run']) # This "pairs" the python function with a fortran function that has been loaded
 
 ````
 
 #### Procedure pointers
 
-Consider a prcoedure like:
+Consider a procedure like:
 
 ````fortran
 procedure(my_func), pointer:: func_ptr => NULL()
