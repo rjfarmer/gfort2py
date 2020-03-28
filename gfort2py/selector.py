@@ -3,7 +3,7 @@ from __future__ import print_function
 
 
 from .cmplx import fComplex, fParamComplex
-from .arrays import fExplicitArray, fDummyArray, fParamArray
+from .arrays import fExplicitArray, fDummyArray, fParamArray, fAssumedShape
 from .strings import fStr
 # from .types import fDerivedType, _dictAllDtDescs, getEmptyDT, _dictDTDefs
 from .var import fVar, fParam
@@ -37,10 +37,10 @@ def _selectVar(obj):
                 x = fExplicitArray
             elif array == 'alloc' or array == 'pointer':
                 x = fDummyArray
-            # elif array == 'assumed_shape':
-                # x = fAssumedShape(self._lib, obj)
+            elif array == 'assumed_shape':
+                x = fAssumedShape
             # elif array == 'assumed_size':
-                # x = fAssumedSize(self._lib, obj)
+                # x = fAssumedSize
         else:
             x = fVar
     

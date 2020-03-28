@@ -341,81 +341,20 @@ class fDummyArray(fParentArray):
            
     def from_func(self, pointer):
         return self.from_address(ctypes.addressof(pointer))          
-           
-
-                
-           
-           
-           
-# class fAssumedShape(fDummyArray):
-    # def __init__(self, lib, obj):
-        # super(fAssumedShape, self).__init__(lib,obj)
-        # self._zero_offset = True
+        
+        
+class fAssumedShape(fDummyArray):
     
-    
-    # def _get_pointer(self):        
-        # x = self._ctype_desc.from_address(ctypes.addressof(self._value_array))
-        # return x
-        
-    # def _get_from_pointer(self,p,copy=False):
-        # if not self._isallocated():
-            # return np.zeros(1)
-            # #raise ValueError("Array not allocated yet")
-        # base_addr = p.base_addr
-        # offset = p.offset
-        # dtype = p.dtype
-        # #print("h2")
-        # if hasattr(p,'span'):
-            # span=p.span
-        # else:
-            # span=-1
-        
-        # dims=[]
-        # shape=[]
-        # for i in range(self.ndim):
-            # dims.append({})
-            # dims[i]['stride'] = p.dims[i].stride
-            # dims[i]['lbound'] = p.dims[i].lbound
-            # dims[i]['ubound'] = p.dims[i].ubound
-            
-        # for i in range(self.ndim):
-            # shape.append(dims[i]['ubound']-dims[i]['lbound']+1)
-            
-        # self._shape=tuple(shape)
-        # size = np.product(shape)
-        
-        # #Counting starts at 1
-        # # addr = base_addr + offset*span + ctypes.sizeof(self._ctype_single)
-       # # if span > 0:
-        # #    addr = base_addr + (p.dims[0].stride + offset) * span
-        # #else:
-            # # do this with 8 byte ints
-            # #print(offset,p.dims[0].stride)
-         # #   addr = base_addr + offset + p.dims[0].stride*ctypes.sizeof(self._ctype_single)
-        # addr = base_addr
-        
-        # #print(base_addr,addr,span)
-        # # print(base_addr,offset,span,ctypes.sizeof(self._ctype_single))
-        # # print(addr)
-        # # print(self._ctype_single.from_address(base_addr),self._ctype_single.from_address(addr))
-        
-        # # print(p.base_addr,p.offset,p.span,p.dims,p.dims[0].stride)
-        # # print(p.dtype.elem_len,p.dtype.version,p.dtype.rank,p.dtype.type,p.dtype.attribute)
+    def from_param(self, value):
+        self._safe_ctype =  self._array_desc()
+        self.set_from_address(ctypes.addressof(self._safe_ctype), value)
+        self._ptr_safe_ctype = ctypes.POINTER(self._array_desc)(self._safe_ctype)
+        return self._ptr_safe_ctype
+           
+    def from_func(self, pointer):
+        return self.from_address(ctypes.addressof(pointer.contents))       
+           
 
-        # if copy:
-            # # When we want a copy of the array not a pointer to the fortran memoray
-            # res = self._get_var_from_address(addr,size=size)
-            # res = np.asfortranarray(res)
-            # res = res.reshape(shape).astype(self.npdtype)
-        # else:
-            # # When we want to pointer to the underlaying fortran memoray
-            # # will leak as we dont have a deallocate call to call in a del func
-            # ptr = ctypes.cast(addr,ctypes.POINTER(self._ctype_single))
-            # res = np.ctypeslib.as_array(ptr,shape = self._shape)
-        
-        # remove_ownership(res)      
-
-        # return res
         
 # class fAssumedSize(fExplicitArray):
     # def ctype_def_func(self,pointer=False,intent=''):

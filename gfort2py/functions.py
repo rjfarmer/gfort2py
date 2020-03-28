@@ -92,7 +92,6 @@ class fFunc(object):
                 ret = self._func(*args_in)
             else:
                 ret = self._func()
-
         dummy_args = {}
         count = 0
         for value,obj in zip(args_in, self._args):
@@ -113,8 +112,6 @@ class fFunc(object):
         ret['var'] = self.proc['ret']
         self._return = _selectVar(ret)(self._lib, ret)
         
-
-
     def _init_args(self):
         self._args = []
         extras = []
