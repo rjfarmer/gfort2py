@@ -607,7 +607,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_int_alloc_5d,v)
         y=x.sub_alloc_int_1d_cleanup()
     
-    #@unittest.skip("Skipping arrays")
     def test_c_int_alloc_1d_large(self):
         # Can have issues exiting when using large (>255) arrays
         y=x.sub_alloc_int_1d_cleanup()
@@ -618,7 +617,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_int_alloc_1d,v)
         y=x.sub_alloc_int_1d_cleanup()
 
-    @unittest.skip("Skipping arrays")	
     def test_c_real_alloc_1d(self):
         y=x.sub_alloc_real_1d_cleanup()
         y=x.sub_alloc_real_1d_arrs()
@@ -627,7 +625,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_alloc_1d,v)
         y=x.sub_alloc_real_1d_cleanup()
     
-    #@unittest.skip("Skipping travis")
     def test_c_real_alloc_2d(self):
         y=x.sub_alloc_real_1d_cleanup()
         y=x.sub_alloc_real_1d_arrs()
@@ -636,7 +633,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_alloc_2d,v)
         y=x.sub_alloc_real_1d_cleanup()
     
-    #@unittest.skip("Skipping travis")
     def test_c_real_alloc_3d(self):
         y=x.sub_alloc_real_1d_cleanup()
         y=x.sub_alloc_real_1d_arrs()
@@ -672,7 +668,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_dp_alloc_1d,v)
         y=x.sub_alloc_real_dp_1d_cleanup()
     
-    #@unittest.skip("Skipping travis")
     def test_c_real_dp_alloc_2d_set(self):
         y=x.sub_alloc_real_dp_1d_cleanup()
         y=x.sub_alloc_real_dp_1d_arrs()
@@ -682,7 +677,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_dp_alloc_2d,v)
         y=x.sub_alloc_real_dp_1d_cleanup()
  
-    #@unittest.skip("Skipping travis")   
     def test_c_real_dp_alloc_3d_set(self):
         y=x.sub_alloc_real_dp_1d_cleanup()
         y=x.sub_alloc_real_dp_1d_arrs()
@@ -720,7 +714,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_dp_alloc_1d,v)
         y=x.sub_alloc_real_dp_1d_cleanup()
  
-    #@unittest.skip("Skipping travis")
     def test_c_real_dp_alloc_2d(self):
         y=x.sub_alloc_real_dp_1d_cleanup()
         y=x.sub_alloc_real_dp_1d_arrs()
@@ -729,7 +722,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_dp_alloc_2d,v)
         y=x.sub_alloc_real_dp_1d_cleanup()
     
-    #@unittest.skip("Skipping travis")
     def test_c_real_dp_alloc_3d(self):
         y=x.sub_alloc_real_dp_1d_cleanup()
         y=x.sub_alloc_real_dp_1d_arrs()
@@ -765,7 +757,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_dp_alloc_1d,v)
         y=x.sub_alloc_real_dp_1d_cleanup()
     
-    #@unittest.skip("Skipping travis")
     def test_c_real_dp_alloc_2d_set(self):
         y=x.sub_alloc_real_dp_1d_cleanup()
         y=x.sub_alloc_real_dp_1d_arrs()
@@ -775,7 +766,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_dp_alloc_2d,v)
         y=x.sub_alloc_real_dp_1d_cleanup()
     
-    #@unittest.skip("Skipping travis")
     def test_c_real_dp_alloc_3d_set(self):
         y=x.sub_alloc_real_dp_1d_cleanup()
         y=x.sub_alloc_real_dp_1d_arrs()
