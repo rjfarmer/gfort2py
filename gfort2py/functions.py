@@ -101,6 +101,9 @@ class fFunc(object):
                 #dummy_args[obj.name] = value
             except IgnoreReturnError:
                 pass
+                
+        if self._sub:
+            ret = 0
 
         return Result(ret, dummy_args)
 
