@@ -924,32 +924,29 @@ class TestStringMethods(unittest.TestCase):
         output=out.getvalue().strip()	
         self.assertEqual(output,o.strip())
         
-    @unittest.skip("Skipping arrays")	
     def test_sub_arr_assumed_rank_int_1d(self):
         v=np.arange(10,15)
         o=' '.join([str(i) for i in v.flatten()])
         with captured_output() as (out,err):
             y=x.sub_arr_assumed_rank_int_1d(v)
         output=out.getvalue().strip()	
-        np_test.assert_array_equal(y['zzz'],np.array([100]*5))
+        np_test.assert_array_equal(y.args['zzz'],np.array([100]*5))
         
-    @unittest.skip("Skipping arrays")	
     def test_sub_arr_assumed_rank_real_1d(self):
         v=np.arange(10.0,15.0)
         o=' '.join([str(i) for i in v.flatten()])
         with captured_output() as (out,err):
             y=x.sub_arr_assumed_rank_real_1d(v)
         output=out.getvalue().strip()	
-        np_test.assert_array_equal(y['zzz'],np.array([100.0]*5))
+        np_test.assert_array_equal(y.args['zzz'],np.array([100.0]*5))
         
-    @unittest.skip("Skipping arrays")	
     def test_sub_arr_assumed_rank_dp_1d(self):
         v=np.arange(10.0,15.0)
         o=' '.join([str(i) for i in v.flatten()])
         with captured_output() as (out,err):
             y=x.sub_arr_assumed_rank_dp_1d(v)
         output=out.getvalue().strip()	
-        np_test.assert_array_equal(y['zzz'],np.array([100.0]*5))
+        np_test.assert_array_equal(y.args['zzz'],np.array([100.0]*5))
     
     @unittest.skip("Skipping travis")
     def test_sub_opt(self):

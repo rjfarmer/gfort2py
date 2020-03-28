@@ -334,7 +334,7 @@ class fDummyArray(fParentArray):
         self.set_from_address(ctypes.addressof(self.in_dll()), value)
  
     def from_param(self, value):
-        if self._array['atype'] == 'alloc':
+        if self._array['atype'] == 'alloc' or self._array['atype'] == 'pointer' :
             
             self._safe_ctype =  self._array_desc()
             if value is not None:
@@ -349,7 +349,7 @@ class fDummyArray(fParentArray):
             return self.ctype.from_address(ctypes.addressof(self._safe_ctype))  
            
     def from_func(self, pointer):
-        if self._array['atype'] == 'alloc':
+        if self._array['atype'] == 'alloc' or self._array['atype'] == 'pointer' :
             return self.from_address(ctypes.addressof(pointer.contents))   
         else:
             return self.from_address(ctypes.addressof(pointer))          
