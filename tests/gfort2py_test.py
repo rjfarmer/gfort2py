@@ -125,13 +125,11 @@ class TestStringMethods(unittest.TestCase):
         x.b_int_exp_3d=v
         np_test.assert_array_equal(x.b_int_exp_3d,v)
         
-    @unittest.skip("Skipping arrays")	
     def test_b_int_exp_4d(self):
         v=np.random.randint(0,100,size=(5,5,5,5))
         x.b_int_exp_4d=v
         np_test.assert_array_equal(x.b_int_exp_4d,v)
         
-    @unittest.skip("Skipping arrays")	
     def test_b_int_exp_5d(self):
         v=np.random.randint(0,100,size=(5,5,5,5,5))
         x.b_int_exp_5d=v
@@ -152,13 +150,11 @@ class TestStringMethods(unittest.TestCase):
         x.b_real_exp_3d=v
         np_test.assert_allclose(x.b_real_exp_3d,v)
         
-    @unittest.skip("Skipping arrays")	
     def test_b_real_exp_4d(self):
         v=np.random.random(size=(5,5,5,5))
         x.b_real_exp_4d=v
         np_test.assert_allclose(x.b_real_exp_4d,v)
         
-    @unittest.skip("Skipping arrays")	
     def test_b_real_exp_5d(self):
         v=np.random.random(size=(5,5,5,5,5))
         x.b_real_exp_5d=v
@@ -179,13 +175,11 @@ class TestStringMethods(unittest.TestCase):
         x.b_real_dp_exp_3d=v
         np_test.assert_allclose(x.b_real_dp_exp_3d,v)
        
-    @unittest.skip("Skipping arrays")	
     def test_b_real_dp_exp_4d(self):
         v=np.random.random(size=(5,5,5,5))
         x.b_real_dp_exp_4d=v
         np_test.assert_allclose(x.b_real_dp_exp_4d,v)
         
-    @unittest.skip("Skipping arrays")	
     def test_b_real_dp_exp_5d(self):
         v=np.random.random(size=(5,5,5,5,5))
         x.b_real_dp_exp_5d=v
@@ -542,7 +536,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_int_alloc_3d,v)
         y=x.sub_alloc_int_1d_cleanup()
     
-    @unittest.skip("Skipping arrays")	
     def test_c_int_alloc_4d(self):
         y=x.sub_alloc_int_1d_cleanup()
         y=x.sub_alloc_int_1d_arrs()
@@ -551,7 +544,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_int_alloc_4d,v)
         y=x.sub_alloc_int_1d_cleanup()
     
-    @unittest.skip("Skipping arrays")	
     def test_c_int_alloc_5d(self):
         y=x.sub_alloc_int_1d_cleanup()
         y=x.sub_alloc_int_1d_arrs()
@@ -587,7 +579,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_int_alloc_3d,v)
         y=x.sub_alloc_int_1d_cleanup()
     
-    @unittest.skip("Skipping arrays")	
     def test_c_int_alloc_4d_set(self):
         y=x.sub_alloc_int_1d_cleanup()
         y=x.sub_alloc_int_1d_arrs()
@@ -597,7 +588,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_int_alloc_4d,v)
         y=x.sub_alloc_int_1d_cleanup()
     
-    @unittest.skip("Skipping arrays")	
     def test_c_int_alloc_5d_set(self):
         y=x.sub_alloc_int_1d_cleanup()
         y=x.sub_alloc_int_1d_arrs()
@@ -641,7 +631,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_alloc_3d,v)
         y=x.sub_alloc_real_1d_cleanup()
     
-    @unittest.skip("Skipping arrays")	
     def test_c_real_alloc_4d(self):
         y=x.sub_alloc_real_1d_cleanup()
         y=x.sub_alloc_real_1d_arrs()
@@ -650,7 +639,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_alloc_4d,v)
         y=x.sub_alloc_real_1d_cleanup()
     
-    @unittest.skip("Skipping arrays")	
     def test_c_real_alloc_5d(self):
         y=x.sub_alloc_real_1d_cleanup()
         y=x.sub_alloc_real_1d_arrs()
@@ -686,7 +674,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_dp_alloc_3d,v)
         y=x.sub_alloc_real_dp_1d_cleanup()
     
-    @unittest.skip("Skipping arrays")	
     def test_c_real_dp_alloc_4d_set(self):
         y=x.sub_alloc_real_dp_1d_cleanup()
         y=x.sub_alloc_real_dp_1d_arrs()
@@ -696,7 +683,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_dp_alloc_4d,v)
         y=x.sub_alloc_real_dp_1d_cleanup()
     
-    @unittest.skip("Skipping arrays")	
     def test_c_real_dp_alloc_5d_set(self):
         y=x.sub_alloc_real_dp_1d_cleanup()
         y=x.sub_alloc_real_dp_1d_arrs()
@@ -730,7 +716,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_dp_alloc_3d,v)
         y=x.sub_alloc_real_dp_1d_cleanup()
     
-    @unittest.skip("Skipping arrays")	
     def test_c_real_dp_alloc_4d(self):
         y=x.sub_alloc_real_dp_1d_cleanup()
         y=x.sub_alloc_real_dp_1d_arrs()
@@ -739,7 +724,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_dp_alloc_4d,v)
         y=x.sub_alloc_real_dp_1d_cleanup()
     
-    @unittest.skip("Skipping arrays")	
     def test_c_real_dp_alloc_5d(self):
         y=x.sub_alloc_real_dp_1d_cleanup()
         y=x.sub_alloc_real_dp_1d_arrs()
@@ -775,7 +759,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_dp_alloc_3d,v)
         y=x.sub_alloc_real_dp_1d_cleanup()
   
-    @unittest.skip("Skipping arrays")	   
     def test_c_real_dp_alloc_4d_set(self):
         y=x.sub_alloc_real_dp_1d_cleanup()
         y=x.sub_alloc_real_dp_1d_arrs()
@@ -785,7 +768,6 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(x.c_real_dp_alloc_4d,v)
         y=x.sub_alloc_real_dp_1d_cleanup()
     
-    @unittest.skip("Skipping arrays")	
     def test_c_real_dp_alloc_5d_set(self):
         y=x.sub_alloc_real_dp_1d_cleanup()
         y=x.sub_alloc_real_dp_1d_arrs()
@@ -820,14 +802,12 @@ class TestStringMethods(unittest.TestCase):
         y=x.func_assumed_shape_arr_3d(v)
         self.assertEqual(y.result,True)
         
-    @unittest.skip("Skipping arrays")	
     def test_func_assumed_shape_arr_4d(self):
         v=np.zeros([5,5,5,5],dtype='int32')
         v[3,2,1,0]=2.0
         y=x.func_assumed_shape_arr_4d(v)
         self.assertEqual(y.result,True)
         
-    @unittest.skip("Skipping arrays")	
     def test_func_assumed_shape_arr_5d(self):
         v=np.zeros([5,5,5,5,5],dtype='int32')
         v[4,3,2,1,0]=2.0

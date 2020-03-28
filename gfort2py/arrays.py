@@ -95,8 +95,6 @@ class fExplicitArray(fParentArray):
             raise NotImplementedError("Type not supported ",self.pytype)
         
         self._ndims = int(self.array['ndim'])
-        if self._ndims > 3:
-            raise ValueError("Only arrays up to 3d are supported")
         
         size = self.size()
         if size > 0:
@@ -233,10 +231,7 @@ class fDummyArray(fParentArray):
             raise NotImplementedError("Type not supported yet ",self.pytype)
         
         self.ctype = ctypes.c_void_p
-        
-        if self.ndim > 3:
-            raise ValueError("Only arrays up to 3d are supported")
-        
+
         self._array_desc = _make_fAlloc15(self.ndim)
         
     def _shape_from_bounds(self,bounds):
