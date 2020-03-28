@@ -171,7 +171,7 @@ class fExplicitArray(fParentArray):
         return self._safe_ctype
         
     def from_func(self, pointer):
-        return self.from_address(ctypes.addressof(pointer))
+        return self.from_address(ctypes.addressof(pointer)).T
         
 
 class fDummyArray(fParentArray):

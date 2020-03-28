@@ -345,7 +345,6 @@ class TestStringMethods(unittest.TestCase):
         output=out.getvalue().strip()	
         self.assertEqual(output,v)	
     
-    @unittest.skip("Skipping travis")	#Fails on py3.7 only
     def test_sub_str_multi(self):
         v=5
         u='123456789'
@@ -363,11 +362,10 @@ class TestStringMethods(unittest.TestCase):
         output=out.getvalue().strip()	
         self.assertEqual(output,o.strip())
 
-    @unittest.skip("Skipping arrays")	
     def test_sub_array_n_int_2d(self):
         v=[0,1,2,3,4]*5
         v=np.array(v).reshape(5,5)
-        o=' '.join([str(i) for i in v.flatten()])
+        o=' '.join([str(i) for i in v.T.flatten()])
         with captured_output() as (out,err):
             y=x.sub_array_n_int_2d(5,5,v)
         output=out.getvalue().strip()	
@@ -381,84 +379,75 @@ class TestStringMethods(unittest.TestCase):
         output=out.getvalue().strip()	
         self.assertEqual(output,o.strip())	
         
-    @unittest.skip("Skipping arrays")	
     def test_sub_exp_array_int_2d(self):
         v=np.arange(0,5*5).reshape((5,5))
-        o=''.join([str(i).zfill(2).ljust(3) for i in v.flatten()])
+        o=''.join([str(i).zfill(2).ljust(3) for i in v.T.flatten()])
         with captured_output() as (out,err):
             y=x.sub_exp_array_int_2d(v)
         output=out.getvalue().strip()	
         self.assertEqual(output,o.strip())	
 
-    @unittest.skip("Skipping arrays")	
     def test_sub_exp_array_int_3d(self):
         v=np.arange(0,5*5*5).reshape((5,5,5))
-        o=''.join([str(i).zfill(3).ljust(4) for i in v.flatten()])
+        o=''.join([str(i).zfill(3).ljust(4) for i in v.T.flatten()])
         with captured_output() as (out,err):
             y=x.sub_exp_array_int_3d(v)
         output=out.getvalue().strip()	
         self.assertEqual(output,o.strip())			
 
-    @unittest.skip("Skipping arrays")	
     def test_sub_exp_array_real_1d(self):
         v=np.arange(0,5.0).reshape((5))
-        o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
+        o='  '.join(["{:>4.1f}".format(i) for i in v.T.flatten()])
         with captured_output() as (out,err):
             y=x.sub_exp_array_real_1d(v)
         output=out.getvalue().strip()	
         self.assertEqual(output,o.strip())	
 
-    @unittest.skip("Skipping arrays")			
     def test_sub_exp_array_real_2d(self):
         v=np.arange(0,5.0*5.0).reshape((5,5))
-        o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
+        o='  '.join(["{:>4.1f}".format(i) for i in v.T.flatten()])
         with captured_output() as (out,err):
             y=x.sub_exp_array_real_2d(v)
         output=out.getvalue().strip()	
         self.assertEqual(output,o.strip())	
 
-    @unittest.skip("Skipping arrays")	
     def test_sub_exp_array_real_3d(self):
         v=np.arange(0,5.0*5.0*5.0).reshape((5,5,5))
-        o=' '.join(["{:>5.1f}".format(i) for i in v.flatten()])
+        o=' '.join(["{:>5.1f}".format(i) for i in v.T.flatten()])
         with captured_output() as (out,err):
             y=x.sub_exp_array_real_3d(v)
         output=out.getvalue().strip()	
         self.assertEqual(output,o.strip())	 
 
-    @unittest.skip("Skipping arrays")	
     def test_sub_exp_array_int_1d_multi(self):
         u=19
         w=20
         v=np.arange(0,5)
-        o=' '.join([str(i) for i in v.flatten()])
+        o=' '.join([str(i) for i in v.T.flatten()])
         with captured_output() as (out,err):
             y=x.sub_exp_array_int_1d_multi(u,v,w)
         output=out.getvalue().strip()	
         self.assertEqual(output,str(u)+' '+o.strip()+' '+str(w)) 
  
-    @unittest.skip("Skipping arrays")	
     def test_sub_exp_array_real_dp_1d(self):
         v=np.arange(0,5.0).reshape((5))
-        o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
+        o='  '.join(["{:>4.1f}".format(i) for i in v.T.flatten()])
         with captured_output() as (out,err):
             y=x.sub_exp_array_real_dp_1d(v)
         output=out.getvalue().strip()	
         self.assertEqual(output,o.strip())	
 
-    @unittest.skip("Skipping arrays")			
     def test_sub_exp_array_real_dp_2d(self):
         v=np.arange(0,5.0*5.0).reshape((5,5))
-        o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
+        o='  '.join(["{:>4.1f}".format(i) for i in v.T.flatten()])
         with captured_output() as (out,err):
             y=x.sub_exp_array_real_dp_2d(v)
         output=out.getvalue().strip()	
         self.assertEqual(output,o.strip())	
 
-    @unittest.skip("Skipping arrays")	
     def test_sub_exp_array_real_dp_3d(self):
         v=np.arange(0,5.0*5.0*5.0).reshape((5,5,5))
-        o=' '.join(["{:>5.1f}".format(i) for i in v.flatten()])
+        o=' '.join(["{:>5.1f}".format(i) for i in v.T.flatten()])
         with captured_output() as (out,err):
             y=x.sub_exp_array_real_dp_3d(v)
         output=out.getvalue().strip()	
