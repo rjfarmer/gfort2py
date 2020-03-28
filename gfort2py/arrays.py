@@ -149,10 +149,13 @@ class fExplicitArray(fParentArray):
         if v.shape != self._shape:
             raise AttributeError("Bad shape for array")
             
-        v = np.asfortranarray(v.astype(self._dtype)).T
-        v_addr = v.ctypes.data
+        self._value = v
+            
+        self._value  = np.asfortranarray(self._value .astype(self._dtype)).T
+        v_addr = self._value.ctypes.data
 
         ctypes.memmove(ctypes.addressof(c), v_addr, self.sizeof())
+        remove_ownership(self._value)
 
     def get(self):
         return self.from_address(ctypes.addressof(self.in_dll())).T       
@@ -165,9 +168,8 @@ class fExplicitArray(fParentArray):
         self._shape = np.shape(value)
         self.ctype = self.ctype * size
         
-        self._value = value # Keep hold of a reference to the array
         self._safe_ctype = self.ctype()
-        self._set(self._safe_ctype, self._value)
+        self._set(self._safe_ctype, value)
         return self._safe_ctype
         
     def from_func(self, pointer):
