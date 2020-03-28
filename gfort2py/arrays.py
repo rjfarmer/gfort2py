@@ -305,14 +305,16 @@ class fDummyArray(fParentArray):
         if v.ndim != self.ndim:
             raise AllocationError("Bad ndim for array")
         
-        v_new = np.asfortranarray(v.astype(self._dtype))
+        self._value = v
+        
+        self._value= np.asfortranarray(self._value.astype(self._dtype))
 
-        c.base_addr = v_new.ctypes.data
+        c.base_addr = self._value.ctypes.data
  
         strides = []
         for i in range(self.ndim):
             c.dims[i].lbound = _index_t(1)
-            c.dims[i].ubound = _index_t(v_new.shape[i])
+            c.dims[i].ubound = _index_t(self._value.shape[i])
             strides.append(c.dims[i].ubound-c.dims[i].lbound+1)
 
         c.span = ctypes.sizeof(self.ctype_elem)
@@ -321,6 +323,8 @@ class fDummyArray(fParentArray):
             c.dims[i].stride = _index_t(int(np.product(strides[:i])))  
 
         c.offset = -c.dims[-1].stride
+        remove_ownership(self._value)
+ 
  
     def get(self):
         return self.from_address(ctypes.addressof(self.in_dll()))   
@@ -329,13 +333,15 @@ class fDummyArray(fParentArray):
         self.set_from_address(ctypes.addressof(self.in_dll()), value)
  
     def from_param(self, value):
-        self._value = value # Keep hold of a reference to the array
         self._safe_ctype =  self._array_desc()
-        self.set_from_address(ctypes.addressof(self._safe_ctype), self._value)
+        self.set_from_address(ctypes.addressof(self._safe_ctype), value)
         return self.ctype.from_address(ctypes.addressof(self._safe_ctype))  
            
     def from_func(self, pointer):
         return self.from_address(ctypes.addressof(pointer))          
+           
+
+                
            
            
            
