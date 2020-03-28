@@ -87,8 +87,11 @@ class fVar(fParent):
         if 'optional' in self.var :
             if self.var['optional'] and value is None:
                 return None
-        
-        return ctypes.pointer(self.ctype(self.pytype(value)))
+                
+        if 'pointer' in self.var and self.var['pointer']:
+            return ctypes.pointer(ctypes.pointer(self.ctype(self.pytype(value))))
+        else:
+            return ctypes.pointer(self.ctype(self.pytype(value)))
         
     def from_func(self, pointer):
         """
@@ -98,11 +101,18 @@ class fVar(fParent):
         like the hidden string length that's at the end of the argument list.
         
         """       
+        x = pointer
+        if hasattr(pointer,'contents'):
+            if hasattr(pointer.contents,'contents'):
+                x = pointer.contents.contents
+            else:
+                x = pointer.contents
+                
         try:
-            return self.pytype(pointer.contents.value)
+            return self.pytype(x.value)
         except AttributeError:
             raise IgnoreReturnError
-
+    
 
 class fParam(fParent):
     def __init__(self, lib, obj):

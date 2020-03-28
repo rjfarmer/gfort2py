@@ -44,16 +44,34 @@ class fStr(fParent):
     def set(self, value):            
        self.set_from_address(ctypes.addressof(self.in_dll()),value)
   
-    def from_param(self, value):
+    def from_param(self, value):        
+        if 'optional' in self.var :
+            if self.var['optional'] and value is None:
+                return None
+                
         self.len = len(value)
         self.ctype = ctypes.c_char * self.len
         
         self._safe_ctype  = self.ctype()
         self._set(self._safe_ctype, value)
-        return ctypes.pointer(self._safe_ctype)
+                
+        if 'pointer' in self.var and self.var['pointer']:
+            return ctypes.pointer(ctypes.pointer(self._safe_ctype))
+        else:
+            return ctypes.pointer(self._safe_ctype)
+        
+        
 
     def from_func(self, pointer):
-        return self.str_from_address(ctypes.addressof(pointer.contents))
+        
+        x = pointer
+        if hasattr(pointer,'contents'):
+            if hasattr(pointer.contents,'contents'):
+                x = pointer.contents.contents
+            else:
+                x = pointer.contents
+        
+        return self.str_from_address(ctypes.addressof(x))
 
 
 class fStrLen(object):
