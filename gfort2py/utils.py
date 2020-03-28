@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import numpy as np
 import ctypes
+import numbers
 
 from .errors import *
 
@@ -233,6 +234,8 @@ class fParent(object):
         
 
 class fParentArray(fParent, np.lib.mixins.NDArrayOperatorsMixin):
+    _HANDLED_TYPES = (np.ndarray, numbers.Number)
+    
     def all(self, *args, **kwargs):
         return getattr(self.get(),"all")(*args,**kwargs)
 

@@ -3,7 +3,6 @@ from __future__ import print_function
 import ctypes
 import sys
 import numpy as np
-import numbers
 
 try:
     import __builtin__
@@ -360,9 +359,7 @@ class fAssumedSize(fExplicitArray):
     pass
         
     
-class fParamArray(fParent, np.lib.mixins.NDArrayOperatorsMixin):
-    _HANDLED_TYPES = (np.ndarray, numbers.Number)
-    
+class fParamArray(fParentArray):
     def __init__(self, lib, obj):
         self.__dict__.update(obj)
         self._lib = lib
@@ -384,39 +381,39 @@ class fParamArray(fParent, np.lib.mixins.NDArrayOperatorsMixin):
         return self.value 
 
 
-    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
-        out = kwargs.get('out', ())
-        for x in inputs + out:
-            # Only support operations with instances of _HANDLED_TYPES.
-            # Use ArrayLike instead of type(self) for isinstance to
-            # allow subclasses that don't override __array_ufunc__ to
-            # handle ArrayLike objects.
-            if not isinstance(x, self._HANDLED_TYPES + (fParamArray,)):
-                return NotImplemented
+    # def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+        # out = kwargs.get('out', ())
+        # for x in inputs + out:
+            # # Only support operations with instances of _HANDLED_TYPES.
+            # # Use ArrayLike instead of type(self) for isinstance to
+            # # allow subclasses that don't override __array_ufunc__ to
+            # # handle ArrayLike objects.
+            # if not isinstance(x, self._HANDLED_TYPES + (fParamArray,)):
+                # return NotImplemented
 
-        # Defer to the implementation of the ufunc on unwrapped values.
-        inputs = tuple(x.value.get() if isinstance(x, fParamArray) else x
-                       for x in inputs)
-        if out:
-            kwargs['out'] = tuple(
-                x.get() if isinstance(x, fParamArray) else x
-                for x in out)
-        result = getattr(ufunc, method)(*inputs, **kwargs)
+        # # Defer to the implementation of the ufunc on unwrapped values.
+        # inputs = tuple(x.value.get() if isinstance(x, fParamArray) else x
+                       # for x in inputs)
+        # if out:
+            # kwargs['out'] = tuple(
+                # x.get() if isinstance(x, fParamArray) else x
+                # for x in out)
+        # result = getattr(ufunc, method)(*inputs, **kwargs)
 
-        if type(result) is tuple:
-            # multiple return values
-            return tuple(type(self)(x) for x in result)
-        elif method == 'at':
-            # no return value
-            return None
-        else:
-            # one return value
-            return type(self)(result)
+        # if type(result) is tuple:
+            # # multiple return values
+            # return tuple(type(self)(x) for x in result)
+        # elif method == 'at':
+            # # no return value
+            # return None
+        # else:
+            # # one return value
+            # return type(self)(result)
 
-    @property
-    def __array_interface__(self):
-        return self.get().__array_interface__
+    # @property
+    # def __array_interface__(self):
+        # return self.get().__array_interface__
 
-    @property
-    def flags(self):
-        return self.get().flags
+    # @property
+    # def flags(self):
+        # return self.get().flags
