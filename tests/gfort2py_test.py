@@ -836,7 +836,6 @@ class TestStringMethods(unittest.TestCase):
         vTest[:]=10
         np_test.assert_array_equal(y.args['x'],vTest)
         
-    @unittest.skip("Skipping as DT")
     def test_sub_dt_in_s_simple(self):
         with captured_output() as (out,err):
             y=x.sub_f_simple_in({'x':1,'y':10})
@@ -844,30 +843,30 @@ class TestStringMethods(unittest.TestCase):
         o=' '.join([str(i) for i in [1,10]])
         self.assertEqual(output,o)
     
-    @unittest.skip("Skipping as DT")
     def test_sub_dt_out_s_simple(self):
         with captured_output() as (out,err):
             y=x.sub_f_simple_out({})
         output=out.getvalue().strip()
-        self.assertEqual(y['x'],{'x':1,'y':10})	
+        self.assertEqual(y.args['x']['x'],1)
+        self.assertEqual(y.args['x']['y'],10)
     
-    @unittest.skip("Skipping as DT")
     def test_sub_dt_inout_s_simple(self):
         with captured_output() as (out,err):
             y=x.sub_f_simple_inout({'x':5,'y':3})
         output=out.getvalue().strip()
         o='  '.join([str(i) for i in [5,3]])
         self.assertEqual(output,o)
-        self.assertEqual(y['zzz'],{'x':1,'y':10})
-        
-    @unittest.skip("Skipping as DT")
+        self.assertEqual(y.args['zzz']['x'],1)
+        self.assertEqual(y.args['zzz']['y'],10)
+    
     def test_sub_dt_inoutp_s_simple(self):
         with captured_output() as (out,err):
             y=x.sub_f_simple_inoutp({'x':5,'y':3})
         output=out.getvalue().strip()
         o='  '.join([str(i) for i in [5,3]])
         self.assertEqual(output,o)
-        self.assertEqual(y['zzz'],{'x':1,'y':10})
+        self.assertEqual(y.args['zzz']['x'],1)
+        self.assertEqual(y.args['zzz']['y'],10)
         
     def test_sub_int_p(self):
         with captured_output() as (out,err):
@@ -985,14 +984,12 @@ class TestStringMethods(unittest.TestCase):
     
         v=np.array([9,10,11,12,13],dtype='int32')
         np_test.assert_array_equal(x.e_int_target_1d,v)
-        np_test.assert_array_equal(x.f_struct['d_int_point_1d'],v)
         
-    @unittest.skip("Skipping due to seg faults")	
     def test_func_set_f_struct_array_alloc(self):
         y = x.func_set_f_struct()
         
         v=np.array([1,2,3,4,5,6,7,8,9,10],dtype='int32')
-        np_test.assert_array_equal(x.f_struct.c_int_alloc_1d,v)
+        np_test.assert_array_equal(x.f_struct['c_int_alloc_1d'],v)
 
         
     @unittest.skip("Skipping due to seg faults")	

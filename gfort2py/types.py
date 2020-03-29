@@ -75,7 +75,7 @@ class fDerivedType(object):
             
         try:
             addr = ctypes.addressof(self.in_dll())
-        except NotinLib:
+        except NotInLib:
             addr = ctypes.addressof(self._safe_ctype)
         
         addr += getattr(self.ctype, key).offset
@@ -92,8 +92,8 @@ class fDerivedType(object):
             
         try:
             addr = ctypes.addressof(self.in_dll())
-        except NotinLib:
-            addr = ctypes.addressof(self._desc)
+        except NotInLib:
+            addr = ctypes.addressof(self._safe_ctype)
         
         addr += getattr(self.ctype, key).offset
         obj = self._comp[key]
@@ -110,8 +110,18 @@ class fDerivedType(object):
         # Hold a chunk of memory the size of the object
         self._safe_ctype = self._dt_desc()
         self.set(value)
-        return ctypes.pointer(self._dt_desc)(self._safe_ctype)
-
+        
+        ct = self._safe_ctype
+                
+        if 'value' in self.var and self.var['value']:
+            return ct
+        else:
+            ct = ctypes.pointer(ct)
+            if 'pointer' in self.var and self.var['pointer']:
+                return ctypes.pointer(ct)
+            else:
+                return ct
+        
 
     def from_func(self, pointer):
         x = pointer
@@ -122,6 +132,7 @@ class fDerivedType(object):
                 x = pointer.contents
                 
         self._safe_ctype = x
+        return self
         
     def _get_fvar(self,var):
         x = _selectVar(var)
@@ -134,7 +145,7 @@ class fDerivedType(object):
 
 
     def __repr__(self):
-        return "<"+str(self.var['dt']['name'])+">"
+        return str(self.var['dt']['name'])
 
 
     def __iter__(self):
