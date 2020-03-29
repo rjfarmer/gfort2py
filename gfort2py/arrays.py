@@ -230,9 +230,9 @@ class fDummyArray(fParentArray):
         else:
             raise NotImplementedError("Type not supported yet ",self.pytype)
         
-        self.ctype = ctypes.c_void_p
-
         self._array_desc = _make_fAlloc15(self.ndim)
+        
+        self.ctype = self._array_desc
         
     def _shape_from_bounds(self,bounds):
         shape = []
@@ -269,7 +269,7 @@ class fDummyArray(fParentArray):
         return ftype               
         
     def from_address(self, addr):
-        if self.ctype.from_address(addr).value is None:
+        if self.ctype.from_address(addr).base_addr is None:
             raise AllocationError("Array not allocated yet")
         
         
@@ -320,7 +320,6 @@ class fDummyArray(fParentArray):
 
         c.offset = -c.dims[-1].stride
         remove_ownership(self._value)
- 
  
     def get(self):
         return self.from_address(ctypes.addressof(self.in_dll()))   

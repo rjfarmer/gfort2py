@@ -990,8 +990,6 @@ class TestStringMethods(unittest.TestCase):
         v=np.array([1,2,3,4,5,6,7,8,9,10],dtype='int32')
         np_test.assert_array_equal(x.f_struct['c_int_alloc_1d'],v)
 
-        
-    @unittest.skip("Skipping due to seg faults")	
     def test_func_set_f_struct_array_ptr(self):
         y = x.func_set_f_struct()
                 
