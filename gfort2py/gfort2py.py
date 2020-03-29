@@ -15,7 +15,7 @@ from .cmplx import fComplex, fParamComplex
 from .arrays import fExplicitArray, fDummyArray, fParamArray
 from .functions import fFunc,  _allFuncs
 from .strings import fStr
-# from .types import fDerivedType, _dictAllDtDescs, getEmptyDT, _dictDTDefs
+from .types import fDerivedType, _alldtdefs
 from .utils import *
 from .var import fVar, fParam
 from .errors import *
@@ -81,12 +81,10 @@ class fFort(object):
         self._func_ptrs = x[5]
 
     def _init(self):      
-        #init_mod_arrays(self._mod_data['version'])
-        #self._init_dt_defs()
-        pass
+        self._init_dt_defs()
 
     def _init_var(self, obj):
-        x = _selectVar(obj)(self._lib, obj)
+        x = self._get_fvar(obj)(self._lib, obj)
 
         if x is not None:
             self.__dict__[x.name.lower()] = x
@@ -105,8 +103,7 @@ class fFort(object):
     def _init_dt_defs(self):
         # Make empty dts first
         for i in self._dt_defs.keys():
-            _dictAllDtDescs[i] = getEmptyDT(i)
-            _dictDTDefs[i] = self._dt_defs[i]
+            _alldtdefs[i] = self._dt_defs[i]
 
 
     def __getattr__(self, name):
@@ -181,3 +178,11 @@ class fFort(object):
     def __setstate__(self,state):
         self.__init__(*state)
 
+    def _get_fvar(self,var):
+        x = _selectVar(var)
+        if x is None: # Handle derived types
+            if 'dt' in var['var'] and var['var']['dt']:
+                x = fDerivedType
+            else:
+                raise TypeError("Can't match ",var['name'])
+        return x

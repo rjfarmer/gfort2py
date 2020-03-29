@@ -1,13 +1,112 @@
-# from __future__ import print_function
-# import ctypes
-# import functools
-# import collections
+# SPDX-License-Identifier: GPL-2.0+
+from __future__ import print_function
+try:
+    import __builtin__
+except ImportError:
+    import builtins as __builtin__
 
-# from .var import fVar
-# from .cmplx import fComplex
-# from .arrays import fExplicitArray, fDummyArray, fAssumedShape, fAssumedSize, fAllocatableArray
-# from .strings import fStr
-# from .errors import *
+import ctypes
+import os
+import collections
+import numpy as np
+
+
+from .utils import *
+from .errors import *
+from .selector import _selectVar
+
+
+_alldtdefs = {}
+
+
+
+class fDerivedType(object):
+    def __init__(self, lib, obj):
+        self.__dict__.update(obj)
+        self._lib = lib
+
+        self.ctype  = ctypes.c_void_p
+
+        self._comp = collections.OrderedDict()
+        self._init_keys()
+
+
+    def _init_keys(self):
+        dtdef = _alldtdefs[self.var['dt']['name']]
+        offset=0
+        for i in dtdef['dt_def']['arg']:
+            obj = self._get_fvar(i)(self._lib,i)
+            self._comp[i['name']] = {'object':obj, 'offset':offset}
+            offset += obj.sizeof()
+
+    def in_dll(self):
+        """ Find the variable in the shared library.  """
+        if 'mangled_name' in self.__dict__ and '_lib' in self.__dict__:
+            try:
+                return self.ctype.in_dll(self._lib, self.mangled_name)
+            except ValueError:
+                raise NotInLib
+        raise NotInLib 
+        
+    def sizeof(self):
+        """ Gets the size in bytes of the ctype representation """
+        return ctypes.sizeof(self.ctype)
+    
+    def get(self):
+        return None
+    
+    def set(self, value):
+        if isinstance(value,dict):
+            for key, items in value.items():
+                self.__setitem__(key,items)
+        elif isinstance(value,fDerivedType):
+            pass
+        else:
+            raise ValueError("Input must be a dict or an existing derived type")
+        
+
+    def keys(self):
+        return self._comp.keys()
+        
+        
+    def __getitem__(self, key):
+        addr = ctypes.addressof(self.in_dll()) +self._comp[key]['offset']
+        obj = self._comp[key]['object']
+        res = obj.from_address(addr)
+        if hasattr(res, 'value'):
+            return obj.pytype(res.value)
+        else:
+            return res
+        
+    def __setitem__(self, key, value):
+        addr = ctypes.addressof(self.in_dll())+self._comp[key]['offset']
+        obj = self._comp[key]['object']
+        obj.set_from_address(addr, value)
+
+    def from_param(self, value):
+        if isinstance(value,dict):
+            pass
+        elif isinstance(value,fDerivedType):
+            pass
+        else:
+            raise ValueError("Input must be a dict or an existing derived type")
+
+
+
+    def from_func(self, pointer):
+        pass
+
+        
+    def _get_fvar(self,var):
+        x = _selectVar(var)
+        if x is None: # Handle derived types
+            if 'dt' in var['var'] and var['var']['dt']:
+                x = fDerivedType
+            else:
+                raise TypeError("Can't match ",var['name'])
+        return x
+
+
 
 
 # _dictAllDtDescs = {}

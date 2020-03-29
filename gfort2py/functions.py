@@ -12,6 +12,7 @@ import select
 import collections
 
 from .strings import fStr, fStrLen
+from .types import fDerivedType
 
 from .utils import *
 from .errors import *
@@ -107,20 +108,29 @@ class fFunc(object):
         # make a object usable by _selectVar()
         ret = {}
         ret['var'] = self.proc['ret']
-        self._return = _selectVar(ret)(self._lib, ret)
+        self._return = self._get_fvar(ret)(self._lib, ret)
         
     def _init_args(self):
         self._args = []
         extras = []
         for i in self.arg:
-            self._args.append(_selectVar(i)(self._lib, i))
-            if isinstance(self._args[-1],fStr): # Need a string length at the end of the argument list
+            x = self._get_fvar(i)(self._lib, i)
+            
+            if isinstance(x,fStr): # Need a string length at the end of the argument list
                 extras.append(fStrLen())
+            self._args.append(x)
             
         self._args.extend(extras)
             
-
-
+        
+    def _get_fvar(self,var):
+        x = _selectVar(var)
+        if x is None: # Handle derived types
+            if 'dt' in var['var'] and var['var']['dt']:
+                x = fDerivedType
+            else:
+                raise TypeError("Can't match ",var['name'])
+        return x
 
 
 
