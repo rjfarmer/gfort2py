@@ -335,8 +335,7 @@ class fDummyArray(fParentArray):
             if value is not None:
                 self.set_from_address(ctypes.addressof(self._safe_ctype), value)
             
-            self._ptr_safe_ctype = ctypes.POINTER(self._array_desc)(self._safe_ctype)
-            
+            self._ptr_safe_ctype = ctypes.pointer(self._safe_ctype)
             return self._ptr_safe_ctype
         else:
             self._safe_ctype =  self._array_desc()

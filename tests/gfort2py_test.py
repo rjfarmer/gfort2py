@@ -968,7 +968,6 @@ class TestStringMethods(unittest.TestCase):
         y=x.func_logical_multi(1.0,2.0,xarr,3.0,4.0)
         self.assertEqual(y.result,True)
 
-    @unittest.skip("Skipping due to failure")
     def test_func_set_f_struct(self):
         y = x.func_set_f_struct()
         self.assertEqual(y.result,True)
@@ -997,7 +996,7 @@ class TestStringMethods(unittest.TestCase):
         y = x.func_set_f_struct()
                 
         v=np.array([9,10,11,12,13],dtype='int32')
-        np_test.assert_array_equal(x.f_struct.d_int_point_1d,v)
+        np_test.assert_array_equal(x.f_struct['d_int_point_1d'],v)
         
     @unittest.skip("Skipping as we cant set the ptr yet")
     def test_func_func_str(self):
