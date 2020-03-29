@@ -1093,6 +1093,13 @@ class TestStringMethods(unittest.TestCase):
         y = x.func_int_value(5)
         self.assertEqual(y.result,10)
         
+        
+    def test_func_pass_mod_var(self):
+        x.a_int = 5
+        z = x.func_int_in(x.a_int)
+        self.assertEqual(z.result,10)
+        
+        
 if __name__ == '__main__':
     unittest.main() 
 

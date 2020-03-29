@@ -304,7 +304,7 @@ module tester
       end subroutine sub_int_no_intent 
       
       integer function func_int_in(x)
-         integer, intent(in) ::x
+         integer, intent(in) :: x
          func_int_in=2*x
       end function func_int_in
       
