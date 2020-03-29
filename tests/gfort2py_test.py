@@ -931,25 +931,14 @@ class TestStringMethods(unittest.TestCase):
             y=x.sub_int_opt(None)
         output=out.getvalue().strip()
         self.assertEqual(output,'200')
-    
-    @unittest.skip("Skipping as DT")
-    def test_dt_copy(self):
-        x.f_struct_simple.x=99
-        x.f_struct_simple.y=99
-        y=x.f_struct_simple
-        self.assertEqual(y,{'x':99,'y':99})
-        y=x.f_struct_simple.get(copy=True)
-        self.assertEqual(y,{'x':99,'y':99})
-        y=x.f_struct_simple.get(copy=False)
-        self.assertEqual(y.x,99)
-        self.assertEqual(y.y,99)
-        
-    @unittest.skip("Skipping as DT")		
+    	
     def test_second_mod(self):
-        x.f_struct_simple2.x=99
+        x.f_struct_simple2['x']=99
         y=x.sub_use_mod()
         self.assertEqual(x.test2_x,1)
-        self.assertEqual(x.f_struct_simple2,{'x':5,'y':6,'z':0})
+        self.assertEqual(x.f_struct_simple2['x'],5)
+        self.assertEqual(x.f_struct_simple2['y'],6)
+        self.assertEqual(x.f_struct_simple2['z'],0)
     
     @unittest.skip("Skipping as DT")
     def test_nested_dts(self):
@@ -983,18 +972,20 @@ class TestStringMethods(unittest.TestCase):
     @unittest.skip("Skipping due to failure")
     def test_func_set_f_struct(self):
         y = x.func_set_f_struct()
-        self.assertEqual(y,True)
+        self.assertEqual(y.result,True)
         
-        self.assertEqual(x.f_struct.a_int,5)
-        self.assertEqual(x.f_struct.a_int_lp,6)
-        self.assertEqual(x.f_struct.a_real,7.0)
-        self.assertEqual(x.f_struct.a_real_dp,8.0)		
+        self.assertEqual(x.f_struct['a_int'],5)
+        self.assertEqual(x.f_struct['a_int_lp'],6)
+        self.assertEqual(x.f_struct['a_real'],7.0)
+        self.assertEqual(x.f_struct['a_real_dp'],8.0)		
+        self.assertEqual(x.f_struct['a_str'],'9999999999')
         
         v=np.array([9,10,11,12,13],dtype='int32')
-        np_test.assert_array_equal(x.f_struct.b_int_exp_1d,v)
+        np_test.assert_array_equal(x.f_struct['b_int_exp_1d'],v)
     
         v=np.array([9,10,11,12,13],dtype='int32')
         np_test.assert_array_equal(x.e_int_target_1d,v)
+        np_test.assert_array_equal(x.f_struct['d_int_point_1d'],v)
         
     @unittest.skip("Skipping due to seg faults")	
     def test_func_set_f_struct_array_alloc(self):

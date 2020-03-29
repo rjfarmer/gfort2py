@@ -737,6 +737,7 @@ module tester
          f_struct%a_int_lp=6_lp         
          f_struct%a_real = 7.0
          f_struct%a_real_dp=8.0_dp
+         f_struct%a_str='9999999999'
          f_struct%b_int_exp_1d=(/9,10,11,12,13/)
          
          if (allocated(f_struct%c_int_alloc_1d)) deallocate(f_struct%c_int_alloc_1d)
@@ -746,6 +747,8 @@ module tester
          e_int_target_1d = (/9,10,11,12,13/)
          nullify(f_struct%d_int_point_1d)
          f_struct%d_int_point_1d => e_int_target_1d
+      
+		func_set_f_struct = .true.
       
       end function func_set_f_struct
       

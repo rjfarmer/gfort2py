@@ -229,8 +229,10 @@ class fParent(object):
         return getattr(self.get(), '__str__')()
         
     def __repr__(self):
-        return getattr(self.get(), '__repr__')()
-        
+        try:
+            return getattr(self.get(), '__repr__')()
+        except NotInLib:
+            return str(self.ctype)+" "+str(self.__class__)
         
 
 class fParentArray(fParent, np.lib.mixins.NDArrayOperatorsMixin):
