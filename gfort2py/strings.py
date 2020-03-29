@@ -20,10 +20,10 @@ class fStr(fParent):
             self.ctype = ctypes.c_char
         
     def from_address(self, addr):
-        return self.ctype.from_address(addr)
+        return ''.join([i.decode() for i in self.ctype.from_address(addr)])
     
     def set_from_address(self, addr, value):
-        ctype = self.from_address(addr)
+        ctype = self.ctype.from_address(addr)
         self._set(ctype, value)
                 
     def _set(self, c, v):
@@ -35,11 +35,8 @@ class fStr(fParent):
             else:
                 c[i] = b' '
                 
-    def str_from_address(self, addr):
-        return ''.join([i.decode() for i in self.from_address(addr)])
-
     def get(self):
-        return self.str_from_address(ctypes.addressof(self.in_dll()))
+        return self.from_address(ctypes.addressof(self.in_dll()))
         
     def set(self, value):            
        self.set_from_address(ctypes.addressof(self.in_dll()),value)
@@ -71,7 +68,7 @@ class fStr(fParent):
             else:
                 x = pointer.contents
         
-        return self.str_from_address(ctypes.addressof(x))
+        return self.from_address(ctypes.addressof(x))
 
 
 class fStrLen(object):
