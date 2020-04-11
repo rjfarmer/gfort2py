@@ -5,10 +5,9 @@ import ctypes
 from .errors import *
 from .utils import *
 
-class fStr(fParent):
-    def __init__(self, lib, obj):
+class fStr(object):
+    def __init__(self,  obj):
         self.__dict__.update(obj)
-        self._lib = lib
         self.ctype=self.var['ctype']
 
         self.len = int(self.var['length'])
@@ -34,13 +33,15 @@ class fStr(fParent):
                 c[i] = v[i]
             else:
                 c[i] = b' '
-                
-    def get(self):
-        return self.from_address(ctypes.addressof(self.in_dll()))
         
-    def set(self, value):            
-       self.set_from_address(ctypes.addressof(self.in_dll()),value)
-  
+    def in_dll(self, lib):
+        addr = ctypes.addressof(self.ctype.in_dll(lib, self.mangled_name))
+        return self.from_address(addr)
+        
+    def set_in_dll(self, lib, value):
+        addr = ctypes.addressof(self.ctype.in_dll(lib, self.mangled_name))
+        self.set_from_address(addr, value)
+    
     def from_param(self, value):        
         if 'optional' in self.var :
             if self.var['optional'] and value is None:
@@ -57,8 +58,6 @@ class fStr(fParent):
         else:
             return ctypes.pointer(self._safe_ctype)
         
-        
-
     def from_func(self, pointer):
         
         x = pointer

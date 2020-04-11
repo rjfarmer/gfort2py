@@ -65,10 +65,9 @@ class BadFortranArray(Exception):
     pass
     
 
-class fExplicitArray(fParentArray):            
-    def __init__(self, lib, obj):
+class fExplicitArray(object):            
+    def __init__(self, obj):
         self.__dict__.update(obj)
-        self._lib = lib
         self._array = True
         
         if 'array' in self.var:
@@ -136,7 +135,7 @@ class fExplicitArray(fParentArray):
         return np.product(self.shape())
 
     def set_from_address(self, addr, value):
-        ctype = self.from_address(addr)
+        ctype = self.ctype.from_address(addr)
         self._set(ctype, value)
 
     def _set(self, c, v):
@@ -153,12 +152,17 @@ class fExplicitArray(fParentArray):
 
         ctypes.memmove(ctypes.addressof(c), v_addr, self.sizeof())
         remove_ownership(self._value)
-
-    def get(self):
-        return self.from_address(ctypes.addressof(self.in_dll())).T       
-
+ 
     def set(self, value):
         self._set(self.in_dll(), value)
+        
+    def in_dll(self, lib):
+        addr = ctypes.addressof(self.ctype.in_dll(lib, self.mangled_name))
+        return self.from_address(addr).T
+        
+    def set_in_dll(self, lib, value):
+        addr = ctypes.addressof(self.ctype.in_dll(lib, self.mangled_name))
+        self.set_from_address(addr, value)
         
     def from_param(self, value):
         size = np.size(value)
@@ -172,8 +176,11 @@ class fExplicitArray(fParentArray):
     def from_func(self, pointer):
         return self.from_address(ctypes.addressof(pointer)).T
         
+    def sizeof(self):
+        return ctypes.sizeof(self.ctype)
+        
 
-class fDummyArray(fParentArray):
+class fDummyArray(object):
     _GFC_MAX_DIMENSIONS = -1
     
     _GFC_DTYPE_RANK_MASK = 0x07
@@ -202,10 +209,8 @@ class fDummyArray(fParentArray):
     _PY_TO_BT = {'int':_BT_INTEGER,'float':_BT_REAL,'bool':_BT_LOGICAL,
             'str':_BT_CHARACTER,'bytes':_BT_CHARACTER}
 
-    def __init__(self, lib, obj,notinlib=False):
+    def __init__(self, obj):
         self.__dict__.update(obj)
-        self._lib = lib
-        self._notinlib = notinlib
         self._array = self.var['array']
 
         self.ndim = int(self._array['ndim'])
@@ -321,11 +326,13 @@ class fDummyArray(fParentArray):
         c.offset = -c.dims[-1].stride
         remove_ownership(self._value)
  
-    def get(self):
-        return self.from_address(ctypes.addressof(self.in_dll()))   
+    def in_dll(self, lib):
+        addr = ctypes.addressof(self.ctype.in_dll(lib, self.mangled_name))
+        return self.from_address(addr)
         
-    def set(self, value):
-        self.set_from_address(ctypes.addressof(self.in_dll()), value)
+    def set_in_dll(self, lib, value):
+        addr = ctypes.addressof(self.ctype.in_dll(lib, self.mangled_name))
+        self.set_from_address(addr, value)
  
     def from_param(self, value):
         if self._array['atype'] == 'alloc' or self._array['atype'] == 'pointer' :
@@ -368,21 +375,20 @@ class fAssumedSize(fExplicitArray):
     pass
 
     
-class fParamArray(fParentArray):
-    def __init__(self, lib, obj):
+class fParamArray(object):
+    def __init__(self, obj):
         self.__dict__.update(obj)
-        self._lib = lib
         self.pytype = self.param['pytype']
         self.pytype = getattr(__builtin__, self.pytype)
         self.value = np.array(self.param['value'], dtype=self.pytype, order='F')
 		
-    def set(self, value):
+    def set_in_dll(self, lib, value):
         """
         Cant set a parameter
         """
         raise ValueError("Can't alter a parameter")
         
-    def get(self):
+    def in_dll(self, lib):
         """
         A parameters value is stored in the dict, as we cant access them
         from the shared lib.

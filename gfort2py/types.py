@@ -21,10 +21,8 @@ _alldtdefs = {}
 
 
 class fDerivedType(object):
-    def __init__(self, lib, obj):
+    def __init__(self, obj):
         self.__dict__.update(obj)
-        self._lib = lib
-
         self._comp = collections.OrderedDict()
         self._dt_desc = self._init_keys()
 
@@ -34,22 +32,13 @@ class fDerivedType(object):
         dtdef = _alldtdefs[self.var['dt']['name']]
 
         for i in  dtdef['dt_def']['arg']:
-            self._comp[i['name']] = self._get_fvar(i)(self._lib,i)
+            self._comp[i['name']] = self._get_fvar(i)(i)
 
         class ctypesStruct(ctypes.Structure):
             _fields_ = [(key, value.ctype) for key,value in  self._comp.items()]
             
         return ctypesStruct
 
-
-    def in_dll(self):
-        """ Find the variable in the shared library.  """
-        if 'mangled_name' in self.__dict__ and '_lib' in self.__dict__:
-            try:
-                return self.ctype.in_dll(self._lib, self.mangled_name)
-            except ValueError:
-                raise NotInLib
-        raise NotInLib 
         
     def sizeof(self):
         """ Gets the size in bytes of the ctype representation """

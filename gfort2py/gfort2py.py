@@ -84,12 +84,7 @@ class fFort(object):
         self._init_dt_defs()
 
     def _init_var(self, obj):
-        x = self._get_fvar(obj)(self._lib, obj)
-
-        if x is not None:
-            self.__dict__[x.name.lower()] = x
-        else:
-            print("Skipping init " + obj['name'])
+        x = self._get_fvar(obj)(obj)
 
     def _init_func(self, obj):
         x = fFunc(self._lib, obj)
@@ -111,14 +106,15 @@ class fFort(object):
             nl = name.lower()
             if '_mod_vars' in self.__dict__:
                 if nl in self._mod_vars:
-                    if nl not in self.__dict__:
-                        self._init_var(self._mod_vars[nl])
-                    return self.__dict__[nl]
+                    obj = self._mod_vars[nl]
+                    x = self._get_fvar(obj)(obj)
+                    return x.in_dll(self._lib)
+
             if '_param' in self.__dict__:
                 if nl in self._param:
-                    if nl not in self.__dict__:
-                        self._init_var(self._param[nl])
-                    return self.__dict__[nl]
+                    obj = self._param[nl]
+                    x = self._get_fvar(obj)(obj)
+                    return x.in_dll(self._lib)
             if '_funcs' in self.__dict__:
                 if nl in self._funcs:
                     if nl not in self.__dict__:
@@ -147,13 +143,15 @@ class fFort(object):
             if self._initialized:
                 if '_mod_vars' in self.__dict__:
                     if nl in self._mod_vars:
-                        self._init_var(self._mod_vars[nl])
-                        self.__dict__[nl].set(value)
+                        obj = self._mod_vars[nl]
+                        x = self._get_fvar(obj)(obj)
+                        x.set_in_dll(self._lib, value)
                         return
                 if '_param' in self.__dict__:
                     if nl in self._param:
-                        self._init_var(self._param[nl])
-                        self.__dict__[nl].set(value)
+                        obj = self._param[nl]
+                        x = self._get_fvar(obj)(obj)
+                        x.set_in_dll(self._lib, value)
                         return
                 # if '_func_ptrs' in self.__dict__:
                     # if nl in self._func_ptrs:
@@ -186,3 +184,4 @@ class fFort(object):
             else:
                 raise TypeError("Can't match ",var['name'])
         return x
+        

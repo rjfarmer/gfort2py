@@ -63,7 +63,7 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(x.a_int,v)
         
     def test_a_int_str(self):
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(TypeError) as cm:
             x.a_int='abc'
             
     def test_a_real(self):
@@ -72,7 +72,7 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(x.a_real,v)
     
     def test_a_real_str(self):	
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(TypeError) as cm:
             x.a_real='abc'
             
     def test_const_int_set(self):	
@@ -508,7 +508,7 @@ class TestStringMethods(unittest.TestCase):
     def test_c_int_alloc_1d_non_alloc(self):
         y=x.sub_alloc_int_1d_cleanup()
         with self.assertRaises(gf.errors.AllocationError) as cm:
-            y = x.c_int_alloc_1d.get()
+            y = x.c_int_alloc_1d
             
     def test_c_int_alloc_1d(self):
         y=x.sub_alloc_int_1d_cleanup()

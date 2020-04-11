@@ -11,14 +11,10 @@ import numpy as np
 from .errors import *
 from .utils import *
 
-# Hacky, yes
-__builtin__.quad = np.longdouble
 
-
-class fVar(fParent):
-    def __init__(self, lib, obj):
+class fVar(object):
+    def __init__(self, obj):
         self.__dict__.update(obj)
-        self._lib = lib
         self.ctype=self.var['ctype']
         self.pytype=self.var['pytype']
 
@@ -41,7 +37,7 @@ class fVar(fParent):
         Returns:
         A ctype representation of the variable
         """
-        return self.ctype.from_address(addr)
+        return self.pytype(self.ctype.from_address(addr).value)
         
     def set_from_address(self, addr, value):
         """
@@ -51,26 +47,9 @@ class fVar(fParent):
         value -- python object that can be coerced into self.pytype
         
         """
-        self.from_address(addr).value = self.pytype(value)
+        self.ctype.from_address(addr).value = self.pytype(value)
         
-    def get(self):
-        """
-        Get a fortran module variable from the library
-        
-        Returns:
-        
-        A python representation of the variable
-        """
-        return self.pytype(self.from_address(ctypes.addressof(self.in_dll())).value)
 
-    def set(self, value):
-        """
-        Set a fortran module variable from the library to value.
-        
-        value -- python object that can be coerced into self.pytype
-        """
-        self.set_from_address(ctypes.addressof(self.in_dll()),value)
-        
     def from_param(self, value):
         """
         Returns a ctype object needed by a function call
@@ -119,22 +98,34 @@ class fVar(fParent):
         except AttributeError:
             raise IgnoreReturnError
     
+    
+    def in_dll(self, lib):
+        return self.ctype.in_dll(lib, self.mangled_name).value
+    
+    def set_in_dll(self, lib, value):
+        self.ctype.in_dll(lib, self.mangled_name).value = value
+    
 
-class fParam(fParent):
-    def __init__(self, lib, obj):
+class fParam(object):
+    def __init__(self, obj):
         self.__dict__.update(obj)
-        self._lib = lib
         self.value = self.param['value']
         self.pytype = self.param['pytype']
-        self.pytype = getattr(__builtin__, self.pytype)
+        if self.pytype == 'quad':
+            self.pytype = np.longdouble
+        elif self.pytype=='bool':
+            self.pytype=bool
+            self.ctype='c_int32'
+        else:
+             self.pytype = getattr(__builtin__, self.pytype)
         
-    def set(self, value):
+    def set_in_dll(self, lib, value):
         """
         Can't set a parameter
         """
         raise ValueError("Can't alter a parameter")
 
-    def get(self):
+    def in_dll(self, lib):
         """
         A parameters value is stored in the objects dict, as we can't access them
         from the shared lib.

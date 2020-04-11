@@ -108,13 +108,13 @@ class fFunc(object):
         # make a object usable by _selectVar()
         ret = {}
         ret['var'] = self.proc['ret']
-        self._return = self._get_fvar(ret)(self._lib, ret)
+        self._return = self._get_fvar(ret)(ret)
         
     def _init_args(self):
         self._args = []
         extras = []
         for i in self.arg:
-            x = self._get_fvar(i)(self._lib, i)
+            x = self._get_fvar(i)(i)
             
             if isinstance(x,fStr): # Need a string length at the end of the argument list
                 extras.append(fStrLen())
