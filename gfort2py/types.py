@@ -27,6 +27,7 @@ class fDerivedType(object):
         self._dt_desc = self._init_keys()
 
         self.ctype  = self._dt_desc 
+        self._safe_ctype = None
         self._addr = None
 
     def _init_keys(self):
@@ -60,10 +61,18 @@ class fDerivedType(object):
         if not (isinstance(value,dict) or isinstance(value,fDerivedType)):
             raise ValueError("Input must be a dict or an existing derived type")
         
+        for k in value.keys():
+            if k not in self.keys():
+                raise KeyError("No key by name "+str(k))
+        
         for key, items in value.items():
             self.__setattr__(key,items)         
             
     def set_all(self, value):
+        for k in value.keys():
+            if k not in self.keys():
+                raise KeyError("No key by name "+str(k))
+        
         for key, items in value.items():
             self.__setattr__(key,items)       
 

@@ -948,7 +948,7 @@ class TestStringMethods(unittest.TestCase):
         x.g_struct.f_struct.a_int=8
         self.assertEqual(x.g_struct.f_struct.a_int,8)
         y=x.func_check_nested_dt()
-        self.assertEqual(y,True)
+        self.assertEqual(y.result,True)
     
     def test_logical_arr(self):
         xarr=np.zeros(10)
