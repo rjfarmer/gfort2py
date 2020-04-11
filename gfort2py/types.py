@@ -27,6 +27,7 @@ class fDerivedType(object):
         self._dt_desc = self._init_keys()
 
         self.ctype  = self._dt_desc 
+        self._addr = None
 
     def _init_keys(self):
         dtdef = _alldtdefs[self.var['dt']['name']]
@@ -39,6 +40,9 @@ class fDerivedType(object):
             
         return ctypesStruct
 
+    def from_address(self, addr):
+        self._addr = addr
+        return self
         
     def sizeof(self):
         """ Gets the size in bytes of the ctype representation """
@@ -46,47 +50,76 @@ class fDerivedType(object):
     
     def get(self):
         return None
+            
+    def in_dll(self, lib):
+        self._addr = ctypes.addressof(self.ctype.in_dll(lib, self.mangled_name))
+        return self
     
-    def set(self, value):
+    def set_in_dll(self, lib, value):
+        self._addr = ctypes.addressof(self.ctype.in_dll(lib, self.mangled_name))
         if not (isinstance(value,dict) or isinstance(value,fDerivedType)):
             raise ValueError("Input must be a dict or an existing derived type")
         
         for key, items in value.items():
-            self.__setitem__(key,items)
+            self.__setattr__(key,items)         
+            
+    def set_all(self, value):
+        for key, items in value.items():
+            self.__setattr__(key,items)       
 
     def keys(self):
         return self._comp.keys()
         
         
-    def __getitem__(self, key):
-        if key not in self.keys():
-            raise KeyError()
+    def __getattr__(self, key):
+        if '_comp' in self.__dict__ and key in self.keys():
+            if self._addr is None:
+                raise ValueError("Must point to something first")
             
-        try:
-            addr = ctypes.addressof(self.in_dll())
-        except NotInLib:
-            addr = ctypes.addressof(self._safe_ctype)
-        
-        addr += getattr(self.ctype, key).offset
-        obj = self._comp[key]
-        res = obj.from_address(addr)
-        if hasattr(res, 'value'):
-            return obj.pytype(res.value)
+            addr = self._addr + getattr(self.ctype, key).offset
+            obj = self._comp[key]
+            res = obj.from_address(addr)
+            
+            if 'dt' in obj.var:
+                dt_desc = self.var['dt']['name']
+                dtdef = _alldtdefs[dt_desc]
+                for i in dtdef['dt_def']['arg']:
+                    if i['name'] == key:
+                        x = fDerivedType(i)
+                        break
+                x._addr = addr
+                return x
+            else:
+                if hasattr(res, 'value'):
+                    return obj.pytype(res.value)
+                else:
+                    return res
         else:
-            return res
+            return self.__dict__[key]
         
-    def __setitem__(self, key, value):
-        if key not in self.keys():
-            raise KeyError()
+    def __setattr__(self, key, value):
+        if '_comp' in self.__dict__ and key in self.keys():
+            if self._addr is None:
+                raise ValueError("Must point to something first")
             
-        try:
-            addr = ctypes.addressof(self.in_dll())
-        except NotInLib:
-            addr = ctypes.addressof(self._safe_ctype)
+            addr = self._addr + getattr(self.ctype, key).offset
+            obj = self._comp[key]
+            
+            if 'dt' in obj.var:
+                dt_desc = self.var['dt']['name']
+                dtdef = _alldtdefs[dt_desc]
+                for i in dtdef['dt_def']['arg']:
+                    if i['name'] == key:
+                        x = fDerivedType(i)
+                        break
+                x._addr = addr
+                x.set_all(value)
+            else:
+                obj.set_from_address(addr, value)
+            
+        else:
+            self.__dict__[key] = value
         
-        addr += getattr(self.ctype, key).offset
-        obj = self._comp[key]
-        obj.set_from_address(addr, value)
 
     def from_param(self, value):
         if 'optional' in self.var :
@@ -98,7 +131,8 @@ class fDerivedType(object):
 
         # Hold a chunk of memory the size of the object
         self._safe_ctype = self._dt_desc()
-        self.set(value)
+        self._addr = ctypes.addressof(self._safe_ctype)
+        self.set_all(value)
         
         ct = self._safe_ctype
                 

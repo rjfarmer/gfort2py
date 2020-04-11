@@ -485,17 +485,17 @@ class TestStringMethods(unittest.TestCase):
         np_test.assert_array_equal(y.args['x'],2*v)
         
     def test_dt_set_value(self):
-        x.f_struct_simple['x']=1
-        x.f_struct_simple['y']=0
+        x.f_struct_simple.x=1
+        x.f_struct_simple.y=0
         y=x.f_struct_simple
-        self.assertEqual(y['x'],1)
-        self.assertEqual(y['y'],0)
+        self.assertEqual(y.x,1)
+        self.assertEqual(y.y,0)
         
     def test_dt_set_dict(self):	
         x.f_struct_simple={'x':5,'y':5}
         y=x.f_struct_simple
-        self.assertEqual(y['x'],5)
-        self.assertEqual(y['y'],5)
+        self.assertEqual(y.x,5)
+        self.assertEqual(y.y,5)
         
     def test_dt_bad_dict(self):
         with self.assertRaises(KeyError) as cm:
@@ -503,7 +503,7 @@ class TestStringMethods(unittest.TestCase):
             
     def test_dt_bad_value(self):
         with self.assertRaises(ValueError) as cm:
-            x.f_struct_simple['x']='asde'
+            x.f_struct_simple.x ='asde'
     
     def test_c_int_alloc_1d_non_alloc(self):
         y=x.sub_alloc_int_1d_cleanup()
@@ -847,8 +847,8 @@ class TestStringMethods(unittest.TestCase):
         with captured_output() as (out,err):
             y=x.sub_f_simple_out({})
         output=out.getvalue().strip()
-        self.assertEqual(y.args['x']['x'],1)
-        self.assertEqual(y.args['x']['y'],10)
+        self.assertEqual(y.args['x'].x,1)
+        self.assertEqual(y.args['x'].y,10)
     
     def test_sub_dt_inout_s_simple(self):
         with captured_output() as (out,err):
@@ -856,8 +856,8 @@ class TestStringMethods(unittest.TestCase):
         output=out.getvalue().strip()
         o='  '.join([str(i) for i in [5,3]])
         self.assertEqual(output,o)
-        self.assertEqual(y.args['zzz']['x'],1)
-        self.assertEqual(y.args['zzz']['y'],10)
+        self.assertEqual(y.args['zzz'].x,1)
+        self.assertEqual(y.args['zzz'].y,10)
     
     def test_sub_dt_inoutp_s_simple(self):
         with captured_output() as (out,err):
@@ -865,8 +865,8 @@ class TestStringMethods(unittest.TestCase):
         output=out.getvalue().strip()
         o='  '.join([str(i) for i in [5,3]])
         self.assertEqual(output,o)
-        self.assertEqual(y.args['zzz']['x'],1)
-        self.assertEqual(y.args['zzz']['y'],10)
+        self.assertEqual(y.args['zzz'].x,1)
+        self.assertEqual(y.args['zzz'].y,10)
         
     def test_sub_int_p(self):
         with captured_output() as (out,err):
@@ -932,14 +932,14 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(output,'200')
     	
     def test_second_mod(self):
-        x.f_struct_simple2['x']=99
+        x.f_struct_simple2.x=99
         y=x.sub_use_mod()
         self.assertEqual(x.test2_x,1)
-        self.assertEqual(x.f_struct_simple2['x'],5)
-        self.assertEqual(x.f_struct_simple2['y'],6)
-        self.assertEqual(x.f_struct_simple2['z'],0)
+        self.assertEqual(x.f_struct_simple2.x,5)
+        self.assertEqual(x.f_struct_simple2.y,6)
+        self.assertEqual(x.f_struct_simple2.z,0)
     
-    @unittest.skip("Skipping as DT")
+    #@unittest.skip("Skipping as DT")
     def test_nested_dts(self):
         x.g_struct.a_int=10
         self.assertEqual(x.g_struct.a_int,10)
@@ -972,14 +972,14 @@ class TestStringMethods(unittest.TestCase):
         y = x.func_set_f_struct()
         self.assertEqual(y.result,True)
         
-        self.assertEqual(x.f_struct['a_int'],5)
-        self.assertEqual(x.f_struct['a_int_lp'],6)
-        self.assertEqual(x.f_struct['a_real'],7.0)
-        self.assertEqual(x.f_struct['a_real_dp'],8.0)		
-        self.assertEqual(x.f_struct['a_str'],'9999999999')
+        self.assertEqual(x.f_struct.a_int,5)
+        self.assertEqual(x.f_struct.a_int_lp,6)
+        self.assertEqual(x.f_struct.a_real,7.0)
+        self.assertEqual(x.f_struct.a_real_dp,8.0)		
+        self.assertEqual(x.f_struct.a_str,'9999999999')
         
         v=np.array([9,10,11,12,13],dtype='int32')
-        np_test.assert_array_equal(x.f_struct['b_int_exp_1d'],v)
+        np_test.assert_array_equal(x.f_struct.b_int_exp_1d,v)
     
         v=np.array([9,10,11,12,13],dtype='int32')
         np_test.assert_array_equal(x.e_int_target_1d,v)
@@ -988,13 +988,13 @@ class TestStringMethods(unittest.TestCase):
         y = x.func_set_f_struct()
         
         v=np.array([1,2,3,4,5,6,7,8,9,10],dtype='int32')
-        np_test.assert_array_equal(x.f_struct['c_int_alloc_1d'],v)
+        np_test.assert_array_equal(x.f_struct.c_int_alloc_1d,v)
 
     def test_func_set_f_struct_array_ptr(self):
         y = x.func_set_f_struct()
                 
         v=np.array([9,10,11,12,13],dtype='int32')
-        np_test.assert_array_equal(x.f_struct['d_int_point_1d'],v)
+        np_test.assert_array_equal(x.f_struct.d_int_point_1d,v)
         
     @unittest.skip("Skipping as we cant set the ptr yet")
     def test_func_func_str(self):
