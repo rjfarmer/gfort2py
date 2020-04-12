@@ -18,6 +18,10 @@ from .selector import _selectVar
 
 _alldtdefs = {}
 
+class emptyDT(ctypes.Structure):
+    def __init__(self, obj):
+        pass
+
 
 
 class fDerivedType(object):
@@ -170,7 +174,10 @@ class fDerivedType(object):
         x = _selectVar(var)
         if x is None: # Handle derived types
             if 'dt' in var['var'] and var['var']['dt']:
-                x = fDerivedType
+                if var['var']['dt']['name'] == self.var['dt']['name']: #Handle recursive
+                    raise TypeError("Cant not support recursive derived types yet")
+                else:
+                    x = fDerivedType
             else:
                 raise TypeError("Can't match ",var['name'])
         return x

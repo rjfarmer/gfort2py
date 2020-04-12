@@ -32,8 +32,6 @@ def _selectVar(obj):
             array = obj['var']['array']['atype']
             if array == 'explicit':
                 x = fExplicitArray
-            # elif array == 'alloc' or array == 'pointer':
-                # x = fDummyArray
             elif array == 'assumed_shape' or array == 'alloc' or array == 'pointer':
                 x = fAssumedShape
             elif array == 'assumed_size':

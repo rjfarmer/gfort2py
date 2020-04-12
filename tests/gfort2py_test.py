@@ -1058,7 +1058,7 @@ class TestStringMethods(unittest.TestCase):
             y = x.p_func_func_run_ptr(1)
         
     def test_sub_man_args(self):
-        # if this doesnt seg fault we are good
+        # if this doesn't seg fault we are good
         x.sub_many_args(1,2,3,4,True,False,True,
                 'abc','def','ghj','qwerty','zxcvb')
                 
@@ -1081,6 +1081,16 @@ class TestStringMethods(unittest.TestCase):
         x.a_int = 5
         z = x.func_int_in(x.a_int)
         self.assertEqual(z.result,10)
+        
+        
+    def test_recur_dt(self): # Skip for now
+        with self.assertRaises(TypeError) as cm:
+            x.r_recur.a_int=9
+            self.assertEqual(x.r_recur.a_int,9)
+            x.r_recur.s_recur.a_int=9
+            self.assertEqual(x.r_recur.s_recur.a_int,9)
+            x.r_recur.s_recur.s_recur.a_int=9
+            self.assertEqual(x.r_recur.s_recur.s_recur.a_int,9)
         
         
 if __name__ == '__main__':

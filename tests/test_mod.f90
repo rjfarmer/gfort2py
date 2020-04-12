@@ -69,6 +69,9 @@ module tester
       character(len=10),target  :: a_str_target
       
       
+      character(:), allocatable :: str_alloc
+      
+      
       ! Arrays
       integer, dimension(5) :: b_int_exp_1d
       integer, dimension(5,5) :: b_int_exp_2d
@@ -242,6 +245,19 @@ module tester
       TYPE(s_recursive_2) :: r_recur_2
       
       procedure(func_func_run), pointer:: p_func_func_run_ptr => NULL()
+      
+      
+      TYPE s_proc
+			integer :: a_int
+			contains
+			
+			procedure, nopass :: proc_no_pass => sub_dt_no_pass
+			procedure, pass(this) :: proc_pass => sub_dt_pass
+      
+      end type s_proc
+      
+      TYPE(s_proc) :: p_proc
+      
       
       contains
       
@@ -797,6 +813,13 @@ module tester
          integer :: func
          func_func_arg = func(1)
       end function func_func_arg
+   
+ 
+      real(dp) function func_func_arg_dp(z,func)
+         integer :: z
+         real(dp) :: func
+         func_func_arg_dp = func(1)*z
+      end function func_func_arg_dp
       
       
       integer function func_func_run(x)
@@ -875,6 +898,30 @@ module tester
 		z = x*2
       
       end function func_int_value
+      
+      subroutine sub_str_alloc(x)
+		character(:), allocatable, intent(out) :: x
+      
+		x = 'abcdef'
+      
+      end subroutine sub_str_alloc
+      
+      
+      subroutine sub_dt_no_pass(x)
+		integer :: x
+      
+		write(*,*) 5*x
+      
+      end subroutine sub_dt_no_pass
+      
+    
+      subroutine sub_dt_pass(this,x)
+		class(s_proc), intent(inout) :: this
+		integer :: x
+      
+		this%a_int = 5*x
+      
+      end subroutine sub_dt_pass
       
       
 end module tester
