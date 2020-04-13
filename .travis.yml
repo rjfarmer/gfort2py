@@ -97,7 +97,7 @@ install:
   - python setup.py install
 # command to run tests
 script: 
-  - python setup.py test
+  - run_test.sh
 env: 
   TRAVIS=1
 after_success:
