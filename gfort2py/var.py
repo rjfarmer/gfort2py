@@ -93,8 +93,14 @@ class fVar(object):
             else:
                 x = pointer.contents
                 
+        if hasattr(x,'value'):
+            x = x.value
+            
+        if x is None:
+            return None
+                
         try:
-            return self.pytype(x.value)
+            return self.pytype(x)
         except AttributeError:
             raise IgnoreReturnError
     

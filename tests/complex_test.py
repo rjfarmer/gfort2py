@@ -68,7 +68,22 @@ class TestComplexMethods(unittest.TestCase):
         v=complex(1.0,1.0)
         x.a_cmplx_qp=v
         self.assertEqual(x.a_cmplx_qp,v)
-    
+        
+    def test_sub_cmplx_inout(self):
+        v=complex(1.0,1.0)
+        y=x.sub_cmplx_inout(v)
+        self.assertEqual(y.args['c'],v*5)   
+        
+    def test_func_cmplx_value(self):
+        v=complex(1.0,1.0)
+        y=x.sub_cmplx_value(v,v)
+        self.assertEqual(y.args['cc'],v*5)   
+        
+    def test_func_ret_cmplx(self):
+        v=complex(1.0,1.0)
+        y=x.func_ret_cmplx(v)
+        self.assertEqual(y.result,v*5)   
+        
     
 if __name__ == '__main__':
     unittest.main() 

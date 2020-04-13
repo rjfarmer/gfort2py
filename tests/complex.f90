@@ -35,5 +35,20 @@ module comp
 	
 	end subroutine sub_cmplx_inout
 
+	complex function func_ret_cmplx(c)
+		complex, intent(inout) :: c
+	
+		func_ret_cmplx = c*5
+		
+	end function func_ret_cmplx
+
+	subroutine sub_cmplx_value(c,cc)
+		complex, intent(in), value :: c
+		complex, intent(out) :: cc
+	
+		cc = c *5
+	
+	end subroutine sub_cmplx_value
+
 
 end module comp

@@ -99,11 +99,14 @@ class fFunc(object):
                     args_in.append(a.from_param(v))
         
         # Capture stdout messages
-        with captureStdOut() as cs:        
-            if len(args_in) > 0:
-                ret = self._func(*args_in)
-            else:
-                ret = self._func()
+        with captureStdOut() as cs:       
+            ret = self._func(*args_in)
+         
+        if self._sub:
+            ret = 0
+        else:
+            ret = self._return.from_func(ret)
+                
         dummy_args = {}
         count = 0
         for value,obj in zip(args_in, self._args):
