@@ -53,22 +53,37 @@ class captureStdOut():
 
 
 class fFunc(object):
-
-    def __init__(self, lib, obj):
+    def __init__(self, obj):
         self.__dict__.update(obj)
-        self._lib = lib
-        self._sub = self.proc['sub']
+        self.ctype = ctypes.c_void_p
+        self._func = None
             
+    def sizeof(self):
+        return ctypes.sizeof(self.ctype)
+                    
+    def in_dll(self, lib):
+        self._sub = self.proc['sub']
+        
         self._init_args()
         self._init_return()
-        self._func = self._get_ptr_func(self.mangled_name)  
+        self._func = getattr(lib, self.mangled_name)  
         self._func.restype = self._return.ctype
     
 
-    def _get_ptr_func(self, name):
-        return getattr(self._lib, name)
-  
+    def _set_func(self, func):
+        self.proc = func.proc
+        self.arg = func.arg
+        self._init_args()
+        self._init_return() 
+        
+        self._func = func._func
+
+
     def __call__(self, *args):
+        
+        if self._func is None:
+            raise AttributeError("Must point to something first")
+        
         if len(args) != len(self.arg) :
             raise TypeError(str(self.name)+" takes "+str(len(self.arg)) + " arguments got "+str(len(args)))
             
@@ -83,7 +98,6 @@ class fFunc(object):
                 if type(v) is str or type(v) is bytes:
                     args_in.append(a.from_param(v))
         
-            
         # Capture stdout messages
         with captureStdOut() as cs:        
             if len(args_in) > 0:
@@ -134,15 +148,8 @@ class fFunc(object):
 
 
 
-
-
-
-
-
-
-
-
-
+    def from_param(self, value):
+        pass
 
 
 

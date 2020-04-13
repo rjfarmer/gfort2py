@@ -83,20 +83,13 @@ class fFort(object):
     def _init(self):      
         self._init_dt_defs()
 
-    def _init_var(self, obj):
-        x = self._get_fvar(obj)(obj)
-
     def _init_func(self, obj):
-        x = fFunc(self._lib, obj)
+        x = fFunc(obj)
+        x.in_dll(self._lib)
         _allFuncs[x.name.lower()] = x
         self.__dict__[x.name.lower()] = x
         
-    def _init_func_ptr(self, obj):
-        x =  fFuncPtr(self._lib, obj)
-        self.__dict__[x.name.lower()] = x
-        
     def _init_dt_defs(self):
-        # Make empty dts first
         for i in self._dt_defs.keys():
             _alldtdefs[i] = self._dt_defs[i]
 
@@ -120,11 +113,12 @@ class fFort(object):
                     if nl not in self.__dict__:
                         self._init_func(self._funcs[nl])
                     return self.__dict__[nl]
-            # if '_func_ptrs' in self.__dict__:
-                # if nl in self._func_ptrs:
-                    # if nl not in self.__dict__:
-                        # self._init_func_ptr(self._func_ptrs[nl])
-                    # return self.__dict__[nl]
+            if '_func_ptrs' in self.__dict__:
+                if nl in self._func_ptrs:
+                    if nl not in self.__dict__:
+                        x =  fFunc(obj)
+                        x.in_dll(self._lib)
+                        return x
         
         if name in self.__dict__:
             return self.__dict__[name]
@@ -153,11 +147,11 @@ class fFort(object):
                         x = self._get_fvar(obj)(obj)
                         x.set_in_dll(self._lib, value)
                         return
-                # if '_func_ptrs' in self.__dict__:
-                    # if nl in self._func_ptrs:
-                        # self._init_func_ptr(self._func_ptrs[nl])
-                        # self.__dict__[nl].set_mod(value)
-                        # return
+                if '_func_ptrs' in self.__dict__:
+                    if nl in self._func_ptrs:
+                        x =  fFuncPtr(obj)
+                        x._set_func(value)
+                        return
        
             self.__dict__[name] = value
         return
