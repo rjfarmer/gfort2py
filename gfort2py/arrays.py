@@ -95,8 +95,7 @@ class fExplicitArray(object):
         
         self._ndims = int(self.array['ndim'])
         
-        size = self.size()
-        if size > 0:
+        if self.size() > 0:
             self.ctype = self.ctype * self.size()
             
         self._shape = self.shape()
@@ -142,7 +141,7 @@ class fExplicitArray(object):
         if v.ndim != self._ndims:
             raise AttributeError("Bad ndims for array")
         
-        if v.shape != self._shape:
+        if v.shape != self._shape and not self._shape == -1:
             raise AttributeError("Bad shape for array")
             
         self._value = v
@@ -150,6 +149,7 @@ class fExplicitArray(object):
         self._value  = np.asfortranarray(self._value .astype(self._dtype)).T
         v_addr = self._value.ctypes.data
 
+        #print(v.shape,v.itemsize,v.size*v.itemsize,self._dtype,self.sizeof(),c)
         ctypes.memmove(ctypes.addressof(c), v_addr, self.sizeof())
         remove_ownership(self._value)
  
@@ -166,8 +166,10 @@ class fExplicitArray(object):
         
     def from_param(self, value):
         size = np.size(value)
-        self._shape = np.shape(value)
-        self.ctype = self.ctype * size
+    
+        if self.shape() == -1:
+            self._shape = value.shape
+            self.ctype = self.ctype * size
         
         self._safe_ctype = self.ctype()
         self._set(self._safe_ctype, value)

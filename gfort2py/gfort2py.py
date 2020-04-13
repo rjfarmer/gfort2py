@@ -31,7 +31,6 @@ WARN_ON_SKIP=False
 if sys.version_info[0] < 3:
     FileNotFoundError = IOError
     
-    
 class fFort(object):
     _initialized = False
 

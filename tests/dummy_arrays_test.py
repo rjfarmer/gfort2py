@@ -385,12 +385,6 @@ class TestDummyArrayMethods(unittest.TestCase):
         self.assertEqual(y.result,True)
         self.assertEqual(y2.result,True)
 
-    def test_logical_arr_multi(self):
-        xarr=np.zeros(5)
-        xarr[:]=True
-        
-        y=x.func_logical_multi(1.0,2.0,xarr,3.0,4.0)
-        self.assertEqual(y.result,True)
         
     def test_sub_arr_assumed_rank_int_1d(self):
         v=np.arange(10,15)
@@ -415,6 +409,8 @@ class TestDummyArrayMethods(unittest.TestCase):
             y=x.sub_arr_assumed_rank_dp_1d(v)
         output=out.getvalue().strip()	
         np_test.assert_array_equal(y.args['zzz'],np.array([100.0]*5))
+        
+    
     
     
 if __name__ == '__main__':
