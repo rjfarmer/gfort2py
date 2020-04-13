@@ -195,15 +195,7 @@ module basic
 			if(x==2) res1 = .true.
 		end function func_return_res
 		
-		
-		logical function func_logical_multi(a,b,x,c,d) result(res2)
-			real(dp),intent(in) :: a,b,c,d
-			logical, dimension(5), intent(in) :: x
-			res2 =.false.
-			if(all(x.eqv..true.)) res2 = .true.
-		end function func_logical_multi
-      
-     
+
 		subroutine sub_int_p(zzz)
 			integer,pointer, intent(inout) :: zzz
 			

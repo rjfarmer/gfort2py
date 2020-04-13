@@ -108,9 +108,16 @@ module explicit_arrays
 		write(output_unit,'(I2,1X,5(I1,1X),I2,1X)') y,x,z
 	end subroutine sub_exp_array_int_1d_multi
 
-      subroutine sub_exp_inout(x)
-         integer,dimension(5),intent(inout) :: x
-         x=2*x
-      end subroutine sub_exp_inout   
+	subroutine sub_exp_inout(x)
+	 integer,dimension(5),intent(inout) :: x
+	 x=2*x
+	end subroutine sub_exp_inout   
+      
+	logical function func_logical_multi(a,b,x,c,d) result(res2)
+		real(dp),intent(in) :: a,b,c,d
+		logical, dimension(5), intent(in) :: x
+		res2 =.false.
+		if(all(x.eqv..true.)) res2 = .true.
+	end function func_logical_multi
 
 end module explicit_arrays
