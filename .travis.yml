@@ -97,11 +97,9 @@ install:
   - python setup.py install
 # command to run tests
 script: 
-  - run_test.sh
+  - ./run_test.sh
 env: 
   TRAVIS=1
-after_success:
-    coveralls
 cache: 
   directories:
     - $HOME/.cache/pip
