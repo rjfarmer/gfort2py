@@ -251,6 +251,13 @@ class TestExplicitArrayMethods(unittest.TestCase):
         output=out.getvalue().strip()	
         self.assertEqual(output,o.strip())
         
+    def test_logical_arr_multi(self):
+        xarr=np.zeros(5)
+        xarr[:]=True
+        
+        y=x.func_logical_multi(1.0,2.0,xarr,3.0,4.0)
+        self.assertEqual(y.result,True)
+        
     
 if __name__ == '__main__':
     unittest.main() 
