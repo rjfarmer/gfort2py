@@ -13,6 +13,7 @@ import collections
 
 from .strings import fStr, fStrLen
 from .types import fDerivedType
+from .var import fVar
 
 from .utils import *
 from .errors import *
@@ -57,6 +58,7 @@ class fFunc(object):
         self.__dict__.update(obj)
         self.ctype = ctypes.c_void_p
         self._func = None
+        self._extra_pre = []
             
     def sizeof(self):
         return ctypes.sizeof(self.ctype)
@@ -66,8 +68,9 @@ class fFunc(object):
         
         self._init_args()
         self._init_return()
-        self._func = getattr(lib, self.mangled_name)  
-        self._func.restype = self._return.ctype
+        self._func = getattr(lib, self.mangled_name) 
+        if not len(self._extra_pre):
+            self._func.restype = self._return.ctype
     
 
     def _set_func(self, func):
@@ -97,19 +100,32 @@ class fFunc(object):
             for v in args:
                 if type(v) is str or type(v) is bytes:
                     args_in.append(a.from_param(v))
+                    
+        # Handle strings at start of list (from function return types):
+        if len(self._extra_pre):
+            retstr = self._extra_pre[0].ctype()
+            retstrlen = self._extra_pre[1].ctype(0)
+            args_in = [retstr, retstrlen] + args_in
         
         # Capture stdout messages
-        with captureStdOut() as cs:       
+        with captureStdOut() as cs:   
             ret = self._func(*args_in)
          
+        start = 0
         if self._sub:
             ret = 0
         else:
-            ret = self._return.from_func(ret)
+            # Special handling of returning a string
+            if len(self._extra_pre):
+                ret = self._args[0].from_func(retstr)
+                start=2
+            else:
+                ret = self._return.from_func(ret)
                 
         dummy_args = {}
         count = 0
-        for value,obj in zip(args_in, self._args):
+        
+        for value,obj in zip(args_in[start:], self._args[start:]):
             try:
                 dummy_args[obj.name] = obj.from_func(value)
                 #dummy_args[obj.name] = value
@@ -126,6 +142,13 @@ class fFunc(object):
         ret = {}
         ret['var'] = self.proc['ret']
         self._return = self._get_fvar(ret)(ret)
+        if isinstance(self._return, fStr):
+            self._extra_pre = []
+            # When returning a string we get a string and its len inserted at the start of the argument list
+            self._extra_pre.append(self._get_fvar(ret)(ret))
+            self._extra_pre.append(fStrLen())
+            
+            self._args = self._extra_pre + self._args
         
     def _init_args(self):
         self._args = []

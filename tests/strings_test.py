@@ -85,6 +85,10 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(output,'abcdef')
         self.assertEqual(y.args['zzz'],'xyzxyz')
     
+    def test_func_ret_str(self):
+        y=x.func_ret_str('abcde')
+        self.assertEqual(y.result,'Abcde')   
+    
     
 if __name__ == '__main__':
     unittest.main() 

@@ -70,13 +70,28 @@ class fStr(object):
         return self.from_address(ctypes.addressof(x))
 
 
+    def from_len(self, pointer, length):
+        x = pointer
+        if hasattr(pointer,'contents'):
+            if hasattr(pointer.contents,'contents'):
+                x = pointer.contents.contents
+            else:
+                x = pointer.contents
+    
+        addr = ctypes.addressof(x)
+        c = ctypes.c_char * length
+        
+        return ''.join([i.decode() for i in c.from_address(addr)])
+    
+    
+
 class fStrLen(object):
     # Handles the hidden string length functions need
     def __init__(self):
-        pass
+        self.ctype = ctypes.c_int64
         
     def from_param(self, value):
-        return ctypes.c_int64(len(value))
+        return self.ctype(len(value))
         
     def from_func(self, pointer):
         raise IgnoreReturnError

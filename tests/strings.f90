@@ -50,5 +50,14 @@ module strings
 		zzz = 'xyzxyz'
 	end subroutine sub_str_p
       
+      
+	character(len=5) function func_ret_str(x)
+		character(len=5) :: x
+		
+		func_ret_str = x
+		func_ret_str(1:1) = 'A'
+		
+	end function func_ret_str
+      
 
 end module strings
