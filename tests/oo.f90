@@ -22,7 +22,16 @@ module oo
 	
 	end type s_proc
 	
+	
+	type, extends(s_proc) :: s_proc_extend
+		real(dp) :: a_real_dp
+	
+	end type s_proc_extend
+	
+	
 	TYPE(s_proc) :: p_proc
+	
+	type(s_proc_extend) :: p_proc_extend
 	
 	contains
 	

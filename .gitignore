@@ -9,6 +9,9 @@ __pycache__/
 *.s
 tests/tester
 tests/*.f90.*
+tests/*.gz.*
+tests/*.gz
+*.smod
 
 # Distribution / packaging
 .Python
