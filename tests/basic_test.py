@@ -200,7 +200,6 @@ class TestBasicMethods(unittest.TestCase):
         self.assertEqual(output,'200')
         
     def test_second_mod(self):
-        x.f_struct_simple2.x=99
         y=x.sub_use_mod()
         self.assertEqual(x.test2_x,1)
     
