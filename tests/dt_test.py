@@ -163,5 +163,18 @@ class TestDTMethods(unittest.TestCase):
             y = x.f_struct[9].a_int
     
     
+    def test_arr_dt_exp_2d_set(self):
+        x.g_struct_exp_2d[0,0].a_int = 1
+        x.g_struct_exp_2d[0,1].a_int = 2
+        x.g_struct_exp_2d[1,0].a_int = 3
+        x.g_struct_exp_2d[1,1].a_int = 4
+        
+        self.assertEqual(x.g_struct_exp_2d[0,0].a_int ,1)
+        self.assertEqual(x.g_struct_exp_2d[0,1].a_int ,2)
+        self.assertEqual(x.g_struct_exp_2d[1,0].a_int ,3)
+        self.assertEqual(x.g_struct_exp_2d[1,1].a_int ,4)
+
+    
+    
 if __name__ == '__main__':
     unittest.main() 

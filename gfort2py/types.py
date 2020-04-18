@@ -30,12 +30,13 @@ class fDerivedType(object):
         self._obj = obj
         self.__dict__.update(obj)
         self._comp = collections.OrderedDict()
+
+        self._ndims = 1
         self._dt_desc = self._init_keys()
 
         self.ctype  = self._dt_desc 
         self._safe_ctype = None
         self._addr = None
-        self._ndims = 1
 
     def _init_keys(self):
         dtdef = _alldtdefs[self.var['dt']['name']]
@@ -92,19 +93,7 @@ class fDerivedType(object):
         
 
     def __getitem__(self, key):
-        # Only if arrays
-        if not self._isarray():
-            raise TypeError("Not an array")
-            
-        if isinstance(key,tuple):
-            # yet
-            raise NotImplementedError
-        else:
-            ind  = key
-            
-        if ind > self._size():
-            raise ValueError("Out of bounds")
-            
+        ind = self._itemsetup(key)
             
         addr = ctypes.addressof(self.ctype.from_address(self._addr)[ind])
             
@@ -112,24 +101,31 @@ class fDerivedType(object):
         
         
     def __setitem__(self, key, value):
-        # Only if arrays
-        if not self._isarray():
-            raise TypeError("Not an array")
-            
-        if type(key,tuple):
-            # yet
-            raise NotImplementedError
-        else:
-            ind  = key
-            
-        if ind > self._size():
-            raise ValueError("Out of bounds")
-            
+        ind = self._itemsetup(key)
             
         addr = ctypes.addressof(self.ctype[ind]) 
 
         x = self._newdt(_alldtdefs[self.var['dt']['name']], addr)
         x.set_all(value)
+        
+        
+    def _itemsetup(self, key):
+        # Only if arrays
+        if not self._isarray():
+            raise TypeError("Not an array")
+            
+        if isinstance(key, tuple):
+            if len(key) != self._ndims:
+                print(key,self._ndims)
+                raise IndexError("Wrong number of dimensions")
+            ind = np.ravel_multi_index(key, self._shape())
+        else:
+            ind  = key
+            
+        if ind > self._size():
+            raise ValueError("Out of bounds")
+        
+        return ind
         
         
     def __getattr__(self, key):
