@@ -34,7 +34,7 @@ setup(name='gfort2py',
       url='https://github.com/rjfarmer/gfort2py',
       keywords='python fortran binding',
       packages=find_packages(),
-      exclude_package_data={'':['new_release.sh']},
+      exclude_package_data={'':['new_release.sh','*.so']},
       classifiers=[
 			"Development Status :: 3 - Alpha",
 			"License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",

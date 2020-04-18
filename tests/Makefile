@@ -41,4 +41,4 @@ all: $(LIBS) $(GZ)
 #	mv bk1 test_mod.f90.original 
 
 clean:
-	-rm *.o *.mod *.gz *.pyc *.f90.*.* *.so *.original *.extract
+	-rm *.o *.mod *.gz *.pyc *.f90.*.* *.so *.original *.extract *.smod *.fpy
