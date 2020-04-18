@@ -92,7 +92,16 @@ class fFunc(object):
             
             
         args_in = []
-        for value, ctype in zip(args, self._args):
+        
+        start = 0
+        # Handle strings at start of list (from function return types):
+        if len(self._extra_pre):
+            retstr = self._extra_pre[0].ctype()
+            retstrlen = self._extra_pre[1].ctype(0)
+            args_in = [retstr, retstrlen] 
+            start=2
+        
+        for value, ctype in zip(args, self._args[start:]):
             args_in.append(ctype.from_param(value))
         
         # Now handle adding string lengths to end of argument list
@@ -101,24 +110,17 @@ class fFunc(object):
                 if type(v) is str or type(v) is bytes:
                     args_in.append(a.from_param(v))
                     
-        # Handle strings at start of list (from function return types):
-        if len(self._extra_pre):
-            retstr = self._extra_pre[0].ctype()
-            retstrlen = self._extra_pre[1].ctype(0)
-            args_in = [retstr, retstrlen] + args_in
         
         # Capture stdout messages
         with captureStdOut() as cs:   
             ret = self._func(*args_in)
          
-        start = 0
         if self._sub:
             ret = 0
         else:
             # Special handling of returning a string
             if len(self._extra_pre):
-                ret = self._args[0].from_func(retstr)
-                start=2
+                ret = self._args[0].from_len(retstr, args_in[1])
             else:
                 ret = self._return.from_func(ret)
                 

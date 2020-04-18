@@ -79,7 +79,10 @@ class fStr(object):
                 x = pointer.contents
     
         addr = ctypes.addressof(x)
-        c = ctypes.c_char * length
+        if length == 0:
+            c = ctypes.c_char * length
+        else:
+            c = ctypes.c_char * self.len
         
         return ''.join([i.decode() for i in c.from_address(addr)])
     

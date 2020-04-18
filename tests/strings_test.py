@@ -88,6 +88,14 @@ class TestStringMethods(unittest.TestCase):
     def test_func_ret_str(self):
         y=x.func_ret_str('abcde')
         self.assertEqual(y.result,'Abcde')   
+        
+    @unittest.skip("Skipping")	
+    # We need to call a func on the argument before passing it to func_str_int_len
+    def test_func_str_int_len(self):
+        with captured_output() as (out,err):
+            y=x.func_str_int_len(10)
+            
+        self.assertEqual(out,'10')   
     
     
 if __name__ == '__main__':

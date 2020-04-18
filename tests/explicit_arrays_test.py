@@ -258,6 +258,13 @@ class TestExplicitArrayMethods(unittest.TestCase):
         y=x.func_logical_multi(1.0,2.0,xarr,3.0,4.0)
         self.assertEqual(y.result,True)
         
+    @unittest.skip("Skipping as we seg fault")	
+    def test_mesh_exp(self):
+        # Github issue #13
+        i=5
+        y = x.func_mesh_exp(i)
+        self.assertEqual(y.result,np.arrange(0,i))
+        
     
 if __name__ == '__main__':
     unittest.main() 

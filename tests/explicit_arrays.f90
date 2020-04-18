@@ -119,5 +119,19 @@ module explicit_arrays
 		res2 =.false.
 		if(all(x.eqv..true.)) res2 = .true.
 	end function func_logical_multi
+	
+	
+	function func_mesh_exp(N) result(mesh)
+		! Github issues #13
+		integer, intent(in) :: N
+		integer(dp) :: mesh(N+1)
+		integer :: i
+		
+		do i=1,n+1
+			mesh(i) = i
+		end do
+		
+	end function func_mesh_exp
+	
 
 end module explicit_arrays
