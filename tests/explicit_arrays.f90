@@ -35,7 +35,12 @@ module explicit_arrays
 	real(dp), dimension(5,5,5,5) :: b_real_dp_exp_4d
 	real(dp), dimension(5,5,5,5,5) :: b_real_dp_exp_5d
 
-      
+
+	character(len=10), dimension(5) :: b_str_exp_1d
+	character(len=10), dimension(5,5) :: b_str_exp_2d
+	character(len=10), dimension(5,5,5) :: b_str_exp_3d
+	character(len=10), dimension(5,5,5,5) :: b_str_exp_4d
+	character(len=10), dimension(5,5,5,5,5) :: b_str_exp_5d     
 	
 	contains
 

@@ -65,6 +65,13 @@ module dummy_arrays
 	real(dp), target, dimension(5,5,5) :: e_real_dp_target_3d
 	real(dp), target, dimension(5,5,5,5) :: e_real_dp_target_4d
 	real(dp), target, dimension(5,5,5,5,5) :: e_real_dp_target_5d
+	
+	
+	character(len=10), allocatable, dimension(:) :: c_str_alloc_1d
+	character(len=10), allocatable, dimension(:,:) :: c_str_alloc_2d
+	character(len=10), allocatable, dimension(:,:,:) :: c_str_alloc_3d
+	character(len=10), allocatable, dimension(:,:,:,:) :: c_str_alloc_4d
+	character(len=10), allocatable, dimension(:,:,:,:,:) :: c_str_alloc_5d     
 
 	
 	contains
