@@ -203,9 +203,6 @@ class TestBasicMethods(unittest.TestCase):
         x.f_struct_simple2.x=99
         y=x.sub_use_mod()
         self.assertEqual(x.test2_x,1)
-        self.assertEqual(x.f_struct_simple2.x,5)
-        self.assertEqual(x.f_struct_simple2.y,6)
-        self.assertEqual(x.f_struct_simple2.z,0)
     
     
     def test_func_value(self):

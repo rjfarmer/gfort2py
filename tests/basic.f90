@@ -6,23 +6,6 @@ module basic2
 
 	integer :: test2_x
 
-	TYPE s_simple2
-		integer           :: x,y,z
-	END TYPE s_simple2
-	
-	TYPE s_struct_AA
-		integer           :: a_int
-		real              :: a_real
-		double precision          :: a_real_dp
-		character(len=1_lp2) :: a_str   
-		integer,dimension(:,:,:),allocatable :: arr
-		integer           :: a_int2
-	END TYPE s_struct_AA
-	
-	type(s_simple2) :: f_struct_simple2
-
-	contains
-
 
 end module basic2
 
@@ -224,8 +207,6 @@ module basic
 		subroutine sub_use_mod()
 		
 			test2_x = 1
-			f_struct_simple2%x = 5
-			f_struct_simple2%y = 6
 		
 		end subroutine sub_use_mod
    
