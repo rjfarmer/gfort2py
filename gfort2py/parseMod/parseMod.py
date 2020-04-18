@@ -41,12 +41,12 @@ def parseInput(x, filename):
     res['filename'] = filename
     res['checksum'] = hashFile(filename)
     
-    if res['version'] == 14:
-            from . import parseMod14 as p
+    if res['version'] <= 14:
+            raise VersionError("Only supports gfortran >= 8")
     elif res['version'] == 15:
             from . import parseMod15 as p
     else:
-            raise VersionError("Only supports mod version 14")
+            raise VersionError("Gfortran version is too new please file a bug for support")
     
     pm = p.parseMod(x,filename,res,version.__version__)
     
