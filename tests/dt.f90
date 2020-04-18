@@ -69,8 +69,8 @@ module dt
 	
 	
 	TYPE(s_struct_basic) :: f_struct
-	TYPE(s_struct_basic),dimension(2) :: f_struct_exp_2d
-	TYPE(s_struct_basic),dimension(2,2) :: f_struct_exp_1d
+	TYPE(s_struct_basic),dimension(2) :: f_struct_exp_1d
+	TYPE(s_struct_basic),dimension(2,2) :: f_struct_exp_2d
 	TYPE(s_struct_basic),dimension(:),  allocatable :: f_struct_alloc_1d
 	TYPE(s_struct_basic),dimension(:,:),allocatable :: f_struct_alloc_2d
 	TYPE(s_struct_basic),dimension(:),  pointer :: f_struct_point_1d => null()
@@ -80,19 +80,20 @@ module dt
 	
 	
 	TYPE(s_struct_nested) :: g_struct
-	TYPE(s_struct_nested),dimension(2) :: g_struct_exp_2d
-	TYPE(s_struct_nested),dimension(2,2) :: g_struct_exp_1d
-	TYPE(s_struct_nested),dimension(:),  allocatable :: g_struct_alloc_1d
-	TYPE(s_struct_nested),dimension(:,:),allocatable :: g_struct_alloc_2d
-	TYPE(s_struct_nested),dimension(:),  pointer :: g_struct_point_1d => null()
-	TYPE(s_struct_nested),dimension(:,:),pointer :: g_struct_point_2d => null()
-	TYPE(s_struct_nested),dimension(2),  target :: g_struct_target_1d
-	TYPE(s_struct_nested),dimension(2,2),target :: g_struct_target_2d
+	
+	TYPE(s_struct_basic),dimension(2) :: g_struct_exp_1d
+	TYPE(s_struct_basic),dimension(2,2) :: g_struct_exp_2d
+	TYPE(s_struct_basic),dimension(:),  allocatable :: g_struct_alloc_1d
+	TYPE(s_struct_basic),dimension(:,:),allocatable :: g_struct_alloc_2d
+	TYPE(s_struct_basic),dimension(:),  pointer :: g_struct_point_1d => null()
+	TYPE(s_struct_basic),dimension(:,:),pointer :: g_struct_point_2d => null()
+	TYPE(s_struct_basic),dimension(2),  target :: g_struct_target_1d
+	TYPE(s_struct_basic),dimension(2,2),target :: g_struct_target_2d
 	
 	
 	TYPE(s_struct_nested_2) :: h_struct
-	TYPE(s_struct_nested_2),dimension(2) :: h_struct_exp_2d
-	TYPE(s_struct_nested_2),dimension(2,2) :: h_struct_exp_1d
+	TYPE(s_struct_nested_2),dimension(2) :: h_struct_exp_1d
+	TYPE(s_struct_nested_2),dimension(2,2) :: h_struct_exp_2d
 	TYPE(s_struct_nested_2),dimension(:),  allocatable :: h_struct_alloc_1d
 	TYPE(s_struct_nested_2),dimension(:,:),allocatable :: h_struct_alloc_2d
 	TYPE(s_struct_nested_2),dimension(:),  pointer :: h_struct_point_1d => null()
@@ -228,5 +229,18 @@ module dt
 		s% c_int_alloc_1d = 99
 	
 	end subroutine sub_s_struct_inout
+	
+	
+	subroutine sub_struct_exp_1d(x)
+		TYPE(s_struct_basic),dimension(2) :: x
+		
+		x(1)%a_int = 5
+		x(2)%a_int = 9
+		
+		x(1)%b_int_exp_1d = 66
+		x(2)%b_int_exp_1d = 77
+		
+	end subroutine sub_struct_exp_1d
+	
 
 end module dt

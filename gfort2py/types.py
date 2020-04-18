@@ -7,6 +7,7 @@ except ImportError:
 
 import ctypes
 import os
+import copy
 import collections
 import numpy as np
 
@@ -26,6 +27,7 @@ class emptyDT(ctypes.Structure):
 
 class fDerivedType(object):
     def __init__(self, obj):
+        self._obj = obj
         self.__dict__.update(obj)
         self._comp = collections.OrderedDict()
         self._dt_desc = self._init_keys()
@@ -33,6 +35,7 @@ class fDerivedType(object):
         self.ctype  = self._dt_desc 
         self._safe_ctype = None
         self._addr = None
+        self._ndims = 1
 
     def _init_keys(self):
         dtdef = _alldtdefs[self.var['dt']['name']]
@@ -42,6 +45,10 @@ class fDerivedType(object):
 
         class ctypesStruct(ctypes.Structure):
             _fields_ = [(key, value.ctype) for key,value in  self._comp.items()]
+            
+        if self._isarray():
+            self._ndims = int(self.var['array']['ndim'])
+            ctypesStruct = ctypesStruct * self._size()
             
         return ctypesStruct
 
@@ -83,6 +90,47 @@ class fDerivedType(object):
     def keys(self):
         return self._comp.keys()
         
+
+    def __getitem__(self, key):
+        # Only if arrays
+        if not self._isarray():
+            raise TypeError("Not an array")
+            
+        if isinstance(key,tuple):
+            # yet
+            raise NotImplementedError
+        else:
+            ind  = key
+            
+        if ind > self._size():
+            raise ValueError("Out of bounds")
+            
+            
+        addr = ctypes.addressof(self.ctype.from_address(self._addr)[ind])
+            
+        return self._newdt_fromarray(addr)
+        
+        
+    def __setitem__(self, key, value):
+        # Only if arrays
+        if not self._isarray():
+            raise TypeError("Not an array")
+            
+        if type(key,tuple):
+            # yet
+            raise NotImplementedError
+        else:
+            ind  = key
+            
+        if ind > self._size():
+            raise ValueError("Out of bounds")
+            
+            
+        addr = ctypes.addressof(self.ctype[ind]) 
+
+        x = self._newdt(_alldtdefs[self.var['dt']['name']], addr)
+        x.set_all(value)
+        
         
     def __getattr__(self, key):
         if '_comp' in self.__dict__ and key in self.keys():
@@ -94,14 +142,7 @@ class fDerivedType(object):
             res = obj.from_address(addr)
             
             if 'dt' in obj.var:
-                dt_desc = self.var['dt']['name']
-                dtdef = _alldtdefs[dt_desc]
-                for i in dtdef['dt_def']['arg']:
-                    if i['name'] == key:
-                        x = fDerivedType(i)
-                        break
-                x._addr = addr
-                return x
+                return self._newdt_comp(key, addr)
             else:
                 if hasattr(res, 'value'):
                     return obj.pytype(res.value)
@@ -119,13 +160,7 @@ class fDerivedType(object):
             obj = self._comp[key]
             
             if 'dt' in obj.var:
-                dt_desc = self.var['dt']['name']
-                dtdef = _alldtdefs[dt_desc]
-                for i in dtdef['dt_def']['arg']:
-                    if i['name'] == key:
-                        x = fDerivedType(i)
-                        break
-                x._addr = addr
+                x = self._newdt_comp(key, addr)
                 x.set_all(value)
             else:
                 obj.set_from_address(addr, value)
@@ -192,3 +227,43 @@ class fDerivedType(object):
         
     def __contains__(self, name):
         return name in self.keys()
+        
+     
+    def _isarray(self):
+        return 'array' in self.var and self.var['array']
+    
+    
+    def _shape(self):
+        if self._isarray():
+            if 'shape' not in self.var['array'] or len(self.var['array']['shape'])/self._ndims != 2:
+                return -1
+            
+            shape = []
+            for l,u in zip(self.var['array']['shape'][0::2],self.var['array']['shape'][1::2]):
+                shape.append(u-l+1)
+            return tuple(shape)
+        else:
+            raise AttributeError
+    
+    
+    def _size(self):
+        return np.product(self._shape())
+
+
+    def _newdt_comp(self, key, addr):
+        dt_desc = self.var['dt']['name']
+        dtdef = _alldtdefs[dt_desc]
+        for i in dtdef['dt_def']['arg']:
+            if i['name'] == key:
+                x = fDerivedType(i)
+                break
+        x._addr = addr
+        return x
+        
+        
+    def _newdt_fromarray(self, addr):
+        obj = copy.deepcopy(self._obj)
+        del(obj['var']['array'])
+        x = fDerivedType(obj)
+        x._addr = addr
+        return x
