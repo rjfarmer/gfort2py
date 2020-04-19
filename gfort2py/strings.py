@@ -5,6 +5,8 @@ import ctypes
 from .errors import *
 from .utils import *
 
+_NULL_BYTE = ctypes.c_char(b'\0').value
+
 class fStr(object):
     def __init__(self,  obj):
         self.__dict__.update(obj)
@@ -14,12 +16,24 @@ class fStr(object):
         self.pytype = str
         
         if self.len > 0:
+            self._fixed = True
             self.ctype = ctypes.c_char * self.len
         else:
-            self.ctype = ctypes.c_char
+            self._fixed = False
+            self.ctype = ctypes.c_char * 1
         
     def from_address(self, addr):
-        return ''.join([i.decode() for i in self.ctype.from_address(addr)])
+        start = self.ctype.from_address(addr)[0]
+        if start == _NULL_BYTE:
+            return ''
+        else:
+            if self.len > 0:
+                r = self.ctype.from_address(addr)
+            else:
+                r = self._get_var_from_address(addr)
+    
+            return ''.join([i.decode() for i in r])
+    
     
     def set_from_address(self, addr, value):
         ctype = self.ctype.from_address(addr)
@@ -36,9 +50,14 @@ class fStr(object):
         
     def in_dll(self, lib):
         addr = ctypes.addressof(self.ctype.in_dll(lib, self.mangled_name))
+        # Can't use self._fixed here as we make a new fStr everytime we access it
         return self.from_address(addr)
         
     def set_in_dll(self, lib, value):
+        if not self._fixed:
+            self.len = len(value)
+            self.ctype = ctypes.c_char * self.len
+        
         addr = ctypes.addressof(self.ctype.in_dll(lib, self.mangled_name))
         self.set_from_address(addr, value)
     
@@ -47,7 +66,11 @@ class fStr(object):
             if self.var['optional'] and value is None:
                 return None
                 
-        self.len = len(value)
+        if len(value):
+            self.len = len(value)
+        else:
+            self.len = 1
+
         self.ctype = ctypes.c_char * self.len
         
         self._safe_ctype  = self.ctype()
@@ -79,12 +102,33 @@ class fStr(object):
                 x = pointer.contents
     
         addr = ctypes.addressof(x)
-        if length == 0:
-            c = ctypes.c_char * length
-        else:
+        if hasattr(length, 'value'):
+            length = length.value
+        
+        
+        if length == 0 :
             c = ctypes.c_char * self.len
+        else:
+            c = ctypes.c_char * length
         
         return ''.join([i.decode() for i in c.from_address(addr)])
+        
+
+    def _get_var_from_address(self, ctype_address, size=-1):
+        out = []
+        i = 0
+        sof = ctypes.sizeof(ctypes.c_char)
+        while True:
+            if i == size:
+                break
+            x = ctypes.c_char.from_address(ctype_address + i * sof)
+            if x.value == b'\x00' or x.value == b'\x08': # Null or padding (\x08 occurs length is  a multiple of 16)
+                break
+            else:
+                out.append(x.value)
+            i = i + 1
+        return out
+        
     
     
 

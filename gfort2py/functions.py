@@ -59,6 +59,7 @@ class fFunc(object):
         self.ctype = ctypes.c_void_p
         self._func = None
         self._extra_pre = []
+        self._extra_post=[]
             
     def sizeof(self):
         return ctypes.sizeof(self.ctype)
@@ -92,24 +93,35 @@ class fFunc(object):
             
             
         args_in = []
+        needs_extra =[]
         
         start = 0
+        end = 0
         # Handle strings at start of list (from function return types):
         if len(self._extra_pre):
             retstr = self._extra_pre[0].ctype()
             retstrlen = self._extra_pre[1].ctype(0)
             args_in = [retstr, retstrlen] 
             start=2
+            needs_extra = [False, False]
         
         for value, ctype in zip(args, self._args[start:]):
+            if type(value) is str or type(value) is bytes:
+                needs_extra.append(True)
+            else:
+                needs_extra.append(False)
             args_in.append(ctype.from_param(value))
-        
+
         # Now handle adding string lengths to end of argument list
         for a in self._args[len(self.arg):]: #self.arg is the list of normal arguments
             for v in args:
                 if type(v) is str or type(v) is bytes:
-                    args_in.append(a.from_param(v))
-                    
+                    self._extra_post.append(a.from_param(v))
+
+        end = start + len(self.arg)
+        
+        
+        args_in = args_in + self._extra_post
         
         # Capture stdout messages
         with captureStdOut() as cs:   
@@ -127,13 +139,13 @@ class fFunc(object):
         dummy_args = {}
         count = 0
         
-        for value,obj in zip(args_in[start:], self._args[start:]):
-            try:
+        for value,obj,ne in zip(args_in[start:end], self._args[start:end], needs_extra[start:end]):
+            if ne:
+                dummy_args[obj.name] = obj.from_len(value,args_in[end])
+                end = end +1
+            else:
                 dummy_args[obj.name] = obj.from_func(value)
-                #dummy_args[obj.name] = value
-            except IgnoreReturnError:
-                pass
-                
+            
         if self._sub:
             ret = 0
 

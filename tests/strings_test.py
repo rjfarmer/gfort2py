@@ -98,5 +98,16 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(out,'10')   
     
     
+    def test_str_alloc(self):
+        self.assertEqual(x.str_alloc, '') # Empty at start
+
+        x.str_alloc = 'abcdefghijklmnop'
+        self.assertEqual(x.str_alloc, 'abcdefghijklmnop')
+        
+        x.str_alloc = '12345678        ' # Need to empty the space afterwards
+        self.assertEqual(x.str_alloc,  '12345678        ')        
+
+    
+    
 if __name__ == '__main__':
     unittest.main() 
