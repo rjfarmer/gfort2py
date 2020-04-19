@@ -5,6 +5,7 @@ import os, sys
 os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 
 import numpy as np
+import numpy.testing as np_test
 import gfort2py as gf
 
 import unittest as unittest
@@ -165,15 +166,30 @@ class TestDTMethods(unittest.TestCase):
     
     def test_arr_dt_exp_2d_set(self):
         x.g_struct_exp_2d[0,0].a_int = 1
-        x.g_struct_exp_2d[0,1].a_int = 2
-        x.g_struct_exp_2d[1,0].a_int = 3
+        x.g_struct_exp_2d[1,0].a_int = 2
+        x.g_struct_exp_2d[0,1].a_int = 3
         x.g_struct_exp_2d[1,1].a_int = 4
         
         self.assertEqual(x.g_struct_exp_2d[0,0].a_int ,1)
-        self.assertEqual(x.g_struct_exp_2d[0,1].a_int ,2)
-        self.assertEqual(x.g_struct_exp_2d[1,0].a_int ,3)
+        self.assertEqual(x.g_struct_exp_2d[1,0].a_int ,2)
+        self.assertEqual(x.g_struct_exp_2d[0,1].a_int ,3)
         self.assertEqual(x.g_struct_exp_2d[1,1].a_int ,4)
+        
+        y = x.check_g_struct_exp_2d()
+        self.assertEqual(y.result , True)
+    
 
+    def test_sub_struct_exp_1d(self):
+        y = x.sub_struct_exp_1d({})
+        
+        s = y.args['x']
+        
+        self.assertEqual(s[0].a_int ,5)
+        self.assertEqual(s[1].a_int,9)
+        
+        np_test.assert_array_equal(s[0].b_int_exp_1d, np.array([66,66,66,66,66]))
+        np_test.assert_array_equal(s[1].b_int_exp_1d, np.array([77,77,77,77,77]))
+        
     
     
 if __name__ == '__main__':

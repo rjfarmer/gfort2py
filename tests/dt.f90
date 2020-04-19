@@ -243,4 +243,20 @@ module dt
 	end subroutine sub_struct_exp_1d
 	
 
+	logical function check_g_struct_exp_2d()
+		
+		check_g_struct_exp_2d = .false.
+		if(g_struct_exp_2d(1,1)%a_int == 1 .and. &
+		    g_struct_exp_2d(1,2)%a_int == 2 .and. &
+		    g_struct_exp_2d(2,1)%a_int == 3 .and. &
+		    g_struct_exp_2d(2,2)%a_int == 4 ) then
+		    check_g_struct_exp_2d = .true.
+		else
+			write(*,*) g_struct_exp_2d(1,1)%a_int, g_struct_exp_2d(1,2)%a_int,g_struct_exp_2d(2,1)%a_int,g_struct_exp_2d(2,2)%a_int 
+		end if
+	
+	
+	end function check_g_struct_exp_2d
+
+
 end module dt
