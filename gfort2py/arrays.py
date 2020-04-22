@@ -243,6 +243,7 @@ class fDummyArray(object):
              self.pytype = getattr(__builtin__, self.pytype)
              
         self.ctype_elem = getattr(ctypes, self.ctype_elem)
+        self._sof_ctype = ctypes.sizeof(self.ctype_elem)
              
         if self.pytype == int:
             self._dtype='int'+str(8*ctypes.sizeof(self.ctype_elem))
@@ -301,7 +302,8 @@ class fDummyArray(object):
                     False),
             'typestr': self._dtype,
             'shape': self._shape_from_bounds(v.dims),
-            'version':3
+            'version':3,
+            'strides': self._strides_from_bounds(v.dims)
             }
         
         class numpy_holder():
@@ -313,6 +315,14 @@ class fDummyArray(object):
         remove_ownership(arr)
         
         return arr
+        
+    def _strides_from_bounds(self, bounds):
+        strides = []
+        for i in range(self.ndim):
+            strides.append(bounds[i].stride * self._sof_ctype)
+    
+        return tuple(strides)      
+
 
     def set_from_address(self, addr, value):
         ctype = self._array_desc.from_address(addr)
@@ -334,7 +344,7 @@ class fDummyArray(object):
             c.dims[i].ubound = _index_t(self._value.shape[i])
             strides.append(c.dims[i].ubound-c.dims[i].lbound+1)
 
-        c.span = ctypes.sizeof(self.ctype_elem)
+        c.span = self._sof_ctype
         c.dtype = self._get_dtype15()
         for i in range(self.ndim):
             c.dims[i].stride = _index_t(int(np.product(strides[:i])))  

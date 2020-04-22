@@ -91,6 +91,11 @@ class fFort(object):
     def _init_dt_defs(self):
         for i in self._dt_defs.keys():
             _alldtdefs[i] = self._dt_defs[i]
+            
+    def _find_var(self, name):
+        if name in self._mod_vars:
+            obj = self._mod_vars[name]
+            return self._get_fvar(obj)(obj)
 
 
     def __getattr__(self, name):
@@ -98,8 +103,7 @@ class fFort(object):
             nl = name.lower()
             if '_mod_vars' in self.__dict__:
                 if nl in self._mod_vars:
-                    obj = self._mod_vars[nl]
-                    x = self._get_fvar(obj)(obj)
+                    x = self._find_var(nl)
                     return x.in_dll(self._lib)
 
             if '_param' in self.__dict__:
@@ -136,8 +140,7 @@ class fFort(object):
             if self._initialized:
                 if '_mod_vars' in self.__dict__:
                     if nl in self._mod_vars:
-                        obj = self._mod_vars[nl]
-                        x = self._get_fvar(obj)(obj)
+                        x = self._find_var(nl)
                         x.set_in_dll(self._lib, value)
                         return
                 if '_param' in self.__dict__:
