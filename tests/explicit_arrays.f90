@@ -34,6 +34,7 @@ module explicit_arrays
 	real(dp), dimension(5,5,5) :: b_real_dp_exp_3d
 	real(dp), dimension(5,5,5,5) :: b_real_dp_exp_4d
 	real(dp), dimension(5,5,5,5,5) :: b_real_dp_exp_5d
+	real(dp), dimension(2,3,4,5,6) :: b_real_exp_5d_2
 
 
 	character(len=10), dimension(5) :: b_str_exp_1d
@@ -41,6 +42,7 @@ module explicit_arrays
 	character(len=10), dimension(5,5,5) :: b_str_exp_3d
 	character(len=10), dimension(5,5,5,5) :: b_str_exp_4d
 	character(len=10), dimension(5,5,5,5,5) :: b_str_exp_5d     
+	
 	
 	contains
 
@@ -137,6 +139,20 @@ module explicit_arrays
 		end do
 		
 	end function func_mesh_exp
+	
+	
+	subroutine check_exp_2d_2m3(arr, success)
+	! Github issues #19
+	integer, dimension(2,3) :: arr
+	logical :: success
+	
+	success=.false.
+	
+	if(arr(1,2)==1 .and. arr(2,1)==2 .and. arr(2,3) == 3 &
+	.and. arr(1,1)==0 .and. arr(2,2)==0 .and. arr(1,3) ==0) success = .true.
+	
+
+	end subroutine check_exp_2d_2m3
 	
 
 end module explicit_arrays

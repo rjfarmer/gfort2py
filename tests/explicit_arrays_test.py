@@ -109,6 +109,11 @@ class TestExplicitArrayMethods(unittest.TestCase):
         x.b_real_exp_5d=v
         np_test.assert_allclose(x.b_real_exp_5d,v)
         
+    def test_b_real_exp_5d_2(self):
+        v=np.random.random(size=(2,3,4,5,6))
+        x.b_real_exp_5d_2=v
+        np_test.assert_allclose(x.b_real_exp_5d_2,v)
+        
     def test_b_real_dp_exp_1d(self):
         v=np.random.random(size=(5))
         x.b_real_dp_exp_1d=v
@@ -264,6 +269,19 @@ class TestExplicitArrayMethods(unittest.TestCase):
         i=5
         y = x.func_mesh_exp(i)
         self.assertEqual(y.result,np.arrange(0,i))
+        
+    def test_check_exp_2d_2m3(self):
+        # Github issue #19
+        arr_test = np.zeros((2,3), dtype=np.int, order='F')
+
+        arr_test[0,1] = 1
+        arr_test[1,0] = 2
+        arr_test[1,2] = 3
+     
+        y = x.check_exp_2d_2m3(arr_test, 0)
+        
+        self.assertEqual(y.args['success'],True)
+        np_test.assert_array_equal(y.args['arr'],arr_test)
         
     
 if __name__ == '__main__':

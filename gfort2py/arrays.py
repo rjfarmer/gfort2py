@@ -85,6 +85,7 @@ class fExplicitArray(object):
              self.pytype = getattr(__builtin__, self.pytype)
 
         self.ctype = getattr(ctypes, self.ctype)
+        self._sof_ctype = ctypes.sizeof(self.ctype)
         
         if self.pytype == int:
             self._dtype='int'+str(8*ctypes.sizeof(self.ctype))
@@ -107,7 +108,8 @@ class fExplicitArray(object):
                     False),
                 'typestr': self._dtype,
                 'shape': self._shape,
-                'version':3
+                'version':3,
+                'strides':self.strides()
                 }
 
         class numpy_holder():
@@ -120,6 +122,18 @@ class fExplicitArray(object):
         remove_ownership(arr)
         
         return arr
+        
+        
+    def strides(self):
+        shape = self.shape()
+        if shape == -1:
+            return None
+        
+        strides = [self._sof_ctype]
+        for i in shape[:-1]:
+            strides.append(strides[-1] * i)
+        
+        return tuple(strides)
 
     def shape(self):
         if 'shape' not in self.array or len(self.array['shape'])/self._ndims != 2:
@@ -146,7 +160,7 @@ class fExplicitArray(object):
             
         self._value = v
             
-        self._value  = np.asfortranarray(self._value .astype(self._dtype)).T
+        self._value  = np.asfortranarray(self._value .astype(self._dtype))
         v_addr = self._value.ctypes.data
 
         #print(v.shape,v.itemsize,v.size*v.itemsize,self._dtype,self.sizeof(),c)
@@ -158,7 +172,7 @@ class fExplicitArray(object):
         
     def in_dll(self, lib):
         addr = ctypes.addressof(self.ctype.in_dll(lib, self.mangled_name))
-        return self.from_address(addr).T
+        return self.from_address(addr)
         
     def set_in_dll(self, lib, value):
         addr = ctypes.addressof(self.ctype.in_dll(lib, self.mangled_name))
@@ -176,7 +190,7 @@ class fExplicitArray(object):
         return self._safe_ctype
         
     def from_func(self, pointer):
-        return self.from_address(ctypes.addressof(pointer)).T
+        return self.from_address(ctypes.addressof(pointer))
         
     def sizeof(self):
         return ctypes.sizeof(self.ctype)
