@@ -97,15 +97,19 @@ class TestStringMethods(unittest.TestCase):
             
         self.assertEqual(out,'10')   
     
-    
+    @unittest.skip("Skipping")
     def test_str_alloc(self):
         self.assertEqual(x.str_alloc, '') # Empty at start
 
         x.str_alloc = 'abcdefghijklmnop'
         self.assertEqual(x.str_alloc, 'abcdefghijklmnop')
+        y = x.check_str_alloc(1)
+        self.assertEqual(y.result,True)
         
         x.str_alloc = '12345678        ' # Need to empty the space afterwards
-        self.assertEqual(x.str_alloc,  '12345678        ')        
+        self.assertEqual(x.str_alloc,  '12345678        ')    
+        y = x.check_str_alloc(2)    
+        self.assertEqual(y.result,True)
 
     
     
