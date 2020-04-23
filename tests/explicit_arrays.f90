@@ -142,17 +142,38 @@ module explicit_arrays
 	
 	
 	subroutine check_exp_2d_2m3(arr, success)
-	! Github issues #19
-	integer, dimension(2,3) :: arr
-	logical :: success
-	
-	success=.false.
-	
-	if(arr(1,2)==1 .and. arr(2,1)==2 .and. arr(2,3) == 3 &
-	.and. arr(1,1)==0 .and. arr(2,2)==0 .and. arr(1,3) ==0) success = .true.
-	
+		! Github issues #19
+		integer, dimension(2,3) :: arr
+		logical :: success
+		
+		success=.false.
+		
+		if(arr(1,2)==1 .and. arr(2,1)==2 .and. arr(2,3) == 3 &
+		.and. arr(1,1)==0 .and. arr(2,2)==0 .and. arr(1,3) ==0) success = .true.
+		
 
 	end subroutine check_exp_2d_2m3
+	
+	
+	subroutine check_exp_2d_2m3_nt(arr, NT, success)
+		! Github issues #19
+		integer, intent(in) :: NT
+		integer, dimension(3,NT) :: arr
+		logical :: success
+		integer :: i
+		
+		success=.false.
+		
+		if(arr(1,2)==1 .and. arr(2,1)==2 .and. arr(2,3) == 3 .and. arr(2,4) ==4 ) success = .true.
+		
+		do i=1,3
+			write(*,*) arr(i,:)
+		end do
+		
+		arr(1,NT) = 5
+
+	end subroutine check_exp_2d_2m3_nt	
+	
 	
 
 end module explicit_arrays

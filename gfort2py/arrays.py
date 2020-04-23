@@ -125,12 +125,11 @@ class fExplicitArray(object):
         
         
     def strides(self):
-        shape = self.shape()
-        if shape == -1:
+        if self._shape == -1:
             return None
         
         strides = [self._sof_ctype]
-        for i in shape[:-1]:
+        for i in self._shape[:-1]:
             strides.append(strides[-1] * i)
         
         return tuple(strides)
@@ -362,7 +361,6 @@ class fDummyArray(object):
  
     def from_param(self, value):
         if self._array['atype'] == 'alloc' or self._array['atype'] == 'pointer' :
-            
             self._safe_ctype =  self._array_desc()
             if value is not None:
                 self.set_from_address(ctypes.addressof(self._safe_ctype), value)
@@ -375,10 +373,20 @@ class fDummyArray(object):
             return self.ctype.from_address(ctypes.addressof(self._safe_ctype))  
            
     def from_func(self, pointer):
-        if self._array['atype'] == 'alloc' or self._array['atype'] == 'pointer' :
-            return self.from_address(ctypes.addressof(pointer.contents))   
-        else:
-            return self.from_address(ctypes.addressof(pointer))          
+        x = pointer
+        if hasattr(pointer,'contents'):
+            if hasattr(pointer.contents,'contents'):
+                x = pointer.contents.contents
+            else:
+                x = pointer.contents
+            
+        if x is None:
+            return None
+                
+        try:
+            return self.from_address(ctypes.addressof(x))    
+        except AttributeError:
+            raise IgnoreReturnError
         
         
 class fAssumedShape(fDummyArray):

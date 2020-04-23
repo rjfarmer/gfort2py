@@ -272,15 +272,19 @@ class TestExplicitArrayMethods(unittest.TestCase):
         
     def test_check_exp_2d_2m3(self):
         # Github issue #19
-        arr_test = np.zeros((2,3), dtype=np.int, order='F')
+        arr_test = np.zeros((3,4), dtype=np.int, order='F')
 
         arr_test[0,1] = 1
         arr_test[1,0] = 2
         arr_test[1,2] = 3
+        arr_test[-2,-1] = 4
      
-        y = x.check_exp_2d_2m3(arr_test, 0)
+        y = x.check_exp_2d_2m3_nt(arr_test, 4, 0)
         
         self.assertEqual(y.args['success'],True)
+        
+        arr_test[0,3] = 5
+        
         np_test.assert_array_equal(y.args['arr'],arr_test)
         
     
