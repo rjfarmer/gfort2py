@@ -26,6 +26,7 @@ _allFuncs = {}
 
 Result = collections.namedtuple('Result', 'result args')
 
+
 class captureStdOut():
     def read_pipe(self,pipe_out):
         def more_data():
@@ -60,7 +61,9 @@ class fFunc(object):
         self._func = None
         self._extra_pre = []
         self._extra_post=[]
-            
+
+        self._DEBUG = False
+
     def sizeof(self):
         return ctypes.sizeof(self.ctype)
                     
@@ -126,30 +129,36 @@ class fFunc(object):
         # Capture stdout messages
         with captureStdOut() as cs:   
             ret = self._func(*args_in)
-         
-        if self._sub:
-            ret = 0
-        else:
-            # Special handling of returning a string
-            if len(self._extra_pre):
-                ret = self._args[0].from_len(retstr, args_in[1])
-            else:
-                ret = self._return.from_func(ret)
-                
-        dummy_args = {}
-        count = 0
-        
-        for value,obj,ne in zip(args_in[start:end], self._args[start:end], needs_extra[start:end]):
-            if ne:
-                dummy_args[obj.name] = obj.from_len(value,args_in[end])
-                end = end +1
-            else:
-                dummy_args[obj.name] = obj.from_func(value)
             
-        if self._sub:
-            ret = 0
+        if not self._DEBUG:
+         
+            if self._sub:
+                ret = 0
+            else:
+                # Special handling of returning a string
+                if len(self._extra_pre):
+                    ret = self._args[0].from_len(retstr, args_in[1])
+                else:
+                    ret = self._return.from_func(ret)
+                    
+            dummy_args = {}
+            count = 0
+            
+            for value,obj,ne in zip(args_in[start:end], self._args[start:end], needs_extra[start:end]):
+                if ne:
+                    dummy_args[obj.name] = obj.from_len(value,args_in[end])
+                    end = end +1
+                else:
+                    dummy_args[obj.name] = obj.from_func(value)
+            if self._sub:
+                ret = 0
+            
+            return Result(ret, dummy_args)
 
-        return Result(ret, dummy_args)
+                    
+        else:
+            return Result(ret, args_in)
+
 
     def _init_return(self):
         # make a object usable by _selectVar()
