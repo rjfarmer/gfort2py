@@ -166,9 +166,9 @@ module explicit_arrays
 		
 		if(arr(1,2)==1 .and. arr(2,1)==2 .and. arr(2,3) == 3 .and. arr(2,4) ==4 ) success = .true.
 		
-		do i=1,3
-			write(*,*) arr(i,:)
-		end do
+!		do i=1,3
+!			write(*,*) arr(i,:)
+!		end do
 		
 		arr(1,NT) = 5
 

@@ -345,10 +345,12 @@ class fDummyArray(object):
 
         c.span = self._sof_ctype
         c.dtype = self._get_dtype15()
+        sumstrides = 0
         for i in range(self.ndim):
-            c.dims[i].stride = _index_t(int(np.product(strides[:i])))  
+            c.dims[i].stride = _index_t(int(np.product(strides[:i])))
+            sumstrides = sumstrides + c.dims[i].stride
 
-        c.offset = -c.dims[-1].stride
+        c.offset = -sumstrides 
         remove_ownership(self._value)
  
     def in_dll(self, lib):

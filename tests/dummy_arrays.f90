@@ -275,4 +275,37 @@ module dummy_arrays
 	end subroutine sub_arr_assumed_rank_dp_1d
 
 
+
+	subroutine sub_check_alloc_int_2d(x)
+		integer, allocatable,dimension(:,:), intent(inout) :: x
+		integer :: i,j
+		
+		if(.not.allocated(x)) allocate(x(3,4))
+	
+		do i=1,3
+			do j=1,4
+				x(i,j) = j + (i-1)*4
+			 end do
+		end do
+	
+	end subroutine sub_check_alloc_int_2d
+
+
+	subroutine sub_check_alloc_int_3d(x)
+		integer, allocatable,dimension(:,:,:), intent(inout) :: x
+		integer :: i,j, k
+		
+		if(.not.allocated(x)) allocate(x(3,4,5))
+	
+		do i=1,3
+			do j=1,4
+				do k=1,5
+					x(i,j,k) = k + (j-1)*4 + (i-1)*4 
+				end do
+			 end do
+		end do
+	
+	end subroutine sub_check_alloc_int_3d
+
+
 end module dummy_arrays

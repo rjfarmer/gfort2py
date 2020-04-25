@@ -410,7 +410,42 @@ class TestDummyArrayMethods(unittest.TestCase):
         output=out.getvalue().strip()	
         np_test.assert_array_equal(y.args['zzz'],np.array([100.0]*5))
         
-    
+    def test_sub_check_alloc_int_2d(self):
+        arr_test = np.zeros((3,4), dtype=np.int32, order='F')
+        y=x.sub_check_alloc_int_2d(None)
+        y2=x.sub_check_alloc_int_2d(arr_test)
+        np_test.assert_array_equal(y.args['x'],y2.args['x'])
+        
+        z = np.array([[ 1,  2,  3,  4],
+        [ 5,  6,  7,  8],
+        [ 9, 10, 11, 12]])
+        
+        np_test.assert_array_equal(y.args['x'],z)
+        
+
+    def test_sub_check_alloc_int_3d(self):
+        arr_test = np.zeros((3,4,5), dtype=np.int32, order='F')
+        y=x.sub_check_alloc_int_3d(None)
+        y2=x.sub_check_alloc_int_3d(arr_test)
+        np_test.assert_array_equal(y.args['x'],y2.args['x'])   
+        
+        z=np.array([[[ 1,  2,  3,  4,  5],
+        [ 5,  6,  7,  8,  9],
+        [ 9, 10, 11, 12, 13],
+        [13, 14, 15, 16, 17]],
+        
+        [[ 5,  6,  7,  8,  9],
+        [ 9, 10, 11, 12, 13],
+        [13, 14, 15, 16, 17],
+        [17, 18, 19, 20, 21]],
+        
+        [[ 9, 10, 11, 12, 13],
+        [13, 14, 15, 16, 17],
+        [17, 18, 19, 20, 21],
+        [21, 22, 23, 24, 25]]])
+        
+        np_test.assert_array_equal(y.args['x'],z)
+        
     
     
 if __name__ == '__main__':
