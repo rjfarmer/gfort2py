@@ -75,6 +75,8 @@ class fFunc(object):
         self._func = getattr(lib, self.mangled_name) 
         if not len(self._extra_pre):
             self._func.restype = self._return.ctype
+            
+        return self
     
 
     def _set_func(self, func):
@@ -191,18 +193,83 @@ class fFunc(object):
         if x is None: # Handle derived types
             if 'dt' in var['var'] and var['var']['dt']:
                 x = fDerivedType
+            elif 'is_func' in var['var'] and var['var']['is_func']:
+                x = fFuncPtr
             else:
                 raise TypeError("Can't match ",var['name'])
+                
         return x
 
 
 
+class fFuncPtr(fFunc):
+    
+    
+    def in_dll(self, lib):
+        f = ctypes.c_void_p.in_dll(lib, self.mangled_name)
+        
+        self._cvoid_ptr = ctypes.c_void_p.in_dll(lib, self.mangled_name)
+        self._lib = lib
+        
+        # if f.value is None or not self._isset:
+            # raise AttributeError("Must point to something first")
+        
+        # makes it callable
+        #self._func = self.ctype .in_dll(lib, self.mangled_name)
+        return self
+    
+
+    def set_in_dll(self, lib, func):
+        if not isinstance(func, fFunc):
+            raise TypeError("Must be a fortran function")
+        
+        func = func.in_dll(lib)
+        
+        self.proc = func.proc
+        self.arg = func.arg
+        self._args = self._init_args()
+        self._init_return() 
+        
+        
+        # Sets the location of the pointer
+        self._cvoid_ptr = ctypes.c_void_p.in_dll(lib, self.mangled_name)
+        self._func = self._cvoid_ptr
+        self._func.value = ctypes.cast(func._func, ctypes.c_void_p).value
+        self._lib = lib
+        
+        # makes it callable
+        self._func =self._cfunc.in_dll(self._lib, self.mangled_name)
+        self._lib = lib
+
+
     def from_param(self, value):
+        if 'optional' in self.var :
+            if self.var['optional'] and value is None:
+                return None
+        
+        return self.ctype        
+        
+                
+    def __call__(self, *args):
+        
+        start, end, needs_extra,retstr, retstrlen = self._setupArgs(args)
+        
+        # Update CFUNCTYPE
+        cf = ctypes.CFUNCTYPE(self._return.ctype, *[type(i) for i in self._args_in])
+        self._func = cf.in_dll(self._lib , self.mangled_name)
+        
+        with captureStdOut() as cs:   
+            ret = self._func(*self._args_in)
+            
+        return self._afterCall(ret, start, end, needs_extra,retstr, retstrlen)
+                
+    
+    def from_func(self, value):
         pass
+        
 
-
-
-
+    def _get_func(self):
+        pass
 
 
 # class fFuncPtr(fFunc):

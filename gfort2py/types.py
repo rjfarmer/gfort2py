@@ -209,6 +209,8 @@ class fDerivedType(object):
                     raise TypeError("Cant not support recursive derived types yet")
                 else:
                     x = fDerivedType
+            # elif 'is_func' in var and var['is_func']:
+                # x = fFuncPtr
             else:
                 raise TypeError("Can't match ",var['name'])
         return x

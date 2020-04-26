@@ -290,6 +290,8 @@ class parseModBase(object):
             res['is_func'] = True
         if 'VALUE' in symbol_info:
             res['value'] = True
+        if 'RESULT' in symbol_info:
+            res['result'] = True
             
         if 'PROC_POINTER' in symbol_info:
             res['proc_ptr_id'] = type_info.split()[2]
@@ -434,6 +436,10 @@ class parseModBase(object):
         elif 'CONSTANT' in info[4]:
             r['shape'] = self.getBounds(info)
             r['atype'] = 'explicit'
+        
+        if 'RESULT' in info[0]:
+            r['result'] = True
+            
         r['ndim'] = self.getNdims(info)
         
         p, c, s=self.getVarType(info[2])

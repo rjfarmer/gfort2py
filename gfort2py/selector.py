@@ -39,4 +39,7 @@ def _selectVar(obj):
         else:
             x = fVar
     
+        if 'is_func' in obj['var'] and obj['var']['is_func']:
+            return None
+    
     return x

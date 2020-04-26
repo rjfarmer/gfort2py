@@ -13,7 +13,7 @@ import sys
 
 from .cmplx import fComplex, fParamComplex
 from .arrays import fExplicitArray, fDummyArray, fParamArray
-from .functions import fFunc,  _allFuncs
+from .functions import fFunc,  fFuncPtr
 from .strings import fStr
 from .types import fDerivedType, _alldtdefs
 from .utils import *
@@ -42,6 +42,7 @@ class fFort(object):
         self._fpy = pm.fpyname(ffile)
         self._load_data(ffile, rerun)
         self._init()
+        self._all = {}
         self._initialized = True
 
     def _load_data(self, ffile, rerun=False):
@@ -82,47 +83,55 @@ class fFort(object):
     def _init(self):      
         self._init_dt_defs()
 
-    def _init_func(self, obj):
-        x = fFunc(obj)
-        x.in_dll(self._lib)
-        _allFuncs[x.name.lower()] = x
-        self.__dict__[x.name.lower()] = x
+    def _init_func(self, name):
+        if name in self._funcs:
+            obj = self._funcs[name]
+            self._all[name] = fFunc(obj)
+            return self._all[name] 
         
     def _init_dt_defs(self):
         for i in self._dt_defs.keys():
             _alldtdefs[i] = self._dt_defs[i]
-            
-    def _find_var(self, name):
+
+    def _init_var(self, name):
         if name in self._mod_vars:
             obj = self._mod_vars[name]
-            return self._get_fvar(obj)(obj)
+            self._all[name] = self._get_fvar(obj)(obj)
+            return self._all[name] 
+
+    def _init_param(self, name):
+        if name in self._param:
+            obj = self._param[name]
+            self._all[name] = self._get_fvar(obj)(obj)
+            return self._all[name] 
+            
+    def _init_func_ptrs(self, name):
+        if name in self._func_ptrs:
+            obj = self._func_ptrs[name]
+            self._all[name] =  fFuncPtr(obj)
+            return self._all[name] 
 
 
     def __getattr__(self, name):
         if '_initialized' in self.__dict__ and self._initialized:
             nl = name.lower()
-            if '_mod_vars' in self.__dict__:
-                if nl in self._mod_vars:
-                    x = self._find_var(nl)
-                    return x.in_dll(self._lib)
-
-            if '_param' in self.__dict__:
-                if nl in self._param:
-                    obj = self._param[nl]
-                    x = self._get_fvar(obj)(obj)
-                    return x.in_dll(self._lib)
-            if '_funcs' in self.__dict__:
-                if nl in self._funcs:
-                    if nl not in self.__dict__:
-                        self._init_func(self._funcs[nl])
-                    return self.__dict__[nl]
-            if '_func_ptrs' in self.__dict__:
-                if nl in self._func_ptrs:
-                    if nl not in self.__dict__:
-                        x =  fFunc(obj)
-                        x.in_dll(self._lib)
-                        return x
-        
+            if '_all' in self.__dict__:
+                if nl in self._all:
+                    return self._all[nl].in_dll(self._lib)
+                else:
+                    if '_mod_vars' in self.__dict__ :
+                        if  nl in self._mod_vars:
+                            return self._init_var(nl).in_dll(self._lib)
+                    if '_param' in self.__dict__ : 
+                        if nl in self._param:
+                            return self._init_param(nl).in_dll(self._lib)
+                    if '_funcs' in self.__dict__ :
+                        if nl in self._funcs:
+                            return self._init_func(nl).in_dll(self._lib)
+                    if '_func_ptrs' in self.__dict__ : 
+                        if nl in self._func_ptrs:
+                            return self._init_func_ptrs(nl).in_dll(self._lib)
+                      
         if name in self.__dict__:
             return self.__dict__[name]
        
@@ -130,32 +139,23 @@ class fFort(object):
         raise AttributeError("No variable " + name)
 
     def __setattr__(self, name, value):
-        nl = name.lower()
-        if name in self.__dict__ or nl in self.__dict__:
-            try:
-                self.__dict__[nl].set(value)
-            except AttributeError:
-                self.__dict__[name] = value
-        else:
-            if self._initialized:
-                if '_mod_vars' in self.__dict__:
-                    if nl in self._mod_vars:
-                        x = self._find_var(nl)
-                        x.set_in_dll(self._lib, value)
-                        return
-                if '_param' in self.__dict__:
-                    if nl in self._param:
-                        obj = self._param[nl]
-                        x = self._get_fvar(obj)(obj)
-                        x.set_in_dll(self._lib, value)
-                        return
-                if '_func_ptrs' in self.__dict__:
-                    if nl in self._func_ptrs:
-                        x =  fFuncPtr(obj)
-                        x._set_func(value)
-                        return
-       
-            self.__dict__[name] = value
+        if '_initialized' in self.__dict__ and self._initialized:
+            nl = name.lower()
+            if '_all' in self.__dict__:
+                if nl in self._all:
+                    return self._all[nl].set_in_dll(self._lib, value)
+                else:
+                    if '_mod_vars' in self.__dict__: 
+                        if nl in self._mod_vars:
+                            return self._init_var(nl).set_in_dll(self._lib, value)
+                    if '_param' in self.__dict__ :
+                        if nl in self._param:
+                            return self._init_param(nl).set_in_dll(self._lib, value)
+                    if '_func_ptrs' in self.__dict__ :
+                        if nl in self._func_ptrs:
+                            return self._init_func_ptrs(nl).set_in_dll(self._lib, value)
+
+        self.__dict__[name] = value
         return
         
     def __dir__(self):
@@ -163,7 +163,7 @@ class fFort(object):
             l = list(self._mod_vars.keys()) 
             l.extend(list(self._param.keys()))
             l.extend(list(self._funcs.keys()))
-            # l.extend(list(self._func_ptrs.keys()))
+            l.extend(list(self._func_ptrs.keys()))
             return l
             
     def __getstate__(self):
@@ -177,7 +177,12 @@ class fFort(object):
         if x is None: # Handle derived types
             if 'dt' in var['var'] and var['var']['dt']:
                 x = fDerivedType
+            elif 'proc' in var and var['proc']:
+                x =  fFuncPtr
             else:
                 raise TypeError("Can't match ",var['name'])
         return x
         
+
+
+
