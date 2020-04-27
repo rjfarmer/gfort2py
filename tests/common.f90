@@ -18,6 +18,9 @@ module com
 	integer :: x_int1, y_int1, z_int1
 	common  /com_mod/ x_int1, y_int1, z_int1
 	
+	integer :: x_int2, y_int2
+	common  /com_mod2/ x_int2, y_int2
+	
 	
 	contains
 

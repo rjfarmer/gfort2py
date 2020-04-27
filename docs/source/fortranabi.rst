@@ -10,9 +10,7 @@ this also assume you are working with python's *ctype* library.
 Module file format
 ===========================
 
-.. note::
-  
-  TODO
+:doc:`mod_files`
 
 
 Symbol Names
@@ -320,11 +318,23 @@ Data is a null pointer when the array is not allocated.
 Derived types
 ===========================
 
-
+Handle them similar to a C-struct.
 
 
 
 Functions
+===========================
+
+Functions expect most arguments to be pointers (except those passed by value or pointer arguments which are pointers to pointers).
+Return values are passed by value
+
+Subroutine return None.
+
+
+Intent does not matter when calling the function, it is a a compile time only check.
+
+
+Procedure Pointers
 ===========================
 
 
