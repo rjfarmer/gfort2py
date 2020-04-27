@@ -44,13 +44,13 @@ Metadata about the module::
 	
 This contains the module version '15' and the file the module came from. 
 
-
-========= =============
-Mod Version       Gfortran Version     
-========= =============
-14                        < 8
-15                         8 >=
-========= =============
++---------------+----------------------+
+| Mod Version   | Gfortran Version     |
++===============+======================+
+| 14            | <8                   |
++---------------+----------------------+
+| 15            | >=8                  |
++---------------+----------------------+
 
 
 Line #2
