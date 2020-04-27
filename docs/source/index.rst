@@ -9,12 +9,9 @@ Welcome to gfort2py's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+   
+   usage
+   testsuite
+   fortranabi
 
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
