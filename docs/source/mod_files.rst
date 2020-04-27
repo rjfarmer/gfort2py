@@ -56,8 +56,95 @@ This contains the module version '15' and the file the module came from.
 Line #2
 ==========================
 
+This handles operator overload (+,- etc)
+
++----------------+----------------------+
+| Bracket number | Operator             |
++================+======================+
+| 1              |                      |
++----------------+----------------------+
+| 2              |                      |
++----------------+----------------------+
+| 3              |       plus           |
++----------------+----------------------+
+| 4              |       minus          |
++----------------+----------------------+
+| 5              |                      |
++----------------+----------------------+
+| 6              |                      |
++----------------+----------------------+
+| 7              |                      |
++----------------+----------------------+
+| 9              |                      |
++----------------+----------------------+
+| 10             |                      |
++----------------+----------------------+
+| 11             |                      |
++----------------+----------------------+
+| 12             |                      |
++----------------+----------------------+
+| 13             |                      |
++----------------+----------------------+
+| 14             |                      |
++----------------+----------------------+
+| 15             |                      |
++----------------+----------------------+
+| 16             |                      |
++----------------+----------------------+
+| 17             |                      |
++----------------+----------------------+
+| 18             |                      |
++----------------+----------------------+
+| 19             |                      |
++----------------+----------------------+
+| 20             |                      |
++----------------+----------------------+
+| 21             |                      |
++----------------+----------------------+
+| 22             |                      |
++----------------+----------------------+
+| 23             |                      |
++----------------+----------------------+
+| 24             |                      |
++----------------+----------------------+
+| 25             |                      |
++----------------+----------------------+
+| 26             |    equal             |
++----------------+----------------------+
+| 27             |                      |
++----------------+----------------------+
+
+Thus::
+
+	interface operator(+)
+		procedure :: my_add
+	end interface 
+
+into::
+
+	(() () (2))
+
+Thus its (ID of functions). Where ID is that of the named procedure(s)
+
+
 
 Line #3
+==========================
+
+Maps unary operators::
+
+	interface operator(.MYUNARY.)
+		procedure :: my_unnary
+	end interface 
+	
+into::
+
+	(('myunary' '' 5))
+
+Thus its (name, Unknown, ID)
+
+
+Line #4
 ==========================
 
 The name of derived types::
@@ -75,10 +162,10 @@ Shows as::
 
 	(('my_dt1' 'module_name' 2) ('my_dt2' 'module_name' 3))
 
-Thus each tuple contains the name of the derived type, the module is declared in, and the id.
+Thus each tuple contains the (name, module, ID).
 
 
-Line #4
+Line #5
 ==========================
 
 This maps between overloaded functions, thus ::
@@ -95,11 +182,11 @@ Shows as::
 
 	(('my_func' 'module' 2 3 4 5 6))
 
-Where each tuple is the name of the interface block, module name, and the id of each function inside the interface block
+Where each tuple is the (name, module, ID of each function inside the interface block)
 
 
 
-Line #5
+Line #6
 ==========================
 
 Names of common blocks::
@@ -113,22 +200,25 @@ Shows as::
 	
 Where __BLNK__ is the name given to the one unnamed common block allowed
 
-Thus each tuple is the name of the common block, its id, unknown int, unknown int.
+Thus each tuple is the (name, ID, saved flag)
 
+ID appears to only be the ID of the first element of the common block.
 
-
-Line #6
-==========================
+..todo::
+	what is saved flag?
 
 
 
 Line #7
 ==========================
 
+Equivalence list
 
 
 Line #8
 ==========================
+
+Lists all symbols
 
 
 Line #9
@@ -138,10 +228,8 @@ This is a summary of all declared variables and functions on the module. It does
 
 	('var1' 0 2 'var2' 0 3 .... )
 	
-Where this is the name of the variable/function/subroutine, unknown int, id of variable
+Where this is the (name, ambiguous flag, ID)
 
-
-
-
-
+..todo::
+	what is Ambiguous flag
 
