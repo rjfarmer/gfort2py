@@ -24,7 +24,7 @@ module com
 	
 	contains
 
-
+!https://stackoverflow.com/questions/39533409/access-common-block-variables-from-ctypes
 
 	subroutine sub_setup_common()
 	

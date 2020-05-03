@@ -20,8 +20,60 @@ module face
 		module procedure convert_cmplx
 	end interface convert
 	
+
+	interface operator(+)
+		procedure :: my_add
+	end interface 
+	
+	
+	interface operator(-)
+		procedure :: my_sub
+	end interface 	
+	
+	
+	interface assignment (=)
+		procedure :: my_eq
+	end interface 
+	
+	interface operator(.MYUN.)
+		procedure :: my_unnary
+	end interface 
+	
+	
+	type my_type
+		real :: a,b
+	end type my_type
+	
 	
 	contains
+	
+	
+	real function my_add(a,b)
+		type(my_type), intent(in) :: a
+		integer, intent(in) :: b
+		
+		my_add = a%a*2 +b*2
+	end function my_add
+	
+	real function my_sub(a,b)
+		type(my_type), intent(in) :: a
+		integer, intent(in) :: b
+		
+		my_sub = a%a*2 - b*2
+	end function my_sub
+	
+	subroutine my_eq(a, b)
+		type(my_type), intent(inout)  :: a
+		integer,intent(in) :: b
+		
+		a%a = b*2
+	end subroutine my_eq
+	
+	logical function my_unnary(a,b)
+		type(my_type), intent(in) :: a,b
+		
+		my_unnary = a%a < b%a
+	end function my_unnary
 
 
 	elemental integer function func_elem_int(x)
