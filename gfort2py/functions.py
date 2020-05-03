@@ -182,7 +182,7 @@ class fFunc(object):
         if x is None: # Handle derived types
             if 'dt' in var['var'] and var['var']['dt']:
                 x = fDerivedType
-            elif 'is_func' in var['var'] and var['var']['is_func']:
+            elif ('is_func' in var['var'] and var['var']['is_func']) or ('func_arg' in var and var['func_arg']):
                 x = fFuncPtr
             else:
                 raise TypeError("Can't match ",var['name'])
@@ -213,7 +213,10 @@ class fFuncPtr(fFunc):
 
     @property
     def ctype(self):
-        self._cfunc = ctypes.CFUNCTYPE(self._return.ctype)
+        if self._return is not None:
+            self._cfunc = ctypes.CFUNCTYPE(self._return.ctype)
+        else:
+            self._cfunc = ctypes.CFUNCTYPE(None)
         return self._cfunc
 
 
@@ -228,6 +231,11 @@ class fFuncPtr(fFunc):
         if not isinstance(func, fFunc):
             raise TypeError("Must be a fortran function")
             
+        self._init_from_func(lib, func)
+        self._set_ptr_in_dll(lib, func)
+
+
+    def _init_from_func(self, lib, func):
         f = func.in_dll(lib)
         
         self._sub = f.proc['sub']
@@ -237,9 +245,22 @@ class fFuncPtr(fFunc):
         self._extra_post = f._extra_post
         self._args_in = f._args_in
         
-        self._set_ptr_in_dll(lib, func)
 
+    def from_param(self, func):
+        self.lib = func.lib
+        self._init_from_func(self.lib, func)
+        
+        self.ctype()
+        
+        ff = getattr(self.lib, func.mangled_name)
+        self.ctype()
+        self.ptr = ctypes.c_void_p()
+        self.ptr.value = ctypes.cast(ff, ctypes.c_void_p).value
+        
+        return self.ptr
 
+    def from_func(self, pointer):
+        return pointer
 
 
 # class fFuncPtr(fFunc):

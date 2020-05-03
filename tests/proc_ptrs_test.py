@@ -56,6 +56,10 @@ class TestProcPtrsMethods(unittest.TestCase):
         y = x.p_func_func_run_ptr(2)
         self.assertEqual(y.result,20)
         
+        y = x.func_proc_ptr(5)
+        y2 = x.p_func_func_run_ptr(5)
+        self.assertEqual(y.result,y2.result)
+        
         
     def test_proc_ptr_ffunc2(self):
         x.sub_null_proc_ptr()
@@ -75,6 +79,21 @@ class TestProcPtrsMethods(unittest.TestCase):
         x.p_func_func_run_ptr = x.func_func_run2
         y = x.p_func_func_run_ptr(1)
         self.assertEqual(y.result,2)
+    
+    
+    def test_proc_func_arg(self):
+        y = x.func_func_arg_dp(5, x.func_real)
+        self.assertEqual(y.result,500)
+        
+        y = x.func_func_arg(x.func_func_run)
+        self.assertEqual(y.result,10)        
+    
+    def test_proc_proc_func_arg(self):
+        x.sub_null_proc_ptr()
+        x.p_func_func_run_ptr = x.func_func_run
+        
+        y = x.proc_proc_func_arg(x.p_func_func_run_ptr)
+        self.assertEqual(y.result,90)
     
     
 if __name__ == '__main__':

@@ -26,8 +26,14 @@ module proc_ptrs
     real(dp) function func_func_arg_dp(z,func)
         integer :: z
         real(dp) :: func
-        func_func_arg_dp = func(1)*z
+        func_func_arg_dp = func(z)
     end function func_func_arg_dp
+    
+ 
+    real(dp) function func_real(x)
+        integer(dp) :: x
+        func_real = 100d0 * x 
+    end function func_real
     
     
     integer function func_func_run(x)
@@ -58,6 +64,14 @@ module proc_ptrs
     subroutine sub_null_proc_ptr()
         p_func_func_run_ptr => null()
     end subroutine sub_null_proc_ptr
+    
+    
+    integer function proc_proc_func_arg(x)
+         procedure(func_func_run), pointer :: x
+         
+         proc_proc_func_arg = x(9)
+    
+    end function proc_proc_func_arg
 
 
 end module proc_ptrs
