@@ -184,7 +184,7 @@ class fFunc(object):
         if x is None:  # Handle derived types
             if 'dt' in var['var'] and var['var']['dt']:
                 x = fDerivedType
-            elif ('is_func' in var['var'] and var['var']['is_func']) or ('func_arg' in var and var['func_arg']):
+            elif 'is_func' in var['var'] and var['var']['is_func']:
                 x = fFuncPtr
             else:
                 raise TypeError("Can't match ", var['name'])
@@ -260,41 +260,3 @@ class fFuncPtr(fFunc):
     def from_func(self, pointer):
         return pointer
 
-
-# class fFuncPtr(fFunc):
-    # def __init__(self,*args,**kwargs):
-        # super(fFuncPtr,self).__init__(*args,**kwargs)
-        # self._cfunc = ctypes.CFUNCTYPE(self._res_type,*self._arg_ctypes)
-        # # self._ref = self._cfunc.in_dll(self._lib,self.mangled_name)
-
-    # # def set_mod(self,func_obj):
-        # # if isinstance(func_obj, six.string_types):
-        # # # String name of the function
-        # # self._ref.contents = self._ctype(self._get_ptr_func(self._mangle_name(self.module,func_obj))).contents
-        # # elif isinstance(func_obj,fFunc):
-        # # # Passed a fortran function
-        # # addr = ctypes.addressof(self._get_ptr_func(func_obj.mangled_name))
-        # # print(addr)
-        # # ctypes.memmove(self._ref,addr,ctypes.sizeof(ctypes.c_void_p))
-        # # print(self._ref)
-        # # elif callable(func_obj):
-        # # # Passed a python function
-        # # self._ref.contents  =  self._cfunc(func_obj)
-        # # else:
-        # # raise TypeError("Expecting either a name of function (str), a fFort function, or a python callable")
-
-    # @property
-    # def _call(self):
-        # # Use cvoidp to check as that is None if we have =>Null()
-        # xx = self._cfunc.in_dll(self._lib,self.mangled_name)
-        # print("*",ctypes.addressof(xx),xx)
-        # c = ctypes.c_void_p.in_dll(self._lib,self.mangled_name)
-        # if c.value is None:
-        # raise ValueError("Must set pointer first")
-        # self._ref = self._cfunc.in_dll(self._lib,self.mangled_name)
-        # return self._ref
-
-        # # if self._func_ptr is not None:
-        # # return self._func_ptr
-        # # else:
-        # # raise AttributeError("Must call set a function to be pointed to")
