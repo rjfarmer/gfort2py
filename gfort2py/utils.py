@@ -7,6 +7,7 @@ import numbers
 
 from .errors import *
 
+
 def find_key_val(list_dicts, key, value):
     v = value.lower()
     for idx, i in enumerate(list_dicts):

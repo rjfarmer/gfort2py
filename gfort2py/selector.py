@@ -11,7 +11,7 @@ from .errors import *
 
 def _selectVar(obj):
     x = None
-    
+
     if 'param' in obj:
         # Parameter strings are just be fParams
         if obj['param']['pytype'] == 'complex':
@@ -27,7 +27,7 @@ def _selectVar(obj):
         elif obj['var']['pytype'] == 'complex':
             x = fComplex
         elif 'dt' in obj['var'] and obj['var']['dt']:
-            x = None # Handle separately as otherwise we get recursion issues
+            x = None  # Handle separately as otherwise we get recursion issues
         elif 'array' in obj['var']:
             array = obj['var']['array']['atype']
             if array == 'explicit':
@@ -38,8 +38,8 @@ def _selectVar(obj):
                 x = fAssumedSize
         else:
             x = fVar
-    
+
         if 'is_func' in obj['var'] and obj['var']['is_func']:
             return None
-    
+
     return x

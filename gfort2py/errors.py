@@ -2,6 +2,7 @@
 class NotInLib(Exception):
     pass
 
+
 class AllocationError(Exception):
     pass
 
