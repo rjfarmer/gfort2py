@@ -45,66 +45,36 @@ def captured_output():
         sys.stdout, sys.stderr = old_out, old_err
 
 class TestProcPtrsMethods(unittest.TestCase):
-    @unittest.skip("Skipping as we cant set the ptr yet")
-    def test_func_func_str(self):
-        y = x.func_func_arg(x.func_func_run)
-        self.assertEqual(y,10)
-
-    @unittest.skip("Skipping as we cant set the ptr yet")		
-    def test_func_func_ffunc(self):
-        y = x.func_func_arg(x.func_func_run)
-        self.assertEqual(y,10)
-        
-    @unittest.skip("Skipping as we cant set the ptr yet")	
-    def test_func_func_py(self):
-        def my_py_func(x):
-            xv=x.contents.value
-            return 10*xv
-        
-        x.func_func_run.load()
-        y = x.func_func_arg([my_py_func,'func_func_run'])
-        self.assertEqual(y,10)
-        
-    @unittest.skip("Skipping as we cant set the ptr yet")
-    def test_proc_ptr_str(self):
-        x.sub_null_proc_ptr()
-        x.p_func_func_run_ptr = 'func_func_run'
-        y = x.p_func_func_run_ptr(1)
-        self.assertEqual(y,10)
-        
-    @unittest.skip("Skipping as we cant set the ptr yet")
     def test_proc_ptr_ffunc(self):
+        x.sub_null_proc_ptr()
+        with self.assertRaises(AttributeError) as cm:
+            y = x.p_func_func_run_ptr(1)
+        
         x.p_func_func_run_ptr = x.func_func_run
         y = x.p_func_func_run_ptr(1)
-        self.assertEqual(y,10)
+        self.assertEqual(y.result,10)
+        y = x.p_func_func_run_ptr(2)
+        self.assertEqual(y.result,20)
         
-    @unittest.skip("Skipping as we cant set the ptr yet")
-    def test_proc_ptr_py(self):
-        def my_py_func(x):
-            return 10*x
         
-        x.p_func_func_run_ptr = my_py_func
-        y = x.p_func_func_run_ptr(1)
-        self.assertEqual(y,10)
+    def test_proc_ptr_ffunc2(self):
+        x.sub_null_proc_ptr()
+        with self.assertRaises(AttributeError) as cm:
+            y = x.p_func_func_run_ptr2(1) # Allready set
+        
+        x.p_func_func_run_ptr2 = x.func_func_run
+        y = x.p_func_func_run_ptr2(10)
+        self.assertEqual(y.result,100)        
 
-    @unittest.skip("Skipping as we cant set the ptr yet")		
-    def test_call_set_proc_ptr(self):
+    def test_proc_update(self):
         x.sub_null_proc_ptr()
-        x.sub_proc_ptr2()
+        x.p_func_func_run_ptr = x.func_func_run
         y = x.p_func_func_run_ptr(1)
-        self.assertEqual(y,2)
+        self.assertEqual(y.result,10)
         
-    @unittest.skip("Skipping as we cant set the ptr yet")
-    def test_call_null_proc_ptr(self):
-        x.sub_null_proc_ptr()
-        with self.assertRaises(ValueError) as cm:
-            y = x.p_func_func_run_ptr(1)
-
-        x.sub_null_proc_ptr()
-        x.sub_proc_ptr2()
-        x.sub_null_proc_ptr()
-        with self.assertRaises(ValueError) as cm:
-            y = x.p_func_func_run_ptr(1)
+        x.p_func_func_run_ptr = x.func_func_run2
+        y = x.p_func_func_run_ptr(1)
+        self.assertEqual(y.result,2)
     
     
 if __name__ == '__main__':

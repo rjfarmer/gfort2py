@@ -14,10 +14,8 @@ import collections
 from .strings import fStr, fStrLen
 from .types import fDerivedType
 from .var import fVar
-
 from .utils import *
 from .errors import *
-
 from .selector import _selectVar
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
@@ -28,7 +26,7 @@ Result = collections.namedtuple('Result', 'result args')
 
 
 class captureStdOut():
-    def read_pipe(self,pipe_out):
+    def read_pipe(self, pipe_out):
         def more_data():
             r, _, _ = select.select([pipe_out], [], [], 0)
             return bool(r)
@@ -43,7 +41,7 @@ class captureStdOut():
             self.stdout = os.dup(1)
             os.dup2(self.pipe_in, 1)
     
-    def __exit__(self,*args,**kwargs):
+    def __exit__(self, *args, **kwargs):
         if _TEST_FLAG:
             os.dup2(self.stdout, 1)
             print(self.read_pipe(self.pipe_out))
@@ -57,48 +55,41 @@ class captureStdOut():
 class fFunc(object):
     def __init__(self, obj):
         self.__dict__.update(obj)
-        self.ctype = ctypes.c_void_p
         self._func = None
         self._extra_pre = []
-        self._extra_post=[]
+        self._extra_post = []
+        self._args = []
+        self._args_in = []
+        self._return = None
+        self._isset = False
 
         self._DEBUG = False
-
-    def sizeof(self):
-        return ctypes.sizeof(self.ctype)
                     
     def in_dll(self, lib):
         self._sub = self.proc['sub']
+        self.lib = lib
         
-        self._init_args()
+        self._args = self._init_args()
         self._init_return()
         self._func = getattr(lib, self.mangled_name) 
+        
+                
         if not len(self._extra_pre):
             self._func.restype = self._return.ctype
             
         return self
-    
-
-    def _set_func(self, func):
-        self.proc = func.proc
-        self.arg = func.arg
-        self._init_args()
-        self._init_return() 
-        
-        self._func = func._func
 
 
     def __call__(self, *args):
-        
-        if self._func is None:
-            raise AttributeError("Must point to something first")
-        
+        self._isSet(self.lib)
+            
         if len(args) != len(self.arg) :
             raise TypeError(str(self.name)+" takes "+str(len(self.arg)) + " arguments got "+str(len(args)))
             
-            
+        retstr = None
+        retstrlen = -1
         args_in = []
-        needs_extra =[]
+        needs_extra = []
         
         start = 0
         end = 0
@@ -107,7 +98,7 @@ class fFunc(object):
             retstr = self._extra_pre[0].ctype()
             retstrlen = self._extra_pre[1].ctype(0)
             args_in = [retstr, retstrlen] 
-            start=2
+            start = 2
             needs_extra = [False, False]
         
         for value, ctype in zip(args, self._args[start:]):
@@ -125,12 +116,10 @@ class fFunc(object):
 
         end = start + len(self.arg)
         
+        self._args_in = args_in + self._extra_post
         
-        args_in = args_in + self._extra_post
-        
-        # Capture stdout messages
         with captureStdOut() as cs:   
-            ret = self._func(*args_in)
+            ret = self._func(*self._args_in)
             
         if not self._DEBUG:
          
@@ -139,16 +128,16 @@ class fFunc(object):
             else:
                 # Special handling of returning a string
                 if len(self._extra_pre):
-                    ret = self._args[0].from_len(retstr, args_in[1])
+                    ret = self._args[0].from_len(retstr, self._args_in[1])
                 else:
                     ret = self._return.from_func(ret)
                     
             dummy_args = {}
             count = 0
             
-            for value,obj,ne in zip(args_in[start:end], self._args[start:end], needs_extra[start:end]):
+            for value,obj,ne in zip(self._args_in[start:end], self._args[start:end], needs_extra[start:end]):
                 if ne:
-                    dummy_args[obj.name] = obj.from_len(value,args_in[end])
+                    dummy_args[obj.name] = obj.from_len(value,self._args_in[end])
                     end = end +1
                 else:
                     dummy_args[obj.name] = obj.from_func(value)
@@ -156,10 +145,9 @@ class fFunc(object):
                 ret = 0
             
             return Result(ret, dummy_args)
-
-                    
         else:
             return Result(ret, args_in)
+
 
 
     def _init_return(self):
@@ -176,16 +164,17 @@ class fFunc(object):
             self._args = self._extra_pre + self._args
         
     def _init_args(self):
-        self._args = []
         extras = []
+        args = [] 
         for i in self.arg:
             x = self._get_fvar(i)(i)
             
             if isinstance(x,fStr): # Need a string length at the end of the argument list
                 extras.append(fStrLen())
-            self._args.append(x)
+            args.append(x)
             
-        self._args.extend(extras)
+        args.extend(extras)
+        return args
             
         
     def _get_fvar(self,var):
@@ -200,76 +189,57 @@ class fFunc(object):
                 
         return x
 
+    def _isSet(self, lib):
+        pass
 
 
 class fFuncPtr(fFunc):
     
-    
+    def _set_ptr_in_dll(self, lib, func):
+        ff = getattr(lib, func.mangled_name)
+        self.ctype()
+        ptr = ctypes.c_void_p.in_dll(lib, self.mangled_name)
+        ptr.value = ctypes.cast(ff, ctypes.c_void_p).value
+        
+        self._func = self._cfunc.in_dll(lib, self.mangled_name)
+        
+    def _isSet(self, lib):
+        if not hasattr(self, '_cfunc'):
+            raise AttributeError("Must point to something first")
+        
+        ptr = self._cfunc.in_dll(lib,self.mangled_name)
+        if ctypes.cast(ptr, ctypes.c_void_p).value is None:
+            raise AttributeError("Must point to something first")
+
+    @property
+    def ctype(self):
+        self._cfunc = ctypes.CFUNCTYPE(self._return.ctype)
+        return self._cfunc
+
+
     def in_dll(self, lib):
-        f = ctypes.c_void_p.in_dll(lib, self.mangled_name)
-        
-        self._cvoid_ptr = ctypes.c_void_p.in_dll(lib, self.mangled_name)
-        self._lib = lib
-        
-        # if f.value is None or not self._isset:
-            # raise AttributeError("Must point to something first")
-        
-        # makes it callable
-        #self._func = self.ctype .in_dll(lib, self.mangled_name)
+        self.lib = lib
+        self._isSet(lib)
+
         return self
-    
+        
 
     def set_in_dll(self, lib, func):
         if not isinstance(func, fFunc):
             raise TypeError("Must be a fortran function")
-        
-        func = func.in_dll(lib)
-        
-        self.proc = func.proc
-        self.arg = func.arg
-        self._args = self._init_args()
-        self._init_return() 
-        
-        
-        # Sets the location of the pointer
-        self._cvoid_ptr = ctypes.c_void_p.in_dll(lib, self.mangled_name)
-        self._func = self._cvoid_ptr
-        self._func.value = ctypes.cast(func._func, ctypes.c_void_p).value
-        self._lib = lib
-        
-        # makes it callable
-        self._func =self._cfunc.in_dll(self._lib, self.mangled_name)
-        self._lib = lib
-
-
-    def from_param(self, value):
-        if 'optional' in self.var :
-            if self.var['optional'] and value is None:
-                return None
-        
-        return self.ctype        
-        
-                
-    def __call__(self, *args):
-        
-        start, end, needs_extra,retstr, retstrlen = self._setupArgs(args)
-        
-        # Update CFUNCTYPE
-        cf = ctypes.CFUNCTYPE(self._return.ctype, *[type(i) for i in self._args_in])
-        self._func = cf.in_dll(self._lib , self.mangled_name)
-        
-        with captureStdOut() as cs:   
-            ret = self._func(*self._args_in)
             
-        return self._afterCall(ret, start, end, needs_extra,retstr, retstrlen)
-                
-    
-    def from_func(self, value):
-        pass
+        f = func.in_dll(lib)
         
+        self._sub = f.proc['sub']
+        self._args =f._args
+        self._return = func._return
+        self._extra_pre = f._extra_pre
+        self._extra_post = f._extra_post
+        self._args_in = f._args_in
+        
+        self._set_ptr_in_dll(lib, func)
 
-    def _get_func(self):
-        pass
+
 
 
 # class fFuncPtr(fFunc):
