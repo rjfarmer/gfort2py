@@ -51,7 +51,6 @@ class fFunc(object):
         self.__dict__.update(obj)
         self._func = None
         self._extra_pre = []
-        self._extra_post = []
         self._args = []
         self._args_in = []
         self._return = None
@@ -86,6 +85,7 @@ class fFunc(object):
         retstrlen = -1
         args_in = []
         needs_extra = []
+        extra_post = []
 
         start = 0
         end = 0
@@ -109,11 +109,11 @@ class fFunc(object):
                 self.arg):]:  # self.arg is the list of normal arguments
             for v in args:
                 if isinstance(v, str) or isinstance(v, bytes):
-                    self._extra_post.append(a.from_param(v))
+                    extra_post.append(a.from_param(v))
 
         end = start + len(self.arg)
 
-        self._args_in = args_in + self._extra_post
+        self._args_in = args_in + extra_post
 
         with captureStdOut() as cs:
             ret = self._func(*self._args_in)
@@ -228,7 +228,6 @@ class fFuncPtr(fFunc):
         self._args = f._args
         self._return = func._return
         self._extra_pre = f._extra_pre
-        self._extra_post = f._extra_post
         self._args_in = f._args_in
 
     def from_param(self, func):
