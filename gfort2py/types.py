@@ -1,9 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0+
 from __future__ import print_function
-try:
-    import __builtin__
-except ImportError:
-    import builtins as __builtin__
 
 import ctypes
 import os
@@ -202,22 +198,14 @@ class fDerivedType(object):
         self._safe_ctype = x
         return self
 
+        
     def _get_fvar(self, var):
-        x = _selectVar(var)
-        if x is None:  # Handle derived types
-            if 'dt' in var['var'] and var['var']['dt']:
-                if var['var']['dt']['name'] == self.var['dt']['name']:  # Handle recursive
-                    raise TypeError(
+        if 'dt' in var['var'] and var['var']['dt']:
+            if var['var']['dt']['name'] == self.var['dt']['name']: 
+                raise TypeError(
                         "Cant not support recursive derived types yet")
-                else:
-                    x = fDerivedType
-            elif 'is_func' in var['var'] and var['var']['is_func']:
-                from .functions import fFuncPtr
-                x = fFuncPtr
                 
-            else:
-                raise TypeError("Can't match ", var['name'])
-        return x
+        return _selectVar(var)
 
     def __repr__(self):
         return str(self.var['dt']['name'])

@@ -1,9 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0+
 from __future__ import print_function
-try:
-    import __builtin__
-except ImportError:
-    import builtins as __builtin__
 
 import ctypes
 import os
@@ -12,8 +8,8 @@ import select
 import collections
 
 from .strings import fStr, fStrLen
-from .types import fDerivedType
-from .var import fVar
+# from .types import fDerivedType
+# from .var import fVar
 from .utils import *
 from .errors import *
 from .selector import _selectVar
@@ -180,16 +176,7 @@ class fFunc(object):
         return args
 
     def _get_fvar(self, var):
-        x = _selectVar(var)
-        if x is None:  # Handle derived types
-            if 'dt' in var['var'] and var['var']['dt']:
-                x = fDerivedType
-            elif 'is_func' in var['var'] and var['var']['is_func']:
-                x = fFuncPtr
-            else:
-                raise TypeError("Can't match ", var['name'])
-
-        return x
+        return _selectVar(var)
 
     def _isSet(self, lib):
         pass

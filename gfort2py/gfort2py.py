@@ -1,9 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0+
 from __future__ import print_function
-try:
-    import __builtin__
-except ImportError:
-    import builtins as __builtin__
 
 import ctypes
 import pickle
@@ -175,12 +171,4 @@ class fFort(object):
         self.__init__(*state)
 
     def _get_fvar(self, var):
-        x = _selectVar(var)
-        if x is None:  # Handle derived types
-            if 'dt' in var['var'] and var['var']['dt']:
-                x = fDerivedType
-            elif ('is_func' in var['var'] and var['var']['is_func']) or ('func_arg' in var and var['func_arg']):
-                x = fFuncPtr
-            else:
-                raise TypeError("Can't match ", var['name'])
-        return x
+        return _selectVar(var)

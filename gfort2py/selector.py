@@ -6,7 +6,6 @@ from .cmplx import fComplex, fParamComplex
 from .arrays import fExplicitArray, fDummyArray, fParamArray, fAssumedShape, fAssumedSize
 from .strings import fStr
 from .var import fVar, fParam
-from .errors import *
 
 
 def _selectVar(obj):
@@ -27,7 +26,8 @@ def _selectVar(obj):
         elif obj['var']['pytype'] == 'complex':
             x = fComplex
         elif 'dt' in obj['var'] and obj['var']['dt']:
-            x = None  # Handle separately as otherwise we get recursion issues
+            from .types import fDerivedType
+            x = fDerivedType
         elif 'array' in obj['var']:
             array = obj['var']['array']['atype']
             if array == 'explicit':
@@ -36,10 +36,10 @@ def _selectVar(obj):
                 x = fAssumedShape
             elif array == 'assumed_size':
                 x = fAssumedSize
+        elif 'is_func' in obj['var'] and obj['var']['is_func']:
+            from .functions import fFuncPtr
+            x = fFuncPtr
         else:
             x = fVar
-
-        if 'is_func' in obj['var'] and obj['var']['is_func']:
-            return None
 
     return x
