@@ -35,7 +35,7 @@ class fDerivedType(object):
         self._addr = None
 
     def _init_keys(self):
-        dtdef = _alldtdefs[self.var['dt']['name']]
+        dtdef = _alldtdefs[self.var['dt']['name'].lower()]
 
         for i in dtdef['dt_def']['arg']:
             self._comp[i['name']] = self._get_fvar(i)(i)
