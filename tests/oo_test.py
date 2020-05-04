@@ -45,7 +45,13 @@ def captured_output():
         sys.stdout, sys.stderr = old_out, old_err
 
 class TestOOMethods(unittest.TestCase):
-    pass
+    
+    def test_p_proc_call(self):
+        x.p_proc.proc_no_pass = x.func_dt_no_pass
+        y = x.p_proc.proc_no_pass(1)
+        y2 = x.func_dt_no_pass(1)
+        
+        self.assertEqual(y.result,y2.result)
     
     
 if __name__ == '__main__':
