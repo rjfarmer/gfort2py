@@ -59,21 +59,18 @@ x=gf.fFort(SHARED_LIB_NAME,MOD_FILE_NAME)
 
 ````
 
-x now contains all variables, parameters and functions from the module (tab completable). 
+x now contains all variables, parameters and procedurs from the module (tab completable). 
 
 ### Functions
 ````python
 y = x.func_name(a,b,c)
 ````
 
-Will call the fortran function with variables a,b,c and will return the result in y,
-subroutines will return a dict (possibly empty) with any intent out, inout or undefined intent variables.
+Will call the fortran function with variables a,b,c and will return the result in y.
 
-Optional arguments are handled by not passing anything for that item (python side), but
-they must be at the end of the argument list (on the fortran side)
+Y will be  named tuple which contains (result, args). Where result is a python object for the return value (0 if a subroutine)
+and where args is a dict containing all arguments passed to the procedure.
 
-Array arguments must pass a numpy array, either pre filled (if the array is intent(in)) or made with zeros
-if the array is intent out or allocatable.
 
 ### Variables
 
@@ -85,18 +82,25 @@ Sets a module variable to 1, will attempt to coerce it to the fortran type
 
 ````python
 x.some_var
-x.some_var.get()
 ````
 
-First will print the value in some_var while get() will return the value
+Will return a python object 
+
+
+Optional arguments that are not present should pass None.
+
 
 ### Arrays
+
+Arrays should be passed as a numpy array of the correct size and shape
+
 
 Remember that fortran by default has 1-based array numbering while numpy
 is 0-based.
 
 
-If a function expects an unallocted array, then pass None as the argument
+If a procedure expects an unallocted array, then pass None as the argument, otherwise pass a
+array of the correct shape.
 
 ### Derived types
 
@@ -104,12 +108,9 @@ Derived types can be set with a dict
 ````python
 x.my_dt={'x':1,'y':'abc'}
 ````
-And return a dict when the .get() method is called, unless you pass
-copy=False to the get call in which case a ctype is returned (and fields
-access via the dot interface)
 
 ````python
-y=x.my_dt.get(copy=False)
+y=x.my_dt
 y.x
 y.y
 ````
@@ -125,23 +126,31 @@ This can then be accessed either via:
 x.my_dt.y
 ````
 
-To get a dict back, or:
-
-````python
-x.my_dt.y.a
-x.my_dt['a']
-````
-
-To get a single value.
-
 When setting the components of a derived type you do not need to specify
 all of them at the same time.
+
+
+If you have an array of derived types
+
+````fortran
+type(my_type), dimension(5) :: my_dt
+type(my_type), dimension(5,5) :: my_dt2
+````
+
+Elements can be access via a notation similar to the numpy slice:
+
+````python
+x.my_dt[0].x
+x.my_dt2[0,0].x
+````
+
+You can only access one component at a time (i.e no striding [:]). Allocatable derived types are not yet supported.
 
 
 ## Testing
 
 ````bash
-ipython3 setup.py test
+./run_test.sh
 ````
 
 To run unit tests
@@ -160,17 +169,20 @@ To run unit tests
 - [x] Allocatable arrays
 - [x] Derived types
 - [x] Nested derived types
-- [ ] Arrays of derived types
-- [ ] Functions inside derived types
-- [ ] Arrays with dimension (:) (pointer, allocatable) inside derived types (it doesn't break if their there, but you cant access them easily)
+- [X] Explicit Arrays of derived types
+- [ ] Allocatable Arrays of derived types
+- [X] Procedure pointers inside derived types (only those that are nopass)
+- [X] Derived types with dimension(:) array components (pointer, allocatable, target)
+- [ ] Allocatable strings
+- [ ] Arrays of strings
 - [ ] Classes
 - [ ] Abstract interfaces
 - [x] Common blocks (parital)
-- [x] Equivalences 
+- [ ] Equivalences 
 - [ ] Namelists
 - [ ] Quad precision variables
 
-### Functions/subroutines
+### Procedures
 
 - [X] Basic calling (no arguments)
 - [x] Argument passing (scalars)
@@ -181,9 +193,13 @@ To run unit tests
 - [x] Argument passing (allocatable arrays)
 - [x] Argument passing (derived types)
 - [x] Argument intents (in, out, inout and none)
-- [x] Passing characters
-- [x] Pointer Arguments 
+- [x] Passing characters of fixed size (len=10 or len=* etc)
+- [x] Functions that return a character as their result
+- [ ] Allocatable strings
+- [ ] Arrays of strings
+- [x] Pointer arguments 
 - [x] Optional arguments
+- [x] Value arguments
 - [ ] Keyword arguments
 - [ ] Generic/Elemental functions
 - [x] Functions as an argument
@@ -195,11 +211,11 @@ There's no direct way to access the common block elements, but if you declare th
 
 ````fortran
 module my_mod
-	implicit none
-	
-	integer :: a,b,c
-	common /comm1/ a,b,c
-	
+    implicit none
+    
+    integer :: a,b,c
+    common /comm1/ a,b,c
+    
 ````
 
 Elements in the common block can thus be accessed as:
@@ -210,46 +226,30 @@ x.b
 x.c
 ````
 
-### Functions pointers:
+### Procedure pointers:
 
-#### Functions as arguments
+#### Procedures as arguments
 
 Consider:
 
 ````fortran
 integer function my_func(func_arg)
-	integer func_arg
-	
-	my_func = func_arg(5)
+    integer func_arg
+    
+    my_func = func_arg(5)
 end function my_func
-	
+    
 ````
 
 Assuming that func_arg is another fortran function then we can call my_func as:
 
 
 ````python
-
-x.my_func('func_arg') # With a string of the name of the argument of the function
-#or
-x.my_func(x.func_arg) # With the functin itself
+x.my_func(x.func_arg) # With the function itself
 ````
 
-Its left the the user to make sure that the function func_arg takes the correct inputs and returns the correct output
+It is left the the user to make sure that the function func_arg takes the correct inputs and returns the correct output
 
-
-If instead you want func_arg to be a python function then things are a little different:
-
-````python
-def my_py_func(x): # Python function that will be func_arg
-	xv=x.contents.value # Values are passed by reference, this works for ints, floats. Characters, arrays and derived types are more complicated.
-	return 10*xv
-
-# We must "pair" the python function with an existing fortran function that has the same inputs/outputs and return type.
-x.func_func_run.load() # This function call forces func_func_run to be initialized without calling the function
-y = x.func_func_arg([my_py_func,'func_func_run']) # This "pairs" the python function with a fortran function that has been loaded
-
-````
 
 #### Procedure pointers
 
@@ -257,13 +257,19 @@ Consider a procedure like:
 
 ````fortran
 procedure(my_func), pointer:: func_ptr => NULL()
-
 ````
 
-We can not at this time set func_ptr from python, instead it must be set by fortran. The func_ptr can however be called from python if set, if it has not been set
-then we raise ValueError.
+This can be set similar to how we handle functions as arguments:
 
-Its left to the user to enforce that the function has the correct interface
+
+````python
+x.func_ptr = x.func_arg # With the function itself
+````
+
+Its left the the user to make sure that the function func_arg takes the correct inputs and returns the correct output. If you have a function
+that accepts a function pointer then its the same as if the it just accepted a function argument
+
+
 
 
 ## Contributing
