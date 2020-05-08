@@ -269,7 +269,17 @@ x.func_ptr = x.func_arg # With the function itself
 Its left the the user to make sure that the function func_arg takes the correct inputs and returns the correct output. If you have a function
 that accepts a function pointer then its the same as if the it just accepted a function argument
 
+If func_ptr already points a a function at compile time:
 
+````fortran
+procedure(my_func), pointer:: func_ptr => my_func
+````
+
+You must still first set it to something
+
+````python
+x.func_ptr = x.func_arg # With the function itself
+````
 
 
 ## Contributing
@@ -278,5 +288,8 @@ Pull requests should target the maint branch for fixing issues, please check the
 passes before sending a pull request.
 Maint will be periodically merged with master for new releases, master should never have 
 a broken test suite.
+
+Fortran programmers who don't know python can still help by adding more fortran examples to the test suite (even for features that 
+aren't currently implemented)
 
 
