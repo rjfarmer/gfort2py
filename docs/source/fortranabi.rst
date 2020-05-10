@@ -3,7 +3,7 @@ gfortran ABI
 ##########################
 
 
-This is what i have reverse engineered for gfortran's ABI, I'm focusing on gfortran > 8, as there was a an ABI break then.
+This is what i have reverse engineered for gfortran's ABI, I'm focusing on gfortran > 8, as there was an ABI break then.
 this also assume you are working with python's *ctype* library.
 
 
