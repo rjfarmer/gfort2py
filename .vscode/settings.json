@@ -10,5 +10,14 @@
     "python.testing.pytestEnabled": false,
     "python.testing.nosetestsEnabled": false,
     "python.testing.unittestEnabled": true,
-    "python.linting.enabled": true
+    "python.linting.enabled": true,
+    "files.exclude": {
+        "**/*.so": true,
+        "**/*.mod": true,
+        "**/*.smod": true,
+        "**/*.fpy": true,
+        "**/*.original": true,
+        "**/__pycache__": true,
+        "docs/build": true,
+    }
 }
