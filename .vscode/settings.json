@@ -19,5 +19,6 @@
         "**/*.original": true,
         "**/__pycache__": true,
         "docs/build": true,
+        "**/*.pyc": true,
     }
 }
