@@ -8,9 +8,6 @@ import select
 import collections
 
 from .strings import fStr, fStrLen
-# from .types import fDerivedType
-# from .var import fVar
-from .utils import *
 from .errors import *
 from .selector import _selectVar
 

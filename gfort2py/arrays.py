@@ -10,7 +10,6 @@ except ImportError:
     import builtins as __builtin__
 
 from .var import fVar, fParam
-from .utils import *
 from .fnumpy import *
 from .errors import *
 

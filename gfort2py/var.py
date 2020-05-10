@@ -9,7 +9,6 @@ import ctypes
 import numpy as np
 
 from .errors import *
-from .utils import *
 
 
 class fVar(object):

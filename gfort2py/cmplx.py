@@ -9,7 +9,6 @@ except ImportError:
 
 from .var import fVar, fParam
 from .errors import *
-from .utils import *
 
 
 class fComplex(object):

@@ -7,8 +7,6 @@ import copy
 import collections
 import numpy as np
 
-
-from .utils import *
 from .errors import *
 from .selector import _selectVar
 

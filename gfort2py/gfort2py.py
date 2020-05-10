@@ -12,7 +12,6 @@ from .arrays import fExplicitArray, fDummyArray, fParamArray
 from .functions import fFunc, fFuncPtr
 from .strings import fStr
 from .types import fDerivedType, _alldtdefs
-from .utils import *
 from .var import fVar, fParam
 from .errors import *
 
@@ -172,3 +171,10 @@ class fFort(object):
 
     def _get_fvar(self, var):
         return _selectVar(var)
+        
+
+    def allocate_dt(self, name):
+        dt = _alldtdefs[name]
+        x = self._get_fvar(dt)(dt)
+        return x.from_param({})
+        

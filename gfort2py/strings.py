@@ -3,7 +3,6 @@ from __future__ import print_function
 import ctypes
 
 from .errors import *
-from .utils import *
 
 _NULL_BYTE = ctypes.c_char(b'\0').value
 
