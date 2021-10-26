@@ -14,15 +14,16 @@ _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
 _allFuncs = {}
 
-Result = collections.namedtuple('Result', 'result args')
+Result = collections.namedtuple("Result", "result args")
 
 
-class captureStdOut():
+class captureStdOut:
     def read_pipe(self, pipe_out):
         def more_data():
             r, _, _ = select.select([pipe_out], [], [], 0)
             return bool(r)
-        out = b''
+
+        out = b""
         while more_data():
             out += os.read(pipe_out, 1024)
         return out.decode()
@@ -55,7 +56,7 @@ class fFunc(object):
         self._DEBUG = False
 
     def in_dll(self, lib):
-        self._sub = self.proc['sub']
+        self._sub = self.proc["sub"]
         self.lib = lib
 
         self._args = self._init_args()
@@ -71,11 +72,13 @@ class fFunc(object):
         self._isSet(self.lib)
 
         if len(args) != len(self.arg):
-            raise TypeError(str(self.name) +
-                            " takes " +
-                            str(len(self.arg)) +
-                            " arguments got " +
-                            str(len(args)))
+            raise TypeError(
+                str(self.name)
+                + " takes "
+                + str(len(self.arg))
+                + " arguments got "
+                + str(len(args))
+            )
 
         retstr = None
         retstrlen = -1
@@ -101,8 +104,9 @@ class fFunc(object):
             args_in.append(ctype.from_param(value))
 
         # Now handle adding string lengths to end of argument list
-        for a in self._args[len(
-                self.arg):]:  # self.arg is the list of normal arguments
+        for a in self._args[
+            len(self.arg) :
+        ]:  # self.arg is the list of normal arguments
             for v in args:
                 if isinstance(v, str) or isinstance(v, bytes):
                     extra_post.append(a.from_param(v))
@@ -129,10 +133,10 @@ class fFunc(object):
             count = 0
 
             for value, obj, ne in zip(
-                    self._args_in[start:end], self._args[start:end], needs_extra[start:end]):
+                self._args_in[start:end], self._args[start:end], needs_extra[start:end]
+            ):
                 if ne:
-                    dummy_args[obj.name] = obj.from_len(
-                        value, self._args_in[end])
+                    dummy_args[obj.name] = obj.from_len(value, self._args_in[end])
                     end = end + 1
                 else:
                     dummy_args[obj.name] = obj.from_func(value)
@@ -146,7 +150,7 @@ class fFunc(object):
     def _init_return(self):
         # make a object usable by _selectVar()
         ret = {}
-        ret['var'] = self.proc['ret']
+        ret["var"] = self.proc["ret"]
         self._return = self._get_fvar(ret)(ret)
         if isinstance(self._return, fStr):
             self._extra_pre = []
@@ -164,7 +168,8 @@ class fFunc(object):
             x = self._get_fvar(i)(i)
 
             if isinstance(
-                    x, fStr):  # Need a string length at the end of the argument list
+                x, fStr
+            ):  # Need a string length at the end of the argument list
                 extras.append(fStrLen())
             args.append(x)
 
@@ -179,7 +184,6 @@ class fFunc(object):
 
 
 class fFuncPtr(fFunc):
-
     def _set_ptr_in_dll(self, lib, func):
         ff = getattr(lib, func.mangled_name)
         self.ctype()
@@ -189,7 +193,7 @@ class fFuncPtr(fFunc):
         self._func = self._cfunc.in_dll(lib, self.mangled_name)
 
     def _isSet(self, lib):
-        if not hasattr(self, '_cfunc'):
+        if not hasattr(self, "_cfunc"):
             raise AttributeError("Must point to something first")
 
         ptr = self._cfunc.in_dll(lib, self.mangled_name)
@@ -220,7 +224,7 @@ class fFuncPtr(fFunc):
     def _init_from_func(self, lib, func):
         f = func.in_dll(lib)
 
-        self._sub = f.proc['sub']
+        self._sub = f.proc["sub"]
         self._args = f._args
         self._return = func._return
         self._extra_pre = f._extra_pre
@@ -241,4 +245,3 @@ class fFuncPtr(fFunc):
 
     def from_func(self, pointer):
         return pointer
-

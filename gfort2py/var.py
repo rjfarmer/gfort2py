@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0+
 from __future__ import print_function
+
 try:
     import __builtin__
 except ImportError:
@@ -14,14 +15,14 @@ from .errors import *
 class fVar(object):
     def __init__(self, obj):
         self.__dict__.update(obj)
-        self.ctype = self.var['ctype']
-        self.pytype = self.var['pytype']
+        self.ctype = self.var["ctype"]
+        self.pytype = self.var["pytype"]
 
-        if self.pytype == 'quad':
+        if self.pytype == "quad":
             self.pytype = np.longdouble
-        elif self.pytype == 'bool':
+        elif self.pytype == "bool":
             self.pytype = bool
-            self.ctype = 'c_int32'
+            self.ctype = "c_int32"
         else:
             self.pytype = getattr(__builtin__, self.pytype)
 
@@ -61,17 +62,17 @@ class fVar(object):
 
         """
 
-        if 'optional' in self.var:
-            if self.var['optional'] and value is None:
+        if "optional" in self.var:
+            if self.var["optional"] and value is None:
                 return None
 
         ct = self.ctype(self.pytype(value))
 
-        if 'value' in self.var and self.var['value']:
+        if "value" in self.var and self.var["value"]:
             return ct
         else:
             ct = ctypes.pointer(ct)
-            if 'pointer' in self.var and self.var['pointer']:
+            if "pointer" in self.var and self.var["pointer"]:
                 return ctypes.pointer(ct)
             else:
                 return ct
@@ -85,13 +86,13 @@ class fVar(object):
 
         """
         x = pointer
-        if hasattr(pointer, 'contents'):
-            if hasattr(pointer.contents, 'contents'):
+        if hasattr(pointer, "contents"):
+            if hasattr(pointer.contents, "contents"):
                 x = pointer.contents.contents
             else:
                 x = pointer.contents
 
-        if hasattr(x, 'value'):
+        if hasattr(x, "value"):
             x = x.value
 
         if x is None:
@@ -112,13 +113,13 @@ class fVar(object):
 class fParam(object):
     def __init__(self, obj):
         self.__dict__.update(obj)
-        self.value = self.param['value']
-        self.pytype = self.param['pytype']
-        if self.pytype == 'quad':
+        self.value = self.param["value"]
+        self.pytype = self.param["pytype"]
+        if self.pytype == "quad":
             self.pytype = np.longdouble
-        elif self.pytype == 'bool':
+        elif self.pytype == "bool":
             self.pytype = bool
-            self.ctype = 'c_int32'
+            self.ctype = "c_int32"
         else:
             self.pytype = getattr(__builtin__, self.pytype)
 

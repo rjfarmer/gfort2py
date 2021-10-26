@@ -20,27 +20,29 @@ _GFC_MAX_DIMENSIONS = -1
 
 
 class _bounds14(ctypes.Structure):
-    _fields_ = [("stride", _index_t),
-                ("lbound", _index_t),
-                ("ubound", _index_t)]
+    _fields_ = [("stride", _index_t), ("lbound", _index_t), ("ubound", _index_t)]
 
 
 class _dtype_type(ctypes.Structure):
-    _fields_ = [("elem_len", _size_t),
-                ('version', ctypes.c_int),
-                ('rank', ctypes.c_byte),
-                ('type', ctypes.c_byte),
-                ('attribute', ctypes.c_ushort)]
+    _fields_ = [
+        ("elem_len", _size_t),
+        ("version", ctypes.c_int),
+        ("rank", ctypes.c_byte),
+        ("type", ctypes.c_byte),
+        ("attribute", ctypes.c_ushort),
+    ]
 
 
 def _make_fAlloc15(ndims):
     class _fAllocArray(ctypes.Structure):
-        _fields_ = [('base_addr', ctypes.c_void_p),
-                    ('offset', _size_t),
-                    ('dtype', _dtype_type),
-                    ('span', _index_t),
-                    ('dims', _bounds14 * ndims)
-                    ]
+        _fields_ = [
+            ("base_addr", ctypes.c_void_p),
+            ("offset", _size_t),
+            ("dtype", _dtype_type),
+            ("span", _index_t),
+            ("dims", _bounds14 * ndims),
+        ]
+
     return _fAllocArray
 
 
@@ -58,7 +60,7 @@ def _make_fAlloc15(ndims):
 # *            1      NULL   AS_ASSUMED_SIZE
 
 
-if sys.byteorder == 'little':
+if sys.byteorder == "little":
     _byte_order = ">"
 else:
     _byte_order = "<"
@@ -73,17 +75,17 @@ class fExplicitArray(object):
         self.__dict__.update(obj)
         self._array = True
 
-        if 'array' in self.var:
-            self.__dict__.update(obj['var'])
+        if "array" in self.var:
+            self.__dict__.update(obj["var"])
 
-        self.ctype = self.var['ctype']
-        self.pytype = self.var['pytype']
+        self.ctype = self.var["ctype"]
+        self.pytype = self.var["pytype"]
 
-        if self.pytype == 'quad':
+        if self.pytype == "quad":
             self.pytype = np.longdouble
-        elif self.pytype == 'bool':
+        elif self.pytype == "bool":
             self.pytype = int
-            self.ctype = 'c_int32'
+            self.ctype = "c_int32"
         else:
             self.pytype = getattr(__builtin__, self.pytype)
 
@@ -91,13 +93,13 @@ class fExplicitArray(object):
         self._sof_ctype = ctypes.sizeof(self.ctype)
 
         if self.pytype == int:
-            self._dtype = 'int' + str(8 * ctypes.sizeof(self.ctype))
+            self._dtype = "int" + str(8 * ctypes.sizeof(self.ctype))
         elif self.pytype == float:
-            self._dtype = 'float' + str(8 * ctypes.sizeof(self.ctype))
+            self._dtype = "float" + str(8 * ctypes.sizeof(self.ctype))
         else:
             raise NotImplementedError("Type not supported ", self.pytype)
 
-        self._ndims = int(self.array['ndim'])
+        self._ndims = int(self.array["ndim"])
 
         if self.size() > 0:
             self.ctype = self.ctype * self.size()
@@ -107,15 +109,14 @@ class fExplicitArray(object):
     def from_address(self, addr):
         self._base_holder = addr  # Make sure to hold onto the object
         buff = {
-            'data': (self._base_holder,
-                     False),
-            'typestr': self._dtype,
-            'shape': self._shape,
-            'version': 3,
-            'strides': self.strides()
+            "data": (self._base_holder, False),
+            "typestr": self._dtype,
+            "shape": self._shape,
+            "version": 3,
+            "strides": self.strides(),
         }
 
-        class numpy_holder():
+        class numpy_holder:
             pass
 
         holder = numpy_holder()
@@ -137,12 +138,11 @@ class fExplicitArray(object):
         return tuple(strides)
 
     def shape(self):
-        if 'shape' not in self.array or len(
-                self.array['shape']) / self._ndims != 2:
+        if "shape" not in self.array or len(self.array["shape"]) / self._ndims != 2:
             return -1
 
         shape = []
-        for l, u in zip(self.array['shape'][0::2], self.array['shape'][1::2]):
+        for l, u in zip(self.array["shape"][0::2], self.array["shape"][1::2]):
             shape.append(u - l + 1)
         return tuple(shape)
 
@@ -162,7 +162,7 @@ class fExplicitArray(object):
 
         self._value = v
 
-        self._value = np.asfortranarray(self._value .astype(self._dtype))
+        self._value = np.asfortranarray(self._value.astype(self._dtype))
         v_addr = self._value.ctypes.data
 
         # print(v.shape,v.itemsize,v.size*v.itemsize,self._dtype,self.sizeof(),c)
@@ -219,28 +219,43 @@ class fDummyArray(object):
     _BT_VOID = _BT_HOLLERITH + 1
     _BT_ASSUMED = _BT_VOID + 1
 
-    _BT_TYPESPEC = {_BT_UNKNOWN: 'v', _BT_INTEGER: 'i', _BT_LOGICAL: 'b',
-                    _BT_REAL: 'f', _BT_COMPLEX: 'c', _BT_DERIVED: 'v',
-                    _BT_CHARACTER: 'v', _BT_CLASS: 'v', _BT_PROCEDURE: 'v',
-                    _BT_HOLLERITH: 'v', _BT_VOID: 'v', _BT_ASSUMED: 'v'}
+    _BT_TYPESPEC = {
+        _BT_UNKNOWN: "v",
+        _BT_INTEGER: "i",
+        _BT_LOGICAL: "b",
+        _BT_REAL: "f",
+        _BT_COMPLEX: "c",
+        _BT_DERIVED: "v",
+        _BT_CHARACTER: "v",
+        _BT_CLASS: "v",
+        _BT_PROCEDURE: "v",
+        _BT_HOLLERITH: "v",
+        _BT_VOID: "v",
+        _BT_ASSUMED: "v",
+    }
 
-    _PY_TO_BT = {'int': _BT_INTEGER, 'float': _BT_REAL, 'bool': _BT_LOGICAL,
-                 'str': _BT_CHARACTER, 'bytes': _BT_CHARACTER}
+    _PY_TO_BT = {
+        "int": _BT_INTEGER,
+        "float": _BT_REAL,
+        "bool": _BT_LOGICAL,
+        "str": _BT_CHARACTER,
+        "bytes": _BT_CHARACTER,
+    }
 
     def __init__(self, obj):
         self.__dict__.update(obj)
-        self._array = self.var['array']
+        self._array = self.var["array"]
 
-        self.ndim = int(self._array['ndim'])
+        self.ndim = int(self._array["ndim"])
 
-        self.ctype_elem = self.var['ctype']
-        self.pytype = self.var['pytype']
+        self.ctype_elem = self.var["ctype"]
+        self.pytype = self.var["pytype"]
 
-        if self.pytype == 'quad':
+        if self.pytype == "quad":
             self.pytype = np.longdouble
-        elif self.pytype == 'bool':
+        elif self.pytype == "bool":
             self.pytype = int
-            self.ctype_elem = 'c_int32'
+            self.ctype_elem = "c_int32"
         else:
             self.pytype = getattr(__builtin__, self.pytype)
 
@@ -248,9 +263,9 @@ class fDummyArray(object):
         self._sof_ctype = ctypes.sizeof(self.ctype_elem)
 
         if self.pytype == int:
-            self._dtype = 'int' + str(8 * ctypes.sizeof(self.ctype_elem))
+            self._dtype = "int" + str(8 * ctypes.sizeof(self.ctype_elem))
         elif self.pytype == float:
-            self._dtype = 'float' + str(8 * ctypes.sizeof(self.ctype_elem))
+            self._dtype = "float" + str(8 * ctypes.sizeof(self.ctype_elem))
         else:
             raise NotImplementedError("Type not supported yet ", self.pytype)
 
@@ -279,14 +294,14 @@ class fDummyArray(object):
     def _get_ftype(self):
         ftype = None
         # Recover the orignal version
-        ct = self.var['ctype']
-        if 'c_int' == ct:
+        ct = self.var["ctype"]
+        if "c_int" == ct:
             ftype = self._BT_INTEGER
-        elif 'c_double' == ct or 'c_real' == ct or 'c_float' == ct:
+        elif "c_double" == ct or "c_real" == ct or "c_float" == ct:
             ftype = self._BT_REAL
-        elif 'c_bool' == ct:
+        elif "c_bool" == ct:
             ftype = self._BT_LOGICAL
-        elif 'c_char' == ct:
+        elif "c_char" == ct:
             ftype = self._BT_CHARACTER
         else:
             raise ValueError("Cant match dtype, got " + ctype)
@@ -299,15 +314,14 @@ class fDummyArray(object):
         v = self._array_desc.from_address(addr)
         self._base_holder = v.base_addr  # Make sure to hold onto the object
         buff = {
-            'data': (self._base_holder,
-                     False),
-            'typestr': self._dtype,
-            'shape': self._shape_from_bounds(v.dims),
-            'version': 3,
-            'strides': self._strides_from_bounds(v.dims)
+            "data": (self._base_holder, False),
+            "typestr": self._dtype,
+            "shape": self._shape_from_bounds(v.dims),
+            "version": 3,
+            "strides": self._strides_from_bounds(v.dims),
         }
 
-        class numpy_holder():
+        class numpy_holder:
             pass
 
         holder = numpy_holder()
@@ -363,12 +377,10 @@ class fDummyArray(object):
         self.set_from_address(addr, value)
 
     def from_param(self, value):
-        if self._array['atype'] == 'alloc' or self._array['atype'] == 'pointer':
+        if self._array["atype"] == "alloc" or self._array["atype"] == "pointer":
             self._safe_ctype = self._array_desc()
             if value is not None:
-                self.set_from_address(
-                    ctypes.addressof(
-                        self._safe_ctype), value)
+                self.set_from_address(ctypes.addressof(self._safe_ctype), value)
 
             self._ptr_safe_ctype = ctypes.pointer(self._safe_ctype)
             return self._ptr_safe_ctype
@@ -379,8 +391,8 @@ class fDummyArray(object):
 
     def from_func(self, pointer):
         x = pointer
-        if hasattr(pointer, 'contents'):
-            if hasattr(pointer.contents, 'contents'):
+        if hasattr(pointer, "contents"):
+            if hasattr(pointer.contents, "contents"):
                 x = pointer.contents.contents
             else:
                 x = pointer.contents
@@ -395,14 +407,12 @@ class fDummyArray(object):
 
 
 class fAssumedShape(fDummyArray):
-
     def from_param(self, value):
         self._safe_ctype = self._array_desc()
         if value is not None:
             self.set_from_address(ctypes.addressof(self._safe_ctype), value)
 
-        self._ptr_safe_ctype = ctypes.POINTER(
-            self._array_desc)(self._safe_ctype)
+        self._ptr_safe_ctype = ctypes.POINTER(self._array_desc)(self._safe_ctype)
 
         return self._ptr_safe_ctype
 
@@ -419,12 +429,9 @@ class fAssumedSize(fExplicitArray):
 class fParamArray(object):
     def __init__(self, obj):
         self.__dict__.update(obj)
-        self.pytype = self.param['pytype']
+        self.pytype = self.param["pytype"]
         self.pytype = getattr(__builtin__, self.pytype)
-        self.value = np.array(
-            self.param['value'],
-            dtype=self.pytype,
-            order='F')
+        self.value = np.array(self.param["value"], dtype=self.pytype, order="F")
 
     def set_in_dll(self, lib, value):
         """

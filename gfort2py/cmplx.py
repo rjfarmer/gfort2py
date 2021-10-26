@@ -14,22 +14,21 @@ from .errors import *
 class fComplex(object):
     def __init__(self, obj):
         self.__dict__.update(obj)
-        self.ctype = self.var['ctype']
-        self.pytype = self.var['pytype']
+        self.ctype = self.var["ctype"]
+        self.pytype = self.var["pytype"]
 
-        if self.pytype == 'quad':
+        if self.pytype == "quad":
             self.pytype = np.longdouble
-        elif self.pytype == 'bool':
+        elif self.pytype == "bool":
             self.pytype = int
-            self.ctype = 'c_int32'
+            self.ctype = "c_int32"
         else:
             self.pytype = getattr(__builtin__, self.pytype)
 
         self._single_ctype = getattr(ctypes, self.ctype)
 
         class _complex(ctypes.Structure):
-            _fields_ = [('real', self._single_ctype),
-                        ('imag', self._single_ctype)]
+            _fields_ = [("real", self._single_ctype), ("imag", self._single_ctype)]
 
         self.ctype = _complex
 
@@ -48,15 +47,15 @@ class fComplex(object):
         ctype = self.ctype()
         self._set(ctype, value)
 
-        if 'optional' in self.var:
-            if self.var['optional'] and value is None:
+        if "optional" in self.var:
+            if self.var["optional"] and value is None:
                 return None
 
-        if 'value' in self.var and self.var['value']:
+        if "value" in self.var and self.var["value"]:
             return ctype
         else:
             ctype = ctypes.pointer(ctype)
-            if 'pointer' in self.var and self.var['pointer']:
+            if "pointer" in self.var and self.var["pointer"]:
                 return ctypes.pointer(ctype)
             else:
                 return ctype
@@ -81,8 +80,8 @@ class fComplex(object):
 
         """
         x = pointer
-        if hasattr(pointer, 'contents'):
-            if hasattr(pointer.contents, 'contents'):
+        if hasattr(pointer, "contents"):
+            if hasattr(pointer.contents, "contents"):
                 x = pointer.contents.contents
             else:
                 x = pointer.contents
@@ -96,8 +95,8 @@ class fComplex(object):
 class fParamComplex(object):
     def __init__(self, obj):
         self.__dict__.update(obj)
-        self.value = self.param['value']
-        self.pytype = self.param['pytype']
+        self.value = self.param["value"]
+        self.pytype = self.param["pytype"]
         self.pytype = complex
 
     def set_in_dll(self, lib, value):

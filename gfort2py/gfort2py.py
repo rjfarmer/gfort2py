@@ -21,6 +21,7 @@ from . import parseMod as pm
 
 WARN_ON_SKIP = False
 
+
 class fFort(object):
     _initialized = False
 
@@ -37,7 +38,7 @@ class fFort(object):
 
     def _load_data(self, ffile, rerun=False):
         try:
-            f = open(self._fpy, 'rb')
+            f = open(self._fpy, "rb")
         except FileNotFoundError as e:
             if e.errno != errno.ENOENT:
                 raise
@@ -45,7 +46,7 @@ class fFort(object):
         else:
             f.close()
 
-        with open(self._fpy, 'rb') as f:
+        with open(self._fpy, "rb") as f:
             self.version = pickle.load(f)
             if self.version == version.__version__:
                 self._mod_data = pickle.load(f)
@@ -102,22 +103,22 @@ class fFort(object):
             return self._all[name]
 
     def __getattr__(self, name):
-        if '_initialized' in self.__dict__ and self._initialized:
+        if "_initialized" in self.__dict__ and self._initialized:
             nl = name.lower()
-            if '_all' in self.__dict__:
+            if "_all" in self.__dict__:
                 if nl in self._all:
                     return self._all[nl].in_dll(self._lib)
                 else:
-                    if '_mod_vars' in self.__dict__:
+                    if "_mod_vars" in self.__dict__:
                         if nl in self._mod_vars:
                             return self._init_var(nl).in_dll(self._lib)
-                    if '_param' in self.__dict__:
+                    if "_param" in self.__dict__:
                         if nl in self._param:
                             return self._init_param(nl).in_dll(self._lib)
-                    if '_funcs' in self.__dict__:
+                    if "_funcs" in self.__dict__:
                         if nl in self._funcs:
                             return self._init_func(nl).in_dll(self._lib)
-                    if '_func_ptrs' in self.__dict__:
+                    if "_func_ptrs" in self.__dict__:
                         if nl in self._func_ptrs:
                             return self._init_func_ptrs(nl).in_dll(self._lib)
 
@@ -127,24 +128,21 @@ class fFort(object):
         raise AttributeError("No variable " + name)
 
     def __setattr__(self, name, value):
-        if '_initialized' in self.__dict__ and self._initialized:
+        if "_initialized" in self.__dict__ and self._initialized:
             nl = name.lower()
-            if '_all' in self.__dict__:
+            if "_all" in self.__dict__:
                 if nl in self._all:
                     return self._all[nl].set_in_dll(self._lib, value)
                 else:
-                    if '_mod_vars' in self.__dict__:
+                    if "_mod_vars" in self.__dict__:
                         if nl in self._mod_vars:
-                            return self._init_var(
-                                nl).set_in_dll(self._lib, value)
-                    if '_param' in self.__dict__:
+                            return self._init_var(nl).set_in_dll(self._lib, value)
+                    if "_param" in self.__dict__:
                         if nl in self._param:
-                            return self._init_param(
-                                nl).set_in_dll(self._lib, value)
-                    if '_func_ptrs' in self.__dict__:
+                            return self._init_param(nl).set_in_dll(self._lib, value)
+                    if "_func_ptrs" in self.__dict__:
                         if nl in self._func_ptrs:
-                            return self._init_func_ptrs(
-                                nl).set_in_dll(self._lib, value)
+                            return self._init_func_ptrs(nl).set_in_dll(self._lib, value)
 
         self.__dict__[name] = value
         return
@@ -165,10 +163,8 @@ class fFort(object):
 
     def _get_fvar(self, var):
         return _selectVar(var)
-        
 
     def allocate_dt(self, name):
         dt = _alldtdefs[name]
         x = self._get_fvar(dt)(dt)
         return x.from_param({})
-        
