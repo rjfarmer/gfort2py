@@ -16,14 +16,13 @@ from contextlib import contextmanager
 from io import StringIO
 from io import BytesIO
 
-#Decreases recursion depth to make debugging easier
+# Decreases recursion depth to make debugging easier
 # sys.setrecursionlimit(10)
 
-SO = './tests/pointers.so'
-MOD ='./tests/ptrs.mod'
+SO = "./tests/pointers.so"
+MOD = "./tests/ptrs.mod"
 
-x=gf.fFort(SO,MOD,rerun=True)
-
+x = gf.fFort(SO, MOD, rerun=True)
 
 
 @contextmanager
@@ -36,73 +35,75 @@ def captured_output():
     output=out.getvalue().strip()
     error=err.getvalue().strip()
     """
-    new_out, new_err = StringIO(),StringIO()
-    old_out,old_err = sys.stdout, sys.stderr
+    new_out, new_err = StringIO(), StringIO()
+    old_out, old_err = sys.stdout, sys.stderr
     try:
         sys.stdout, sys.stderr = new_out, new_err
         yield sys.stdout, sys.stderr
     finally:
         sys.stdout, sys.stderr = old_out, old_err
 
+
 class TestPtrsMethods:
-    
+    def assertEqual(self, x, y):
+        assert x == y
+
     def test_a_int_point(self):
-        v=1
-        x.a_int_point=v
-        self.assertEqual(x.a_int_point,v)
-    
+        v = 1
+        x.a_int_point = v
+        self.assertEqual(x.a_int_point, v)
+
     def test_a_int_lp_point(self):
-        v=1
-        x.a_int_lp_point=v
-        self.assertEqual(x.a_int_lp_point,v)
-    
+        v = 1
+        x.a_int_lp_point = v
+        self.assertEqual(x.a_int_lp_point, v)
+
     def test_a_real_point(self):
-        v=1.0
-        x.a_real_point=v
-        self.assertEqual(x.a_real_point,v)
-        
+        v = 1.0
+        x.a_real_point = v
+        self.assertEqual(x.a_real_point, v)
+
     def test_a_real_dp_point(self):
-        v=1.0
-        x.a_real_dp_point=v
-        self.assertEqual(x.a_real_dp_point,v)
-        
+        v = 1.0
+        x.a_real_dp_point = v
+        self.assertEqual(x.a_real_dp_point, v)
+
     def test_a_real_qp_point(self):
-        v=1.0
-        x.a_real_qp_point=v
-        self.assertEqual(x.a_real_qp_point,v)
-        
+        v = 1.0
+        x.a_real_qp_point = v
+        self.assertEqual(x.a_real_qp_point, v)
+
     def test_a_str_point(self):
-        v='abcdefghij'
-        x.a_str_point=v
-        self.assertEqual(x.a_str_point,v)
-    
+        v = "abcdefghij"
+        x.a_str_point = v
+        self.assertEqual(x.a_str_point, v)
+
     def test_a_int_target(self):
-        v=1
-        x.a_int_target=v
-        self.assertEqual(x.a_int_target,v)
-    
+        v = 1
+        x.a_int_target = v
+        self.assertEqual(x.a_int_target, v)
+
     def test_a_int_lp_target(self):
-        v=1
-        x.a_int_lp_target=v
-        self.assertEqual(x.a_int_lp_target,v)
-    
+        v = 1
+        x.a_int_lp_target = v
+        self.assertEqual(x.a_int_lp_target, v)
+
     def test_a_real_target(self):
-        v=1.0
-        x.a_real_target=v
-        self.assertEqual(x.a_real_target,v)
-        
+        v = 1.0
+        x.a_real_target = v
+        self.assertEqual(x.a_real_target, v)
+
     def test_a_real_dp_target(self):
-        v=1.0
-        x.a_real_dp_target=v
-        self.assertEqual(x.a_real_dp_target,v)
-        
+        v = 1.0
+        x.a_real_dp_target = v
+        self.assertEqual(x.a_real_dp_target, v)
+
     def test_a_real_qp_target(self):
-        v=1.0
-        x.a_real_qp_target=v
-        self.assertEqual(x.a_real_qp_target,v)
-        
+        v = 1.0
+        x.a_real_qp_target = v
+        self.assertEqual(x.a_real_qp_target, v)
+
     def test_a_str_target(self):
-        v='abcdefghij'
-        x.a_str_target=v
-        self.assertEqual(x.a_str_target,v)
-    
+        v = "abcdefghij"
+        x.a_str_target = v
+        self.assertEqual(x.a_str_target, v)
