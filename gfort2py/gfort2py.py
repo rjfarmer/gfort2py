@@ -1,6 +1,4 @@
 # SPDX-License-Identifier: GPL-2.0+
-from __future__ import print_function
-
 import ctypes
 import pickle
 import numpy as np
@@ -22,10 +20,6 @@ from . import version
 from . import parseMod as pm
 
 WARN_ON_SKIP = False
-
-if sys.version_info[0] < 3:
-    FileNotFoundError = IOError
-
 
 class fFort(object):
     _initialized = False

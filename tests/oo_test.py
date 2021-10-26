@@ -7,7 +7,7 @@ os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 import numpy as np
 import gfort2py as gf
 
-import unittest as unittest
+import pytest
     
 import subprocess
 import numpy.testing as np_test
@@ -19,8 +19,8 @@ from io import BytesIO
 #Decreases recursion depth to make debugging easier
 # sys.setrecursionlimit(10)
 
-SO = __file__.replace('_test.py','')+'.so'
-MOD =__file__.replace('_test.py','')+'.mod'
+SO = './tests/oo.so'
+MOD = './tests/oo.mod'
 
 x=gf.fFort(SO,MOD,rerun=True)
 
@@ -44,7 +44,7 @@ def captured_output():
     finally:
         sys.stdout, sys.stderr = old_out, old_err
 
-class TestOOMethods(unittest.TestCase):
+class TestOOMethods:
     
     def test_p_proc_call(self):
         x.p_proc.proc_no_pass = x.func_dt_no_pass
@@ -52,7 +52,3 @@ class TestOOMethods(unittest.TestCase):
         y2 = x.func_dt_no_pass(1)
         
         self.assertEqual(y.result,y2.result)
-    
-    
-if __name__ == '__main__':
-    unittest.main() 

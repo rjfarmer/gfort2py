@@ -7,7 +7,7 @@ os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 import numpy as np
 import gfort2py as gf
 
-import unittest as unittest
+import pytest
     
 import subprocess
 import numpy.testing as np_test
@@ -19,8 +19,8 @@ from io import BytesIO
 #Decreases recursion depth to make debugging easier
 # sys.setrecursionlimit(10)
 
-SO = './complex.so'
-MOD ='./comp.mod'
+SO = './tests/complex.so'
+MOD ='./tests/comp.mod'
 
 x=gf.fFort(SO,MOD,rerun=True)
 
@@ -44,7 +44,7 @@ def captured_output():
     finally:
         sys.stdout, sys.stderr = old_out, old_err
 
-class TestComplexMethods(unittest.TestCase):
+class TestComplexMethods:
     def test_a_const_cmplx(self):
         self.assertEqual(x.const_cmplx,complex(1.0,1.0))
         
@@ -83,7 +83,4 @@ class TestComplexMethods(unittest.TestCase):
         v=complex(1.0,1.0)
         y=x.func_ret_cmplx(v)
         self.assertEqual(y.result,v*5)   
-        
-    
-if __name__ == '__main__':
-    unittest.main() 
+ 

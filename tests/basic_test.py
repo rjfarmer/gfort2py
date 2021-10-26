@@ -7,7 +7,7 @@ os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 import numpy as np
 import gfort2py as gf
 
-import unittest as unittest
+import pytest
     
 import subprocess
 import numpy.testing as np_test
@@ -20,8 +20,8 @@ from io import BytesIO
 # sys.setrecursionlimit(10)
 
 
-SO = __file__.replace('_test.py','')+'.so'
-MOD =__file__.replace('_test.py','')+'.mod'
+SO = './tests/basic.so'
+MOD = './tests/basic.mod'
 
 x=gf.fFort(SO,MOD,rerun=True)
 
@@ -45,7 +45,7 @@ def captured_output():
     finally:
         sys.stdout, sys.stderr = old_out, old_err
 
-class TestBasicMethods(unittest.TestCase):
+class TestBasicMethods:
 
     def test_mising_var(self):	
         with self.assertRaises(AttributeError) as cm:
@@ -104,7 +104,7 @@ class TestBasicMethods(unittest.TestCase):
         self.assertEqual(x.a_real,99.0)
         self.assertEqual(x.a_real_dp,99.0)
         
-    @unittest.skip("Skipping due to quad support")	
+    @pytest.mark.skip("Skipping due to quad support")	
     def test_sub_alter_mod_qp(self):
         y=x.sub_alter_mod()
         self.assertEqual(x.a_real_qp,99.0)
@@ -229,8 +229,3 @@ class TestBasicMethods(unittest.TestCase):
         y = x.func_result(9,0)
         self.assertEqual(y.result,18)
         self.assertEqual(y.args['y'],9)      
-
-    
-    
-if __name__ == '__main__':
-    unittest.main() 

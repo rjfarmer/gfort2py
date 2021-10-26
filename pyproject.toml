@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2","numpy","cython-setuptools"]
+
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+
+[tool.setuptools_scm]

@@ -3,7 +3,6 @@ from __future__ import print_function
 
 import ctypes
 import os
-import six
 import select
 import collections
 

@@ -7,8 +7,8 @@ os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 import numpy as np
 import gfort2py as gf
 
-import unittest as unittest
-    
+import pytest
+
 import subprocess
 import numpy.testing as np_test
 
@@ -19,8 +19,8 @@ from io import BytesIO
 #Decreases recursion depth to make debugging easier
 # sys.setrecursionlimit(10)
 
-SO = './pointers.so'
-MOD ='./ptrs.mod'
+SO = './tests/pointers.so'
+MOD ='./tests/ptrs.mod'
 
 x=gf.fFort(SO,MOD,rerun=True)
 
@@ -44,7 +44,7 @@ def captured_output():
     finally:
         sys.stdout, sys.stderr = old_out, old_err
 
-class TestPtrsMethods(unittest.TestCase):
+class TestPtrsMethods:
     
     def test_a_int_point(self):
         v=1
@@ -106,5 +106,3 @@ class TestPtrsMethods(unittest.TestCase):
         x.a_str_target=v
         self.assertEqual(x.a_str_target,v)
     
-if __name__ == '__main__':
-    unittest.main() 

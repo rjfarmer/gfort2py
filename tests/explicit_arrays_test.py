@@ -7,7 +7,7 @@ os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 import numpy as np
 import gfort2py as gf
 
-import unittest as unittest
+import pytest
     
 import subprocess
 import numpy.testing as np_test
@@ -19,8 +19,8 @@ from io import BytesIO
 #Decreases recursion depth to make debugging easier
 # sys.setrecursionlimit(10)
 
-SO = __file__.replace('_test.py','')+'.so'
-MOD =__file__.replace('_test.py','')+'.mod'
+SO =  './tests/explicit_arrays.so'
+MOD = './tests/explicit_arrays.mod'
 
 x=gf.fFort(SO,MOD,rerun=True)
 
@@ -44,7 +44,7 @@ def captured_output():
     finally:
         sys.stdout, sys.stderr = old_out, old_err
 
-class TestExplicitArrayMethods(unittest.TestCase):
+class TestExplicitArrayMethods:
 
     def test_const_int_arr_error(self):	
         with self.assertRaises(ValueError) as cm:
@@ -263,7 +263,7 @@ class TestExplicitArrayMethods(unittest.TestCase):
         y=x.func_logical_multi(1.0,2.0,xarr,3.0,4.0)
         self.assertEqual(y.result,True)
         
-    @unittest.skip("Skipping as we seg fault")	
+    @pytest.mark.skip("Skipping as we seg fault")	
     def test_mesh_exp(self):
         # Github issue #13
         i=5
@@ -287,6 +287,3 @@ class TestExplicitArrayMethods(unittest.TestCase):
         
         np_test.assert_array_equal(y.args['arr'],arr_test)
         
-    
-if __name__ == '__main__':
-    unittest.main() 

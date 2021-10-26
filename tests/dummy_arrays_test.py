@@ -7,7 +7,7 @@ os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 import numpy as np
 import gfort2py as gf
 
-import unittest as unittest
+import pytest
     
 import subprocess
 import numpy.testing as np_test
@@ -19,8 +19,8 @@ from io import BytesIO
 #Decreases recursion depth to make debugging easier
 # sys.setrecursionlimit(10)
 
-SO = __file__.replace('_test.py','')+'.so'
-MOD =__file__.replace('_test.py','')+'.mod'
+SO = './tests/dummy_arrays.so'
+MOD ='./tests/dummy_arrays.mod'
 
 x=gf.fFort(SO,MOD,rerun=True)
 
@@ -44,7 +44,7 @@ def captured_output():
     finally:
         sys.stdout, sys.stderr = old_out, old_err
 
-class TestDummyArrayMethods(unittest.TestCase):
+class TestDummyArrayMethods:
     def test_sub_alloc_1d_arrs(self):
         y=x.sub_alloc_int_1d_arrs()
         
@@ -446,7 +446,3 @@ class TestDummyArrayMethods(unittest.TestCase):
         
         np_test.assert_array_equal(y.args['x'],z)
         
-    
-    
-if __name__ == '__main__':
-    unittest.main() 

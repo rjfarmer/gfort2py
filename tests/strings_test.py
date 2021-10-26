@@ -7,8 +7,8 @@ os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 import numpy as np
 import gfort2py as gf
 
-import unittest as unittest
-    
+import pytest
+
 import subprocess
 import numpy.testing as np_test
 
@@ -19,8 +19,8 @@ from io import BytesIO
 #Decreases recursion depth to make debugging easier
 # sys.setrecursionlimit(10)
 
-SO = __file__.replace('_test.py','')+'.so'
-MOD =__file__.replace('_test.py','')+'.mod'
+SO = './tests/strings.so'
+MOD ='./tests/strings.mod'
 
 x=gf.fFort(SO,MOD,rerun=True)
 
@@ -44,7 +44,7 @@ def captured_output():
     finally:
         sys.stdout, sys.stderr = old_out, old_err
 
-class TestStringMethods(unittest.TestCase):
+class TestStringMethods:
     def test_a_str(self):
         v='123456798 '
         x.a_str=v
@@ -89,7 +89,7 @@ class TestStringMethods(unittest.TestCase):
         y=x.func_ret_str('abcde')
         self.assertEqual(y.result,'Abcde')   
         
-    @unittest.skip("Skipping")	
+    @pytest.mark.skip("Skipping")	
     # We need to call a func on the argument before passing it to func_str_int_len
     def test_func_str_int_len(self):
         with captured_output() as (out,err):
@@ -97,7 +97,7 @@ class TestStringMethods(unittest.TestCase):
             
         self.assertEqual(out,'10')   
     
-    @unittest.skip("Skipping")
+    @pytest.mark.skip("Skipping")
     def test_str_alloc(self):
         self.assertEqual(x.str_alloc, '') # Empty at start
 
@@ -110,8 +110,3 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(x.str_alloc,  '12345678        ')    
         y = x.check_str_alloc(2)    
         self.assertEqual(y.result,True)
-
-    
-    
-if __name__ == '__main__':
-    unittest.main() 

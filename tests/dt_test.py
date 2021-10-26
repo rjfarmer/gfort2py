@@ -8,7 +8,7 @@ import numpy as np
 import numpy.testing as np_test
 import gfort2py as gf
 
-import unittest as unittest
+import pytest
     
 import subprocess
 import numpy.testing as np_test
@@ -20,8 +20,8 @@ from io import BytesIO
 #Decreases recursion depth to make debugging easier
 # sys.setrecursionlimit(10)
 
-SO = __file__.replace('_test.py','')+'.so'
-MOD =__file__.replace('_test.py','')+'.mod'
+SO = './tests/dt.so'
+MOD ='./tests/dt.mod'
 
 x=gf.fFort(SO,MOD,rerun=True)
 
@@ -45,7 +45,7 @@ def captured_output():
     finally:
         sys.stdout, sys.stderr = old_out, old_err
 
-class TestDTMethods(unittest.TestCase):
+class TestDTMethods:
     def test_dt_set_value(self):
         x.f_struct_simple.x=1
         x.f_struct_simple.y=0
@@ -189,8 +189,3 @@ class TestDTMethods(unittest.TestCase):
         
         np_test.assert_array_equal(s[0].b_int_exp_1d, np.array([66,66,66,66,66]))
         np_test.assert_array_equal(s[1].b_int_exp_1d, np.array([77,77,77,77,77]))
-        
-    
-    
-if __name__ == '__main__':
-    unittest.main() 
