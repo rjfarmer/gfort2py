@@ -25,25 +25,6 @@ MOD = "./tests/dummy_arrays.mod"
 x = gf.fFort(SO, MOD, rerun=True)
 
 
-@contextmanager
-def captured_output():
-    """
-    For use when we need to grab the stdout/stderr from fortran (but only in testing)
-    Use as:
-    with captured_output() as (out,err):
-        func()
-    output=out.getvalue().strip()
-    error=err.getvalue().strip()
-    """
-    new_out, new_err = StringIO(), StringIO()
-    old_out, old_err = sys.stdout, sys.stderr
-    try:
-        sys.stdout, sys.stderr = new_out, new_err
-        yield sys.stdout, sys.stderr
-    finally:
-        sys.stdout, sys.stderr = old_out, old_err
-
-
 class TestDummyArrayMethods:
     def assertEqual(self, x, y):
         assert x == y
@@ -387,28 +368,28 @@ class TestDummyArrayMethods:
         self.assertEqual(y.result, True)
         self.assertEqual(y2.result, True)
 
-    def test_sub_arr_assumed_rank_int_1d(self):
+    def test_sub_arr_assumed_rank_int_1d(self, capfd):
         v = np.arange(10, 15)
         o = " ".join([str(i) for i in v.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_arr_assumed_rank_int_1d(v)
-        output = out.getvalue().strip()
+
+        y = x.sub_arr_assumed_rank_int_1d(v)
+        out, err = capfd.readouterr()
         np_test.assert_array_equal(y.args["zzz"], np.array([100] * 5))
 
-    def test_sub_arr_assumed_rank_real_1d(self):
+    def test_sub_arr_assumed_rank_real_1d(self, capfd):
         v = np.arange(10.0, 15.0)
         o = " ".join([str(i) for i in v.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_arr_assumed_rank_real_1d(v)
-        output = out.getvalue().strip()
+
+        y = x.sub_arr_assumed_rank_real_1d(v)
+        out, err = capfd.readouterr()
         np_test.assert_array_equal(y.args["zzz"], np.array([100.0] * 5))
 
-    def test_sub_arr_assumed_rank_dp_1d(self):
+    def test_sub_arr_assumed_rank_dp_1d(self, capfd):
         v = np.arange(10.0, 15.0)
         o = " ".join([str(i) for i in v.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_arr_assumed_rank_dp_1d(v)
-        output = out.getvalue().strip()
+
+        y = x.sub_arr_assumed_rank_dp_1d(v)
+        out, err = capfd.readouterr()
         np_test.assert_array_equal(y.args["zzz"], np.array([100.0] * 5))
 
     def test_sub_check_alloc_int_2d(self):

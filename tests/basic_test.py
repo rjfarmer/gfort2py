@@ -26,25 +26,6 @@ MOD = "./tests/basic.mod"
 x = gf.fFort(SO, MOD, rerun=True)
 
 
-@contextmanager
-def captured_output():
-    """
-    For use when we need to grab the stdout/stderr from fortran (but only in testing)
-    Use as:
-    with captured_output() as (out,err):
-        func()
-    output=out.getvalue().strip()
-    error=err.getvalue().strip()
-    """
-    new_out, new_err = StringIO(), StringIO()
-    old_out, old_err = sys.stdout, sys.stderr
-    try:
-        sys.stdout, sys.stderr = new_out, new_err
-        yield sys.stdout, sys.stderr
-    finally:
-        sys.stdout, sys.stderr = old_out, old_err
-
-
 class TestBasicMethods:
     def assertEqual(self, x, y):
         assert x == y
@@ -93,11 +74,10 @@ class TestBasicMethods:
     def test_const_real_qp(self):
         self.assertEqual(x.const_real_qp, 1.0)
 
-    def test_sub_no_args(self):
-        with captured_output() as (out, err):
-            x.sub_no_args()
-        output = out.getvalue().strip()
-        self.assertEqual(output, "1")
+    def test_sub_no_args(self, capfd):
+        x.sub_no_args()
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), "1")
 
     def test_sub_alter_mod(self):
         y = x.sub_alter_mod()
@@ -123,11 +103,11 @@ class TestBasicMethods:
         y = x.func_int_in_multi(v, w, u)
         self.assertEqual(y.result, v + w + u)
 
-    def test_sub_int_in(self):
+    def test_sub_int_in(self, capfd):
         v = 5
-        with captured_output() as (out, err):
-            y = x.sub_int_in(v)
-        output = out.getvalue().strip()
+
+        y = x.sub_int_in(v)
+        out, err = capfd.readouterr()
         self.assertEqual(int(output), 2 * v)
 
     def test_func_int_no_args(self):
@@ -142,32 +122,32 @@ class TestBasicMethods:
         y = x.func_real_dp_no_args()
         self.assertEqual(y.result, 4.0)
 
-    def test_sub_int_out(self):
+    def test_sub_int_out(self, capfd):
         v = 5
-        with captured_output() as (out, err):
-            y = x.sub_int_out(v)
-        output = out.getvalue().strip()
+
+        y = x.sub_int_out(v)
+        out, err = capfd.readouterr()
         self.assertEqual(y.args, {"x": 1})
 
-    def test_sub_int_inout(self):
+    def test_sub_int_inout(self, capfd):
         v = 5
-        with captured_output() as (out, err):
-            y = x.sub_int_inout(v)
-        output = out.getvalue().strip()
+
+        y = x.sub_int_inout(v)
+        out, err = capfd.readouterr()
         self.assertEqual(y.args, {"x": 2 * v})
 
-    def test_sub_int_no_intent(self):
+    def test_sub_int_no_intent(self, capfd):
         v = 5
-        with captured_output() as (out, err):
-            y = x.sub_int_no_intent(v)
-        output = out.getvalue().strip()
+
+        y = x.sub_int_no_intent(v)
+        out, err = capfd.readouterr()
         self.assertEqual(y.args, {"x": 2 * v})
 
-    def test_sub_real_inout(self):
+    def test_sub_real_inout(self, capfd):
         v = 5.0
-        with captured_output() as (out, err):
-            y = x.sub_real_inout(v)
-        output = out.getvalue().strip()
+
+        y = x.sub_real_inout(v)
+        out, err = capfd.readouterr()
         self.assertEqual(y.args, {"x": 2 * v})
 
     def test_func_return_res(self):
@@ -176,29 +156,29 @@ class TestBasicMethods:
         y = x.func_return_res(10)
         self.assertEqual(y.result, False)
 
-    def test_sub_int_p(self):
-        with captured_output() as (out, err):
-            y = x.sub_int_p(1)
-        output = out.getvalue().strip()
-        self.assertEqual(output, "1")
+    def test_sub_int_p(self, capfd):
+
+        y = x.sub_int_p(1)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), "1")
         self.assertEqual(y.args["zzz"], 5)
 
-    def test_sub_real_p(self):
-        with captured_output() as (out, err):
-            y = x.sub_real_p(1.0)
-        output = out.getvalue().strip()
-        self.assertEqual(output, "1.00")
+    def test_sub_real_p(self, capfd):
+
+        y = x.sub_real_p(1.0)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), "1.00")
         self.assertEqual(y.args["zzz"], 5.0)
 
-    def test_sub_opt(self):
-        with captured_output() as (out, err):
-            y = x.sub_int_opt(1)
-        output = out.getvalue().strip()
-        self.assertEqual(output, "100")
-        with captured_output() as (out, err):
-            y = x.sub_int_opt(None)
-        output = out.getvalue().strip()
-        self.assertEqual(output, "200")
+    def test_sub_opt(self, capfd):
+
+        y = x.sub_int_opt(1)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), "100")
+
+        y = x.sub_int_opt(None)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), "200")
 
     def test_second_mod(self):
         y = x.sub_use_mod()

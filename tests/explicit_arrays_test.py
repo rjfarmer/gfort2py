@@ -25,25 +25,6 @@ MOD = "./tests/explicit_arrays.mod"
 x = gf.fFort(SO, MOD, rerun=True)
 
 
-@contextmanager
-def captured_output():
-    """
-    For use when we need to grab the stdout/stderr from fortran (but only in testing)
-    Use as:
-    with captured_output() as (out,err):
-        func()
-    output=out.getvalue().strip()
-    error=err.getvalue().strip()
-    """
-    new_out, new_err = StringIO(), StringIO()
-    old_out, old_err = sys.stdout, sys.stderr
-    try:
-        sys.stdout, sys.stderr = new_out, new_err
-        yield sys.stdout, sys.stderr
-    finally:
-        sys.stdout, sys.stderr = old_out, old_err
-
-
 class TestExplicitArrayMethods:
     def assertEqual(self, x, y):
         assert x == y
@@ -149,120 +130,120 @@ class TestExplicitArrayMethods:
         x.b_real_dp_exp_5d = v
         np_test.assert_allclose(x.b_real_dp_exp_5d, v)
 
-    def test_sub_array_n_int_1d(self):
+    def test_sub_array_n_int_1d(self, capfd):
         v = np.arange(0, 5)
         o = " ".join([str(i) for i in v.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_array_n_int_1d(np.size(v), v)
-        output = out.getvalue().strip()
-        self.assertEqual(output, o.strip())
 
-    def test_sub_array_n_int_2d(self):
+        y = x.sub_array_n_int_1d(np.size(v), v)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), o.strip())
+
+    def test_sub_array_n_int_2d(self, capfd):
         v = [0, 1, 2, 3, 4] * 5
         v = np.array(v).reshape(5, 5)
         o = " ".join([str(i) for i in v.T.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_array_n_int_2d(5, 5, v)
-        output = out.getvalue().strip()
-        self.assertEqual(output, o.strip())
 
-    def test_sub_exp_array_int_1d(self):
+        y = x.sub_array_n_int_2d(5, 5, v)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), o.strip())
+
+    def test_sub_exp_array_int_1d(self, capfd):
         v = np.arange(0, 5)
         o = " ".join([str(i) for i in v.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_exp_array_int_1d(v)
-        output = out.getvalue().strip()
-        self.assertEqual(output, o.strip())
 
-    def test_sub_exp_array_int_2d(self):
+        y = x.sub_exp_array_int_1d(v)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), o.strip())
+
+    def test_sub_exp_array_int_2d(self, capfd):
         v = np.arange(0, 5 * 5).reshape((5, 5))
         o = "".join([str(i).zfill(2).ljust(3) for i in v.T.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_exp_array_int_2d(v)
-        output = out.getvalue().strip()
-        self.assertEqual(output, o.strip())
 
-    def test_sub_exp_array_int_3d(self):
+        y = x.sub_exp_array_int_2d(v)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), o.strip())
+
+    def test_sub_exp_array_int_3d(self, capfd):
         v = np.arange(0, 5 * 5 * 5).reshape((5, 5, 5))
         o = "".join([str(i).zfill(3).ljust(4) for i in v.T.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_exp_array_int_3d(v)
-        output = out.getvalue().strip()
-        self.assertEqual(output, o.strip())
+
+        y = x.sub_exp_array_int_3d(v)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), o.strip())
 
     def test_sub_exp_array_real_1d(self):
         v = np.arange(0, 5.0).reshape((5))
         o = "  ".join(["{:>4.1f}".format(i) for i in v.T.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_exp_array_real_1d(v)
-        output = out.getvalue().strip()
-        self.assertEqual(output, o.strip())
+
+        y = x.sub_exp_array_real_1d(v)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), o.strip())
 
     def test_sub_exp_array_real_2d(self):
         v = np.arange(0, 5.0 * 5.0).reshape((5, 5))
         o = "  ".join(["{:>4.1f}".format(i) for i in v.T.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_exp_array_real_2d(v)
-        output = out.getvalue().strip()
-        self.assertEqual(output, o.strip())
 
-    def test_sub_exp_array_real_3d(self):
+        y = x.sub_exp_array_real_2d(v, capfd)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), o.strip())
+
+    def test_sub_exp_array_real_3d(self, capfd):
         v = np.arange(0, 5.0 * 5.0 * 5.0).reshape((5, 5, 5))
         o = " ".join(["{:>5.1f}".format(i) for i in v.T.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_exp_array_real_3d(v)
-        output = out.getvalue().strip()
-        self.assertEqual(output, o.strip())
 
-    def test_sub_exp_array_int_1d_multi(self):
+        y = x.sub_exp_array_real_3d(v)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), o.strip())
+
+    def test_sub_exp_array_int_1d_multi(self, capfd):
         u = 19
         w = 20
         v = np.arange(0, 5)
         o = " ".join([str(i) for i in v.T.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_exp_array_int_1d_multi(u, v, w)
-        output = out.getvalue().strip()
-        self.assertEqual(output, str(u) + " " + o.strip() + " " + str(w))
 
-    def test_sub_exp_array_real_dp_1d(self):
+        y = x.sub_exp_array_int_1d_multi(u, v, w)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), str(u) + " " + o.strip() + " " + str(w))
+
+    def test_sub_exp_array_real_dp_1d(self, capfd):
         v = np.arange(0, 5.0).reshape((5))
         o = "  ".join(["{:>4.1f}".format(i) for i in v.T.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_exp_array_real_dp_1d(v)
-        output = out.getvalue().strip()
-        self.assertEqual(output, o.strip())
 
-    def test_sub_exp_array_real_dp_2d(self):
+        y = x.sub_exp_array_real_dp_1d(v)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), o.strip())
+
+    def test_sub_exp_array_real_dp_2d(self, capfd):
         v = np.arange(0, 5.0 * 5.0).reshape((5, 5))
         o = "  ".join(["{:>4.1f}".format(i) for i in v.T.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_exp_array_real_dp_2d(v)
-        output = out.getvalue().strip()
-        self.assertEqual(output, o.strip())
 
-    def test_sub_exp_array_real_dp_3d(self):
+        y = x.sub_exp_array_real_dp_2d(v)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), o.strip())
+
+    def test_sub_exp_array_real_dp_3d(self, capfd):
         v = np.arange(0, 5.0 * 5.0 * 5.0).reshape((5, 5, 5))
         o = " ".join(["{:>5.1f}".format(i) for i in v.T.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_exp_array_real_dp_3d(v)
-        output = out.getvalue().strip()
-        self.assertEqual(output, o.strip())
 
-    def test_sub_exp_inout(self):
+        y = x.sub_exp_array_real_dp_3d(v)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), o.strip())
+
+    def test_sub_exp_inout(self, capfd):
         v = np.array([1, 2, 3, 4, 5])
-        with captured_output() as (out, err):
-            y = x.sub_exp_inout(v)
-        output = out.getvalue().strip()
+
+        y = x.sub_exp_inout(v)
+        out, err = capfd.readouterr()
 
         np_test.assert_array_equal(y.args["x"], 2 * v)
 
-    def test_sub_arr_exp_p(self):
+    def test_sub_arr_exp_p(self, capfd):
         v = np.arange(0, 5)
         o = " ".join([str(i) for i in v.flatten()])
-        with captured_output() as (out, err):
-            y = x.sub_exp_array_int_1d(v)
-        output = out.getvalue().strip()
-        self.assertEqual(output, o.strip())
+
+        y = x.sub_exp_array_int_1d(v)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), o.strip())
 
     def test_logical_arr_multi(self):
         xarr = np.zeros(5)

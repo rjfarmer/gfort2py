@@ -26,25 +26,6 @@ MOD = "./tests/dt.mod"
 x = gf.fFort(SO, MOD, rerun=True)
 
 
-@contextmanager
-def captured_output():
-    """
-    For use when we need to grab the stdout/stderr from fortran (but only in testing)
-    Use as:
-    with captured_output() as (out,err):
-        func()
-    output=out.getvalue().strip()
-    error=err.getvalue().strip()
-    """
-    new_out, new_err = StringIO(), StringIO()
-    old_out, old_err = sys.stdout, sys.stderr
-    try:
-        sys.stdout, sys.stderr = new_out, new_err
-        yield sys.stdout, sys.stderr
-    finally:
-        sys.stdout, sys.stderr = old_out, old_err
-
-
 class TestDTMethods:
     def assertEqual(self, x, y):
         assert x == y
@@ -70,35 +51,35 @@ class TestDTMethods:
         with pytest.raises(ValueError) as cm:
             x.f_struct_simple.x = "asde"
 
-    def test_sub_dt_in_s_simple(self):
-        with captured_output() as (out, err):
-            y = x.sub_f_simple_in({"x": 1, "y": 10})
-        output = out.getvalue().strip()
-        o = " ".join([str(i) for i in [1, 10]])
-        self.assertEqual(output, o)
+    def test_sub_dt_in_s_simple(self, capfd):
 
-    def test_sub_dt_out_s_simple(self):
-        with captured_output() as (out, err):
-            y = x.sub_f_simple_out({})
-        output = out.getvalue().strip()
+        y = x.sub_f_simple_in({"x": 1, "y": 10})
+        out, err = capfd.readouterr()
+        o = " ".join([str(i) for i in [1, 10]])
+        self.assertEqual(out.strip(), o)
+
+    def test_sub_dt_out_s_simple(self, capfd):
+
+        y = x.sub_f_simple_out({})
+        out, err = capfd.readouterr()
         self.assertEqual(y.args["x"].x, 1)
         self.assertEqual(y.args["x"].y, 10)
 
-    def test_sub_dt_inout_s_simple(self):
-        with captured_output() as (out, err):
-            y = x.sub_f_simple_inout({"x": 5, "y": 3})
-        output = out.getvalue().strip()
+    def test_sub_dt_inout_s_simple(self, capfd):
+
+        y = x.sub_f_simple_inout({"x": 5, "y": 3})
+        out, err = capfd.readouterr()
         o = "  ".join([str(i) for i in [5, 3]])
-        self.assertEqual(output, o)
+        self.assertEqual(out.strip(), o)
         self.assertEqual(y.args["zzz"].x, 1)
         self.assertEqual(y.args["zzz"].y, 10)
 
-    def test_sub_dt_inoutp_s_simple(self):
-        with captured_output() as (out, err):
-            y = x.sub_f_simple_inoutp({"x": 5, "y": 3})
-        output = out.getvalue().strip()
+    def test_sub_dt_inoutp_s_simple(self, capfd):
+
+        y = x.sub_f_simple_inoutp({"x": 5, "y": 3})
+        out, err = capfd.readouterr()
         o = "  ".join([str(i) for i in [5, 3]])
-        self.assertEqual(output, o)
+        self.assertEqual(out.strip(), o)
         self.assertEqual(y.args["zzz"].x, 1)
         self.assertEqual(y.args["zzz"].y, 10)
 
