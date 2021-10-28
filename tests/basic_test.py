@@ -19,7 +19,6 @@ from io import BytesIO
 # Decreases recursion depth to make debugging easier
 # sys.setrecursionlimit(10)
 
-
 SO = "./tests/basic.so"
 MOD = "./tests/basic.mod"
 
@@ -108,7 +107,7 @@ class TestBasicMethods:
 
         y = x.sub_int_in(v)
         out, err = capfd.readouterr()
-        self.assertEqual(int(output), 2 * v)
+        self.assertEqual(int(out), 2 * v)
 
     def test_func_int_no_args(self):
         y = x.func_int_no_args()

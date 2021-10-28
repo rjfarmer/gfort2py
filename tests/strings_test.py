@@ -60,7 +60,7 @@ class TestStringMethods:
 
         y = x.sub_str_multi(v, u, w)
         out, err = capfd.readouterr()
-        self.assertEqual(err.strip(), str(v + w) + " " + u)
+        self.assertEqual(out.strip(), str(v + w) + " " + u)
 
     def test_sub_str_p(self, capfd):
 
