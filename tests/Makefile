@@ -3,10 +3,6 @@
 
 FC = gfortran
 
-ifdef TRAVIS
-	FC = $(TRAVIS_GFORTRAN)
-endif
-
 OPTIONS=-ggdb -fdump-tree-all -fPIC -shared -D_FORTIFY_SOURCE=2 -fstack-clash-protection -fstack-protector-all -fstack-protector
 
 SRCS = $(wildcard *.f90)
