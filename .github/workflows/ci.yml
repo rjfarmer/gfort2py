@@ -3,37 +3,44 @@ on: [push, pull_request]
 
 jobs:
   CI:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         fortran-compiler:  [gfortran-9, gfortran-10]
         python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
     env:
       FC: ${{ matrix.fortran-compiler }}
-      FCFLAGS: 
       CC: gcc
+
     steps:
     - uses: actions/checkout@v2
-    - name: Update system packages
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    ############################################################################
-    #
-    # Compilers....
-    #
-    # Gfortran 10 not available in Github CI stack, so install
-    #
+
     - name: gfortran-10 setup compiler
       if: contains(matrix.fortran-compiler, 'gfortran-10')
       run: |
-        sudo apt-get install gfortran-10 gcc-10
-        echo "CC=gcc-10" >> $GITHUB_ENV
+        sudo apt-get install gfortran-10
+
+    - name: Cache pip
+          uses: actions/cache@v2
+          with:
+            # This path is specific to Ubuntu
+            path: ~/.cache/pip
+            # Look to see if there is a cache hit for the corresponding requirements file
+            key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+            restore-keys: |
+              ${{ runner.os }}-pip-
+              ${{ runner.os }}-
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install tox tox-gh-actions
+        pip install -r requirements.txt
+
     - name: Test with tox
-      run: tox
+      run: tox -e py
 
