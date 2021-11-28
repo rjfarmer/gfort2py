@@ -1,38 +1,27 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-import types
 from pyparsing import OneOrMore, nestedExpr
 from dataclasses import dataclass
-
+import numpy as np
 import gzip
+
+import pprint
 
 import typing as t
 
+filename = 'strings.mod'
 
-filename = 'basic.mod'
-
-with gzip.open(filename) as f:
-    x = f.read().decode()
-
-
-header = x[:x.index('\n')]
-
-data = x[x.index('\n')+1:].replace('\n',' ')
-
-
-
-
-parsed_data = OneOrMore(nestedExpr()).parseString(data)
+def string_clean(string):
+    if string is None:
+        return 
+    if string.startswith("'") or string.startswith('"'):
+        string = string[1:]
+    if string.endswith("'") or string.endswith('"'):
+        string = string[:-1]
+        
+    return string
 
 
-operators = parsed_data[0]
-generics = parsed_data[1]
-dt_types = parsed_data[2]
-common = parsed_data[3]
-overloads = parsed_data[4]
-equivalence = parsed_data[5]
-symbols = parsed_data[6]
-summary = parsed_data[7]
 
 #################################
 
@@ -43,19 +32,42 @@ class s_item:
     id: int
 
     def __post_init__(self):
-        self.name = self.name.replace("'","")
+        self.name = string_clean(self.name)
         self.ambiguous = self.ambiguous != '0'
         self.id = int(self.id)
 
-def proc_summary(data):
-    result = {}
-    for i in range(0, len(data), 3):
-        d = s_item(*data[i:i+3])
-        result[d.id] = d
-    return result
 
-proc_summary(summary)
+class Summary:
+    def __init__(self, summ):
+        self._item_id = {}
+        self._item_name = {}
+        
+        for i in range(0, len(summ), 3):
+            d = s_item(*summ[i:i+3])
+            self._item_id[d.id] = d
+            self._item_name[d.name] = d
 
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return self._item_id[key]
+        if isinstance(key, str):
+            return self._item_name[key]
+        else:
+            raise TypeError(f'Dont understand type of {key}')
+
+    def keys(self):
+        return list(self._item_id.keys()) + list(self._item_name.keys())
+
+    def __contains__(self, key):
+        if isinstance(key, int):
+            return key in self._item_id
+        if isinstance(key, str):
+            return key in self._item_name
+        else:
+            raise TypeError(f'Dont understand type of {key}')
+
+    def names(self):
+        return self._item_name.keys()
 
 #################################
 
@@ -67,19 +79,10 @@ class c_item:
     _unknown: int
 
     def __post_init__(self):
-        self.name = self.name.replace("'","")
+        self.name = string_clean(self.name)
         self.id = int(self.id)
         self.saved_flag  = int(self.saved_flag)
         self._unknown = int(self._unknown)
-
-def proc_common(data):
-    result = {}
-    for i in data:
-        d = c_item(*i)
-        result[d.id] = d
-    return result
-
-proc_common(common)
 
 #################################
 
@@ -90,20 +93,22 @@ class dt_type:
     id: int
 
     def __post_intit__(self):
-        self.name = self.name.replace("'","")
-        self.module = self.module.replace("'","")
+        self.name = string_clean(self.name)
+        self.module = string_clean(self.module)
         self.id = int(self.id)
 
-def proc_dt_type(data):
-    result = {}
-    for i in data:
-        d = dt_type(*i)
-        result[d.id] = d
-    return result
-
-proc_dt_type(dt_types)
-
 #################################
+
+def hextofloat(s):
+    # Given hex like parameter '0.12decde@9' returns 5065465344.0
+    man, exp = s.split("@")
+    exp = int(exp)
+    decimal = man.index(".")
+    man = man[decimal + 1 :]
+    man = man.ljust(exp, "0")
+    man = man[:exp] + "." + man[exp:]
+    man = man + "P0"
+    return float.fromhex(man)
 
 #####################################
 
@@ -119,14 +124,14 @@ class attribute:
     attributes: t.Tuple[str] = None
 
     def __init__(self,*args):
-        self.flavor = args[0]
-        self.intent = args[1]
-        self.proc = args[2]
-        self.if_source = args[3]
-        self.save = args[4]
+        self.flavor = string_clean(args[0])
+        self.intent = string_clean(args[1])
+        self.proc = string_clean(args[2])
+        self.if_source = string_clean(args[3])
+        self.save = string_clean(args[4])
         self.ext_attr = int(args[5])
         self.extension = int(args[6])
-        self.attributes = args[7:]
+        self.attributes = [string_clean(i) for i in args[7:]]
 
 
 @dataclass(init=False)
@@ -135,12 +140,12 @@ class component:
         self.args = args
         self.kwargs = kwargs
 
-@dataclass(init=False)
+@dataclass
 class namespace:
-    args: t.Tuple[int] = None
+    ref: int = -1
 
-    def __init__(self,*args):
-        self.args = args
+    def __post_init__(self):
+        self.ref = symbol_ref(self.ref)
 
 @dataclass
 class header:
@@ -153,13 +158,21 @@ class header:
     def __post_init__(self):
         self.id = int(self.id)
         self.parent_id = int(self.parent_id)
-        self.name = self.name.replace("'","")
-        self.module = self.module.replace("'","")
-        self.bindc = len(self.bindc.replace("'","")) > 0
+        self.name = string_clean(self.name)
+        self.module = string_clean(self.module)
+        self.bindc = len(string_clean(self.bindc)) > 0
+
+    @property
+    def mn_name(self):
+        if self.module:
+            return f'__{self.module}_MOD_{self.name}'
 
 @dataclass
 class symbol_ref:
-    reference: int = -1 
+    ref: int = -1 
+
+    def __post_init__(self):
+        self.ref = int(self.ref)
 
 @dataclass(init=False)
 class formal_arglist:
@@ -171,7 +184,7 @@ class formal_arglist:
             self.symbol.append(symbol_ref(i))
 
 @dataclass(init=False)
-class derived_namepsace:
+class derived_ns:
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
@@ -193,7 +206,7 @@ class typespec:
     is_iso_c: int = -1
     type2: str = '' # Repeat of type
     charlen: int = -1 # If character
-    deferred_cl: int = -1 #if character and deferred length
+    deferred_cl: bool = False #if character and deferred length
 
     def __init__(self,*args):
         self.type = args[0]
@@ -213,54 +226,112 @@ class typespec:
         except TypeError:
             self.charlen = -1
         try:
-            self.deferred_cl = int(args[7])
+            self.deferred_cl = args[7] == 'DEFERRED_CL'
         except (TypeError,IndexError):
-            self.deferred_cl = -1
+            self.deferred_cl = False
 
-@dataclass
+@dataclass(init=False)
 class expression:
     exp_type: str = ''
     ts: typespec = None
     rank: int = -1
     value: t.Any = None
     arglist: actual_arglist = None # PDT's? 
+    charlen: int = -1
 
-    def __post_init__(self):
-        self.ts = typespec(*self.ts)
-        self.rank = int(self.rank)
+    def __init__(self, *args):
+        self.exp_type = args[0]
+        self.ts = typespec(*args[1])
+        self.rank = int(args[2])
 
-        self.value = self.value.replace("'","")
+        if self.exp_type == 'OP':
+            pass
+        elif self.exp_type == 'FUNCTION':
+            pass
+        elif self.exp_type == 'CONSTANT':
+            if self.ts.type == 'REAL':
+                self.value = hextofloat(string_clean(args[3]))
+            elif self.ts.type == 'INTEGER':
+                self.value = int(string_clean(args[3]))
+            elif self.ts.type == 'CHARACTER':
+                self.charlen  = int(args[3])
+                self.value = string_clean(args[4])
+            elif self.ts.type == 'COMPLEX':
+                self.value = complex(hextofloat(string_clean(args[3])),
+                                        hextofloat(string_clean(args[4])))
+            #TODO: Handle arrays, complex etc
+        elif self.exp_type == 'VARIABLE':
+            pass
+        elif self.exp_type == 'SUBSTRING':
+            pass
+        elif self.exp_type == 'ARRAY':
+            self.value = []
+            for i in args[3]:
+                self.value.append(expression(*i[0])) # Wheres the extra component comming from? 
+        elif self.exp_type == 'NULL':
+            pass
+        elif self.exp_type == 'COMPCALL':
+            pass
+        elif self.exp_type == 'PPC':
+            pass
+        else:
+            raise AttributeError(f"Can't match {self.exp_type}")
 
-        if self.ts.type == 'REAL':
-            self.value = self.hextofloat(self.value)
-        elif self.ts.type == 'INTEGER':
-            self.value = int(self.value)
-        elif self.ts.type == 'CHARACTER':
-            self.value = self.value
-        #TODO: Handle arrays, complex etc
-
-    def hextofloat(self,s):
-        # Given hex like parameter '0.12decde@9' returns 5065465344.0
-        man, exp = s.split("@")
-        exp = int(exp)
-        decimal = man.index(".")
-        man = man[decimal + 1 :]
-        man = man.ljust(exp, "0")
-        man = man[:exp] + "." + man[exp:]
-        man = man + "P0"
-        return float.fromhex(man)
-
-
-@dataclass
+@dataclass(init=False)
 class arrayspec:
     rank: int = -1
     corank: int = -1
     array_type: str = ''
-    bounds: t.List[t.List[expression]] = None # LIst of lower and upper bounds
+    lower: t.List[expression] = None 
+    upper: t.List[expression] = None
 
-@dataclass
+    def __init__(self, *args):
+        if not len(args):
+            return
+
+        self.rank = int(args[0])
+        self.corank = int(args[1])
+        self.array_type = args[2]
+        self.lower = []
+        self.upper = []
+        for i in range(self.rank + self.corank):
+            if len(args[3+i*2]):
+                self.lower.append(expression(*args[3+i*2]))
+            if len(args[4+i*2]):
+                self.upper.append(expression(*args[4+i*2]))
+    
+    @property 
+    def fshape(self):
+        res = []
+        for l,u in zip(self.lower, self.upper):
+            res.append([l.value,u.value])
+        
+        return res
+
+    @property 
+    def pyshape(self):
+        res = []
+        for l,u in zip(self.lower, self.upper):
+            res.append(u.value-l.value+1)
+        
+        return res
+
+    @property
+    def size(self):
+        return np.product(self.pyshape())
+
+
+
+@dataclass(init=False)
 class namelist:
     sym_ref: t.List[symbol_ref] = None
+
+    def __init__(self,*args):
+        self.sym_ref = []
+        if len(args):
+            for i in args:
+                self.sym_ref.append(symbol_ref(i))
+
 
 @dataclass(init=False)
 class simd_dec:
@@ -280,9 +351,9 @@ class data:
     array_spec: arrayspec = None
     sym_ref: symbol_ref = None
     sym_ref_cray: symbol_ref = None # If cray_pointer
-    derived: derived_namepsace = None
+    derived: derived_ns = None
     actual_arg: actual_arglist = None
-    nl: namelist = None
+    nml: namelist = None
     intrinsic: int = -1
     intrinsic_symbol: int = -1
     hash: int = -1
@@ -293,46 +364,93 @@ class data:
         self.attr = attribute(*args[0])
         self.comp = component(*args[1])
         self.ts = typespec(*args[2])
-        self.ns = namespace(*args[3])
+        self.ns = namespace(args[3])
         self.common_link = symbol_ref(*args[4])
         self.formal_arg = formal_arglist(*args[5])
         if self.attr.flavor == 'PARAMETER':
             self.parameter = expression(*args[6])
             _ = args.pop(6)
-        self.array_spec = arrayspec(*args[7])
+        self.array_spec = arrayspec(*args[6])
         if True:
-            self.sym_ref = symbol_ref(*args[8])
+            self.sym_ref = symbol_ref(args[7])
         else:
             pass # Ignore cray pointers
-        self.derived = derived_namepsace(*args[9])
-        self.actual_arg = actual_arglist(*args[10]) 
-        self.nl = namelist(*args[11])
-        self.intrinsic = int(args[12])
+        self.derived = derived_ns(*args[8])
+        self.actual_arg = actual_arglist(*args[9]) 
+        self.nml = namelist(*args[10])
+        self.intrinsic = int(args[11])
+        if len(args) > 12:
+            self.intrinsic_symbol = int(args[12])
         if len(args) > 13:
-            self.intrinsic_symbol = int(args[13])
+            self.hash = int(args[13])
         if len(args) > 14:
-            self.hash = int(args[14])
-        if len(args) > 15:
             if args[15] is not None:
-                self.simd = simd_dec(*args[15]) 
+                self.simd = simd_dec(*args[14]) 
 
 @dataclass(init=False)
 class symbol:
     head: header = None
     sym: data = None
+    raw: str = ''
 
     def __init__(self,*args):
         self.head = header(*args[0:5])
         self.sym = data(*args[5])
+        self.raw = args
 
-def parse_symbols():
-    result = {}
-    for i in range(0, len(symbols), 6):
-        s = symbol(*symbols[i:i+6])
-        result[s.head.id] = s
+class module(object):
+    def __init__(self,filename):
+        self.filename = filename
 
-    return result
+        with gzip.open(self.filename) as f:
+            x = f.read().decode()
 
-z=parse_symbols()
+        self.mod_info = x[:x.index('\n')]
 
-z[20].sym.parameter
+        data = x[x.index('\n')+1:].replace('\n',' ')
+
+        parsed_data = OneOrMore(nestedExpr()).parseString(data)
+
+        self.operators = parsed_data[0]
+        self.generics = parsed_data[1]
+        self.dt_types = self.proc_dt_type(parsed_data[2])
+        self.common = self.proc_common(parsed_data[3])
+        self.overloads = parsed_data[4]
+        self.equivalence = parsed_data[5]
+        self.symbols = self.parse_symbols(parsed_data[6])
+        self.summary = Summary(parsed_data[7])
+
+
+    def parse_symbols(self, data):
+        result = {}
+        for i in range(0, len(data), 6):
+            s = symbol(*data[i:i+6])
+            result[s.head.id] = s
+
+        return result
+
+    def proc_common(self, data):
+        result = {}
+        for i in data:
+            d = c_item(*i)
+            result[d.id] = d
+        return result
+
+    def proc_dt_type(self, data):
+        result = {}
+        for i in data:
+            d = dt_type(*i)
+            result[d.id] = d
+        return result
+
+    def keys(self):
+        return self.summary.names()
+
+    def __contains__(self, key):
+        return key in self.keys()
+
+    def __getitem__(self, key):
+        return self.symbols[self.summary[key].id]
+
+
+m = module(filename)

@@ -34,5 +34,10 @@ module pdt
 	
 	end subroutine sub_write_pdt
 	
+	subroutine sub_pdt()
+		type (pdt_def(lp,5)) :: x
+		
+		x%array = 2
+	end subroutine sub_pdt
 
 end module pdt
