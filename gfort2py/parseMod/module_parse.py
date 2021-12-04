@@ -125,6 +125,11 @@ def hextofloat(s):
 
 #####################################
 
+def print_args(x):
+    print()
+    for i in x:
+        print(i)
+    print()
 
 @dataclass(init=False)
 class attribute:
@@ -146,13 +151,6 @@ class attribute:
         self.ext_attr = int(args[5])
         self.extension = int(args[6])
         self.attributes = [string_clean(i) for i in args[7:]]
-
-
-@dataclass(init=False)
-class component:
-    def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
 
 
 @dataclass
@@ -215,6 +213,9 @@ class actual_arglist:
         self.args = args
         self.kwargs = kwargs
 
+class typebound_proc:
+    pass
+
 
 @dataclass(init=False)
 class typespec:
@@ -230,7 +231,6 @@ class typespec:
 
     def __init__(self, *args):
         self.type = args[0]
-        print(args)
         if self.type == "CLASS":
             self.class_ref = symbol_ref(*args[1])
         else:
@@ -349,6 +349,51 @@ class arrayspec:
         return np.product(self.pyshape())
 
 
+
+@dataclass(init=False)
+class component:
+    id: int = -1
+    name: str = ''
+    ts: typespec = None
+    array_spec: arrayspec = None
+    expr: expression = None
+    actual_arg: actual_arglist = None
+    attr: attribute = None
+    access: str = ''
+    initializer: expression = None
+    proc_ptr: typebound_proc = None
+
+    def __init__(self, *args):  
+        self.id = int(args[0])
+        self.name = string_clean(args[1])
+        self.ts = typespec(*args[2])
+        self.array_spec = arrayspec(*args[3])
+        if len(args[4]):
+            self.expr = expression(*args[4])
+        if len(args[5]):
+            self.actual_arg = actual_arglist(*args[5])
+        self.attr = attribute(*args[6])
+        self.access = string_clean(args[7])
+
+        if self.name == '_final' or self.name == '_hash':
+            self.initializer = expression(*args[8])
+            _ = args.pop(8)
+        
+        if not self.attr.proc == "UNKNOWN-PROC":
+            self.proc_ptr = typebound_proc(args[8])
+
+
+
+@dataclass(init=False)
+class components:
+    comp: t.List[component] = None
+
+    def __init__(self, *args):
+        self.comp = []
+        for i in args:
+            self.comp.append(component(*i))
+
+
 @dataclass(init=False)
 class namelist:
     sym_ref: t.List[symbol_ref] = None
@@ -370,7 +415,8 @@ class simd_dec:
 @dataclass(init=False)
 class data:
     attr: attribute
-    comp: component = None
+    comp: components = None
+    comp_access: str = '' # Only for DT's
     ts: typespec = None
     ns: namespace = None
     common_link: symbol_ref = None
@@ -392,7 +438,13 @@ class data:
             args
         )  # Do it this was as there are optional terms we may need to pop
         self.attr = attribute(*args[0])
-        self.comp = component(*args[1])
+        self.comp = components(*args[1])
+
+        if isinstance(args[2], str):
+            self.comp_access = args[2]
+            _ = args.pop(2)
+
+
         self.ts = typespec(*args[2])
         self.ns = namespace(args[3])
         self.common_link = symbol_ref(args[4])
@@ -433,7 +485,7 @@ class symbol:
 class module(object):
     version = 15
 
-    def __init__(self, filename):
+    def __init__(self, filename,load_only=False):
         self.filename = filename
 
         with gzip.open(self.filename) as f:
@@ -448,22 +500,24 @@ class module(object):
 
         data = x[x.index("\n") + 1 :].replace("\n", " ")
 
-        parsed_data = OneOrMore(nestedExpr()).parseString(data)
+        self.parsed_data = OneOrMore(nestedExpr()).parseString(data)
 
-        self.operators = parsed_data[0]
-        self.generics = parsed_data[1]
-        self.dt_types = self.proc_dt_type(parsed_data[2])
-        self.common = self.proc_common(parsed_data[3])
-        self.overloads = parsed_data[4]
-        self.equivalence = parsed_data[5]
-        self.symbols = self.parse_symbols(parsed_data[6])
-        self.summary = Summary(parsed_data[7])
+        if not load_only:
+            self.operators = self.parsed_data[0]
+            self.generics = self.parsed_data[1]
+            self.dt_types = self.proc_dt_type(self.parsed_data[2])
+            self.common = self.proc_common(self.parsed_data[3])
+            self.overloads = self.parsed_data[4]
+            self.equivalence = self.parsed_data[5]
+            self.symbols = self.parse_symbols(self.parsed_data[6])
+            self.summary = Summary(self.parsed_data[7])
 
     def parse_symbols(self, data):
         result = {}
         for i in range(0, len(data), 6):
             s = symbol(*data[i : i + 6])
             result[s.head.id] = s
+            break
 
         return result
 
@@ -490,6 +544,8 @@ class module(object):
     def __getitem__(self, key):
         return self.symbols[self.summary[key].id]
 
-
 if __name__ == "__main__":
-    m = module(filename=sys.argv[1])
+   m = module(filename=sys.argv[1])
+   for i in m.keys():
+       pprint.pprint(m[i])
+
