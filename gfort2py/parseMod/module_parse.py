@@ -96,16 +96,18 @@ class c_item:
 #################################
 
 
-@dataclass
-class dt_type:
-    name: str
-    module: str
-    id: int
+@dataclass(init=False)
+class generics:
+    name: str = ''
+    module: str = ''
+    id: t.List[int] = -1
 
-    def __post_intit__(self):
-        self.name = string_clean(self.name)
-        self.module = string_clean(self.module)
-        self.id = int(self.id)
+    def __init__(self, *args):
+        self.name = string_clean(args[0])
+        self.module = string_clean(args[1])
+        self.id = []
+        for i in args[2:]:
+            self.id.append(int(i))
 
 
 #################################
@@ -237,7 +239,7 @@ class typespec:
             self.kind = int(args[1])
 
         if len(args[2]):
-            self.interface = symbol_ref(*args[2])
+            self.interface = symbol_ref(args[2])
 
         self.is_c_interop = bool(int(args[3]))
         self.is_iso_c = bool(int(args[4]))
@@ -364,6 +366,8 @@ class component:
     proc_ptr: typebound_proc = None
 
     def __init__(self, *args):  
+        args = list(args)
+
         self.id = int(args[0])
         self.name = string_clean(args[1])
         self.ts = typespec(*args[2])
@@ -503,12 +507,16 @@ class module(object):
         self.parsed_data = OneOrMore(nestedExpr()).parseString(data)
 
         if not load_only:
-            self.operators = self.parsed_data[0]
-            self.generics = self.parsed_data[1]
-            self.dt_types = self.proc_dt_type(self.parsed_data[2])
+            self.interface = self.parsed_data[0]
+
+            self.operators = self.parsed_data[1]
+            self.generics = self.proc_generics(self.parsed_data[2])
+
             self.common = self.proc_common(self.parsed_data[3])
-            self.overloads = self.parsed_data[4]
-            self.equivalence = self.parsed_data[5]
+            self.equivalence = self.parsed_data[4]
+
+            self.omp = self.parsed_data[5]
+            
             self.symbols = self.parse_symbols(self.parsed_data[6])
             self.summary = Summary(self.parsed_data[7])
 
@@ -517,7 +525,6 @@ class module(object):
         for i in range(0, len(data), 6):
             s = symbol(*data[i : i + 6])
             result[s.head.id] = s
-            break
 
         return result
 
@@ -528,11 +535,11 @@ class module(object):
             result[d.id] = d
         return result
 
-    def proc_dt_type(self, data):
+    def proc_generics(self, data):
         result = {}
         for i in data:
-            d = dt_type(*i)
-            result[d.id] = d
+            d = generics(*i)
+            result[d.name] = d
         return result
 
     def keys(self):
@@ -546,6 +553,6 @@ class module(object):
 
 if __name__ == "__main__":
    m = module(filename=sys.argv[1])
-   for i in m.keys():
-       pprint.pprint(m[i])
+#    for i in m.keys():
+#        pprint.pprint(m[i])
 
