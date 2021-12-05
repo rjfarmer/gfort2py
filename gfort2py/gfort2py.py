@@ -168,6 +168,12 @@ class fVar_t:
     def is_pointer(self):
         return 'POINTER' in self._object.sym.attr.attributes
 
+    def is_value(self):
+        return 'VALUE' in self._object.sym.attr.attributes
+
+    def is_optional(self):
+        return 'OPTIONAL' in self._object.sym.attr.attributes
+
     @property
     def ctype(self):
         t = self.type()
@@ -186,7 +192,7 @@ class fVar_t:
         elif t == 'LOGICAL':
             return ctypes.c_int32
 
-        raise NotImplementedError('Object of type {t} and kind {k} not supported yet')
+        raise NotImplementedError(f'Object of type {t} and kind {k} not supported yet')
 
     @property
     def name(self):
@@ -301,7 +307,9 @@ class fProc:
         for i in fargs:
             var = fVar_t(self._allobjs[i.ref])
 
-            if var.is_pointer():
+            if var.is_value():
+                a = var.ctype
+            elif var.is_pointer():
                 a = ctypes.POINTER(ctypes.POINTER(var.ctype))
             else:
                 a = ctypes.POINTER(var.ctype)
@@ -322,7 +330,9 @@ class fProc:
             var = fVar_t(self._allobjs[fval.ref])
             z = var.ctype(value)
 
-            if var.is_pointer():
+            if var.is_value():
+                a = z
+            elif var.is_pointer():
                 a = ctypes.pointer(ctypes.pointer(z))
             else:
                 a = ctypes.pointer(z)
@@ -337,6 +347,7 @@ class fProc:
 
         if len(fargs):
             for ptr,fval in zip(args,fargs):
+                x = ptr
                 if hasattr(ptr, "contents"):
                     if hasattr(ptr.contents, "contents"):
                         x = ptr.contents.contents
