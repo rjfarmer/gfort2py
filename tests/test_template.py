@@ -22,7 +22,7 @@ from io import BytesIO
 SO = "./tests/.so"
 MOD = "./tests/.mod"
 
-# x=gf.fFort(SO,MOD,rerun=True)
+# x=gf.fFort(SO,MOD)
 
 
 @contextmanager

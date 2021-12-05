@@ -22,7 +22,7 @@ from io import BytesIO
 SO = "./tests/basic.so"
 MOD = "./tests/basic.mod"
 
-x = gf.fFort(SO, MOD, rerun=True)
+x = gf.fFort(SO, MOD)
 
 
 class TestBasicMethods:
@@ -52,7 +52,7 @@ class TestBasicMethods:
             x.a_real = "abc"
 
     def test_const_int_set(self):
-        with pytest.raises(ValueError) as cm:
+        with pytest.raises(AttributeError) as cm:
             x.const_int = 2
 
     def test_const_int(self):
@@ -93,14 +93,14 @@ class TestBasicMethods:
     def test_func_int_in(self):
         v = 5
         y = x.func_int_in(v)
-        self.assertEqual(int(y.result), 2 * v)
+        self.assertEqual(int(y.res), 2 * v)
 
     def test_func_int_in_multi(self):
         v = 5
         w = 3
         u = 4
         y = x.func_int_in_multi(v, w, u)
-        self.assertEqual(y.result, v + w + u)
+        self.assertEqual(y.res, v + w + u)
 
     def test_sub_int_in(self, capfd):
         v = 5
@@ -111,15 +111,15 @@ class TestBasicMethods:
 
     def test_func_int_no_args(self):
         y = x.func_int_no_args()
-        self.assertEqual(y.result, 2)
+        self.assertEqual(y.res, 2)
 
     def test_func_real_no_args(self):
         y = x.func_real_no_args()
-        self.assertEqual(y.result, 3.0)
+        self.assertEqual(y.res, 3.0)
 
     def test_func_real_dp_no_args(self):
         y = x.func_real_dp_no_args()
-        self.assertEqual(y.result, 4.0)
+        self.assertEqual(y.res, 4.0)
 
     def test_sub_int_out(self, capfd):
         v = 5
@@ -151,9 +151,9 @@ class TestBasicMethods:
 
     def test_func_return_res(self):
         y = x.func_return_res(2)
-        self.assertEqual(y.result, True)
+        self.assertEqual(y.res, True)
         y = x.func_return_res(10)
-        self.assertEqual(y.result, False)
+        self.assertEqual(y.res, False)
 
     def test_sub_int_p(self, capfd):
 
@@ -185,12 +185,12 @@ class TestBasicMethods:
 
     def test_func_value(self):
         y = x.func_int_value(5)
-        self.assertEqual(y.result, 10)
+        self.assertEqual(y.res, 10)
 
     def test_func_pass_mod_var(self):
         x.a_int = 5
         z = x.func_int_in(x.a_int)
-        self.assertEqual(z.result, 10)
+        self.assertEqual(z.res, 10)
 
     def test_sub_man_args(self):
         # if this doesn't seg fault we are good
@@ -200,10 +200,10 @@ class TestBasicMethods:
 
     def test_func_intent_out(self):
         y = x.func_intent_out(9, 0)
-        self.assertEqual(y.result, 9)
+        self.assertEqual(y.res, 9)
         self.assertEqual(y.args["x"], 9)
 
     def test_func_result(self):
         y = x.func_result(9, 0)
-        self.assertEqual(y.result, 18)
+        self.assertEqual(y.res, 18)
         self.assertEqual(y.args["y"], 9)

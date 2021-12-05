@@ -22,9 +22,9 @@ from io import BytesIO
 SO = "./tests/proc_ptrs.so"
 MOD = "./tests/proc_ptrs.mod"
 
-x = gf.fFort(SO, MOD, rerun=True)
+x = gf.fFort(SO, MOD)
 
-
+@pytest.mark.skip
 class TestProcPtrsMethods:
     def assertEqual(self, x, y):
         assert x == y

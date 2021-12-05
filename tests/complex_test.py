@@ -22,9 +22,9 @@ from io import BytesIO
 SO = "./tests/complex.so"
 MOD = "./tests/comp.mod"
 
-x = gf.fFort(SO, MOD, rerun=True)
+x = gf.fFort(SO, MOD)
 
-
+@pytest.mark.skip
 class TestComplexMethods:
     def assertEqual(self, x, y):
         assert x == y

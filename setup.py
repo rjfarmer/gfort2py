@@ -10,9 +10,6 @@ import sysconfig
 PY_INCLUDE = sysconfig.get_paths()['include']
 
 ext = [
-Extension("gfort2py.parseMod.utils_cpython",
-        ["gfort2py/parseMod/utils_cpython.pyx"],
-        include_dirs=[PY_INCLUDE]),
 Extension("gfort2py.fnumpy",
         ["gfort2py/fnumpy.pyx"],
         include_dirs=[np.get_include(),PY_INCLUDE])

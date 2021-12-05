@@ -201,6 +201,11 @@ class formal_arglist:
         for i in args:
             self.symbol.append(symbol_ref(i))
 
+    def __len__(self):
+        return len(self.symbol)
+
+    def __iter__(self):
+        return iter(self.symbol)
 
 @dataclass(init=False)
 class derived_ns:
@@ -397,6 +402,12 @@ class components:
         for i in args:
             self.comp.append(component(*i))
 
+    def __len__(self):
+        return len(self.comp)
+
+    def __iter__(self):
+        return iter(self.comp)
+
 
 @dataclass(init=False)
 class namelist:
@@ -549,10 +560,14 @@ class module(object):
         return key in self.keys()
 
     def __getitem__(self, key):
-        return self.symbols[self.summary[key].id]
+        try:
+            return self.symbols[self.summary[key].id]
+        except KeyError:
+            # Not a global variable maybe a function argument?
+            return self.symbols[key]
 
 if __name__ == "__main__":
    m = module(filename=sys.argv[1])
-#    for i in m.keys():
-#        pprint.pprint(m[i])
+   for i in m.keys():
+       pprint.pprint(m[i])
 

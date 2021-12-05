@@ -22,9 +22,9 @@ from io import BytesIO
 SO = "./tests/explicit_arrays.so"
 MOD = "./tests/explicit_arrays.mod"
 
-x = gf.fFort(SO, MOD, rerun=True)
+x = gf.fFort(SO, MOD)
 
-
+@pytest.mark.skip
 class TestExplicitArrayMethods:
     def assertEqual(self, x, y):
         assert x == y

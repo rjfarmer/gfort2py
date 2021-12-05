@@ -1,3 +1,3 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-from .parseMod import run, fpyname, hashFile
+from .module_parse import module
