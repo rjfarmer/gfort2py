@@ -35,6 +35,7 @@ class _captureStdOut:
             os.close(self.pipe_in)
             os.close(self.pipe_out)
             os.close(self.stdout)
+
 class fObject:
     def __eq__(self, other):
         return self.value == other
@@ -241,16 +242,26 @@ class fVar_t:
     def is_optional(self):
         return 'OPTIONAL' in self._object.sym.attr.attributes
 
+    def is_char(self):
+        return self.type() == 'CHARACTER'
+
     def needs_len(self, *args):
-        t = self.type()
-        if t == 'CHARACTER':
+        if self.is_char():
             # Only needed for things that need an extra function argument for thier length 
             try:
                 self._object.sym.ts.charlen.value # We know the string length at compile time
-                return None
+                return False
+            except AttributeError:
+                return True # We do not know the length of the string at compile time
+        return False
+
+    def clen(self, *args):
+        if self.is_char():
+            try:
+                return ctypes.c_int64(self._object.sym.ts.charlen.value) # We know the string length at compile time
             except AttributeError:
                 return ctypes.c_int64(len(args[0])) # We do not know the length of the string at compile time
-        return None
+
 
 
     @property
@@ -298,16 +309,29 @@ class fVar_t:
         t = self.type()
         k = int(self.kind())
 
-        if t == 'INTEGER':
-            return value.value
-        elif t == 'REAL':
-            return value.value
-        elif t == 'LOGICAL':
-            return value.value == 1
-        elif t == 'CHARACTER':
-            return "".join([i.decode() for i in value])
+        if value is None:
+            return None
 
-        raise NotImplementedError(f'Object of type {t} and kind {k} not supported yet')
+        x = value
+        if hasattr(value, "contents"):
+            if hasattr(value.contents, "contents"):
+                x = value.contents.contents
+            else:
+                x = value.contents
+
+        if hasattr(x,'value'):
+            if t == 'INTEGER':
+                return x.value
+            elif t == 'REAL':
+                return x.value
+            elif t == 'LOGICAL':
+                return x.value == 1
+            elif t == 'CHARACTER':
+                return "".join([i.decode() for i in x])
+
+            raise NotImplementedError(f'Object of type {t} and kind {k} not supported yet')
+        else:
+            return x
 
 
     @property
@@ -345,7 +369,7 @@ class fVar(fObject):
         self._value = fVar_t(self._object)
 
     def from_param(self, value):
-        return self._value.ctype(value)(value)
+        return self._value.from_param(value)
 
     @property
     def value(self):
@@ -353,7 +377,7 @@ class fVar(fObject):
 
     @value.setter
     def value(self, value):
-        self.in_dll(self._lib).value = value
+        self.in_dll(self._lib).value = self.from_param(value).value
 
     @property
     def mangled_name(self):
@@ -389,6 +413,9 @@ class fProc:
 
         self._func = getattr(lib, self.mangled_name)
 
+        self.fargs = self._object.sym.formal_arg
+        self.symref = self._object.sym.sym_ref.ref
+
     @property
     def mangled_name(self):
         return self._object.head.mn_name
@@ -417,7 +444,7 @@ class fProc:
 
     def __call__(self, *args, **kwargs):
 
-        self._set_return()
+        self._set_return()        
 
         func_args = self._convert_args(*args, **kwargs)
 
@@ -430,22 +457,33 @@ class fProc:
         return self._convert_result(res, func_args)
 
     def _set_return(self):
-        symref = self._object.sym.sym_ref.ref
-
-        if symref == 0:
+        if self.symref == 0:
             self._func.restype = None # Subroutine
         else:
-            self._func.restype = fVar_t(self._allobjs[symref]).ctype()
+            fvar = fVar_t(self._allobjs[self.symref])
+
+            if fvar.is_char(): #Return a character is done as a character + len at start of arg list
+                self._func.restype = None
+            else:
+                self._func.restype = fvar.ctype()
 
 
     def _convert_args(self, *args, **kwargs):
-        fargs = self._object.sym.formal_arg
 
+        res_start = []
         res = []
-        extras = []
+        res_end = []
+
+
+        if self.symref != 0:
+            fvar = fVar_t(self._allobjs[self.symref])
+            if fvar.is_char():
+                l = fvar.clen()
+                res_start.append(fvar.from_param(' '*l.value))
+                res_start.append(l)
 
         count = 0
-        for fval in fargs:
+        for fval in self.fargs:
             var = fVar_t(self._allobjs[fval.ref])
 
             try:
@@ -470,34 +508,33 @@ class fProc:
                 else:
                     res.append(ctypes.pointer(z))
 
-                l = var.needs_len(x)
-                if l is not None:
-                    extras.append(l)
+                if var.needs_len(x):
+                    res_end.append(var.clen(x))
 
             else:
                 res.append(None)
-                if var.needs_len() is not None:
-                    extras.append(None)
+                if var.needs_len(x):
+                    res_end.append(None)
 
-        return res + extras
+        return res_start + res + res_end
 
     def _convert_result(self, result, args):
-        fargs = self._object.sym.formal_arg
         res = {}
 
-        if len(fargs):
-            for ptr,fval in zip(args,fargs):
-                x = ptr
-                if hasattr(ptr, "contents"):
-                    if hasattr(ptr.contents, "contents"):
-                        x = ptr.contents.contents
-                    else:
-                        x = ptr.contents
+        if self.symref != 0:
+            fvar = fVar_t(self._allobjs[self.symref])
+            if fvar.is_char():
+                result = args[0]
+                _ = args.pop(0)
+                _ = args.pop(0) # Twice to pop first and second value
 
-                if hasattr(x, "value"):
-                    x = x.value
+        if len(self.fargs):
+            for ptr,fval in zip(args,self.fargs):
+                res[self._allobjs[fval.ref].head.name] = fVar_t(self._allobjs[fval.ref]).from_ctype(ptr)
 
-                res[self._allobjs[fval.ref].head.name] = x
+
+        if self.symref != 0:
+            result = fVar_t(self._allobjs[self.symref]).from_ctype(result)
 
         return self.Result(result, res)
 
@@ -506,17 +543,15 @@ class fProc:
 
     @property
     def __doc__(self):
-        symref = self._object.sym.sym_ref.ref
 
-        if symref == 0:
+        if self.symref == 0:
             ftype = f"subroutine {self.name}"
         else:
-            fv = fVar_t(self._allobjs[symref]).typekind
+            fv = fVar_t(self._allobjs[self.symref]).typekind
             ftype = f"{fv} function {self.name}"
 
-        fargs = self._object.sym.formal_arg
         args = []
-        for fval in fargs:
+        for fval in self.fargs:
             args.append(fVar_t(self._allobjs[fval.ref]).__doc__)
 
         return ftype + '(' + ', '.join(args) + ')'
