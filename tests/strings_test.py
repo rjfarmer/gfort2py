@@ -24,7 +24,6 @@ MOD = "./tests/strings.mod"
 
 x = gf.fFort(SO, MOD)
 
-@pytest.mark.skip
 class TestStringMethods:
     def assertEqual(self, x, y):
         assert x == y
@@ -72,7 +71,7 @@ class TestStringMethods:
 
     def test_func_ret_str(self):
         y = x.func_ret_str("abcde")
-        self.assertEqual(y.result, "Abcde")
+        self.assertEqual(y.res, "Abcde")
 
     @pytest.mark.skip("Skipping")
     # We need to call a func on the argument before passing it to func_str_int_len
@@ -89,9 +88,9 @@ class TestStringMethods:
         x.str_alloc = "abcdefghijklmnop"
         self.assertEqual(x.str_alloc, "abcdefghijklmnop")
         y = x.check_str_alloc(1)
-        self.assertEqual(y.result, True)
+        self.assertEqual(y.res, True)
 
         x.str_alloc = "12345678        "  # Need to empty the space afterwards
         self.assertEqual(x.str_alloc, "12345678        ")
         y = x.check_str_alloc(2)
-        self.assertEqual(y.result, True)
+        self.assertEqual(y.res, True)

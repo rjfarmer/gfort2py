@@ -2,9 +2,39 @@
 import ctypes
 import numpy as np
 import collections
+import select
+import os
 
 from . import parseMod as pm
 
+
+_TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
+
+
+class _captureStdOut:
+    def read_pipe(self, pipe_out):
+        def more_data():
+            r, _, _ = select.select([pipe_out], [], [], 0)
+            return bool(r)
+
+        out = b""
+        while more_data():
+            out += os.read(pipe_out, 1024)
+        return out.decode()
+
+    def __enter__(self):
+        if _TEST_FLAG:
+            self.pipe_out, self.pipe_in = os.pipe()
+            self.stdout = os.dup(1)
+            os.dup2(self.pipe_in, 1)
+
+    def __exit__(self, *args, **kwargs):
+        if _TEST_FLAG:
+            os.dup2(self.stdout, 1)
+            print(self.read_pipe(self.pipe_out))
+            os.close(self.pipe_in)
+            os.close(self.pipe_out)
+            os.close(self.stdout)
 class fObject:
     def __eq__(self, other):
         return self.value == other
@@ -211,6 +241,18 @@ class fVar_t:
     def is_optional(self):
         return 'OPTIONAL' in self._object.sym.attr.attributes
 
+    def needs_len(self, *args):
+        t = self.type()
+        if t == 'CHARACTER':
+            # Only needed for things that need an extra function argument for thier length 
+            try:
+                self._object.sym.ts.charlen.value # We know the string length at compile time
+                return None
+            except AttributeError:
+                return ctypes.c_int64(len(args[0])) # We do not know the length of the string at compile time
+        return None
+
+
     @property
     def ctype(self):
         t = self.type()
@@ -276,7 +318,7 @@ class fVar_t:
     def __doc__(self):
         t = self.type()
         k = self.kind()
-        return f"{self._object.head.name.lower()} {self.typekind}"
+        return f"{self._object.head.name}={self.typekind}"
 
     @property
     def typekind(self):
@@ -379,10 +421,11 @@ class fProc:
 
         func_args = self._convert_args(*args, **kwargs)
 
-        if func_args is not None:
-            res = self._func(*func_args)
-        else:
-            res = self._func()
+        with _captureStdOut() as cs:
+            if func_args is not None:
+                res = self._func(*func_args)
+            else:
+                res = self._func()
 
         return self._convert_result(res, func_args)
 
@@ -399,6 +442,7 @@ class fProc:
         fargs = self._object.sym.formal_arg
 
         res = []
+        extras = []
 
         count = 0
         for fval in fargs:
@@ -425,10 +469,17 @@ class fProc:
                     res.append(ctypes.pointer(ctypes.pointer(z)))
                 else:
                     res.append(ctypes.pointer(z))
+
+                l = var.needs_len(x)
+                if l is not None:
+                    extras.append(l)
+
             else:
                 res.append(None)
-        
-        return res
+                if var.needs_len() is not None:
+                    extras.append(None)
+
+        return res + extras
 
     def _convert_result(self, result, args):
         fargs = self._object.sym.formal_arg

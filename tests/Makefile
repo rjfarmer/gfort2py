@@ -16,8 +16,6 @@ all: $(LIBS) $(GZ)
 
 %.so: %.f90
 	$(FC) $(OPTIONS) -o  $@ $<
-	-mv $<.004t.original $<.original
-	-rm $<.*.*
 
 %.gz: %.mod
 	-cp $< $@
