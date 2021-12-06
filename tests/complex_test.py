@@ -24,7 +24,6 @@ MOD = "./tests/comp.mod"
 
 x = gf.fFort(SO, MOD)
 
-@pytest.mark.skip
 class TestComplexMethods:
     def assertEqual(self, x, y):
         assert x == y
@@ -66,4 +65,4 @@ class TestComplexMethods:
     def test_func_ret_cmplx(self):
         v = complex(1.0, 1.0)
         y = x.func_ret_cmplx(v)
-        self.assertEqual(y.result, v * 5)
+        self.assertEqual(y.res, v * 5)

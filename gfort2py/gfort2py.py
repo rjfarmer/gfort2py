@@ -230,6 +230,9 @@ class fVar_t:
             self._buf = bytearray(value) # Need to keep hold of the reference
             
             return self.ctype(value).from_buffer(self._buf)
+        elif t == 'COMPLEX':
+            return self.ctype()(value.real, value.imag)
+
 
         raise NotImplementedError(f'Object of type {t} and kind {k} not supported yet')
 
@@ -301,6 +304,25 @@ class fVar_t:
                 def callback(value, *args): # We de not know the string length at compile time
                     return ctypes.c_char * len(value)
                 return callback
+        elif t == 'COMPLEX':
+            if k == 4:
+                def callback(*args):
+                    class complex(ctypes.Structure):
+                        _fields_ = [("real", ctypes.c_float), ("imag", ctypes.c_float)]
+                    return complex
+                return callback
+            elif k == 8:
+                def callback(*args):
+                    class complex(ctypes.Structure):
+                        _fields_ = [("real", ctypes.c_double), ("imag", ctypes.c_double)]
+                    return complex
+                return callback
+            elif k == 16:
+                def callback(*args):
+                    class complex(ctypes.Structure):
+                        _fields_ = [("real", ctypes.c_longdouble), ("imag", ctypes.c_longdouble)]
+                    return complex
+                return callback
 
         raise NotImplementedError(f'Object of type {t} and kind {k} not supported yet')
 
@@ -319,6 +341,9 @@ class fVar_t:
             else:
                 x = value.contents
 
+        if t == 'COMPLEX':
+            return complex(x.real, x.imag)
+
         if hasattr(x,'value'):
             if t == 'INTEGER':
                 return x.value
@@ -328,7 +353,6 @@ class fVar_t:
                 return x.value == 1
             elif t == 'CHARACTER':
                 return "".join([i.decode() for i in x])
-
             raise NotImplementedError(f'Object of type {t} and kind {k} not supported yet')
         else:
             return x
@@ -377,7 +401,14 @@ class fVar(fObject):
 
     @value.setter
     def value(self, value):
-        self.in_dll(self._lib).value = self.from_param(value).value
+        ct = self.in_dll(self._lib)
+
+        if isinstance(ct, ctypes.Structure):
+            for k in ct.__dir__():
+                if not k.startswith('_'):
+                    setattr(ct,k,getattr(value,k))
+        else:
+            ct.value = self.from_param(value).value
 
     @property
     def mangled_name(self):
