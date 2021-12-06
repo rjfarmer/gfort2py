@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 import ctypes
 import numpy as np
-from collections import namedtuple
+import collections
 
 from . import parseMod as pm
 
@@ -132,6 +132,9 @@ class fObject:
     def __ceil__(self):
         return self.value.__ceil__()
 
+    def __len__(self):
+        return self.value.__len__()
+
 
 class fParam(fObject):
     def __init__(self, lib, allobjs, key):
@@ -165,6 +168,9 @@ class fVar_t:
     def from_param(self, value):
         t = self.type()
         k = int(self.kind())
+
+        if self.is_optional and value is None:
+            return None
 
         if t == 'INTEGER':
             return self.ctype(value)(value)
@@ -311,7 +317,7 @@ class fVar(fObject):
 
 
 class fProc:
-    Result = namedtuple('Result', ["res", "args"])
+    Result = collections.namedtuple('Result', ["res", "args"])
 
 
     def __init__(self, lib, allobjs, key):
@@ -363,45 +369,39 @@ class fProc:
         else:
             self._func.restype = fVar_t(self._allobjs[symref]).ctype()
 
-    # def _set_argtypes(self):
-    #     fargs = self._object.sym.formal_arg
-
-    #     res = []
-    #     if not len(fargs):
-    #         return
-
-    #     for i in fargs:
-    #         var = fVar_t(self._allobjs[i.ref])
-
-    #         ct = var.ctype()
-
-    #         if var.is_value():
-    #             res.append(ct)
-    #         elif var.is_pointer():
-    #             res.append(ctypes.POINTER(ctypes.POINTER(ct)))
-    #         else:
-    #             res.append(ctypes.POINTER(ct))
-
-    #     self._func.argtypes = res
-
 
     def _convert_args(self, *args, **kwargs):
         fargs = self._object.sym.formal_arg
 
         res = []
-        if not len(args):
-            return None
 
-        for value,fval in zip(args,fargs):
+        count = 0
+        for fval in fargs:
             var = fVar_t(self._allobjs[fval.ref])
-            z = var.from_param(value)
 
-            if var.is_value():
-                res.append(z)
-            elif var.is_pointer():
-                res.append(ctypes.pointer(ctypes.pointer(z)))
+            try:
+                x = kwargs[var.name]
+            except KeyError:
+                if count <= len(args):
+                    x = args[count]
+                    count = count+1
+                else:
+                    raise TypeError('Not enough arguments passed')
+
+            if x is None and not var.is_optional():
+                raise ValueError(f'Got None for {var.name}')
+
+            if x is not None:
+                z = var.from_param(x)
+
+                if var.is_value():
+                    res.append(z)
+                elif var.is_pointer():
+                    res.append(ctypes.pointer(ctypes.pointer(z)))
+                else:
+                    res.append(ctypes.pointer(z))
             else:
-                res.append(ctypes.pointer(z))
+                res.append(None)
 
         return res
 
