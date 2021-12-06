@@ -274,7 +274,25 @@ class fVar_t:
 
     @property
     def __doc__(self):
-        return f"{self._object.head.name} {self._value.type()}(KIND={self._value.kind()})"
+        t = self.type()
+        k = self.kind()
+        return f"{self._object.head.name.lower()} {self.typekind}"
+
+    @property
+    def typekind(self):
+        t = self.type()
+        k = self.kind()
+        if t == 'INTEGER' or t == 'REAL':
+            return f"{t}(KIND={k})"
+        elif t == 'LOGICAL':
+            return f"{t}"
+        elif t == 'CHARACTER':
+            try:
+                strlen = self._object.sym.ts.charlen.value # We know the string length at compile time
+                return f"{t}(LEN={strlen})"
+            except AttributeError:
+                return f"{t}(LEN=:)"
+
 
 class fVar(fObject):
     def __init__(self, lib, allobjs, key):
@@ -345,6 +363,11 @@ class fProc:
     @property
     def module(self):
         return self._object.head.module
+
+
+    @property
+    def name(self):
+        return self._object.head.name
 
     @property
     def __doc__(self):
@@ -426,6 +449,28 @@ class fProc:
                 res[self._allobjs[fval.ref].head.name] = x
 
         return self.Result(result, res)
+
+    def __repr__(self):
+        return self.__doc__
+
+    @property
+    def __doc__(self):
+        symref = self._object.sym.sym_ref.ref
+
+        if symref == 0:
+            ftype = f"subroutine {self.name}"
+        else:
+            fv = fVar_t(self._allobjs[symref]).typekind
+            ftype = f"{fv} function {self.name}"
+
+        fargs = self._object.sym.formal_arg
+        args = []
+        for fval in fargs:
+            args.append(fVar_t(self._allobjs[fval.ref]).__doc__)
+
+        return ftype + '(' + ', '.join(args) + ')'
+        
+
 
 class fFort:
     _initialised = False
