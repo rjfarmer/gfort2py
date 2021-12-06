@@ -163,7 +163,36 @@ class fVar_t:
         return self._object.sym.ts.kind
 
     def from_param(self, value):
-        return self.ctype(value)(value)
+        t = self.type()
+        k = int(self.kind())
+
+        if t == 'INTEGER':
+            return self.ctype(value)(value)
+        elif t == 'REAL':
+            return self.ctype(value)(value)
+        elif t == 'LOGICAL':
+            if value:
+                return self.ctype(value)(1)
+            else:
+                return self.ctype(value)(0)
+        elif t == 'CHARACTER':
+            try:
+                strlen = self._object.sym.ts.charlen.value # We know the string length at compile time
+            except AttributeError:
+                strlen = len(value) # We do not know the length of the string at compile time
+            if hasattr(value, "encode"):
+                value = value.encode()
+
+            if len(value) > strlen:
+                value = value[:strlen] 
+            else:
+                value = value + b' '*(strlen-len(value))
+
+            self._buf = bytearray(value) # Need to keep hold of the reference
+            
+            return self.ctype(value).from_buffer(self._buf)
+
+        raise NotImplementedError(f'Object of type {t} and kind {k} not supported yet')
 
     def is_pointer(self):
         return 'POINTER' in self._object.sym.attr.attributes
@@ -291,8 +320,6 @@ class fProc:
         self._lib = lib
 
         self._func = getattr(lib, self.mangled_name)
-        self._set_return()
-        self._set_argtypes()
 
     @property
     def mangled_name(self):
@@ -317,6 +344,8 @@ class fProc:
 
     def __call__(self, *args, **kwargs):
 
+        self._set_return()
+
         func_args = self._convert_args(*args, **kwargs)
 
         if func_args is not None:
@@ -334,26 +363,26 @@ class fProc:
         else:
             self._func.restype = fVar_t(self._allobjs[symref]).ctype()
 
-    def _set_argtypes(self):
-        fargs = self._object.sym.formal_arg
+    # def _set_argtypes(self):
+    #     fargs = self._object.sym.formal_arg
 
-        res = []
-        if not len(fargs):
-            return
+    #     res = []
+    #     if not len(fargs):
+    #         return
 
-        for i in fargs:
-            var = fVar_t(self._allobjs[i.ref])
+    #     for i in fargs:
+    #         var = fVar_t(self._allobjs[i.ref])
 
-            ct = var.ctype()
+    #         ct = var.ctype()
 
-            if var.is_value():
-                res.append(ct)
-            elif var.is_pointer():
-                res.append(ctypes.POINTER(ctypes.POINTER(ct)))
-            else:
-                res.append(ctypes.POINTER(ct))
+    #         if var.is_value():
+    #             res.append(ct)
+    #         elif var.is_pointer():
+    #             res.append(ctypes.POINTER(ctypes.POINTER(ct)))
+    #         else:
+    #             res.append(ctypes.POINTER(ct))
 
-        self._func.argtypes = res
+    #     self._func.argtypes = res
 
 
     def _convert_args(self, *args, **kwargs):
