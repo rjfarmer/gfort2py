@@ -135,6 +135,8 @@ class fObject:
     def __len__(self):
         return self.value.__len__()
 
+    def __index__(self):
+        return int(self.value)
 
 class fParam(fObject):
     def __init__(self, lib, allobjs, key):
@@ -402,7 +404,7 @@ class fProc:
                     res.append(ctypes.pointer(z))
             else:
                 res.append(None)
-
+        
         return res
 
     def _convert_result(self, result, args):
