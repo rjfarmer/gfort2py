@@ -163,7 +163,7 @@ class fVar_t:
         return self._object.sym.ts.kind
 
     def from_param(self, value):
-        return self.ctype(value)
+        return self.ctype(value)(value)
 
     def is_pointer(self):
         return 'POINTER' in self._object.sym.attr.attributes
@@ -181,18 +181,55 @@ class fVar_t:
 
         if t == 'INTEGER':
             if k == 4:
-                return ctypes.c_int32
+                def callback(*args):
+                    return ctypes.c_int32
+                return callback
             elif k == 8:
-                return ctypes.c_int64
+                def callback(*args):
+                    return ctypes.c_int64
+                return callback
         elif t == 'REAL':
             if k == 4:
-                return ctypes.c_float
+                def callback(*args):
+                    return ctypes.c_float
+                return callback
             elif k == 8:
-                return ctypes.c_double
+                def callback(*args):
+                    return ctypes.c_double
+                return callback
         elif t == 'LOGICAL':
-            return ctypes.c_int32
+            def callback(*args):
+                return ctypes.c_int32
+            return callback
+        elif t == 'CHARACTER':
+            try:
+                strlen = self._object.sym.ts.charlen.value # We know the string length at compile time
+                def callback(*args):
+                    return ctypes.c_char * strlen
+                return callback
+            except AttributeError:
+                def callback(value, *args): # We de not know the string length at compile time
+                    return ctypes.c_char * len(value)
+                return callback
 
         raise NotImplementedError(f'Object of type {t} and kind {k} not supported yet')
+
+
+    def from_ctype(self, value):
+        t = self.type()
+        k = int(self.kind())
+
+        if t == 'INTEGER':
+            return value.value
+        elif t == 'REAL':
+            return value.value
+        elif t == 'LOGICAL':
+            return value.value == 1
+        elif t == 'CHARACTER':
+            return "".join([i.decode() for i in value])
+
+        raise NotImplementedError(f'Object of type {t} and kind {k} not supported yet')
+
 
     @property
     def name(self):
@@ -211,11 +248,11 @@ class fVar(fObject):
         self._value = fVar_t(self._object)
 
     def from_param(self, value):
-        return self.ctype(value)
+        return self._value.ctype(value)(value)
 
     @property
     def value(self):
-        return self.in_dll(self._lib).value
+        return self._value.from_ctype(self.in_dll(self._lib))
 
     @value.setter
     def value(self, value):
@@ -232,7 +269,7 @@ class fVar(fObject):
         return str(self.value)
 
     def in_dll(self, lib):
-        return self._value.ctype.in_dll(lib, self.mangled_name)
+        return self._value.ctype().in_dll(lib, self.mangled_name)
 
     @property
     def module(self):
@@ -295,7 +332,7 @@ class fProc:
         if symref == 0:
             self._func.restype = None # Subroutine
         else:
-            self._func.restype = fVar_t(self._allobjs[symref]).ctype
+            self._func.restype = fVar_t(self._allobjs[symref]).ctype()
 
     def _set_argtypes(self):
         fargs = self._object.sym.formal_arg
@@ -307,14 +344,14 @@ class fProc:
         for i in fargs:
             var = fVar_t(self._allobjs[i.ref])
 
-            if var.is_value():
-                a = var.ctype
-            elif var.is_pointer():
-                a = ctypes.POINTER(ctypes.POINTER(var.ctype))
-            else:
-                a = ctypes.POINTER(var.ctype)
+            ct = var.ctype()
 
-            res.append(a)
+            if var.is_value():
+                res.append(ct)
+            elif var.is_pointer():
+                res.append(ctypes.POINTER(ctypes.POINTER(ct)))
+            else:
+                res.append(ctypes.POINTER(ct))
 
         self._func.argtypes = res
 
@@ -328,16 +365,14 @@ class fProc:
 
         for value,fval in zip(args,fargs):
             var = fVar_t(self._allobjs[fval.ref])
-            z = var.ctype(value)
+            z = var.from_param(value)
 
             if var.is_value():
-                a = z
+                res.append(z)
             elif var.is_pointer():
-                a = ctypes.pointer(ctypes.pointer(z))
+                res.append(ctypes.pointer(ctypes.pointer(z)))
             else:
-                a = ctypes.pointer(z)
-
-            res.append(a)
+                res.append(ctypes.pointer(z))
 
         return res
 

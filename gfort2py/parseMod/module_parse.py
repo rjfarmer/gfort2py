@@ -250,8 +250,8 @@ class typespec:
         self.is_iso_c = bool(int(args[4]))
         self.type2 = args[5]
         try:
-            self.charlen = int(args[6])
-        except TypeError:
+            self.charlen = expression(*args[6][0]) #TODO: might this need to be iterated for mulit-d strings?
+        except IndexError:
             self.charlen = -1
         try:
             self.deferred_cl = args[7] == "DEFERRED_CL"
