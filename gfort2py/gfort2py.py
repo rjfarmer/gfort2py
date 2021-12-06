@@ -405,7 +405,7 @@ class fVar(fObject):
 
         if isinstance(ct, ctypes.Structure):
             for k in ct.__dir__():
-                if not k.startswith('_'):
+                if not k.startswith('_') and hasattr(value,k):
                     setattr(ct,k,getattr(value,k))
         else:
             ct.value = self.from_param(value).value
