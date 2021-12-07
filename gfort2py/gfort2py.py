@@ -429,9 +429,8 @@ class fVar(fObject):
 
     @property
     def __doc__(self):
-        return f"{self._value._type()}(KIND={self._value._kind()}) " \
+        return f"{self._value.type()}(KIND={self._value.kind()}) " \
                f"MODULE={self.module}.mod"
-
 
 class fProc:
     Result = collections.namedtuple('Result', ["res", "args"])
@@ -586,8 +585,6 @@ class fProc:
             args.append(fVar_t(self._allobjs[fval.ref]).__doc__)
 
         return ftype + '(' + ', '.join(args) + ')'
-        
-
 
 class fFort:
     _initialised = False
