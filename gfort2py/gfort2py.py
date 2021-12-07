@@ -38,22 +38,22 @@ class _captureStdOut:
 
 class fObject:
     def __eq__(self, other):
-        return self.value == other
+        return self.value.__eq__(other)
 
     def __ne__(self, other):
-        return self.value != other
+        return self.value.__neq__(other)
 
     def __lt__(self, other):
-        return self.value < other
+        return self.value.__lt__(other)
 
     def __le__(self, other):
-        return self.value <= other
+        return self.value.__le__(other)
 
     def __gt__(self, other):
-        return self.value > other
+        return self.value.__gt__(other)
 
     def __ge__(self, other):
-        return self.value >= other
+        return self.value.__ge__(other)
 
     def __add__(self, other):
         return self.value.__add__(other)
@@ -249,8 +249,8 @@ class fVar_t:
         return self.type() == 'CHARACTER'
 
     def needs_len(self, *args):
+        # Only needed for things that need an extra function argument for thier length 
         if self.is_char():
-            # Only needed for things that need an extra function argument for thier length 
             try:
                 self._object.sym.ts.charlen.value # We know the string length at compile time
                 return False
