@@ -203,7 +203,7 @@ class TestBasicMethods:
         self.assertEqual(y.res, 9)
         self.assertEqual(y.args["x"], 9)
 
-        y = x.func_intent_out(x=0,y=9) # Swap order of arguments
+        y = x.func_intent_out(x=0, y=9)  # Swap order of arguments
         self.assertEqual(y.res, 9)
         self.assertEqual(y.args["x"], 9)
 

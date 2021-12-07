@@ -1,5 +1,4 @@
 numpy
 cython
-cython-setuptools
 pytest
-dataclass;python_version<'3.6'
+dataclasses

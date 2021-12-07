@@ -24,6 +24,7 @@ MOD = "./tests/comp.mod"
 
 x = gf.fFort(SO, MOD)
 
+
 class TestComplexMethods:
     def assertEqual(self, x, y):
         assert x == y

@@ -24,6 +24,7 @@ MOD = "./tests/strings.mod"
 
 x = gf.fFort(SO, MOD)
 
+
 class TestStringMethods:
     def assertEqual(self, x, y):
         assert x == y

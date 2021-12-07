@@ -24,6 +24,7 @@ MOD = "./tests/proc_ptrs.mod"
 
 x = gf.fFort(SO, MOD)
 
+
 @pytest.mark.skip
 class TestProcPtrsMethods:
     def assertEqual(self, x, y):

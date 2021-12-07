@@ -98,8 +98,8 @@ class c_item:
 
 @dataclass(init=False)
 class generics:
-    name: str = ''
-    module: str = ''
+    name: str = ""
+    module: str = ""
     id: t.List[int] = -1
 
     def __init__(self, *args):
@@ -127,11 +127,13 @@ def hextofloat(s):
 
 #####################################
 
+
 def print_args(x):
     print()
     for i in x:
         print(i)
     print()
+
 
 @dataclass(init=False)
 class attribute:
@@ -207,6 +209,7 @@ class formal_arglist:
     def __iter__(self):
         return iter(self.symbol)
 
+
 @dataclass(init=False)
 class derived_ns:
     def __init__(self, *args, **kwargs):
@@ -219,6 +222,7 @@ class actual_arglist:
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
+
 
 class typebound_proc:
     pass
@@ -250,7 +254,9 @@ class typespec:
         self.is_iso_c = bool(int(args[4]))
         self.type2 = args[5]
         try:
-            self.charlen = expression(*args[6][0]) #TODO: might this need to be iterated for mulit-d strings?
+            self.charlen = expression(
+                *args[6][0]
+            )  # TODO: might this need to be iterated for mulit-d strings?
         except IndexError:
             self.charlen = -1
         try:
@@ -356,21 +362,20 @@ class arrayspec:
         return np.product(self.pyshape())
 
 
-
 @dataclass(init=False)
 class component:
     id: int = -1
-    name: str = ''
+    name: str = ""
     ts: typespec = None
     array_spec: arrayspec = None
     expr: expression = None
     actual_arg: actual_arglist = None
     attr: attribute = None
-    access: str = ''
+    access: str = ""
     initializer: expression = None
     proc_ptr: typebound_proc = None
 
-    def __init__(self, *args):  
+    def __init__(self, *args):
         args = list(args)
 
         self.id = int(args[0])
@@ -384,13 +389,12 @@ class component:
         self.attr = attribute(*args[6])
         self.access = string_clean(args[7])
 
-        if self.name == '_final' or self.name == '_hash':
+        if self.name == "_final" or self.name == "_hash":
             self.initializer = expression(*args[8])
             _ = args.pop(8)
-        
+
         if not self.attr.proc == "UNKNOWN-PROC":
             self.proc_ptr = typebound_proc(args[8])
-
 
 
 @dataclass(init=False)
@@ -431,7 +435,7 @@ class simd_dec:
 class data:
     attr: attribute
     comp: components = None
-    comp_access: str = '' # Only for DT's
+    comp_access: str = ""  # Only for DT's
     ts: typespec = None
     ns: namespace = None
     common_link: symbol_ref = None
@@ -458,7 +462,6 @@ class data:
         if isinstance(args[2], str):
             self.comp_access = args[2]
             _ = args.pop(2)
-
 
         self.ts = typespec(*args[2])
         self.ns = namespace(args[3])
@@ -500,7 +503,7 @@ class symbol:
 class module(object):
     version = 15
 
-    def __init__(self, filename,load_only=False):
+    def __init__(self, filename, load_only=False):
         self.filename = filename
 
         with gzip.open(self.filename) as f:
@@ -527,7 +530,7 @@ class module(object):
             self.equivalence = self.parsed_data[4]
 
             self.omp = self.parsed_data[5]
-            
+
             self.symbols = self.parse_symbols(self.parsed_data[6])
             self.summary = Summary(self.parsed_data[7])
 
@@ -566,8 +569,8 @@ class module(object):
             # Not a global variable maybe a function argument?
             return self.symbols[key]
 
-if __name__ == "__main__":
-   m = module(filename=sys.argv[1])
-   for i in m.keys():
-       pprint.pprint(m[i])
 
+if __name__ == "__main__":
+    m = module(filename=sys.argv[1])
+    for i in m.keys():
+        pprint.pprint(m[i])

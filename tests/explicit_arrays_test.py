@@ -24,6 +24,7 @@ MOD = "./tests/explicit_arrays.mod"
 
 x = gf.fFort(SO, MOD)
 
+
 @pytest.mark.skip
 class TestExplicitArrayMethods:
     def assertEqual(self, x, y):

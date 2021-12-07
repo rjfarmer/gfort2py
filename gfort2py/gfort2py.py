@@ -36,6 +36,7 @@ class _captureStdOut:
             os.close(self.pipe_out)
             os.close(self.stdout)
 
+
 class fObject:
     def __eq__(self, other):
         return self.value.__eq__(other)
@@ -169,6 +170,7 @@ class fObject:
     def __index__(self):
         return int(self.value)
 
+
 class fParam(fObject):
     def __init__(self, lib, allobjs, key):
         self._allobjs = allobjs
@@ -182,7 +184,6 @@ class fParam(fObject):
     @value.setter
     def value(self, value):
         raise AttributeError("Parameter can't be altered")
-
 
 
 class fVar_t:
@@ -205,127 +206,164 @@ class fVar_t:
         if self.is_optional and value is None:
             return None
 
-        if t == 'INTEGER':
+        if t == "INTEGER":
             return self.ctype(value)(value)
-        elif t == 'REAL':
+        elif t == "REAL":
             return self.ctype(value)(value)
-        elif t == 'LOGICAL':
+        elif t == "LOGICAL":
             if value:
                 return self.ctype(value)(1)
             else:
                 return self.ctype(value)(0)
-        elif t == 'CHARACTER':
+        elif t == "CHARACTER":
             try:
-                strlen = self._object.sym.ts.charlen.value # We know the string length at compile time
+                strlen = (
+                    self._object.sym.ts.charlen.value
+                )  # We know the string length at compile time
             except AttributeError:
-                strlen = len(value) # We do not know the length of the string at compile time
+                strlen = len(
+                    value
+                )  # We do not know the length of the string at compile time
             if hasattr(value, "encode"):
                 value = value.encode()
 
             if len(value) > strlen:
-                value = value[:strlen] 
+                value = value[:strlen]
             else:
-                value = value + b' '*(strlen-len(value))
+                value = value + b" " * (strlen - len(value))
 
-            self._buf = bytearray(value) # Need to keep hold of the reference
-            
+            self._buf = bytearray(value)  # Need to keep hold of the reference
+
             return self.ctype(value).from_buffer(self._buf)
-        elif t == 'COMPLEX':
+        elif t == "COMPLEX":
             return self.ctype()(value.real, value.imag)
 
-
-        raise NotImplementedError(f'Object of type {t} and kind {k} not supported yet')
+        raise NotImplementedError(f"Object of type {t} and kind {k} not supported yet")
 
     def is_pointer(self):
-        return 'POINTER' in self._object.sym.attr.attributes
+        return "POINTER" in self._object.sym.attr.attributes
 
     def is_value(self):
-        return 'VALUE' in self._object.sym.attr.attributes
+        return "VALUE" in self._object.sym.attr.attributes
 
     def is_optional(self):
-        return 'OPTIONAL' in self._object.sym.attr.attributes
+        return "OPTIONAL" in self._object.sym.attr.attributes
 
     def is_char(self):
-        return self.type() == 'CHARACTER'
+        return self.type() == "CHARACTER"
 
     def needs_len(self, *args):
-        # Only needed for things that need an extra function argument for thier length 
+        # Only needed for things that need an extra function argument for thier length
         if self.is_char():
             try:
-                self._object.sym.ts.charlen.value # We know the string length at compile time
+                self._object.sym.ts.charlen.value  # We know the string length at compile time
                 return False
             except AttributeError:
-                return True # We do not know the length of the string at compile time
+                return True  # We do not know the length of the string at compile time
         return False
 
     def clen(self, *args):
         if self.is_char():
             try:
-                return ctypes.c_int64(self._object.sym.ts.charlen.value) # We know the string length at compile time
+                return ctypes.c_int64(
+                    self._object.sym.ts.charlen.value
+                )  # We know the string length at compile time
             except AttributeError:
-                return ctypes.c_int64(len(args[0])) # We do not know the length of the string at compile time
-
-
+                return ctypes.c_int64(
+                    len(args[0])
+                )  # We do not know the length of the string at compile time
 
     @property
     def ctype(self):
         t = self.type()
         k = int(self.kind())
 
-        if t == 'INTEGER':
+        if t == "INTEGER":
             if k == 4:
+
                 def callback(*args):
                     return ctypes.c_int32
+
                 return callback
             elif k == 8:
+
                 def callback(*args):
                     return ctypes.c_int64
+
                 return callback
-        elif t == 'REAL':
+        elif t == "REAL":
             if k == 4:
+
                 def callback(*args):
                     return ctypes.c_float
+
                 return callback
             elif k == 8:
+
                 def callback(*args):
                     return ctypes.c_double
+
                 return callback
-        elif t == 'LOGICAL':
+        elif t == "LOGICAL":
+
             def callback(*args):
                 return ctypes.c_int32
+
             return callback
-        elif t == 'CHARACTER':
+        elif t == "CHARACTER":
             try:
-                strlen = self._object.sym.ts.charlen.value # We know the string length at compile time
+                strlen = (
+                    self._object.sym.ts.charlen.value
+                )  # We know the string length at compile time
+
                 def callback(*args):
                     return ctypes.c_char * strlen
+
                 return callback
             except AttributeError:
-                def callback(value, *args): # We de not know the string length at compile time
+
+                def callback(
+                    value, *args
+                ):  # We de not know the string length at compile time
                     return ctypes.c_char * len(value)
+
                 return callback
-        elif t == 'COMPLEX':
+        elif t == "COMPLEX":
             if k == 4:
+
                 def callback(*args):
                     class complex(ctypes.Structure):
                         _fields_ = [("real", ctypes.c_float), ("imag", ctypes.c_float)]
+
                     return complex
+
                 return callback
             elif k == 8:
+
                 def callback(*args):
                     class complex(ctypes.Structure):
-                        _fields_ = [("real", ctypes.c_double), ("imag", ctypes.c_double)]
+                        _fields_ = [
+                            ("real", ctypes.c_double),
+                            ("imag", ctypes.c_double),
+                        ]
+
                     return complex
+
                 return callback
             elif k == 16:
+
                 def callback(*args):
                     class complex(ctypes.Structure):
-                        _fields_ = [("real", ctypes.c_longdouble), ("imag", ctypes.c_longdouble)]
+                        _fields_ = [
+                            ("real", ctypes.c_longdouble),
+                            ("imag", ctypes.c_longdouble),
+                        ]
+
                     return complex
+
                 return callback
 
-        raise NotImplementedError(f'Object of type {t} and kind {k} not supported yet')
-
+        raise NotImplementedError(f"Object of type {t} and kind {k} not supported yet")
 
     def from_ctype(self, value):
         t = self.type()
@@ -341,22 +379,23 @@ class fVar_t:
             else:
                 x = value.contents
 
-        if t == 'COMPLEX':
+        if t == "COMPLEX":
             return complex(x.real, x.imag)
 
-        if hasattr(x,'value'):
-            if t == 'INTEGER':
+        if hasattr(x, "value"):
+            if t == "INTEGER":
                 return x.value
-            elif t == 'REAL':
+            elif t == "REAL":
                 return x.value
-            elif t == 'LOGICAL':
+            elif t == "LOGICAL":
                 return x.value == 1
-            elif t == 'CHARACTER':
+            elif t == "CHARACTER":
                 return "".join([i.decode() for i in x])
-            raise NotImplementedError(f'Object of type {t} and kind {k} not supported yet')
+            raise NotImplementedError(
+                f"Object of type {t} and kind {k} not supported yet"
+            )
         else:
             return x
-
 
     @property
     def name(self):
@@ -372,13 +411,15 @@ class fVar_t:
     def typekind(self):
         t = self.type()
         k = self.kind()
-        if t == 'INTEGER' or t == 'REAL':
+        if t == "INTEGER" or t == "REAL":
             return f"{t}(KIND={k})"
-        elif t == 'LOGICAL':
+        elif t == "LOGICAL":
             return f"{t}"
-        elif t == 'CHARACTER':
+        elif t == "CHARACTER":
             try:
-                strlen = self._object.sym.ts.charlen.value # We know the string length at compile time
+                strlen = (
+                    self._object.sym.ts.charlen.value
+                )  # We know the string length at compile time
                 return f"{t}(LEN={strlen})"
             except AttributeError:
                 return f"{t}(LEN=:)"
@@ -405,8 +446,8 @@ class fVar(fObject):
 
         if isinstance(ct, ctypes.Structure):
             for k in ct.__dir__():
-                if not k.startswith('_') and hasattr(value,k):
-                    setattr(ct,k,getattr(value,k))
+                if not k.startswith("_") and hasattr(value, k):
+                    setattr(ct, k, getattr(value, k))
         else:
             ct.value = self.from_param(value).value
 
@@ -429,12 +470,14 @@ class fVar(fObject):
 
     @property
     def __doc__(self):
-        return f"{self._value.type()}(KIND={self._value.kind()}) " \
-               f"MODULE={self.module}.mod"
+        return (
+            f"{self._value.type()}(KIND={self._value.kind()}) "
+            f"MODULE={self.module}.mod"
+        )
+
 
 class fProc:
-    Result = collections.namedtuple('Result', ["res", "args"])
-
+    Result = collections.namedtuple("Result", ["res", "args"])
 
     def __init__(self, lib, allobjs, key):
         self._allobjs = allobjs
@@ -463,7 +506,6 @@ class fProc:
     def module(self):
         return self._object.head.module
 
-
     @property
     def name(self):
         return self._object.head.name
@@ -474,7 +516,7 @@ class fProc:
 
     def __call__(self, *args, **kwargs):
 
-        self._set_return()        
+        self._set_return()
 
         func_args = self._convert_args(*args, **kwargs)
 
@@ -488,15 +530,16 @@ class fProc:
 
     def _set_return(self):
         if self.symref == 0:
-            self._func.restype = None # Subroutine
+            self._func.restype = None  # Subroutine
         else:
             fvar = fVar_t(self._allobjs[self.symref])
 
-            if fvar.is_char(): #Return a character is done as a character + len at start of arg list
+            if (
+                fvar.is_char()
+            ):  # Return a character is done as a character + len at start of arg list
                 self._func.restype = None
             else:
                 self._func.restype = fvar.ctype()
-
 
     def _convert_args(self, *args, **kwargs):
 
@@ -504,12 +547,11 @@ class fProc:
         res = []
         res_end = []
 
-
         if self.symref != 0:
             fvar = fVar_t(self._allobjs[self.symref])
             if fvar.is_char():
                 l = fvar.clen()
-                res_start.append(fvar.from_param(' '*l.value))
+                res_start.append(fvar.from_param(" " * l.value))
                 res_start.append(l)
 
         count = 0
@@ -521,12 +563,12 @@ class fProc:
             except KeyError:
                 if count <= len(args):
                     x = args[count]
-                    count = count+1
+                    count = count + 1
                 else:
-                    raise TypeError('Not enough arguments passed')
+                    raise TypeError("Not enough arguments passed")
 
             if x is None and not var.is_optional():
-                raise ValueError(f'Got None for {var.name}')
+                raise ValueError(f"Got None for {var.name}")
 
             if x is not None:
                 z = var.from_param(x)
@@ -556,12 +598,13 @@ class fProc:
             if fvar.is_char():
                 result = args[0]
                 _ = args.pop(0)
-                _ = args.pop(0) # Twice to pop first and second value
+                _ = args.pop(0)  # Twice to pop first and second value
 
         if len(self.fargs):
-            for ptr,fval in zip(args,self.fargs):
-                res[self._allobjs[fval.ref].head.name] = fVar_t(self._allobjs[fval.ref]).from_ctype(ptr)
-
+            for ptr, fval in zip(args, self.fargs):
+                res[self._allobjs[fval.ref].head.name] = fVar_t(
+                    self._allobjs[fval.ref]
+                ).from_ctype(ptr)
 
         if self.symref != 0:
             result = fVar_t(self._allobjs[self.symref]).from_ctype(result)
@@ -584,14 +627,15 @@ class fProc:
         for fval in self.fargs:
             args.append(fVar_t(self._allobjs[fval.ref]).__doc__)
 
-        return ftype + '(' + ', '.join(args) + ')'
+        return ftype + "(" + ", ".join(args) + ")"
+
 
 class fFort:
     _initialised = False
 
     def __init__(self, libname, mod_file):
         self._lib = ctypes.CDLL(libname)
-        self._mod_file = mod_file 
+        self._mod_file = mod_file
         self._module = pm.module(self._mod_file)
 
         self._initialised = True
@@ -609,38 +653,39 @@ class fFort:
         if key in self.__dict__:
             return self.__dict__[key]
 
-        if '_initialised' in self.__dict__:
+        if "_initialised" in self.__dict__:
             if self._initialised:
                 if key not in self.keys():
                     raise AttributeError(f"{self._mod_file}  has no attribute {key}")
 
             flavor = self._module[key].sym.attr.flavor
-            if flavor == 'VARIABLE':
+            if flavor == "VARIABLE":
                 return fVar(self._lib, self._module, key)
-            elif flavor == 'PROCEDURE':
+            elif flavor == "PROCEDURE":
                 return fProc(self._lib, self._module, key)
-            elif flavor == 'PARAMETER':
+            elif flavor == "PARAMETER":
                 return fParam(self._lib, self._module, key)
             else:
                 raise NotImplementedError(f"Object type {flavor} not implemented yet")
 
-
     def __setattr__(self, key, value):
-        if '_initialised' in self.__dict__:
+        if "_initialised" in self.__dict__:
             if self._initialised:
                 if key not in self:
                     raise AttributeError(f"{self._mod_file}  has no attribute {key}")
 
                 flavor = self._module[key].sym.attr.flavor
-                if flavor == 'VARIABLE':
+                if flavor == "VARIABLE":
                     f = fVar(self._lib, self._module, key)
                     f.value = value
                     return
-                elif flavor == 'PARAMETER':
-                    raise AttributeError('Can not alter a parameter')
+                elif flavor == "PARAMETER":
+                    raise AttributeError("Can not alter a parameter")
 
                 else:
-                    raise NotImplementedError(f"Object type {flavor} not implemented yet")
+                    raise NotImplementedError(
+                        f"Object type {flavor} not implemented yet"
+                    )
 
         self.__dict__[key] = value
 

@@ -24,6 +24,7 @@ MOD = "./tests/oo.mod"
 
 x = gf.fFort(SO, MOD)
 
+
 @pytest.mark.skip
 class TestOOMethods:
     def assertEqual(self, x, y):
