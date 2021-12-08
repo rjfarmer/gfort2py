@@ -297,16 +297,15 @@ class expression:
                 )
             else:
                 print(args)
-            # TODO: Handle arrays, complex etc
         elif self.exp_type == "VARIABLE":
-            print(args)
+            self.value = symbol_ref(args[3])
         elif self.exp_type == "SUBSTRING":
             print(args)
         elif self.exp_type == "ARRAY":
             self.value = []
             for i in args[3]:
                 self.value.append(
-                    expression(*i[0])
+                    expression(*i[0]).value
                 )  # Wheres the extra component comming from?
         elif self.exp_type == "NULL":
             print(args)
@@ -352,6 +351,9 @@ class arrayspec:
     @property
     def pyshape(self):
         res = []
+        if self.lower is None:
+            return []
+
         for l, u in zip(self.lower, self.upper):
             res.append(u.value - l.value + 1)
 
@@ -359,7 +361,7 @@ class arrayspec:
 
     @property
     def size(self):
-        return np.product(self.pyshape())
+        return np.product(self.pyshape)
 
 
 @dataclass(init=False)

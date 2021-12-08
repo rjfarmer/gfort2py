@@ -42,6 +42,9 @@ module explicit_arrays
 	character(len=10), dimension(5,5,5) :: b_str_exp_3d
 	character(len=10), dimension(5,5,5,5) :: b_str_exp_4d
 	character(len=10), dimension(5,5,5,5,5) :: b_str_exp_5d     
+
+
+	integer, dimension(5) :: b_int_exp_1d_set = (/1,2,3,4,5/)
 	
 	
 	contains

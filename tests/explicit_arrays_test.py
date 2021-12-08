@@ -31,7 +31,7 @@ class TestExplicitArrayMethods:
         assert x == y
 
     def test_const_int_arr_error(self):
-        with pytest.raises(ValueError) as cm:
+        with pytest.raises(AttributeError) as cm:
             x.const_int_arr = "abc"
 
     def test_const_int_arr(self):

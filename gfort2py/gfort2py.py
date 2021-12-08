@@ -170,6 +170,12 @@ class fObject:
     def __index__(self):
         return int(self.value)
 
+    def __str__(self):
+        return self.value.__str__()
+
+    def __repr__(self):
+        return self.value.__repr__()
+
 
 class fParam(fObject):
     def __init__(self, lib, allobjs, key):
@@ -179,11 +185,22 @@ class fParam(fObject):
 
     @property
     def value(self):
-        return self._object.sym.parameter.value
+        v = self._object.sym.parameter.value
+
+        if not self.is_array():
+            return v
+        else:
+            return np.array(v).reshape(self._shape())
 
     @value.setter
     def value(self, value):
         raise AttributeError("Parameter can't be altered")
+
+    def is_array(self):
+        return self._object.sym.array_spec.rank > 0
+
+    def _shape(self):
+        return self._object.sym.array_spec.pyshape
 
 
 class fVar_t:
@@ -206,9 +223,20 @@ class fVar_t:
         if self.is_optional and value is None:
             return None
 
+        if self.is_array():
+            if self.is_explicit():
+                # TODO: Needs shape,ndims checking
+                return np.ctypeslib.as_ctypes(value)
+
         if t == "INTEGER":
             return self.ctype(value)(value)
         elif t == "REAL":
+            if k == 16:
+                print(
+                    f"Object of type {t} and kind {k} not supported yet, passing None"
+                )
+                return self.ctype(value)(None)
+
             return self.ctype(value)(value)
         elif t == "LOGICAL":
             if value:
@@ -252,6 +280,12 @@ class fVar_t:
     def is_char(self):
         return self.type() == "CHARACTER"
 
+    def is_array(self):
+        return "DIMENSION" in self._object.sym.attr.attributes
+
+    def is_explicit(self):
+        return self._object.sym.array_spec.array_type == "EXPLICIT"
+
     def needs_len(self, *args):
         # Only needed for things that need an extra function argument for thier length
         if self.is_char():
@@ -273,10 +307,34 @@ class fVar_t:
                     len(args[0])
                 )  # We do not know the length of the string at compile time
 
+    def dtype(self):
+        t = self.type()
+        k = int(self.kind())
+
+        if t == "INTEGER":
+            if k == 4:
+                return "i4"
+            elif k == 8:
+                return "i8"
+        elif t == "REAL":
+            if k == 4:
+                return "f4"
+            elif k == 8:
+                return "f8"
+        elif t == "COMPLEX":
+            if k == 4:
+                return "c4"
+            elif k == 8:
+                return "c8"
+
+        raise NotImplementedError(f"Object of type {t} and kind {k} not supported yet")
+
     @property
     def ctype(self):
         t = self.type()
         k = int(self.kind())
+        cb_var = None
+        cb_arr = None
 
         if t == "INTEGER":
             if k == 4:
@@ -284,32 +342,38 @@ class fVar_t:
                 def callback(*args):
                     return ctypes.c_int32
 
-                return callback
+                cb_var = callback
             elif k == 8:
 
                 def callback(*args):
                     return ctypes.c_int64
 
-                return callback
+                cb_var = callback
         elif t == "REAL":
             if k == 4:
 
                 def callback(*args):
                     return ctypes.c_float
 
-                return callback
+                cb_var = callback
             elif k == 8:
 
                 def callback(*args):
                     return ctypes.c_double
 
-                return callback
+                cb_var = callback
+            elif k == 16:
+                # Although we dont support quad we can keep things aligned
+                def callback(*args):
+                    return ctypes.c_ubyte * 16
+
+                cb_var = callback
         elif t == "LOGICAL":
 
             def callback(*args):
                 return ctypes.c_int32
 
-            return callback
+            cb_var = callback
         elif t == "CHARACTER":
             try:
                 strlen = (
@@ -319,7 +383,7 @@ class fVar_t:
                 def callback(*args):
                     return ctypes.c_char * strlen
 
-                return callback
+                cb_var = callback
             except AttributeError:
 
                 def callback(
@@ -327,7 +391,7 @@ class fVar_t:
                 ):  # We de not know the string length at compile time
                     return ctypes.c_char * len(value)
 
-                return callback
+                cb_var = callback
         elif t == "COMPLEX":
             if k == 4:
 
@@ -337,7 +401,7 @@ class fVar_t:
 
                     return complex
 
-                return callback
+                cb_var = callback
             elif k == 8:
 
                 def callback(*args):
@@ -349,21 +413,36 @@ class fVar_t:
 
                     return complex
 
-                return callback
+                cb_var = callback
             elif k == 16:
 
                 def callback(*args):
                     class complex(ctypes.Structure):
                         _fields_ = [
-                            ("real", ctypes.c_longdouble),
-                            ("imag", ctypes.c_longdouble),
+                            ("real", ctypes.c_ubyte * 16),
+                            ("imag", ctypes.c_ubyte * 16),
                         ]
 
                     return complex
 
-                return callback
+                cb_var = callback
 
-        raise NotImplementedError(f"Object of type {t} and kind {k} not supported yet")
+        if self.is_array():
+            if self.is_explicit():
+
+                def callback(*args):
+                    return cb_var() * self._size()
+
+                cb_arr = callback
+        else:
+            cb_arr = cb_var
+
+        if cb_arr is None:
+            raise NotImplementedError(
+                f"Object of type {t} and kind {k} not supported yet"
+            )
+        else:
+            return cb_arr
 
     def from_ctype(self, value):
         t = self.type()
@@ -373,11 +452,16 @@ class fVar_t:
             return None
 
         x = value
+
         if hasattr(value, "contents"):
             if hasattr(value.contents, "contents"):
                 x = value.contents.contents
             else:
                 x = value.contents
+
+        if self.is_array():
+            if self.is_explicit():
+                return np.reshape(np.ctypeslib.as_array(x), self._shape())
 
         if t == "COMPLEX":
             return complex(x.real, x.imag)
@@ -386,6 +470,10 @@ class fVar_t:
             if t == "INTEGER":
                 return x.value
             elif t == "REAL":
+                if k == 16:
+                    raise NotImplementedError(
+                        f"Object of type {t} and kind {k} not supported yet"
+                    )
                 return x.value
             elif t == "LOGICAL":
                 return x.value == 1
@@ -396,6 +484,12 @@ class fVar_t:
             )
         else:
             return x
+
+    def _shape(self):
+        return self._object.sym.array_spec.pyshape
+
+    def _size(self):
+        return np.product(self._shape())
 
     @property
     def name(self):
@@ -449,7 +543,7 @@ class fVar(fObject):
                 if not k.startswith("_") and hasattr(value, k):
                     setattr(ct, k, getattr(value, k))
         else:
-            ct.value = self.from_param(value).value
+            ct.value = self.from_param(value)
 
     @property
     def mangled_name(self):
@@ -627,7 +721,8 @@ class fProc:
         for fval in self.fargs:
             args.append(fVar_t(self._allobjs[fval.ref]).__doc__)
 
-        return ftype + "(" + ", ".join(args) + ")"
+        args = ", ".join(args)
+        return f"{ftype} ({args})"
 
 
 class fFort:
@@ -681,7 +776,6 @@ class fFort:
                     return
                 elif flavor == "PARAMETER":
                     raise AttributeError("Can not alter a parameter")
-
                 else:
                     raise NotImplementedError(
                         f"Object type {flavor} not implemented yet"
