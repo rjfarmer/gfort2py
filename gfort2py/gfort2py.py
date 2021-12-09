@@ -196,6 +196,31 @@ class fObject(metaclass=ABCMeta):
         else:
             raise AttributeError("No attribute __array_ufunc__")
 
+    def __array_function__(self, *args, **kwargs):
+        if self.is_array():
+            return self.value.__array_function__(*args, **kwargs)
+        else:
+            raise AttributeError("No attribute __array_function__")
+
+    def __array_wrap__(self, *args, **kwargs):
+        if self.is_array():
+            return self.value.__array_wrap__(*args, **kwargs)
+        else:
+            raise AttributeError("No attribute __array_wrap__")
+
+    def __array_prepare__(self, *args, **kwargs):
+        if self.is_array():
+            return self.value.__array_prepare__(*args, **kwargs)
+        else:
+            raise AttributeError("No attribute __array_prepare__")
+
+    @property
+    def __array_struct__(self):
+        if self.is_array():
+            return self.value.__array_struct__
+        else:
+            raise AttributeError("No attribute __array_struct__")
+
     @abstractmethod
     def is_array(self):
         pass
@@ -214,7 +239,7 @@ class fParam(fObject):
         if not self.is_array():
             return v
         else:
-            return np.array(v).reshape(self._shape())
+            return np.array(v, dtype=self.dtype()).reshape(self._shape())
 
     @value.setter
     def value(self, value):
@@ -225,6 +250,37 @@ class fParam(fObject):
 
     def _shape(self):
         return self._object.sym.array_spec.pyshape
+
+    def dtype(self):
+        t = self.type()
+        k = int(self.kind())
+
+        if t == "INTEGER" or t == "LOGICAL":
+            if k == 4:
+                return "i4"
+            elif k == 8:
+                return "i8"
+        elif t == "REAL":
+            if k == 4:
+                return "f4"
+            elif k == 8:
+                return "f8"
+        elif t == "COMPLEX":
+            if k == 4:
+                return "c4"
+            elif k == 8:
+                return "c8"
+
+        raise NotImplementedError(f"Object of type {t} and kind {k} not supported yet")
+
+    def type(self):
+        return self._object.sym.ts.type
+
+    def flavor(self):
+        return self._object.sym.flavor
+
+    def kind(self):
+        return self._object.sym.ts.kind
 
 
 class fVar_t:
@@ -253,7 +309,7 @@ class fVar_t:
                 shape = self._shape()
                 ndim = len(shape)
 
-                if not value.flags['F_CONTIGUOUS']:
+                if not value.flags["F_CONTIGUOUS"]:
                     value = np.asfortranarray(value)
 
                 if value.ndim != ndim:
@@ -263,7 +319,7 @@ class fVar_t:
                 if list(value.shape) != self._shape():
                     raise ValueError(f"Wrong shape, got {shape} expected {value.shape}")
 
-                return np.ctypeslib.as_ctypes(value)
+                return np.ctypeslib.as_ctypes(value.flatten())
 
         if t == "INTEGER":
             return self.ctype(value)(value)
@@ -331,6 +387,7 @@ class fVar_t:
                 return False
             except AttributeError:
                 return True  # We do not know the length of the string at compile time
+
         return False
 
     def clen(self, *args):
@@ -499,7 +556,8 @@ class fVar_t:
         if self.is_array():
             if self.is_explicit():
                 v = np.reshape(np.ctypeslib.as_array(x), self._shape())
-                return declare_fortran(v)
+                declare_fortran(v)
+                return v
 
         if t == "COMPLEX":
             return complex(x.real, x.imag)
@@ -584,9 +642,11 @@ class fVar(fObject):
         else:
             if self._value.is_array():
                 if self._value.is_explicit():
-                    value = value.astype(self._value.dtype())
+                    v = self.from_param(value)
                     ctypes.memmove(
-                        ctypes.addressof(ct), value.ctypes.data, np.size(value) * k
+                        ctypes.addressof(ct),
+                        ctypes.addressof(v),
+                        np.size(value) * self.sizeof,
                     )
             else:
                 ct.value = self.from_param(value).value
@@ -617,6 +677,10 @@ class fVar(fObject):
 
     def is_array(self):
         return self._value.is_array()
+
+    @property
+    def sizeof(self):
+        return self._value.kind()
 
 
 class fProc:
