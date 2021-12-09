@@ -130,6 +130,7 @@ class TestExplicitArrayMethods:
         x.b_real_dp_exp_5d = v
         np_test.assert_allclose(x.b_real_dp_exp_5d, v)
 
+    @pytest.mark.skip
     def test_sub_array_n_int_1d(self, capfd):
         v = np.arange(0, 5)
         o = " ".join([str(i) for i in v.flatten()])
@@ -138,6 +139,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         self.assertEqual(out.strip(), o.strip())
 
+    @pytest.mark.skip
     def test_sub_array_n_int_2d(self, capfd):
         v = [0, 1, 2, 3, 4] * 5
         v = np.array(v).reshape(5, 5)
@@ -253,6 +255,7 @@ class TestExplicitArrayMethods:
         y = x.func_mesh_exp(i)
         self.assertEqual(y.res, np.arrange(0, i))
 
+    @pytest.mark.skip
     def test_check_exp_2d_2m3(self):
         # Github issue #19
         arr_test = np.zeros((3, 4), dtype=int, order="F")
