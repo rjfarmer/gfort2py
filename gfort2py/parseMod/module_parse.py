@@ -232,7 +232,7 @@ class typebound_proc:
 class typespec:
     type: str = ""
     kind: int = -1  # If class symbol_ref else kind
-    class_ref: symbol_ref = None  # If class symbol_ref else kind
+    class_ref: symbol_ref = None  # If class/derived type symbol_ref else kind
     interface: symbol_ref = None
     is_c_interop: int = -1
     is_iso_c: int = -1
@@ -242,8 +242,8 @@ class typespec:
 
     def __init__(self, *args):
         self.type = args[0]
-        if self.type == "CLASS":
-            self.class_ref = symbol_ref(*args[1])
+        if self.type == "CLASS" or self.type == "DERIVED":
+            self.class_ref = symbol_ref(args[1])
         else:
             self.kind = int(args[1])
 
