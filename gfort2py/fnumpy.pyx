@@ -11,3 +11,5 @@ cpdef remove_ownership(np.ndarray arr):
 cpdef give_ownership(np.ndarray arr):    
     PyArray_ENABLEFLAGS(arr, np.NPY_OWNDATA)
 
+cpdef declare_fortran(np.ndarray arr):    
+    PyArray_ENABLEFLAGS(arr, np.NPY_FORTRANORDER)

@@ -25,7 +25,6 @@ MOD = "./tests/explicit_arrays.mod"
 x = gf.fFort(SO, MOD)
 
 
-@pytest.mark.skip
 class TestExplicitArrayMethods:
     def assertEqual(self, x, y):
         assert x == y
@@ -245,14 +244,14 @@ class TestExplicitArrayMethods:
         xarr[:] = True
 
         y = x.func_logical_multi(1.0, 2.0, xarr, 3.0, 4.0)
-        self.assertEqual(y.result, True)
+        self.assertEqual(y.res, True)
 
     @pytest.mark.skip("Skipping as we seg fault")
     def test_mesh_exp(self):
         # Github issue #13
         i = 5
         y = x.func_mesh_exp(i)
-        self.assertEqual(y.result, np.arrange(0, i))
+        self.assertEqual(y.res, np.arrange(0, i))
 
     def test_check_exp_2d_2m3(self):
         # Github issue #19

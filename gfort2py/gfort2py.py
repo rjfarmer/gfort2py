@@ -6,7 +6,7 @@ import select
 import os
 
 from . import parseMod as pm
-
+from . import fnumpy
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
@@ -176,6 +176,10 @@ class fObject:
     def __repr__(self):
         return self.value.__repr__()
 
+    @property
+    def __array_interface__(self):
+        return self.value.__array_interface__
+
 
 class fParam(fObject):
     def __init__(self, lib, allobjs, key):
@@ -225,7 +229,16 @@ class fVar_t:
 
         if self.is_array():
             if self.is_explicit():
-                # TODO: Needs shape,ndims checking
+                value = np.asfortranarray(value).astype(self.dtype())
+                shape = self._shape()
+                ndim = len(shape)
+                if value.ndim != ndim:
+                    raise ValueError(
+                        f"Not enough dimensions, got {ndim} expected {value.ndim}"
+                    )
+                if list(value.shape) != self._shape():
+                    raise ValueError(f"Wrong shape, got {shape} expected {value.shape}")
+
                 return np.ctypeslib.as_ctypes(value)
 
         if t == "INTEGER":
@@ -311,7 +324,7 @@ class fVar_t:
         t = self.type()
         k = int(self.kind())
 
-        if t == "INTEGER":
+        if t == "INTEGER" or t == "LOGICAL":
             if k == 4:
                 return "i4"
             elif k == 8:
@@ -461,7 +474,8 @@ class fVar_t:
 
         if self.is_array():
             if self.is_explicit():
-                return np.reshape(np.ctypeslib.as_array(x), self._shape())
+                v = np.reshape(np.ctypeslib.as_array(x), self._shape())
+                return fnumpy.declare_fortran(v)
 
         if t == "COMPLEX":
             return complex(x.real, x.imag)
@@ -537,13 +551,21 @@ class fVar(fObject):
     @value.setter
     def value(self, value):
         ct = self.in_dll(self._lib)
+        k = self._value.kind()
 
         if isinstance(ct, ctypes.Structure):
             for k in ct.__dir__():
                 if not k.startswith("_") and hasattr(value, k):
                     setattr(ct, k, getattr(value, k))
         else:
-            ct.value = self.from_param(value)
+            if self._value.is_array():
+                if self._value.is_explicit():
+
+                    ctypes.memmove(
+                        ctypes.addressof(ct), value.ctypes.data, np.size(value) * k
+                    )
+            else:
+                ct.value = self.from_param(value).value
 
     @property
     def mangled_name(self):

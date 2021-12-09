@@ -50,8 +50,9 @@ class TestComplexMethods:
 
     def test_a_cmplx_qp(self):
         v = complex(1.0, 1.0)
-        x.a_cmplx_qp = v
-        self.assertEqual(x.a_cmplx_qp, v)
+        with pytest.raises(TypeError) as cm:
+            x.a_cmplx_qp = v
+            self.assertEqual(x.a_cmplx_qp, v)
 
     def test_sub_cmplx_inout(self):
         v = complex(1.0, 1.0)
