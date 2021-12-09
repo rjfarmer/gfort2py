@@ -6,7 +6,7 @@ import select
 import os
 
 from . import parseMod as pm
-from . import fnumpy
+from .fnumpy import *
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
@@ -480,7 +480,7 @@ class fVar_t:
         if self.is_array():
             if self.is_explicit():
                 v = np.reshape(np.ctypeslib.as_array(x), self._shape())
-                return fnumpy.declare_fortran(v)
+                return declare_fortran(v)
 
         if t == "COMPLEX":
             return complex(x.real, x.imag)
