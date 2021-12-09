@@ -180,6 +180,11 @@ class fObject:
     def __array_interface__(self):
         return self.value.__array_interface__
 
+    def __array_finalize__(self, obj):
+        return self.value.__array_finalize__(obj)
+
+    def __array_ufunc__(self, *args, **kwargs):
+        return self.value.__array_ufunc__(*args, **kwargs)
 
 class fParam(fObject):
     def __init__(self, lib, allobjs, key):
