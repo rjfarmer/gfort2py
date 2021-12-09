@@ -4,6 +4,7 @@ import numpy as np
 import collections
 import select
 import os
+from abc import ABCMeta, abstractmethod
 
 from . import parseMod as pm
 from .fnumpy import *
@@ -37,7 +38,7 @@ class _captureStdOut:
             os.close(self.stdout)
 
 
-class fObject:
+class fObject(metaclass=ABCMeta):
     def __eq__(self, other):
         return self.value.__eq__(other)
 
@@ -178,13 +179,27 @@ class fObject:
 
     @property
     def __array_interface__(self):
-        return self.value.__array_interface__
+        if self.is_array():
+            return self.value.__array_interface__
+        else:
+            raise AttributeError("No attribute __array_interface__")
 
     def __array_finalize__(self, obj):
-        return self.value.__array_finalize__(obj)
+        if self.is_array():
+            return self.value.__array_finalize__(obj)
+        else:
+            raise AttributeError("No attribute __array_finalize__")
 
     def __array_ufunc__(self, *args, **kwargs):
-        return self.value.__array_ufunc__(*args, **kwargs)
+        if self.is_array():
+            return self.value.__array_ufunc__(*args, **kwargs)
+        else:
+            raise AttributeError("No attribute __array_ufunc__")
+
+    @abstractmethod
+    def is_array(self):
+        pass
+
 
 class fParam(fObject):
     def __init__(self, lib, allobjs, key):
@@ -234,9 +249,13 @@ class fVar_t:
 
         if self.is_array():
             if self.is_explicit():
-                value = np.asfortranarray(value).astype(self.dtype())
+                value = value.astype(self.dtype())
                 shape = self._shape()
                 ndim = len(shape)
+
+                if not value.flags['F_CONTIGUOUS']:
+                    value = np.asfortranarray(value)
+
                 if value.ndim != ndim:
                     raise ValueError(
                         f"Not enough dimensions, got {ndim} expected {value.ndim}"
@@ -565,7 +584,7 @@ class fVar(fObject):
         else:
             if self._value.is_array():
                 if self._value.is_explicit():
-
+                    value = value.astype(self._value.dtype())
                     ctypes.memmove(
                         ctypes.addressof(ct), value.ctypes.data, np.size(value) * k
                     )
@@ -595,6 +614,9 @@ class fVar(fObject):
             f"{self._value.type()}(KIND={self._value.kind()}) "
             f"MODULE={self.module}.mod"
         )
+
+    def is_array(self):
+        return self._value.is_array()
 
 
 class fProc:
