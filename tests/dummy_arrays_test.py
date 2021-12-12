@@ -35,8 +35,7 @@ class TestDummyArrayMethods:
 
     def test_c_int_alloc_1d_non_alloc(self):
         y = x.sub_alloc_int_1d_cleanup()
-        with pytest.raises(gf.errors.AllocationError) as cm:
-            y = x.c_int_alloc_1d
+        self.assertEqual(x.c_int_alloc_1d, None)
 
     def test_c_int_alloc_1d(self):
         y = x.sub_alloc_int_1d_cleanup()

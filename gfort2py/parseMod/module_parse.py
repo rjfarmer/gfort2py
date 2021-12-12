@@ -144,7 +144,7 @@ class attribute:
     save: str = ""
     ext_attr: int = -1
     extension: int = -1
-    attributes: t.Tuple[str] = None
+    attributes: t.Set[str] = None
 
     def __init__(self, *args):
         self.flavor = string_clean(args[0])
@@ -154,7 +154,7 @@ class attribute:
         self.save = string_clean(args[4])
         self.ext_attr = int(args[5])
         self.extension = int(args[6])
-        self.attributes = [string_clean(i) for i in args[7:]]
+        self.attributes = set([string_clean(i) for i in args[7:]])
 
 
 @dataclass

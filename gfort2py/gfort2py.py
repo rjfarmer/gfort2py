@@ -7,9 +7,66 @@ import os
 from abc import ABCMeta, abstractmethod
 
 from . import parseMod as pm
-from .fnumpy import *
+from .fnumpy import declare_fortran
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
+
+_index_t = ctypes.c_int64
+_size_t = ctypes.c_int64
+
+
+class _bounds14(ctypes.Structure):
+    _fields_ = [("stride", _index_t), ("lbound", _index_t), ("ubound", _index_t)]
+
+
+class _dtype_type(ctypes.Structure):
+    _fields_ = [
+        ("elem_len", _size_t),
+        ("version", ctypes.c_int),
+        ("rank", ctypes.c_byte),
+        ("type", ctypes.c_byte),
+        ("attribute", ctypes.c_ushort),
+    ]
+
+
+def _make_fAlloc15(ndims):
+    class _fAllocArray(ctypes.Structure):
+        _fields_ = [
+            ("base_addr", ctypes.c_void_p),
+            ("offset", _size_t),
+            ("dtype", _dtype_type),
+            ("span", _index_t),
+            ("dims", _bounds14 * ndims),
+        ]
+
+    return _fAllocArray
+
+
+_GFC_DTYPE_RANK_MASK = 0x07
+_GFC_DTYPE_TYPE_SHIFT = 3
+_GFC_DTYPE_TYPE_MASK = 0x38
+_GFC_DTYPE_SIZE_SHIFT = 6
+
+_BT_UNKNOWN = 0
+_BT_INTEGER = _BT_UNKNOWN + 1
+_BT_LOGICAL = _BT_INTEGER + 1
+_BT_REAL = _BT_LOGICAL + 1
+_BT_COMPLEX = _BT_REAL + 1
+_BT_DERIVED = _BT_COMPLEX + 1
+_BT_CHARACTER = _BT_DERIVED + 1
+_BT_CLASS = _BT_CHARACTER + 1
+_BT_PROCEDURE = _BT_CLASS + 1
+_BT_HOLLERITH = _BT_PROCEDURE + 1
+_BT_VOID = _BT_HOLLERITH + 1
+_BT_ASSUMED = _BT_VOID + 1
+
+_PY_TO_BT = {
+    "int": _BT_INTEGER,
+    "float": _BT_REAL,
+    "bool": _BT_LOGICAL,
+    "str": _BT_CHARACTER,
+    "bytes": _BT_CHARACTER,
+}
 
 
 class _captureStdOut:
@@ -40,6 +97,9 @@ class _captureStdOut:
 
 class fObject(metaclass=ABCMeta):
     def __eq__(self, other):
+        if self.value is None:
+            return other is None
+
         return self.value.__eq__(other)
 
     def __ne__(self, other):
@@ -246,7 +306,7 @@ class fParam(fObject):
         raise AttributeError("Parameter can't be altered")
 
     def is_array(self):
-        return self._object.sym.array_spec.rank > 0
+        return "DIMENSION" in self._object.sym.attr.attributes
 
     def _shape(self):
         return self._object.sym.array_spec.pyshape
@@ -296,6 +356,26 @@ class fVar_t:
     def kind(self):
         return self._object.sym.ts.kind
 
+    def _array_check(self, value, know_shape=True):
+        value = value.astype(self.dtype())
+        shape = self._shape()
+        ndim = self._ndim()
+
+        if not value.flags["F_CONTIGUOUS"]:
+            value = np.asfortranarray(value)
+
+        if value.ndim != ndim:
+            raise ValueError(
+                f"Wrong number of dimensions, got {value.ndim} expected {ndim}"
+            )
+        if know_shape:
+            if list(value.shape) != self._shape():
+                raise ValueError(f"Wrong shape, got {value.shape} expected {shape}")
+
+        value = value.flatten()
+        self.__value = value
+        return value
+
     def from_param(self, value):
         t = self.type()
         k = int(self.kind())
@@ -305,21 +385,42 @@ class fVar_t:
 
         if self.is_array():
             if self.is_explicit():
-                value = value.astype(self.dtype())
+                value = self._array_check(value)
+                return np.ctypeslib.as_ctypes(value)
+            elif self.is_dummy():
                 shape = self._shape()
-                ndim = len(shape)
+                ndim = self._ndim()
 
-                if not value.flags["F_CONTIGUOUS"]:
-                    value = np.asfortranarray(value)
+                ct = _make_fAlloc15(ndim)()
 
-                if value.ndim != ndim:
-                    raise ValueError(
-                        f"Not enough dimensions, got {ndim} expected {value.ndim}"
-                    )
-                if list(value.shape) != self._shape():
-                    raise ValueError(f"Wrong shape, got {shape} expected {value.shape}")
+                ct.dtype.elem_len = self.sizeof
+                ct.dtype.version = 0
+                ct.dtype.ndim = ndim
+                ct.dtype.type = self.ftype()
+                ct.dtype.attribute = 0
+                ct.span = self.sizeof
 
-                return np.ctypeslib.as_ctypes(value.flatten())
+                ct.offset = 0
+
+                if value is None:
+                    return ct
+                else:
+                    shape = value.shape
+                    value = self._array_check(value, False)
+                    ct.base_addr = self.__value.ctypes.data
+                    strides = []
+                    for i in range(ndim):
+                        ct.dims[i].lbound = _index_t(1)
+                        ct.dims[i].ubound = _index_t(shape[i])
+                        strides.append(ct.dims[i].ubound - ct.dims[i].lbound + 1)
+
+                    sumstrides = 0
+                    for i in range(ndim):
+                        ct.dims[i].stride = _index_t(int(np.product(strides[:i])))
+                        sumstrides = sumstrides + ct.dims[i].stride
+
+                    ct.offset = -sumstrides
+                    return ct
 
         if t == "INTEGER":
             return self.ctype(value)(value)
@@ -375,6 +476,9 @@ class fVar_t:
 
     def is_array(self):
         return "DIMENSION" in self._object.sym.attr.attributes
+
+    def is_dummy(self):
+        return self._object.sym.array_spec.array_type == "DEFERRED"
 
     def is_explicit(self):
         return self._object.sym.array_spec.array_type == "EXPLICIT"
@@ -528,6 +632,13 @@ class fVar_t:
                     return cb_var() * self._size()
 
                 cb_arr = callback
+            elif self.is_dummy():
+
+                def callback(*args):
+                    return _make_fAlloc15(self._ndim())
+
+                cb_arr = callback
+
         else:
             cb_arr = cb_var
 
@@ -558,6 +669,10 @@ class fVar_t:
                 v = np.reshape(np.ctypeslib.as_array(x), self._shape())
                 declare_fortran(v)
                 return v
+            elif self.is_dummy():
+                v = np.reshape(np.ctypeslib.as_array(x.base_addr), self._shape())
+                declare_fortran(v)
+                return v
 
         if t == "COMPLEX":
             return complex(x.real, x.imag)
@@ -583,6 +698,9 @@ class fVar_t:
 
     def _shape(self):
         return self._object.sym.array_spec.pyshape
+
+    def _ndim(self):
+        return self._object.sym.array_spec.rank
 
     def _size(self):
         return np.product(self._shape())
@@ -614,6 +732,24 @@ class fVar_t:
             except AttributeError:
                 return f"{t}(LEN=:)"
 
+    @property
+    def sizeof(self):
+        return self.kind()
+
+    def ftype(self):
+        t = self.type()
+
+        if t == "INTEGER":
+            return _BT_INTEGER
+        elif t == "LOGICAL":
+            return _BT_LOGICAL
+        elif t == "REAL":
+            return _BT_REAL
+        elif t == "COMPLEX":
+            return _BT_COMPLEX
+
+        raise NotImplementedError(f"Array of type {t} and kind {k} not supported yet")
+
 
 class fVar(fObject):
     def __init__(self, lib, allobjs, key):
@@ -635,21 +771,28 @@ class fVar(fObject):
         ct = self.in_dll(self._lib)
         k = self._value.kind()
 
-        if isinstance(ct, ctypes.Structure):
+        if self._value.is_array():
+            v = self.from_param(value)
+            if self._value.is_explicit():
+                # Copy array
+                size = np.size(value) * self.sizeof
+            elif self._value.is_dummy():
+                # Copy just the array descriptor
+                size = ctypes.sizeof(v)
+
+            ctypes.memmove(
+                ctypes.addressof(ct),
+                ctypes.addressof(v),
+                size,
+            )
+            return
+        elif isinstance(ct, ctypes.Structure):
             for k in ct.__dir__():
                 if not k.startswith("_") and hasattr(value, k):
                     setattr(ct, k, getattr(value, k))
         else:
-            if self._value.is_array():
-                if self._value.is_explicit():
-                    v = self.from_param(value)
-                    ctypes.memmove(
-                        ctypes.addressof(ct),
-                        ctypes.addressof(v),
-                        np.size(value) * self.sizeof,
-                    )
-            else:
-                ct.value = self.from_param(value).value
+            ct.value = self.from_param(value).value
+            return
 
     @property
     def mangled_name(self):
@@ -774,10 +917,10 @@ class fProc:
                 else:
                     raise TypeError("Not enough arguments passed")
 
-            if x is None and not var.is_optional():
+            if x is None and not var.is_optional() and not var.is_dummy():
                 raise ValueError(f"Got None for {var.name}")
 
-            if x is not None:
+            if x is not None or var.is_dummy():
                 z = var.from_param(x)
 
                 if var.is_value():
@@ -789,7 +932,6 @@ class fProc:
 
                 if var.needs_len(x):
                     res_end.append(var.clen(x))
-
             else:
                 res.append(None)
                 if var.needs_len(x):
