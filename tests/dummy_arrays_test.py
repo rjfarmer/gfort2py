@@ -25,7 +25,6 @@ MOD = "./tests/dummy_arrays.mod"
 x = gf.fFort(SO, MOD)
 
 
-@pytest.mark.skip
 class TestDummyArrayMethods:
     def assertEqual(self, x, y):
         assert x == y
@@ -69,6 +68,7 @@ class TestDummyArrayMethods:
         np_test.assert_array_equal(x.c_int_alloc_4d, v)
         y = x.sub_alloc_int_1d_cleanup()
 
+    @pytest.mark.skip
     def test_c_int_alloc_5d(self):
         y = x.sub_alloc_int_1d_cleanup()
         y = x.sub_alloc_int_1d_arrs()
@@ -113,6 +113,7 @@ class TestDummyArrayMethods:
         np_test.assert_array_equal(x.c_int_alloc_4d, v)
         y = x.sub_alloc_int_1d_cleanup()
 
+    @pytest.mark.skip
     def test_c_int_alloc_5d_set(self):
         y = x.sub_alloc_int_1d_cleanup()
         y = x.sub_alloc_int_1d_arrs()
@@ -122,6 +123,7 @@ class TestDummyArrayMethods:
         np_test.assert_array_equal(x.c_int_alloc_5d, v)
         y = x.sub_alloc_int_1d_cleanup()
 
+    @pytest.mark.skip
     def test_c_int_alloc_1d_large(self):
         # Can have issues exiting when using large (>255) arrays
         y = x.sub_alloc_int_1d_cleanup()
@@ -164,6 +166,7 @@ class TestDummyArrayMethods:
         np_test.assert_array_equal(x.c_real_alloc_4d, v)
         y = x.sub_alloc_real_1d_cleanup()
 
+    @pytest.mark.skip
     def test_c_real_alloc_5d(self):
         y = x.sub_alloc_real_1d_cleanup()
         y = x.sub_alloc_real_1d_arrs()
@@ -208,6 +211,7 @@ class TestDummyArrayMethods:
         np_test.assert_array_equal(x.c_real_dp_alloc_4d, v)
         y = x.sub_alloc_real_dp_1d_cleanup()
 
+    @pytest.mark.skip
     def test_c_real_dp_alloc_5d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
         y = x.sub_alloc_real_dp_1d_arrs()
@@ -293,6 +297,7 @@ class TestDummyArrayMethods:
         np_test.assert_array_equal(x.c_real_dp_alloc_4d, v)
         y = x.sub_alloc_real_dp_1d_cleanup()
 
+    @pytest.mark.skip
     def test_c_real_dp_alloc_5d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
         y = x.sub_alloc_real_dp_1d_arrs()
@@ -368,6 +373,7 @@ class TestDummyArrayMethods:
         self.assertEqual(y.result, True)
         self.assertEqual(y2.result, True)
 
+    @pytest.mark.skip
     def test_sub_arr_assumed_rank_int_1d(self, capfd):
         v = np.arange(10, 15)
         o = " ".join([str(i) for i in v.flatten()])
@@ -376,6 +382,7 @@ class TestDummyArrayMethods:
         out, err = capfd.readouterr()
         np_test.assert_array_equal(y.args["zzz"], np.array([100] * 5))
 
+    @pytest.mark.skip
     def test_sub_arr_assumed_rank_real_1d(self, capfd):
         v = np.arange(10.0, 15.0)
         o = " ".join([str(i) for i in v.flatten()])
@@ -384,6 +391,7 @@ class TestDummyArrayMethods:
         out, err = capfd.readouterr()
         np_test.assert_array_equal(y.args["zzz"], np.array([100.0] * 5))
 
+    @pytest.mark.skip
     def test_sub_arr_assumed_rank_dp_1d(self, capfd):
         v = np.arange(10.0, 15.0)
         o = " ".join([str(i) for i in v.flatten()])

@@ -670,9 +670,32 @@ class fVar_t:
                 declare_fortran(v)
                 return v
             elif self.is_dummy():
-                v = np.reshape(np.ctypeslib.as_array(x.base_addr), self._shape())
-                declare_fortran(v)
-                return v
+                self.__x = x
+                shape = []
+                for i in range(self.ndim()):
+                    shape.append(x.bounds[i].ubound - x.bounds[i].lbound + 1)
+
+                strides = []
+                for i in range(self.ndim()):
+                    strides.append(x.bounds[i].stride * self.sizeof())
+
+                strides = tuple(strides)
+
+                buff = {
+                    "data": (x.base_addr, True),
+                    "typestr": self.dtype(),
+                    "shape": shape,
+                    "version": 3,
+                    "strides": strides,
+                }
+
+                class numpy_holder:
+                    pass
+
+                holder = numpy_holder()
+                holder.__array_interface__ = buff
+                arr = np.asfortranarray(holder)
+                return arr
 
         if t == "COMPLEX":
             return complex(x.real, x.imag)
