@@ -273,6 +273,7 @@ class expression:
     value: t.Any = None
     arglist: actual_arglist = None  # PDT's?
     charlen: int = -1
+    unary_op: str = ""
 
     def __init__(self, *args):
         self.exp_type = args[0]
@@ -280,7 +281,8 @@ class expression:
         self.rank = int(args[2])
 
         if self.exp_type == "OP":
-            print(args)
+            self.value = None
+            self.unary_op = args[3]
         elif self.exp_type == "FUNCTION":
             print(args)
         elif self.exp_type == "CONSTANT":
@@ -308,7 +310,7 @@ class expression:
                     expression(*i[0]).value
                 )  # Wheres the extra component comming from?
         elif self.exp_type == "NULL":
-            print(args)
+            self.value = args[3]
         elif self.exp_type == "COMPCALL":
             print(args)
         elif self.exp_type == "PPC":

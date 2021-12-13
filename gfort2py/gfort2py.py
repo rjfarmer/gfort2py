@@ -7,7 +7,7 @@ import os
 from abc import ABCMeta, abstractmethod
 
 from . import parseMod as pm
-from .fnumpy import declare_fortran
+from .fnumpy import *
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
