@@ -239,44 +239,50 @@ class fObject(metaclass=ABCMeta):
 
     @property
     def __array_interface__(self):
-        if self.is_array():
+        if self.is_array() and self.value is not None:
             return self.value.__array_interface__
         else:
-            raise AttributeError("No attribute __array_interface__")
+            raise NotImplementedError
 
     def __array_finalize__(self, obj):
-        if self.is_array():
+        if self.is_array() and self.value is not None:
             return self.value.__array_finalize__(obj)
         else:
-            raise AttributeError("No attribute __array_finalize__")
+            raise NotImplementedError
 
-    def __array_ufunc__(self, *args, **kwargs):
-        if self.is_array():
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+        if self.is_array() and self.value is not None:
             return self.value.__array_ufunc__(*args, **kwargs)
         else:
-            raise AttributeError("No attribute __array_ufunc__")
+            raise NotImplementedError
 
     def __array_function__(self, *args, **kwargs):
-        if self.is_array():
+        if self.is_array() and self.value is not None:
             return self.value.__array_function__(*args, **kwargs)
         else:
-            raise AttributeError("No attribute __array_function__")
+            raise NotImplementedError
 
     def __array_wrap__(self, *args, **kwargs):
-        if self.is_array():
+        if self.is_array() and self.value is not None:
             return self.value.__array_wrap__(*args, **kwargs)
         else:
-            raise AttributeError("No attribute __array_wrap__")
+            raise NotImplementedError
 
     def __array_prepare__(self, *args, **kwargs):
-        if self.is_array():
+        if self.is_array() and self.value is not None:
             return self.value.__array_prepare__(*args, **kwargs)
         else:
-            raise AttributeError("No attribute __array_prepare__")
+            raise NotImplementedError
+
+    def __array__(self, *args, **kwargs):
+        if self.is_array() and self.value is not None:
+            return self.value.__array__(*args, **kwargs)
+        else:
+            raise NotImplementedError
 
     @property
     def __array_struct__(self):
-        if self.is_array():
+        if self.is_array() and self.value is not None:
             return self.value.__array_struct__
         else:
             raise AttributeError("No attribute __array_struct__")
@@ -284,6 +290,12 @@ class fObject(metaclass=ABCMeta):
     @abstractmethod
     def is_array(self):
         pass
+
+    def __getattr__(self, attr):
+        if attr in self.__dict__:
+            return self.__dict__[attr]
+        else:
+            return getattr(self.value, attr)
 
 
 class fParam(fObject):
@@ -685,7 +697,7 @@ class fVar_t:
                 declare_fortran(v)
                 return v
             elif self.is_assumed_size():
-                v = np.reshape(np.ctypeslib.as_array(x), tuple(len(x)))
+                v = np.reshape(np.ctypeslib.as_array(x), tuple([len(x)]))
                 declare_fortran(v)
                 return v
 
