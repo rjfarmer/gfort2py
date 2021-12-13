@@ -32,411 +32,411 @@ class TestDummyArrayMethods:
     def test_sub_alloc_1d_arrs(self):
         y = x.sub_alloc_int_1d_arrs()
 
-    def test_c_int_alloc_1d_non_alloc(self):
-        y = x.sub_alloc_int_1d_cleanup()
-        self.assertEqual(x.c_int_alloc_1d, None)
+    # def test_c_int_alloc_1d_non_alloc(self):
+    #     y = x.sub_alloc_int_1d_cleanup()
+    #     self.assertEqual(x.c_int_alloc_1d, None)
 
-    def test_c_int_alloc_1d(self):
-        y = x.sub_alloc_int_1d_cleanup()
-        y = x.sub_alloc_int_1d_arrs()
-        v = np.zeros([5])
-        v[:] = 1
-        np_test.assert_array_equal(x.c_int_alloc_1d, v)
-        y = x.sub_alloc_int_1d_cleanup()
+    # def test_c_int_alloc_1d(self):
+    #     y = x.sub_alloc_int_1d_cleanup()
+    #     y = x.sub_alloc_int_1d_arrs()
+    #     v = np.zeros([5])
+    #     v[:] = 1
+    #     np_test.assert_array_equal(x.c_int_alloc_1d, v)
+    #     y = x.sub_alloc_int_1d_cleanup()
 
-    def test_c_int_alloc_2d(self):
-        y = x.sub_alloc_int_1d_cleanup()
-        y = x.sub_alloc_int_1d_arrs()
-        v = np.zeros([5, 5])
-        v[:] = 1
-        np_test.assert_array_equal(x.c_int_alloc_2d, v)
-        y = x.sub_alloc_int_1d_cleanup()
+    # def test_c_int_alloc_2d(self):
+    #     y = x.sub_alloc_int_1d_cleanup()
+    #     y = x.sub_alloc_int_1d_arrs()
+    #     v = np.zeros([5, 5])
+    #     v[:] = 1
+    #     np_test.assert_array_equal(x.c_int_alloc_2d, v)
+    #     y = x.sub_alloc_int_1d_cleanup()
 
-    def test_c_int_alloc_3d(self):
-        y = x.sub_alloc_int_1d_cleanup()
-        y = x.sub_alloc_int_1d_arrs()
-        v = np.zeros([5, 5, 5])
-        v[:] = 1
-        np_test.assert_array_equal(x.c_int_alloc_3d, v)
-        y = x.sub_alloc_int_1d_cleanup()
+    # def test_c_int_alloc_3d(self):
+    #     y = x.sub_alloc_int_1d_cleanup()
+    #     y = x.sub_alloc_int_1d_arrs()
+    #     v = np.zeros([5, 5, 5])
+    #     v[:] = 1
+    #     np_test.assert_array_equal(x.c_int_alloc_3d, v)
+    #     y = x.sub_alloc_int_1d_cleanup()
 
-    def test_c_int_alloc_4d(self):
-        y = x.sub_alloc_int_1d_cleanup()
-        y = x.sub_alloc_int_1d_arrs()
-        v = np.zeros([5, 5, 5, 5])
-        v[:] = 1
-        np_test.assert_array_equal(x.c_int_alloc_4d, v)
-        y = x.sub_alloc_int_1d_cleanup()
+    # def test_c_int_alloc_4d(self):
+    #     y = x.sub_alloc_int_1d_cleanup()
+    #     y = x.sub_alloc_int_1d_arrs()
+    #     v = np.zeros([5, 5, 5, 5])
+    #     v[:] = 1
+    #     np_test.assert_array_equal(x.c_int_alloc_4d, v)
+    #     y = x.sub_alloc_int_1d_cleanup()
 
-    @pytest.mark.skip
-    def test_c_int_alloc_5d(self):
-        y = x.sub_alloc_int_1d_cleanup()
-        y = x.sub_alloc_int_1d_arrs()
-        v = np.zeros([5, 5, 5, 5, 5])
-        v[:] = 1
-        np_test.assert_array_equal(x.c_int_alloc_5d, v)
-        y = x.sub_alloc_int_1d_cleanup()
+    # @pytest.mark.skip
+    # def test_c_int_alloc_5d(self):
+    #     y = x.sub_alloc_int_1d_cleanup()
+    #     y = x.sub_alloc_int_1d_arrs()
+    #     v = np.zeros([5, 5, 5, 5, 5])
+    #     v[:] = 1
+    #     np_test.assert_array_equal(x.c_int_alloc_5d, v)
+    #     y = x.sub_alloc_int_1d_cleanup()
 
-    def test_c_int_alloc_1d_set(self):
-        y = x.sub_alloc_int_1d_cleanup()
-        y = x.sub_alloc_int_1d_arrs()
-        v = np.zeros([5])
-        v[:] = 5
-        x.c_int_alloc_1d = v
-        np_test.assert_array_equal(x.c_int_alloc_1d, v)
-        y = x.sub_alloc_int_1d_cleanup()
+    # def test_c_int_alloc_1d_set(self):
+    #     y = x.sub_alloc_int_1d_cleanup()
+    #     y = x.sub_alloc_int_1d_arrs()
+    #     v = np.zeros([5])
+    #     v[:] = 5
+    #     x.c_int_alloc_1d = v
+    #     np_test.assert_array_equal(x.c_int_alloc_1d, v)
+    #     y = x.sub_alloc_int_1d_cleanup()
 
-    def test_c_int_alloc_2d_set(self):
-        y = x.sub_alloc_int_1d_cleanup()
-        y = x.sub_alloc_int_1d_arrs()
-        v = np.zeros([5, 5])
-        v[:] = 5
-        x.c_int_alloc_2d = v
-        np_test.assert_array_equal(x.c_int_alloc_2d, v)
-        y = x.sub_alloc_int_1d_cleanup()
+    # def test_c_int_alloc_2d_set(self):
+    #     y = x.sub_alloc_int_1d_cleanup()
+    #     y = x.sub_alloc_int_1d_arrs()
+    #     v = np.zeros([5, 5])
+    #     v[:] = 5
+    #     x.c_int_alloc_2d = v
+    #     np_test.assert_array_equal(x.c_int_alloc_2d, v)
+    #     y = x.sub_alloc_int_1d_cleanup()
 
-    def test_c_int_alloc_3d_set(self):
-        y = x.sub_alloc_int_1d_cleanup()
-        y = x.sub_alloc_int_1d_arrs()
-        v = np.zeros([5, 5, 5])
-        v[:] = 5
-        x.c_int_alloc_3d = v
-        np_test.assert_array_equal(x.c_int_alloc_3d, v)
-        y = x.sub_alloc_int_1d_cleanup()
+    # def test_c_int_alloc_3d_set(self):
+    #     y = x.sub_alloc_int_1d_cleanup()
+    #     y = x.sub_alloc_int_1d_arrs()
+    #     v = np.zeros([5, 5, 5])
+    #     v[:] = 5
+    #     x.c_int_alloc_3d = v
+    #     np_test.assert_array_equal(x.c_int_alloc_3d, v)
+    #     y = x.sub_alloc_int_1d_cleanup()
 
-    def test_c_int_alloc_4d_set(self):
-        y = x.sub_alloc_int_1d_cleanup()
-        y = x.sub_alloc_int_1d_arrs()
-        v = np.zeros([5, 5, 5, 5])
-        v[:] = 5
-        x.c_int_alloc_4d = v
-        np_test.assert_array_equal(x.c_int_alloc_4d, v)
-        y = x.sub_alloc_int_1d_cleanup()
+    # def test_c_int_alloc_4d_set(self):
+    #     y = x.sub_alloc_int_1d_cleanup()
+    #     y = x.sub_alloc_int_1d_arrs()
+    #     v = np.zeros([5, 5, 5, 5])
+    #     v[:] = 5
+    #     x.c_int_alloc_4d = v
+    #     np_test.assert_array_equal(x.c_int_alloc_4d, v)
+    #     y = x.sub_alloc_int_1d_cleanup()
 
-    @pytest.mark.skip
-    def test_c_int_alloc_5d_set(self):
-        y = x.sub_alloc_int_1d_cleanup()
-        y = x.sub_alloc_int_1d_arrs()
-        v = np.zeros([5, 5, 5, 5, 5])
-        v[:] = 5
-        x.c_int_alloc_5d = v
-        np_test.assert_array_equal(x.c_int_alloc_5d, v)
-        y = x.sub_alloc_int_1d_cleanup()
+    # @pytest.mark.skip
+    # def test_c_int_alloc_5d_set(self):
+    #     y = x.sub_alloc_int_1d_cleanup()
+    #     y = x.sub_alloc_int_1d_arrs()
+    #     v = np.zeros([5, 5, 5, 5, 5])
+    #     v[:] = 5
+    #     x.c_int_alloc_5d = v
+    #     np_test.assert_array_equal(x.c_int_alloc_5d, v)
+    #     y = x.sub_alloc_int_1d_cleanup()
 
-    @pytest.mark.skip
-    def test_c_int_alloc_1d_large(self):
-        # Can have issues exiting when using large (>255) arrays
-        y = x.sub_alloc_int_1d_cleanup()
-        y = x.sub_alloc_int_1d_arrs()
-        v = np.zeros([256], dtype="int32")
-        v[:] = 5
-        x.c_int_alloc_1d = v
-        np_test.assert_array_equal(x.c_int_alloc_1d, v)
-        y = x.sub_alloc_int_1d_cleanup()
+    # @pytest.mark.skip
+    # def test_c_int_alloc_1d_large(self):
+    #     # Can have issues exiting when using large (>255) arrays
+    #     y = x.sub_alloc_int_1d_cleanup()
+    #     y = x.sub_alloc_int_1d_arrs()
+    #     v = np.zeros([256], dtype="int32")
+    #     v[:] = 5
+    #     x.c_int_alloc_1d = v
+    #     np_test.assert_array_equal(x.c_int_alloc_1d, v)
+    #     y = x.sub_alloc_int_1d_cleanup()
 
-    def test_c_real_alloc_1d(self):
-        y = x.sub_alloc_real_1d_cleanup()
-        y = x.sub_alloc_real_1d_arrs()
-        v = np.zeros([5])
-        v[:] = 1
-        np_test.assert_array_equal(x.c_real_alloc_1d, v)
-        y = x.sub_alloc_real_1d_cleanup()
+    # def test_c_real_alloc_1d(self):
+    #     y = x.sub_alloc_real_1d_cleanup()
+    #     y = x.sub_alloc_real_1d_arrs()
+    #     v = np.zeros([5])
+    #     v[:] = 1
+    #     np_test.assert_array_equal(x.c_real_alloc_1d, v)
+    #     y = x.sub_alloc_real_1d_cleanup()
 
-    def test_c_real_alloc_2d(self):
-        y = x.sub_alloc_real_1d_cleanup()
-        y = x.sub_alloc_real_1d_arrs()
-        v = np.zeros([5, 5])
-        v[:] = 1
-        np_test.assert_array_equal(x.c_real_alloc_2d, v)
-        y = x.sub_alloc_real_1d_cleanup()
+    # def test_c_real_alloc_2d(self):
+    #     y = x.sub_alloc_real_1d_cleanup()
+    #     y = x.sub_alloc_real_1d_arrs()
+    #     v = np.zeros([5, 5])
+    #     v[:] = 1
+    #     np_test.assert_array_equal(x.c_real_alloc_2d, v)
+    #     y = x.sub_alloc_real_1d_cleanup()
 
-    def test_c_real_alloc_3d(self):
-        y = x.sub_alloc_real_1d_cleanup()
-        y = x.sub_alloc_real_1d_arrs()
-        v = np.zeros([5, 5, 5])
-        v[:] = 1
-        np_test.assert_array_equal(x.c_real_alloc_3d, v)
-        y = x.sub_alloc_real_1d_cleanup()
+    # def test_c_real_alloc_3d(self):
+    #     y = x.sub_alloc_real_1d_cleanup()
+    #     y = x.sub_alloc_real_1d_arrs()
+    #     v = np.zeros([5, 5, 5])
+    #     v[:] = 1
+    #     np_test.assert_array_equal(x.c_real_alloc_3d, v)
+    #     y = x.sub_alloc_real_1d_cleanup()
 
-    def test_c_real_alloc_4d(self):
-        y = x.sub_alloc_real_1d_cleanup()
-        y = x.sub_alloc_real_1d_arrs()
-        v = np.zeros([5, 5, 5, 5])
-        v[:] = 1
-        np_test.assert_array_equal(x.c_real_alloc_4d, v)
-        y = x.sub_alloc_real_1d_cleanup()
+    # def test_c_real_alloc_4d(self):
+    #     y = x.sub_alloc_real_1d_cleanup()
+    #     y = x.sub_alloc_real_1d_arrs()
+    #     v = np.zeros([5, 5, 5, 5])
+    #     v[:] = 1
+    #     np_test.assert_array_equal(x.c_real_alloc_4d, v)
+    #     y = x.sub_alloc_real_1d_cleanup()
 
-    @pytest.mark.skip
-    def test_c_real_alloc_5d(self):
-        y = x.sub_alloc_real_1d_cleanup()
-        y = x.sub_alloc_real_1d_arrs()
-        v = np.zeros([5, 5, 5, 5, 5])
-        v[:] = 1
-        np_test.assert_array_equal(x.c_real_alloc_5d, v)
-        y = x.sub_alloc_real_1d_cleanup()
+    # @pytest.mark.skip
+    # def test_c_real_alloc_5d(self):
+    #     y = x.sub_alloc_real_1d_cleanup()
+    #     y = x.sub_alloc_real_1d_arrs()
+    #     v = np.zeros([5, 5, 5, 5, 5])
+    #     v[:] = 1
+    #     np_test.assert_array_equal(x.c_real_alloc_5d, v)
+    #     y = x.sub_alloc_real_1d_cleanup()
 
-    def test_c_real_dp_alloc_1d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_1d = v
-        np_test.assert_array_equal(x.c_real_dp_alloc_1d, v)
-        y = x.sub_alloc_real_dp_1d_cleanup()
+    # def test_c_real_dp_alloc_1d_set(self):
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
+    #     y = x.sub_alloc_real_dp_1d_arrs()
+    #     v = np.zeros([5])
+    #     v[:] = 2.0
+    #     x.c_real_dp_alloc_1d = v
+    #     np_test.assert_array_equal(x.c_real_dp_alloc_1d, v)
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
 
-    def test_c_real_dp_alloc_2d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_2d = v
-        np_test.assert_array_equal(x.c_real_dp_alloc_2d, v)
-        y = x.sub_alloc_real_dp_1d_cleanup()
+    # def test_c_real_dp_alloc_2d_set(self):
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
+    #     y = x.sub_alloc_real_dp_1d_arrs()
+    #     v = np.zeros([5, 5])
+    #     v[:] = 2.0
+    #     x.c_real_dp_alloc_2d = v
+    #     np_test.assert_array_equal(x.c_real_dp_alloc_2d, v)
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
 
-    def test_c_real_dp_alloc_3d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_3d = v
-        np_test.assert_array_equal(x.c_real_dp_alloc_3d, v)
-        y = x.sub_alloc_real_dp_1d_cleanup()
+    # def test_c_real_dp_alloc_3d_set(self):
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
+    #     y = x.sub_alloc_real_dp_1d_arrs()
+    #     v = np.zeros([5, 5, 5])
+    #     v[:] = 2.0
+    #     x.c_real_dp_alloc_3d = v
+    #     np_test.assert_array_equal(x.c_real_dp_alloc_3d, v)
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
 
-    def test_c_real_dp_alloc_4d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5, 5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_4d = v
-        np_test.assert_array_equal(x.c_real_dp_alloc_4d, v)
-        y = x.sub_alloc_real_dp_1d_cleanup()
+    # def test_c_real_dp_alloc_4d_set(self):
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
+    #     y = x.sub_alloc_real_dp_1d_arrs()
+    #     v = np.zeros([5, 5, 5, 5])
+    #     v[:] = 2.0
+    #     x.c_real_dp_alloc_4d = v
+    #     np_test.assert_array_equal(x.c_real_dp_alloc_4d, v)
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
 
-    @pytest.mark.skip
-    def test_c_real_dp_alloc_5d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5, 5, 5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_5d = v
-        np_test.assert_array_equal(x.c_real_dp_alloc_5d, v)
-        y = x.sub_alloc_real_dp_1d_cleanup()
+    # @pytest.mark.skip
+    # def test_c_real_dp_alloc_5d_set(self):
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
+    #     y = x.sub_alloc_real_dp_1d_arrs()
+    #     v = np.zeros([5, 5, 5, 5, 5])
+    #     v[:] = 2.0
+    #     x.c_real_dp_alloc_5d = v
+    #     np_test.assert_array_equal(x.c_real_dp_alloc_5d, v)
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
 
-    def test_c_real_dp_alloc_1d(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5])
-        v[:] = 1
-        np_test.assert_array_equal(x.c_real_dp_alloc_1d, v)
-        y = x.sub_alloc_real_dp_1d_cleanup()
+    # def test_c_real_dp_alloc_1d(self):
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
+    #     y = x.sub_alloc_real_dp_1d_arrs()
+    #     v = np.zeros([5])
+    #     v[:] = 1
+    #     np_test.assert_array_equal(x.c_real_dp_alloc_1d, v)
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
 
-    def test_c_real_dp_alloc_2d(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5])
-        v[:] = 1
-        np_test.assert_array_equal(x.c_real_dp_alloc_2d, v)
-        y = x.sub_alloc_real_dp_1d_cleanup()
+    # def test_c_real_dp_alloc_2d(self):
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
+    #     y = x.sub_alloc_real_dp_1d_arrs()
+    #     v = np.zeros([5, 5])
+    #     v[:] = 1
+    #     np_test.assert_array_equal(x.c_real_dp_alloc_2d, v)
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
 
-    def test_c_real_dp_alloc_3d(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5, 5])
-        v[:] = 1
-        np_test.assert_array_equal(x.c_real_dp_alloc_3d, v)
-        y = x.sub_alloc_real_dp_1d_cleanup()
+    # def test_c_real_dp_alloc_3d(self):
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
+    #     y = x.sub_alloc_real_dp_1d_arrs()
+    #     v = np.zeros([5, 5, 5])
+    #     v[:] = 1
+    #     np_test.assert_array_equal(x.c_real_dp_alloc_3d, v)
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
 
-    def test_c_real_dp_alloc_4d(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5, 5, 5])
-        v[:] = 1
-        np_test.assert_array_equal(x.c_real_dp_alloc_4d, v)
-        y = x.sub_alloc_real_dp_1d_cleanup()
+    # def test_c_real_dp_alloc_4d(self):
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
+    #     y = x.sub_alloc_real_dp_1d_arrs()
+    #     v = np.zeros([5, 5, 5, 5])
+    #     v[:] = 1
+    #     np_test.assert_array_equal(x.c_real_dp_alloc_4d, v)
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
 
-    def test_c_real_dp_alloc_5d(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5, 5, 5, 5])
-        v[:] = 1
-        np_test.assert_array_equal(x.c_real_dp_alloc_5d, v)
-        y = x.sub_alloc_real_dp_1d_cleanup()
+    # def test_c_real_dp_alloc_5d(self):
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
+    #     y = x.sub_alloc_real_dp_1d_arrs()
+    #     v = np.zeros([5, 5, 5, 5, 5])
+    #     v[:] = 1
+    #     np_test.assert_array_equal(x.c_real_dp_alloc_5d, v)
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
 
-    def test_c_real_dp_alloc_1d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_1d = v
-        np_test.assert_array_equal(x.c_real_dp_alloc_1d, v)
-        y = x.sub_alloc_real_dp_1d_cleanup()
+    # def test_c_real_dp_alloc_1d_set(self):
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
+    #     y = x.sub_alloc_real_dp_1d_arrs()
+    #     v = np.zeros([5])
+    #     v[:] = 2.0
+    #     x.c_real_dp_alloc_1d = v
+    #     np_test.assert_array_equal(x.c_real_dp_alloc_1d, v)
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
 
-    def test_c_real_dp_alloc_2d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_2d = v
-        np_test.assert_array_equal(x.c_real_dp_alloc_2d, v)
-        y = x.sub_alloc_real_dp_1d_cleanup()
+    # def test_c_real_dp_alloc_2d_set(self):
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
+    #     y = x.sub_alloc_real_dp_1d_arrs()
+    #     v = np.zeros([5, 5])
+    #     v[:] = 2.0
+    #     x.c_real_dp_alloc_2d = v
+    #     np_test.assert_array_equal(x.c_real_dp_alloc_2d, v)
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
 
-    def test_c_real_dp_alloc_3d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_3d = v
-        np_test.assert_array_equal(x.c_real_dp_alloc_3d, v)
-        y = x.sub_alloc_real_dp_1d_cleanup()
+    # def test_c_real_dp_alloc_3d_set(self):
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
+    #     y = x.sub_alloc_real_dp_1d_arrs()
+    #     v = np.zeros([5, 5, 5])
+    #     v[:] = 2.0
+    #     x.c_real_dp_alloc_3d = v
+    #     np_test.assert_array_equal(x.c_real_dp_alloc_3d, v)
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
 
-    def test_c_real_dp_alloc_4d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5, 5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_4d = v
-        np_test.assert_array_equal(x.c_real_dp_alloc_4d, v)
-        y = x.sub_alloc_real_dp_1d_cleanup()
+    # def test_c_real_dp_alloc_4d_set(self):
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
+    #     y = x.sub_alloc_real_dp_1d_arrs()
+    #     v = np.zeros([5, 5, 5, 5])
+    #     v[:] = 2.0
+    #     x.c_real_dp_alloc_4d = v
+    #     np_test.assert_array_equal(x.c_real_dp_alloc_4d, v)
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
 
-    @pytest.mark.skip
-    def test_c_real_dp_alloc_5d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5, 5, 5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_5d = v
-        np_test.assert_array_equal(x.c_real_dp_alloc_5d, v)
-        y = x.sub_alloc_real_dp_1d_cleanup()
+    # @pytest.mark.skip
+    # def test_c_real_dp_alloc_5d_set(self):
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
+    #     y = x.sub_alloc_real_dp_1d_arrs()
+    #     v = np.zeros([5, 5, 5, 5, 5])
+    #     v[:] = 2.0
+    #     x.c_real_dp_alloc_5d = v
+    #     np_test.assert_array_equal(x.c_real_dp_alloc_5d, v)
+    #     y = x.sub_alloc_real_dp_1d_cleanup()
 
-    def test_func_assumed_shape_arr_1d(self):
-        v = np.zeros([5], dtype="int32")
-        v[0] = 2.0
-        y = x.func_assumed_shape_arr_1d(v)
-        self.assertEqual(y.result, True)
-        np_test.assert_array_equal(y.args["x"], np.array([9, 9, 9, 9, 9]))
+    # def test_func_assumed_shape_arr_1d(self):
+    #     v = np.zeros([5], dtype="int32")
+    #     v[0] = 2.0
+    #     y = x.func_assumed_shape_arr_1d(v)
+    #     self.assertEqual(y.result, True)
+    #     np_test.assert_array_equal(y.args["x"], np.array([9, 9, 9, 9, 9]))
 
-    def test_func_assumed_shape_arr_2d(self):
-        v = np.zeros([5, 5], dtype="int32")
-        v[1, 0] = 2.0
-        y = x.func_assumed_shape_arr_2d(v)
-        self.assertEqual(y.result, True)
+    # def test_func_assumed_shape_arr_2d(self):
+    #     v = np.zeros([5, 5], dtype="int32")
+    #     v[1, 0] = 2.0
+    #     y = x.func_assumed_shape_arr_2d(v)
+    #     self.assertEqual(y.result, True)
 
-    def test_func_assumed_shape_arr_3d(self):
-        v = np.zeros([5, 5, 5], dtype="int32")
-        v[2, 1, 0] = 2.0
-        y = x.func_assumed_shape_arr_3d(v)
-        self.assertEqual(y.result, True)
+    # def test_func_assumed_shape_arr_3d(self):
+    #     v = np.zeros([5, 5, 5], dtype="int32")
+    #     v[2, 1, 0] = 2.0
+    #     y = x.func_assumed_shape_arr_3d(v)
+    #     self.assertEqual(y.result, True)
 
-    def test_func_assumed_shape_arr_4d(self):
-        v = np.zeros([5, 5, 5, 5], dtype="int32")
-        v[3, 2, 1, 0] = 2.0
-        y = x.func_assumed_shape_arr_4d(v)
-        self.assertEqual(y.result, True)
+    # def test_func_assumed_shape_arr_4d(self):
+    #     v = np.zeros([5, 5, 5, 5], dtype="int32")
+    #     v[3, 2, 1, 0] = 2.0
+    #     y = x.func_assumed_shape_arr_4d(v)
+    #     self.assertEqual(y.result, True)
 
-    def test_func_assumed_shape_arr_5d(self):
-        v = np.zeros([5, 5, 5, 5, 5], dtype="int32")
-        v[4, 3, 2, 1, 0] = 2.0
-        y = x.func_assumed_shape_arr_5d(v)
-        self.assertEqual(y.result, True)
+    # def test_func_assumed_shape_arr_5d(self):
+    #     v = np.zeros([5, 5, 5, 5, 5], dtype="int32")
+    #     v[4, 3, 2, 1, 0] = 2.0
+    #     y = x.func_assumed_shape_arr_5d(v)
+    #     self.assertEqual(y.result, True)
 
-    def test_func_assumed_size_arr_1d(self):
-        v = np.zeros([5], dtype="int32")
-        v[1] = 2
-        y = x.func_assumed_size_arr_1d(v)
-        self.assertEqual(y.result, True)
+    # def test_func_assumed_size_arr_1d(self):
+    #     v = np.zeros([5], dtype="int32")
+    #     v[1] = 2
+    #     y = x.func_assumed_size_arr_1d(v)
+    #     self.assertEqual(y.result, True)
 
-    def test_func_assumed_size_arr_real_1d(self):
-        v = np.zeros([5], dtype="float32")
-        v[1] = 2.0
-        y = x.func_assumed_size_arr_real_1d(v)
-        self.assertEqual(y.result, True)
+    # def test_func_assumed_size_arr_real_1d(self):
+    #     v = np.zeros([5], dtype="float32")
+    #     v[1] = 2.0
+    #     y = x.func_assumed_size_arr_real_1d(v)
+    #     self.assertEqual(y.result, True)
 
-    def test_func_assumed_size_arr_real_dp_1d(self):
-        v = np.zeros([5], dtype="float64")
-        v[1] = 2.0
-        y = x.func_assumed_size_arr_real_dp_1d(v)
-        self.assertEqual(y.result, True)
+    # def test_func_assumed_size_arr_real_dp_1d(self):
+    #     v = np.zeros([5], dtype="float64")
+    #     v[1] = 2.0
+    #     y = x.func_assumed_size_arr_real_dp_1d(v)
+    #     self.assertEqual(y.result, True)
 
-    def test_sub_alloc_arr_1d(self):
-        y = x.sub_alloc_arr_1d(None)
-        vTest = np.zeros(10)
-        vTest[:] = 10
-        np_test.assert_array_equal(y.args["x"], vTest)
+    # def test_sub_alloc_arr_1d(self):
+    #     y = x.sub_alloc_arr_1d(None)
+    #     vTest = np.zeros(10)
+    #     vTest[:] = 10
+    #     np_test.assert_array_equal(y.args["x"], vTest)
 
-    def test_logical_arr(self):
-        xarr = np.zeros(10)
-        x2arr = np.zeros(10)
-        x2arr[:] = False
-        xarr[:] = True
+    # def test_logical_arr(self):
+    #     xarr = np.zeros(10)
+    #     x2arr = np.zeros(10)
+    #     x2arr[:] = False
+    #     xarr[:] = True
 
-        y = x.func_alltrue_arr_1d(xarr)
-        y2 = x.func_allfalse_arr_1d(x2arr)
-        self.assertEqual(y.result, True)
-        self.assertEqual(y2.result, True)
+    #     y = x.func_alltrue_arr_1d(xarr)
+    #     y2 = x.func_allfalse_arr_1d(x2arr)
+    #     self.assertEqual(y.result, True)
+    #     self.assertEqual(y2.result, True)
 
-    @pytest.mark.skip
-    def test_sub_arr_assumed_rank_int_1d(self, capfd):
-        v = np.arange(10, 15)
-        o = " ".join([str(i) for i in v.flatten()])
+    # @pytest.mark.skip
+    # def test_sub_arr_assumed_rank_int_1d(self, capfd):
+    #     v = np.arange(10, 15)
+    #     o = " ".join([str(i) for i in v.flatten()])
 
-        y = x.sub_arr_assumed_rank_int_1d(v)
-        out, err = capfd.readouterr()
-        np_test.assert_array_equal(y.args["zzz"], np.array([100] * 5))
+    #     y = x.sub_arr_assumed_rank_int_1d(v)
+    #     out, err = capfd.readouterr()
+    #     np_test.assert_array_equal(y.args["zzz"], np.array([100] * 5))
 
-    @pytest.mark.skip
-    def test_sub_arr_assumed_rank_real_1d(self, capfd):
-        v = np.arange(10.0, 15.0)
-        o = " ".join([str(i) for i in v.flatten()])
+    # @pytest.mark.skip
+    # def test_sub_arr_assumed_rank_real_1d(self, capfd):
+    #     v = np.arange(10.0, 15.0)
+    #     o = " ".join([str(i) for i in v.flatten()])
 
-        y = x.sub_arr_assumed_rank_real_1d(v)
-        out, err = capfd.readouterr()
-        np_test.assert_array_equal(y.args["zzz"], np.array([100.0] * 5))
+    #     y = x.sub_arr_assumed_rank_real_1d(v)
+    #     out, err = capfd.readouterr()
+    #     np_test.assert_array_equal(y.args["zzz"], np.array([100.0] * 5))
 
-    @pytest.mark.skip
-    def test_sub_arr_assumed_rank_dp_1d(self, capfd):
-        v = np.arange(10.0, 15.0)
-        o = " ".join([str(i) for i in v.flatten()])
+    # @pytest.mark.skip
+    # def test_sub_arr_assumed_rank_dp_1d(self, capfd):
+    #     v = np.arange(10.0, 15.0)
+    #     o = " ".join([str(i) for i in v.flatten()])
 
-        y = x.sub_arr_assumed_rank_dp_1d(v)
-        out, err = capfd.readouterr()
-        np_test.assert_array_equal(y.args["zzz"], np.array([100.0] * 5))
+    #     y = x.sub_arr_assumed_rank_dp_1d(v)
+    #     out, err = capfd.readouterr()
+    #     np_test.assert_array_equal(y.args["zzz"], np.array([100.0] * 5))
 
-    def test_sub_check_alloc_int_2d(self):
-        arr_test = np.zeros((3, 4), dtype=np.int32, order="F")
-        y = x.sub_check_alloc_int_2d(None)
-        y2 = x.sub_check_alloc_int_2d(arr_test)
-        np_test.assert_array_equal(y.args["x"], y2.args["x"])
+    # def test_sub_check_alloc_int_2d(self):
+    #     arr_test = np.zeros((3, 4), dtype=np.int32, order="F")
+    #     y = x.sub_check_alloc_int_2d(None)
+    #     y2 = x.sub_check_alloc_int_2d(arr_test)
+    #     np_test.assert_array_equal(y.args["x"], y2.args["x"])
 
-        z = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])
+    #     z = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])
 
-        np_test.assert_array_equal(y.args["x"], z)
+    #     np_test.assert_array_equal(y.args["x"], z)
 
-    def test_sub_check_alloc_int_3d(self):
-        arr_test = np.zeros((3, 4, 5), dtype=np.int32, order="F")
-        y = x.sub_check_alloc_int_3d(None)
-        y2 = x.sub_check_alloc_int_3d(arr_test)
-        np_test.assert_array_equal(y.args["x"], y2.args["x"])
+    # def test_sub_check_alloc_int_3d(self):
+    #     arr_test = np.zeros((3, 4, 5), dtype=np.int32, order="F")
+    #     y = x.sub_check_alloc_int_3d(None)
+    #     y2 = x.sub_check_alloc_int_3d(arr_test)
+    #     np_test.assert_array_equal(y.args["x"], y2.args["x"])
 
-        z = np.array(
-            [
-                [
-                    [1, 2, 3, 4, 5],
-                    [5, 6, 7, 8, 9],
-                    [9, 10, 11, 12, 13],
-                    [13, 14, 15, 16, 17],
-                ],
-                [
-                    [5, 6, 7, 8, 9],
-                    [9, 10, 11, 12, 13],
-                    [13, 14, 15, 16, 17],
-                    [17, 18, 19, 20, 21],
-                ],
-                [
-                    [9, 10, 11, 12, 13],
-                    [13, 14, 15, 16, 17],
-                    [17, 18, 19, 20, 21],
-                    [21, 22, 23, 24, 25],
-                ],
-            ]
-        )
+    #     z = np.array(
+    #         [
+    #             [
+    #                 [1, 2, 3, 4, 5],
+    #                 [5, 6, 7, 8, 9],
+    #                 [9, 10, 11, 12, 13],
+    #                 [13, 14, 15, 16, 17],
+    #             ],
+    #             [
+    #                 [5, 6, 7, 8, 9],
+    #                 [9, 10, 11, 12, 13],
+    #                 [13, 14, 15, 16, 17],
+    #                 [17, 18, 19, 20, 21],
+    #             ],
+    #             [
+    #                 [9, 10, 11, 12, 13],
+    #                 [13, 14, 15, 16, 17],
+    #                 [17, 18, 19, 20, 21],
+    #                 [21, 22, 23, 24, 25],
+    #             ],
+    #         ]
+    #     )
 
-        np_test.assert_array_equal(y.args["x"], z)
+    #     np_test.assert_array_equal(y.args["x"], z)

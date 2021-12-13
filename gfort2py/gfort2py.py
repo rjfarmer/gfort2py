@@ -384,8 +384,8 @@ class fVar_t:
             return None
 
         if self.is_array():
-            if self.is_explicit():
-                value = self._array_check(value)
+            if self.is_explicit() or self.is_assumed_size():
+                value = self._array_check(value, know_shape=not self.is_assumed_size())
                 return np.ctypeslib.as_ctypes(value)
             elif self.is_dummy():
                 shape = self._shape()
@@ -483,6 +483,9 @@ class fVar_t:
     def is_explicit(self):
         return self._object.sym.array_spec.array_type == "EXPLICIT"
 
+    def is_assumed_size(self):
+        return self._object.sym.array_spec.array_type == "ASSUMED_SIZE"
+
     def needs_len(self, *args):
         # Only needed for things that need an extra function argument for thier length
         if self.is_char():
@@ -491,6 +494,8 @@ class fVar_t:
                 return False
             except AttributeError:
                 return True  # We do not know the length of the string at compile time
+        elif self.is_array():
+            return self.is_assumed_size()
 
         return False
 
@@ -504,6 +509,9 @@ class fVar_t:
                 return ctypes.c_int64(
                     len(args[0])
                 )  # We do not know the length of the string at compile time
+        if self.is_array():
+            if self.is_assumed_size():
+                return np.size(args[0])
 
     def dtype(self):
         t = self.type()
@@ -632,6 +640,13 @@ class fVar_t:
                     return cb_var() * self._size()
 
                 cb_arr = callback
+            elif self.is_assumed_size():
+
+                def callback(value, *args):
+                    return cb_var() * np.size(value)
+
+                cb_arr = callback
+
             elif self.is_dummy():
 
                 def callback(*args):
@@ -669,6 +684,11 @@ class fVar_t:
                 v = np.reshape(np.ctypeslib.as_array(x), self._shape())
                 declare_fortran(v)
                 return v
+            elif self.is_assumed_size():
+                v = np.reshape(np.ctypeslib.as_array(x), tuple(len(x)))
+                declare_fortran(v)
+                return v
+
             elif self.is_dummy():
                 self.__x = x
                 shape = []
