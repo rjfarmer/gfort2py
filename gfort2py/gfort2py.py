@@ -690,14 +690,18 @@ class fVar_t:
                 return v
 
             elif self.is_dummy():
+                if x.base_addr is None:
+                    return None
+
                 self.__x = x
                 shape = []
-                for i in range(self.ndim()):
-                    shape.append(x.bounds[i].ubound - x.bounds[i].lbound + 1)
+                for i in range(self._ndim()):
+                    shape.append(x.dims[i].ubound - x.dims[i].lbound + 1)
 
+                shape = tuple(shape)
                 strides = []
-                for i in range(self.ndim()):
-                    strides.append(x.bounds[i].stride * self.sizeof())
+                for i in range(self._ndim()):
+                    strides.append(x.dims[i].stride * self.sizeof)
 
                 strides = tuple(strides)
 
