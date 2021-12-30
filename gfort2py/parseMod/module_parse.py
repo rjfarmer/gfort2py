@@ -25,6 +25,9 @@ def string_clean(string):
 class VersionError(Exception):
     pass
 
+class NotAnArrayError(Exception):
+    pass
+
 
 #################################
 
@@ -502,6 +505,153 @@ class symbol:
         self.head = header(*args[0:5])
         self.sym = data(*args[5])
         self.raw = args
+
+    def shape(self):
+        if self.is_array():
+            return self.sym.array_spec.pyshape
+        else:
+            raise NotAnArrayError("Not an array")
+
+    def dtype(self):
+        t = self.type()
+        k = int(self.kind())
+
+        if t == "INTEGER" or t == "LOGICAL":
+            if k == 4:
+                return "i4"
+            elif k == 8:
+                return "i8"
+        elif t == "REAL":
+            if k == 4:
+                return "f4"
+            elif k == 8:
+                return "f8"
+        elif t == "COMPLEX":
+            if k == 4:
+                return "c4"
+            elif k == 8:
+                return "c8"
+
+        raise NotImplementedError(f"Object of type {t} and kind {k} not supported yet")
+
+    def type(self):
+        return self.sym.ts.type
+
+    def flavor(self):
+        return self.sym.attr.flavor
+
+    def kind(self):
+        return self.sym.ts.kind
+
+    def is_pointer(self):
+        return "POINTER" in self.sym.attr.attributes
+
+    def is_parameter(self):
+        return self.flavor == 'PARAMETER'
+
+    def is_value(self):
+        return "VALUE" in self.sym.attr.attributes
+
+    def is_optional(self):
+        return "OPTIONAL" in self.sym.attr.attributes
+
+    def is_char(self):
+        return self.type() == "CHARACTER"
+
+    def is_variable(self):
+        return self.flavor() == 'VARIABLE'
+
+    def is_procedure(self):
+        return self.flavor() == 'PROCEDURE'
+
+    def is_subroutine(self):
+        return self.sym.sym_ref.ref == 0
+
+    def is_function(self):
+        return self.sym.sym_ref.ref != 0
+
+    def is_array(self):
+        return "DIMENSION" in self.sym.attr.attributes
+
+    def is_dummy(self):
+        return self.sym.array_spec.array_type == "DEFERRED"
+
+    def is_explicit(self):
+        return self.sym.array_spec.array_type == "EXPLICIT"
+
+    def is_assumed_size(self):
+        return self.sym.array_spec.array_type == "ASSUMED_SIZE"
+
+    def is_assumed_shape(self):
+        return self.sym.array_spec.array_type == "ASSUMED_SHAPE"
+
+    def is_defered_len(self):
+        # Only needed for things that need an extra function argument for thier length
+        if self.is_char():
+            try:
+                self.sym.ts.charlen.value  # We know the string length at compile time
+                return False
+            except NotAnArrayError:
+                return True  # We do not know the length of the string at compile time
+        elif self.is_array():
+            return self.is_assumed_size()
+
+        return False
+
+    @property
+    def defered_len(self):
+        if self.defered_len():
+            if self.is_array():
+                return 0
+            else:
+                return self.sym.ts.charlen.value
+        raise NotAnArrayError("Not a defered length type")
+
+    @property
+    def ndim(self):
+        if self.is_array():
+            return self.sym.array_spec.rank
+        else:
+            raise NotAnArrayError("Not an array")
+
+    @property
+    def size(self):
+        if self.is_array():
+            return np.product(self.shape())
+        else:
+            raise NotAnArrayError("Not an array")
+
+    @property
+    def name(self):
+        return self.head.name
+
+    @property
+    def mangled_name(self):
+        return self.head.mn_name
+
+    def value(self):
+        if self.is_parameter():
+            v = self.sym.value
+            if not self.is_array():
+                return v
+            else:
+                return np.array(v, dtype=self.dtype()).reshape(self.shape())
+        else:
+            raise AttributeError("Not a parameter")
+
+    def type_kind(self):
+        return self.type(), self.kind()
+
+    def return_arg(self):
+        if self.is_procedure():
+            return self.sym.sym_ref.ref
+        raise AttributeError("Not a procedure")
+
+
+    def args(self):
+        if self.is_procedure():
+            return self.sym.formal_arg
+        raise AttributeError("Not a procedure")
 
 
 class module(object):
