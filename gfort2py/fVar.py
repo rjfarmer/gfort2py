@@ -32,18 +32,12 @@ class fVar(fObject):
         return str(self.value)
 
     def in_dll(self, lib):
-        return self._value.ctype().in_dll(lib, self._value._obj.mangled_name)
+        return self._value.ctype().in_dll(lib, self._value.mangled_name())
 
     @property
     def module(self):
-        return self._value._obj.module
+        return self._value.module
 
-    @property
-    def __doc__(self):
-        return (
-            f"{self._value.type}(KIND={self._value.kind}) "
-            f"MODULE={self.module}.mod"
-        )
 
 
 class fParam(fObject):
@@ -54,7 +48,7 @@ class fParam(fObject):
 
     @property
     def value(self):
-        return self._obj.value
+        return self._obj.value()
 
     @value.setter
     def value(self, value):

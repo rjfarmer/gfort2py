@@ -547,7 +547,7 @@ class symbol:
         return "POINTER" in self.sym.attr.attributes
 
     def is_parameter(self):
-        return self.flavor == 'PARAMETER'
+        return self.flavor() == 'PARAMETER'
 
     def is_value(self):
         return "VALUE" in self.sym.attr.attributes
@@ -589,7 +589,7 @@ class symbol:
         # Only needed for things that need an extra function argument for thier length
         if self.is_char():
             try:
-                self.sym.ts.charlen.value  # We know the string length at compile time
+                self.sym.ts.charlen  # We know the string length at compile time
                 return False
             except NotAnArrayError:
                 return True  # We do not know the length of the string at compile time
@@ -599,12 +599,9 @@ class symbol:
         return False
 
     @property
-    def defered_len(self):
-        if self.defered_len():
-            if self.is_array():
-                return 0
-            else:
-                return self.sym.ts.charlen.value
+    def strlen(self):
+        if self.is_char() and not self.is_defered_len():
+            return self.sym.ts.charlen
         raise NotAnArrayError("Not a defered length type")
 
     @property
@@ -631,7 +628,7 @@ class symbol:
 
     def value(self):
         if self.is_parameter():
-            v = self.sym.value
+            v = self.sym.parameter.value
             if not self.is_array():
                 return v
             else:

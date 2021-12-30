@@ -67,10 +67,19 @@ class fVar_t:
 
         self.type, self.kind = self._obj.type_kind()
 
+    def name(self):
+        return self._obj.name
+
+    def mangled_name(self):
+        return self._obj.mangled_name
+
+    def module(self):
+        return self._obj.module
+
     def _array_check(self, value, know_shape=True):
-        value = value.astype(self.dtype())
+        value = value.astype(self._obj.dtype())
         shape = self._obj.shape()
-        ndim = self._obj.ndim()
+        ndim = self._obj.ndim
 
         if not value.flags["F_CONTIGUOUS"]:
             value = np.asfortranarray(value)
@@ -79,8 +88,9 @@ class fVar_t:
             raise ValueError(
                 f"Wrong number of dimensions, got {value.ndim} expected {ndim}"
             )
+
         if know_shape:
-            if list(value.shape) != self._shape():
+            if list(value.shape) != shape:
                 raise ValueError(f"Wrong shape, got {value.shape} expected {shape}")
 
         value = value.flatten()
@@ -93,10 +103,22 @@ class fVar_t:
             return None
 
         if self._obj.is_array():
-            if self._obj.is_explicit() or self._obj.is_assumed_size():
-                value = self._array_check(value, know_shape=not self._obj.is_assumed_size())
-                return np.ctypeslib.as_ctypes(value)
-            elif self.is_dummy():
+            if self._obj.is_explicit():
+                value = self._array_check(value)
+                ctype = self.ctype(value)(value)
+
+                self.copy_array(ctypes.addressof(value),ctypes.addressof(ctype), self.sizeof(), self.size())
+
+                return ctype
+            elif self._obj.is_assumed_size():
+                value = self._array_check(value, know_shape=False)
+                ctype = self.ctype(value)(value)
+
+                self.copy_array(ctypes.addressof(value), ctypes.addressof(ctype), self.sizeof(), np.size(value))
+                
+                return ctype
+
+            elif self._obj.is_dummy():
                 shape = self._obj.shape()
                 ndim = self._obj.ndim()
 
@@ -116,7 +138,9 @@ class fVar_t:
                 else:
                     shape = value.shape
                     value = self._array_check(value, False)
-                    ct.base_addr = self.__value.ctypes.data
+                    #ct.base_addr = self.__value.ctypes.data
+                    self.copy_array(self.__value.ctypes.data, ct.base_addr, self.sizeof(), np.size(value))
+
                     strides = []
                     for i in range(ndim):
                         ct.dims[i].lbound = _index_t(1)
@@ -147,14 +171,8 @@ class fVar_t:
             else:
                 return self.ctype(value)(0)
         elif self.type == "CHARACTER":
-            try:
-                strlen = (
-                    self._obj.sym.ts.charlen.value
-                )  # We know the string length at compile time
-            except AttributeError:
-                strlen = len(
-                    value
-                )  # We do not know the length of the string at compile time
+            strlen = self.len(value).value
+
             if hasattr(value, "encode"):
                 value = value.encode()
 
@@ -171,19 +189,20 @@ class fVar_t:
 
         raise NotImplementedError(f"Object of type {self.type} and kind {self.kind} not supported yet")
 
-    def clen(self, *args):
+    def len(self, value=None):
         if self._obj.is_char():
-            try:
-                return ctypes.c_int64(
-                    self._obj.sym.ts.charlen.value
-                )  # We know the string length at compile time
-            except AttributeError:
-                return ctypes.c_int64(
-                    len(args[0])
-                )  # We do not know the length of the string at compile time
-        if self._obj.is_array():
+            if self._obj.is_defered_len():
+                l = len(value)
+            else:
+                l = self._obj.strlen
+            
+        elif self._obj.is_array():
             if self._obj.is_assumed_size():
-                return np.size(args[0])
+                l = np.size(value)
+        else:
+            l = None
+            
+        return ctypes.c_int64(l)
 
     @property
     def ctype(self):
@@ -285,7 +304,7 @@ class fVar_t:
             if self._obj.is_explicit():
 
                 def callback(*args):
-                    return cb_var() * self._obj.size()
+                    return cb_var() * self._obj.size
 
                 cb_arr = callback
             elif self._obj.is_assumed_size():
@@ -295,7 +314,7 @@ class fVar_t:
 
                 cb_arr = callback
 
-            elif self.is_dummy():
+            elif self._obj.is_dummy():
 
                 def callback(*args):
                     return _make_fAlloc15(self._ndim())
@@ -326,45 +345,33 @@ class fVar_t:
 
         if self._obj.is_array():
             if self._obj.is_explicit():
-                v = np.reshape(np.ctypeslib.as_array(x), self._shape())
-                declare_fortran(v)
+                v = np.zeros(self._obj.shape(), order='F', dtype=self.dtype())
+
+                self.copy_array(ctypes.addressof(value), v.ctypes.data, self.sizeof(), self._obj.size)
+        
                 return v
             elif self._obj.is_assumed_size():
-                v = np.reshape(np.ctypeslib.as_array(x), tuple([len(x)]))
-                declare_fortran(v)
+                v = np.zeros(self._obj.shape(), order='F', dtype=self.dtype())
+
+                self.copy_array(ctypes.addressof(value), v.ctypes.data, self.sizeof(), tuple([len(x)]))
+        
                 return v
 
-            elif self.is_dummy():
+            elif self._obj.is_dummy():
                 if x.base_addr is None:
                     return None
 
-                self.__x = x
                 shape = []
                 for i in range(self._ndim()):
                     shape.append(x.dims[i].ubound - x.dims[i].lbound + 1)
 
                 shape = tuple(shape)
-                strides = []
-                for i in range(self._ndim()):
-                    strides.append(x.dims[i].stride * self.sizeof)
 
-                strides = tuple(strides)
+                v = np.zeros(shape, order='F', dtype=self.dtype())
 
-                buff = {
-                    "data": (x.base_addr, True),
-                    "typestr": self.dtype(),
-                    "shape": shape,
-                    "version": 3,
-                    "strides": strides,
-                }
+                self.copy_array(x.base_addr, v.ctypes.data, self.sizeof(), np.size(v))
 
-                class numpy_holder:
-                    pass
-
-                holder = numpy_holder()
-                holder.__array_interface__ = buff
-                arr = np.asfortranarray(holder)
-                return arr
+                return v
 
         if self.type == "COMPLEX":
             return complex(x.real, x.imag)
@@ -432,16 +439,15 @@ class fVar_t:
             v = self.from_param(value)
             if self._obj.is_explicit():
                 # Copy array
-                size = np.size(value) * self.sizeof()
-            elif self._vobj.is_dummy():
+                size = np.size(value) 
+                length = self.sizeof()
+            elif self._obj.is_dummy():
                 # Copy just the array descriptor
                 size = ctypes.sizeof(v)
+                length = 1
 
-            ctypes.memmove(
-                ctypes.addressof(ctype),
-                ctypes.addressof(v),
-                size,
-            )
+            self.copy_array(ctypes.addressof(ctype),ctypes.addressof(v), length, size)
+
             return
         elif isinstance(ctype, ctypes.Structure):
             for k in ctype.__dir__():
@@ -453,3 +459,11 @@ class fVar_t:
 
     def get_from_ctype(self, ctype):
         return self.from_ctype(ctype)
+
+
+    def copy_array(self, inadd, outadd, length, size):
+        ctypes.memmove(
+            inadd,
+            outadd,
+            length*size,
+        )

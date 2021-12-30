@@ -99,7 +99,7 @@ class fProc:
         if self._obj.is_function():
             fvar = fVar_t(self._allobjs[self._obj.return_arg()])
             if fvar._obj.is_char():
-                l = fvar.clen()
+                l = fvar.len()
                 res_start.append(fvar.from_param(" " * l.value))
                 res_start.append(l)
 
@@ -119,7 +119,7 @@ class fProc:
             if x is None and not var._obj.is_optional() and not var._obj.is_dummy():
                 raise ValueError(f"Got None for {var.name}")
 
-            if x is not None or var.is_dummy():
+            if x is not None or var._obj.is_dummy():
                 z = var.from_param(x)
 
                 if var._obj.is_value():
@@ -130,7 +130,7 @@ class fProc:
                     res.append(ctypes.pointer(z))
 
                 if var._obj.is_defered_len():
-                    res_end.append(var.clen(x))
+                    res_end.append(var.len(x))
             else:
                 res.append(None)
                 if var._obj.is_defered_len():

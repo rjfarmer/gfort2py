@@ -157,3 +157,10 @@ class fObject:
 
     def __dir__(self):
         return self.value.__dir__()
+
+    @property
+    def __doc__(self):
+        return (
+            f"{self._obj.type}(KIND={self._obj.kind}) "
+            f"MODULE={self.module}.mod"
+        )
