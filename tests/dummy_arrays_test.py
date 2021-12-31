@@ -24,7 +24,6 @@ MOD = "./tests/dummy_arrays.mod"
 
 x = gf.fFort(SO, MOD)
 
-@pytest.mark.skip
 class TestDummyArrayMethods:
     def assertEqual(self, x, y):
         assert x == y
@@ -391,7 +390,7 @@ class TestDummyArrayMethods:
     @pytest.mark.skip
     def test_sub_arr_assumed_rank_int_1d(self, capfd):
         v = np.arange(10, 15)
-        o = " ".join([str(i) for i in v.flatten()])
+        o = " ".join([str(i) for i in v.flatten(order='F')])
 
         y = x.sub_arr_assumed_rank_int_1d(v)
         out, err = capfd.readouterr()
@@ -400,7 +399,7 @@ class TestDummyArrayMethods:
     @pytest.mark.skip
     def test_sub_arr_assumed_rank_real_1d(self, capfd):
         v = np.arange(10.0, 15.0)
-        o = " ".join([str(i) for i in v.flatten()])
+        o = " ".join([str(i) for i in v.flatten(order='F')])
 
         y = x.sub_arr_assumed_rank_real_1d(v)
         out, err = capfd.readouterr()
@@ -409,7 +408,7 @@ class TestDummyArrayMethods:
     @pytest.mark.skip
     def test_sub_arr_assumed_rank_dp_1d(self, capfd):
         v = np.arange(10.0, 15.0)
-        o = " ".join([str(i) for i in v.flatten()])
+        o = " ".join([str(i) for i in v.flatten(order='F')])
 
         y = x.sub_arr_assumed_rank_dp_1d(v)
         out, err = capfd.readouterr()

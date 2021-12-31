@@ -24,7 +24,6 @@ MOD = "./tests/explicit_arrays.mod"
 
 x = gf.fFort(SO, MOD)
 
-@pytest.mark.skip
 class TestExplicitArrayMethods:
     def assertEqual(self, x, y):
         assert x == y
@@ -56,7 +55,7 @@ class TestExplicitArrayMethods:
         np_test.assert_array_equal(x.b_int_exp_1d, v)
 
     def test_b_int_exp_2d(self):
-        v = np.random.randint(0, 100, size=(5, 5))
+        v = np.asfortranarray(np.random.randint(0, 100, size=(5, 5)))
         x.b_int_exp_2d = v
         np_test.assert_array_equal(x.b_int_exp_2d, v)
 
@@ -133,7 +132,7 @@ class TestExplicitArrayMethods:
     @pytest.mark.skip
     def test_sub_array_n_int_1d(self, capfd):
         v = np.arange(0, 5)
-        o = " ".join([str(i) for i in v.flatten()])
+        o = " ".join([str(i) for i in v.flatten(order='F')])
 
         y = x.sub_array_n_int_1d(np.size(v), v)
         out, err = capfd.readouterr()
@@ -143,7 +142,7 @@ class TestExplicitArrayMethods:
     def test_sub_array_n_int_2d(self, capfd):
         v = [0, 1, 2, 3, 4] * 5
         v = np.array(v).reshape(5, 5)
-        o = " ".join([str(i) for i in np.asfortranarray(v).flatten()])
+        o = " ".join([str(i) for i in np.asfortranarray(v).flatten(order='F')])
 
         y = x.sub_array_n_int_2d(5, 5, v)
         out, err = capfd.readouterr()
@@ -151,7 +150,7 @@ class TestExplicitArrayMethods:
 
     def test_sub_exp_array_int_1d(self, capfd):
         v = np.arange(0, 5)
-        o = " ".join([str(i) for i in v.flatten()])
+        o = " ".join([str(i) for i in v.flatten(order='F')])
 
         y = x.sub_exp_array_int_1d(v)
         out, err = capfd.readouterr()
@@ -159,35 +158,35 @@ class TestExplicitArrayMethods:
 
     def test_sub_exp_array_int_2d(self, capfd):
         v = np.arange(0, 5 * 5).reshape((5, 5))
-        o = "".join([str(i).zfill(2).ljust(3) for i in np.asfortranarray(v).flatten()])
+        o = "".join([str(i).zfill(2).ljust(3) for i in np.asfortranarray(v).flatten(order='F')])
         y = x.sub_exp_array_int_2d(v)
         out, err = capfd.readouterr()
         self.assertEqual(out.strip(), o.strip())
 
     def test_sub_exp_array_int_3d(self, capfd):
         v = np.arange(0, 5 * 5 * 5).reshape((5, 5, 5))
-        o = "".join([str(i).zfill(3).ljust(4) for i in np.asfortranarray(v).flatten()])
+        o = "".join([str(i).zfill(3).ljust(4) for i in np.asfortranarray(v).flatten(order='F')])
         y = x.sub_exp_array_int_3d(v)
         out, err = capfd.readouterr()
         self.assertEqual(out.strip(), o.strip())
 
     def test_sub_exp_array_real_1d(self, capfd):
         v = np.arange(0, 5.0).reshape((5))
-        o = "  ".join(["{:>4.1f}".format(i) for i in np.asfortranarray(v).flatten()])
+        o = "  ".join(["{:>4.1f}".format(i) for i in np.asfortranarray(v).flatten(order='F')])
         y = x.sub_exp_array_real_1d(v)
         out, err = capfd.readouterr()
         self.assertEqual(out.strip(), o.strip())
 
     def test_sub_exp_array_real_2d(self, capfd):
         v = np.arange(0, 5.0 * 5.0).reshape((5, 5))
-        o = "  ".join(["{:>4.1f}".format(i) for i in np.asfortranarray(v).flatten()])
+        o = "  ".join(["{:>4.1f}".format(i) for i in np.asfortranarray(v).flatten(order='F')])
         y = x.sub_exp_array_real_2d(v)
         out, err = capfd.readouterr()
         self.assertEqual(out.strip(), o.strip())
 
     def test_sub_exp_array_real_3d(self, capfd):
         v = np.arange(0, 5.0 * 5.0 * 5.0).reshape((5, 5, 5))
-        o = " ".join(["{:>5.1f}".format(i) for i in np.asfortranarray(v).flatten()])
+        o = " ".join(["{:>5.1f}".format(i) for i in np.asfortranarray(v).flatten(order='F')])
         y = x.sub_exp_array_real_3d(v)
         out, err = capfd.readouterr()
         self.assertEqual(out.strip(), o.strip())
@@ -196,14 +195,14 @@ class TestExplicitArrayMethods:
         u = 19
         w = 20
         v = np.arange(0, 5)
-        o = " ".join([str(i) for i in np.asfortranarray(v).flatten()])
+        o = " ".join([str(i) for i in np.asfortranarray(v).flatten(order='F')])
         y = x.sub_exp_array_int_1d_multi(u, v, w)
         out, err = capfd.readouterr()
         self.assertEqual(out.strip(), str(u) + " " + o.strip() + " " + str(w))
 
     def test_sub_exp_array_real_dp_1d(self, capfd):
         v = np.arange(0, 5.0).reshape((5))
-        o = "  ".join(["{:>4.1f}".format(i) for i in np.asfortranarray(v).flatten()])
+        o = "  ".join(["{:>4.1f}".format(i) for i in np.asfortranarray(v).flatten(order='F')])
 
         y = x.sub_exp_array_real_dp_1d(v)
         out, err = capfd.readouterr()
@@ -211,7 +210,7 @@ class TestExplicitArrayMethods:
 
     def test_sub_exp_array_real_dp_2d(self, capfd):
         v = np.arange(0, 5.0 * 5.0).reshape((5, 5))
-        o = "  ".join(["{:>4.1f}".format(i) for i in np.asfortranarray(v).flatten()])
+        o = "  ".join(["{:>4.1f}".format(i) for i in np.asfortranarray(v).flatten(order='F')])
 
         y = x.sub_exp_array_real_dp_2d(v)
         out, err = capfd.readouterr()
@@ -219,7 +218,7 @@ class TestExplicitArrayMethods:
 
     def test_sub_exp_array_real_dp_3d(self, capfd):
         v = np.arange(0, 5.0 * 5.0 * 5.0).reshape((5, 5, 5))
-        o = " ".join(["{:>5.1f}".format(i) for i in np.asfortranarray(v).flatten()])
+        o = " ".join(["{:>5.1f}".format(i) for i in np.asfortranarray(v).flatten(order='F')])
 
         y = x.sub_exp_array_real_dp_3d(v)
         out, err = capfd.readouterr()
@@ -235,7 +234,7 @@ class TestExplicitArrayMethods:
 
     def test_sub_arr_exp_p(self, capfd):
         v = np.arange(0, 5)
-        o = " ".join([str(i) for i in v.flatten()])
+        o = " ".join([str(i) for i in v.flatten(order='F')])
 
         y = x.sub_exp_array_int_1d(v)
         out, err = capfd.readouterr()

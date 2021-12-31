@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0+
+import numpy as np
+
 
 class fObject:
     """
@@ -164,3 +166,6 @@ class fObject:
             f"{self._obj.type}(KIND={self._obj.kind}) "
             f"MODULE={self.module}.mod"
         )
+
+    def __getitem__(self, key):
+        return self.value.__getitem__(key)

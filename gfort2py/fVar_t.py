@@ -93,8 +93,7 @@ class fVar_t:
             if list(value.shape) != shape:
                 raise ValueError(f"Wrong shape, got {value.shape} expected {shape}")
 
-        value = value.flatten()
-        self.__value = value
+        value = value.flatten(order='F')
         return value
 
     def from_param(self, value):
@@ -105,22 +104,20 @@ class fVar_t:
         if self._obj.is_array():
             if self._obj.is_explicit():
                 value = self._array_check(value)
-                ctype = self.ctype(value)(value)
-
-                self.copy_array(ctypes.addressof(value),ctypes.addressof(ctype), self.sizeof(), self.size())
-
+                ctype = self.ctype(value)()
+                self.copy_array(value.ctypes.data,ctypes.addressof(ctype), self.sizeof, self._obj.size)
                 return ctype
             elif self._obj.is_assumed_size():
                 value = self._array_check(value, know_shape=False)
-                ctype = self.ctype(value)(value)
+                ctype = self.ctype(value)()
 
-                self.copy_array(ctypes.addressof(value), ctypes.addressof(ctype), self.sizeof(), np.size(value))
+                self.copy_array(value.ctypes.data, ctypes.addressof(ctype), self.sizeof, np.size(value))
                 
                 return ctype
 
             elif self._obj.is_dummy():
-                shape = self._obj.shape()
-                ndim = self._obj.ndim()
+                shape = self._obj.shape
+                ndim = self._obj.ndim
 
                 ct = _make_fAlloc15(ndim)()
 
@@ -139,7 +136,7 @@ class fVar_t:
                     shape = value.shape
                     value = self._array_check(value, False)
                     #ct.base_addr = self.__value.ctypes.data
-                    self.copy_array(self.__value.ctypes.data, ct.base_addr, self.sizeof(), np.size(value))
+                    self.copy_array(value.ctypes.data, ct.base_addr, self.sizeof, np.size(value))
 
                     strides = []
                     for i in range(ndim):
@@ -317,7 +314,7 @@ class fVar_t:
             elif self._obj.is_dummy():
 
                 def callback(*args):
-                    return _make_fAlloc15(self._ndim())
+                    return _make_fAlloc15(self._obj.ndim)
 
                 cb_arr = callback
 
@@ -345,15 +342,15 @@ class fVar_t:
 
         if self._obj.is_array():
             if self._obj.is_explicit():
-                v = np.zeros(self._obj.shape(), order='F', dtype=self.dtype())
-
-                self.copy_array(ctypes.addressof(value), v.ctypes.data, self.sizeof(), self._obj.size)
+                v = np.zeros(self._obj.shape(), order='F', dtype=self._obj.dtype())
+                #print(v.ctypes.data, value,self.sizeof, self._obj.size )
+                self.copy_array(ctypes.addressof(value), v.ctypes.data, self.sizeof, self._obj.size)
         
                 return v
             elif self._obj.is_assumed_size():
-                v = np.zeros(self._obj.shape(), order='F', dtype=self.dtype())
+                v = np.zeros(self._obj.shape(), order='F', dtype=self._obj.dtype())
 
-                self.copy_array(ctypes.addressof(value), v.ctypes.data, self.sizeof(), tuple([len(x)]))
+                self.copy_array(ctypes.addressof(value), v.ctypes.data, self.sizeof, tuple([len(x)]))
         
                 return v
 
@@ -362,14 +359,14 @@ class fVar_t:
                     return None
 
                 shape = []
-                for i in range(self._ndim()):
+                for i in range(self._obj.ndim):
                     shape.append(x.dims[i].ubound - x.dims[i].lbound + 1)
 
                 shape = tuple(shape)
 
-                v = np.zeros(shape, order='F', dtype=self.dtype())
+                v = np.zeros(shape, order='F',dtype=self._obj.dtype())
 
-                self.copy_array(x.base_addr, v.ctypes.data, self.sizeof(), np.size(v))
+                self.copy_array(x.base_addr, v.ctypes.data, self.sizeof, np.size(v))
 
                 return v
 
@@ -416,7 +413,7 @@ class fVar_t:
 
     @property
     def sizeof(self):
-        return self.kind()
+        return self.kind
 
     def ftype(self):
         if self.type == "INTEGER":
@@ -430,23 +427,19 @@ class fVar_t:
 
         raise NotImplementedError(f"Array of type {self.type} and kind {self.kind} not supported yet")
 
-    @property
-    def sizeof(self):
-        return self.kind()
-
     def set_ctype(self, ctype, value):
         if self._obj.is_array():
             v = self.from_param(value)
             if self._obj.is_explicit():
                 # Copy array
                 size = np.size(value) 
-                length = self.sizeof()
+                length = self.sizeof
             elif self._obj.is_dummy():
                 # Copy just the array descriptor
                 size = ctypes.sizeof(v)
                 length = 1
 
-            self.copy_array(ctypes.addressof(ctype),ctypes.addressof(v), length, size)
+            self.copy_array(ctypes.addressof(v), ctypes.addressof(ctype), length, size)
 
             return
         elif isinstance(ctype, ctypes.Structure):
@@ -463,7 +456,7 @@ class fVar_t:
 
     def copy_array(self, inadd, outadd, length, size):
         ctypes.memmove(
-            inadd,
             outadd,
+            inadd,
             length*size,
         )
