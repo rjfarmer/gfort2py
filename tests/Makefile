@@ -18,9 +18,9 @@ all: $(LIBS) $(GZ)
 	$(FC) $(OPTIONS) -o  $@ $<
 
 %.gz: %.mod
-	-cp $< $@
-	-gunzip -f $@ -c > $@.extract
-	-rm $@
+	@cp $< $@
+	@gunzip -f $@ -c > $@.extract
+	@rm $@
 
 clean:
 	-rm -f *.o *.mod *.gz *.pyc *.f90.*.* *.so *.original *.extract *.smod *.fpy
