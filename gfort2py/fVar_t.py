@@ -194,7 +194,7 @@ class fVar_t:
             if self._obj.is_defered_len():
                 l = len(value)
             else:
-                l = self._obj.strlen
+                l = self._obj.strlen.value
             
         elif self._obj.is_array():
             if self._obj.is_assumed_size():

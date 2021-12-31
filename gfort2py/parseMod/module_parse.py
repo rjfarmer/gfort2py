@@ -589,10 +589,10 @@ class symbol:
         # Only needed for things that need an extra function argument for thier length
         if self.is_char():
             try:
-                self.sym.ts.charlen  # We know the string length at compile time
+                self.sym.ts.charlen.value
                 return False
-            except NotAnArrayError:
-                return True  # We do not know the length of the string at compile time
+            except AttributeError:
+                return True
         elif self.is_array():
             return self.is_assumed_size()
 
@@ -602,7 +602,7 @@ class symbol:
     def strlen(self):
         if self.is_char() and not self.is_defered_len():
             return self.sym.ts.charlen
-        raise NotAnArrayError("Not a defered length type")
+        raise AttributeError("Not a defered length type")
 
     @property
     def ndim(self):
