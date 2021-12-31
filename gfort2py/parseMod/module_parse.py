@@ -287,7 +287,7 @@ class expression:
             self.value = None
             self.unary_op = args[3]
         elif self.exp_type == "FUNCTION":
-            print(args)
+            self.value = symbol_ref(args[3])
         elif self.exp_type == "CONSTANT":
             if self.ts.type == "REAL":
                 self.value = hextofloat(string_clean(args[3]))
