@@ -4,8 +4,6 @@ import numpy as np
 import os
 
 from . import parseMod as pm
-from .fnumpy import *
-from . import fobject as fo
 from .fVar import *
 from .fProc import *
 
