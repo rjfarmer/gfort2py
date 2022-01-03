@@ -3,7 +3,7 @@ import ctypes
 import numpy as np
 import os
 
-from . import parseMod as pm
+from .module_parse import module
 from .fVar import *
 from .fProc import *
 
@@ -15,7 +15,7 @@ class fFort:
     def __init__(self, libname, mod_file):
         self._lib = ctypes.CDLL(libname)
         self._mod_file = mod_file
-        self._module = pm.module(self._mod_file)
+        self._module = module(self._mod_file)
 
         self._initialised = True
 

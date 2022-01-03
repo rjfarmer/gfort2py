@@ -3,8 +3,6 @@ import ctypes
 import numpy as np
 
 from .fVar_t import *
-from .fobject import *
-
 
 class fVar:
     def __init__(self, lib, allobjs, key):
