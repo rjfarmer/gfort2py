@@ -1,21 +1,23 @@
 # SPDX-License-Identifier: GPL-2.0+
 import ctypes
 import numpy as np
-import copy
-
 
 _index_t = ctypes.c_int64
 _size_t = ctypes.c_int64
 
 
 class _bounds14(ctypes.Structure):
-    _fields_ = [("stride", _index_t), ("lbound", _index_t), ("ubound", _index_t)]
+    _fields_ = [
+        ("stride", _index_t), 
+        ("lbound", _index_t), 
+        ("ubound", _index_t)
+    ]
 
 
 class _dtype_type(ctypes.Structure):
     _fields_ = [
         ("elem_len", _size_t),
-        ("version", ctypes.c_int),
+        ("version", ctypes.c_int32),
         ("rank", ctypes.c_byte),
         ("type", ctypes.c_byte),
         ("attribute", ctypes.c_ushort),
@@ -34,12 +36,6 @@ def _make_fAlloc15(ndims):
 
     return _fAllocArray
 
-
-_GFC_DTYPE_RANK_MASK = 0x07
-_GFC_DTYPE_TYPE_SHIFT = 3
-_GFC_DTYPE_TYPE_MASK = 0x38
-_GFC_DTYPE_SIZE_SHIFT = 6
-
 _BT_UNKNOWN = 0
 _BT_INTEGER = _BT_UNKNOWN + 1
 _BT_LOGICAL = _BT_INTEGER + 1
@@ -52,14 +48,6 @@ _BT_PROCEDURE = _BT_CLASS + 1
 _BT_HOLLERITH = _BT_PROCEDURE + 1
 _BT_VOID = _BT_HOLLERITH + 1
 _BT_ASSUMED = _BT_VOID + 1
-
-_PY_TO_BT = {
-    "int": _BT_INTEGER,
-    "float": _BT_REAL,
-    "bool": _BT_LOGICAL,
-    "str": _BT_CHARACTER,
-    "bytes": _BT_CHARACTER,
-}
 
 
 class fVar_t:
@@ -122,9 +110,10 @@ class fVar_t:
 
                 ct = _make_fAlloc15(ndim)()
 
+                ct.base_addr = None
                 ct.dtype.elem_len = self.sizeof
                 ct.dtype.version = 0
-                ct.dtype.ndim = ndim
+                ct.dtype.rank = ndim
                 ct.dtype.type = self.ftype()
                 ct.dtype.attribute = 0
                 ct.span = self.sizeof
@@ -136,8 +125,9 @@ class fVar_t:
                 else:
                     shape = value.shape
                     value = self._array_check(value, False)
-                    #ct.base_addr = self.__value.ctypes.data
-                    self.copy_array(value.ctypes.data, ct.base_addr, self.sizeof, np.size(value))
+                    self.__value = value
+
+                    ct.base_addr = value.ctypes.data
 
                     strides = []
                     for i in range(ndim):
@@ -151,6 +141,14 @@ class fVar_t:
                         sumstrides = sumstrides + ct.dims[i].stride
 
                     ct.offset = -sumstrides
+
+                    # print(self._obj.name)
+                    # print(ct.base_addr)
+                    # print(ct.dtype.elem_len,ct.dtype.rank,ct.dtype.type)
+                    # print(ct.span,ct.offset)
+                    # for i in range(ndim):
+                    #     print(ct.dims[i].lbound,ct.dims[i].ubound,ct.dims[i].stride)
+
                     return ct
 
         if self.type == "INTEGER":
@@ -346,13 +344,14 @@ class fVar_t:
                 v = np.zeros(shape=self._obj.shape(), order='F', dtype=self._obj.dtype())
                 #print(self._obj.name, v.ctypes.data, ctypes.addressof(x),self.sizeof, self._obj.size,self._obj.dtype(),self._obj.shape() )
                 self.copy_array(ctypes.addressof(x), v.ctypes.data, self.sizeof, self._obj.size)
-
+                
+                v.flags.writeable = False
                 return v
             elif self._obj.is_assumed_size():
                 v = np.zeros(shape=self._obj.shape(), order='F', dtype=self._obj.dtype())
 
                 self.copy_array(ctypes.addressof(x), v.ctypes.data, 1, ctypes.sizeof(x))
-        
+                v.flags.writeable = False
                 return v
 
             elif self._obj.is_dummy():
@@ -368,7 +367,7 @@ class fVar_t:
                 v = np.zeros(shape=shape, order='F',dtype=self._obj.dtype())
 
                 self.copy_array(x.base_addr, v.ctypes.data, self.sizeof, np.size(v))
-
+                v.flags.writeable = False
                 return v
 
         if self.type == "COMPLEX":

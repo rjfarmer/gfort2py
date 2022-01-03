@@ -9,12 +9,7 @@ import gfort2py as gf
 
 import pytest
 
-import subprocess
-import numpy.testing as np_test
-
 from contextlib import contextmanager
-from io import StringIO
-from io import BytesIO
 
 # Decreases recursion depth to make debugging easier
 # sys.setrecursionlimit(10)
@@ -33,18 +28,18 @@ class TestExplicitArrayMethods:
             x.const_int_arr = "abc"
 
     def test_const_int_arr(self):
-        np_test.assert_array_equal(
+        np.testing.assert_array_equal(
             x.const_int_arr, np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 0], dtype="int32")
         )
 
     def test_const_real_arr(self):
-        np_test.assert_array_equal(
+        np.testing.assert_array_equal(
             x.const_real_arr,
             np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 0.0], dtype="float"),
         )
 
     def test_const_dp_arr(self):
-        np_test.assert_array_equal(
+        np.testing.assert_array_equal(
             x.const_real_dp_arr,
             np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 0.0], dtype="float"),
         )
@@ -52,82 +47,82 @@ class TestExplicitArrayMethods:
     def test_b_int_exp_1d(self):
         v = np.random.randint(0, 100, size=(5))
         x.b_int_exp_1d = v
-        np_test.assert_array_equal(x.b_int_exp_1d, v)
+        np.testing.assert_array_equal(x.b_int_exp_1d, v)
 
     def test_b_int_exp_2d(self):
         v = np.asfortranarray(np.random.randint(0, 100, size=(5, 5)), dtype="int32")
         x.b_int_exp_2d = v
-        np_test.assert_array_equal(x.b_int_exp_2d, v)
+        np.testing.assert_array_equal(x.b_int_exp_2d, v)
 
     def test_b_int_exp_3d(self):
         v = np.random.randint(0, 100, size=(5, 5, 5))
         x.b_int_exp_3d = v
-        np_test.assert_array_equal(x.b_int_exp_3d, v)
+        np.testing.assert_array_equal(x.b_int_exp_3d, v)
 
     def test_b_int_exp_4d(self):
         v = np.random.randint(0, 100, size=(5, 5, 5, 5))
         x.b_int_exp_4d = v
-        np_test.assert_array_equal(x.b_int_exp_4d, v)
+        np.testing.assert_array_equal(x.b_int_exp_4d, v)
 
     def test_b_int_exp_5d(self):
         v = np.random.randint(0, 100, size=(5, 5, 5, 5, 5))
         x.b_int_exp_5d = v
-        np_test.assert_array_equal(x.b_int_exp_5d, v)
+        np.testing.assert_array_equal(x.b_int_exp_5d, v)
 
     def test_b_real_exp_1d(self):
         v = np.random.random(size=(5))
         x.b_real_exp_1d = v
-        np_test.assert_allclose(x.b_real_exp_1d, v)
+        np.testing.assert_allclose(x.b_real_exp_1d, v)
 
     def test_b_real_exp_2d(self):
         v = np.random.random(size=(5, 5))
         x.b_real_exp_2d = v
-        np_test.assert_allclose(x.b_real_exp_2d, v)
+        np.testing.assert_allclose(x.b_real_exp_2d, v)
 
     def test_b_real_exp_3d(self):
         v = np.random.random(size=(5, 5, 5))
         x.b_real_exp_3d = v
-        np_test.assert_allclose(x.b_real_exp_3d, v)
+        np.testing.assert_allclose(x.b_real_exp_3d, v)
 
     def test_b_real_exp_4d(self):
         v = np.random.random(size=(5, 5, 5, 5))
         x.b_real_exp_4d = v
-        np_test.assert_allclose(x.b_real_exp_4d, v)
+        np.testing.assert_allclose(x.b_real_exp_4d, v)
 
     def test_b_real_exp_5d(self):
         v = np.random.random(size=(5, 5, 5, 5, 5))
         x.b_real_exp_5d = v
-        np_test.assert_allclose(x.b_real_exp_5d, v)
+        np.testing.assert_allclose(x.b_real_exp_5d, v)
 
     def test_b_real_exp_5d_2(self):
         v = np.random.random(size=(2, 3, 4, 5, 6))
         x.b_real_exp_5d_2 = v
-        np_test.assert_allclose(x.b_real_exp_5d_2, v)
+        np.testing.assert_allclose(x.b_real_exp_5d_2, v)
 
     def test_b_real_dp_exp_1d(self):
         v = np.random.random(size=(5))
         x.b_real_dp_exp_1d = v
-        np_test.assert_allclose(x.b_real_dp_exp_1d, v)
+        np.testing.assert_allclose(x.b_real_dp_exp_1d, v)
 
     def test_b_real_dp_exp_2d(self):
         v = np.random.random(size=(5, 5))
         x.b_real_dp_exp_2d = v
-        np_test.assert_allclose(x.b_real_dp_exp_2d, v)
+        np.testing.assert_allclose(x.b_real_dp_exp_2d, v)
 
     def test_b_real_dp_exp_3d(self):
         v = np.random.random(size=(5, 5, 5))
         x.b_real_dp_exp_3d = v
-        np_test.assert_allclose(x.b_real_dp_exp_3d, v)
+        np.testing.assert_allclose(x.b_real_dp_exp_3d, v)
 
     def test_b_real_dp_exp_4d(self):
         v = np.random.random(size=(5, 5, 5, 5))
         x.b_real_dp_exp_4d = v
-        np_test.assert_allclose(x.b_real_dp_exp_4d, v)
+        np.testing.assert_allclose(x.b_real_dp_exp_4d, v)
 
     def test_b_real_dp_exp_5d(self):
         v = np.random.random(size=(5, 5, 5, 5, 5))
         x.b_real_dp_exp_5d = v
-        np_test.assert_allclose(x.b_real_dp_exp_5d, v)
+        np.testing.assert_allclose(x.b_real_dp_exp_5d, v)
 
     @pytest.mark.skip
     def test_sub_array_n_int_1d(self, capfd):
@@ -230,7 +225,7 @@ class TestExplicitArrayMethods:
         y = x.sub_exp_inout(v)
         out, err = capfd.readouterr()
 
-        np_test.assert_array_equal(y.args["x"], 2 * v)
+        np.testing.assert_array_equal(y.args["x"], 2 * v)
 
     def test_sub_arr_exp_p(self, capfd):
         v = np.arange(0, 5)
@@ -270,4 +265,4 @@ class TestExplicitArrayMethods:
 
         arr_test[0, 3] = 5
 
-        np_test.assert_array_equal(y.args["arr"], arr_test)
+        np.testing.assert_array_equal(y.args["arr"], arr_test)

@@ -6,7 +6,7 @@ from .fVar_t import *
 from .fobject import *
 
 
-class fVar(fObject):
+class fVar:
     def __init__(self, lib, allobjs, key):
         self._allobjs = allobjs
         self._lib = lib
@@ -18,20 +18,20 @@ class fVar(fObject):
 
     @property
     def value(self):
-        return self._value.from_ctype(self.in_dll(self._lib))
+        return self._value.from_ctype(self._in_dll(self._lib))
 
     @value.setter
     def value(self, value):
-        ct = self.in_dll(self._lib)
+        ct = self._in_dll(self._lib)
         self._value.set_ctype(ct, value)
 
     def __repr__(self):
-        return str(self.value)
+        return repr(self.value)
 
     def __str__(self):
         return str(self.value)
 
-    def in_dll(self, lib):
+    def _in_dll(self, lib):
         return self._value.ctype().in_dll(lib, self._value.mangled_name())
 
     @property
@@ -40,7 +40,7 @@ class fVar(fObject):
 
 
 
-class fParam(fObject):
+class fParam:
     def __init__(self, lib, allobjs, key):
         self._allobjs = allobjs
         self._obj = self._allobjs[key]

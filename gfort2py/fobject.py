@@ -1,6 +1,4 @@
 # SPDX-License-Identifier: GPL-2.0+
-import numpy as np
-
 
 class fObject:
     """
@@ -17,7 +15,7 @@ class fObject:
         return self.value.__eq__(other)
 
     def __ne__(self, other):
-        return self.value.__neq__(other)
+        return self.value.__ne__(other)
 
     def __lt__(self, other):
         return self.value.__lt__(other)
@@ -152,10 +150,10 @@ class fObject:
         return self.value.__repr__()
 
     def __getattr__(self, attr):
-        if attr in self.__dict__:
-            return self.__dict__[attr]
-        else:
-            return getattr(self.value, attr)
+        return getattr(self.value, attr)
+
+    def __hasattr__(self, attr):
+        return hasattr(self.value, attr)
 
     def __dir__(self):
         return self.value.__dir__()

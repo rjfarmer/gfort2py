@@ -38,11 +38,11 @@ class fFort:
                     raise AttributeError(f"{self._mod_file}  has no attribute {key}")
 
             if self._module[key].is_variable():
-                return fVar(self._lib, self._module, key)
+                return fVar(self._lib, self._module, key).value
             elif self._module[key].is_procedure():
                 return fProc(self._lib, self._module, key)
             elif self._module[key].is_parameter():
-                return fParam(self._lib, self._module, key)
+                return fParam(self._lib, self._module, key).value
             else:
                 raise NotImplementedError(f"Object type {self._module[key].flavor()} not implemented yet")
 
