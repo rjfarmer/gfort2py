@@ -574,7 +574,13 @@ class symbol:
         return "DIMENSION" in self.sym.attr.attributes
 
     def is_dummy(self):
-        return self.sym.array_spec.array_type == "DEFERRED"
+        return "DUMMY" in self.sym.attr.attributes
+
+    def is_allocatable(self):
+        return "ALLOCATABLE" in self.sym.attr.attributes
+
+    def needs_array_desc(self):
+        return self.is_dummy() or self.is_allocatable()
 
     def is_explicit(self):
         return self.sym.array_spec.array_type == "EXPLICIT"
@@ -583,7 +589,7 @@ class symbol:
         return self.sym.array_spec.array_type == "ASSUMED_SIZE"
 
     def is_assumed_shape(self):
-        return self.sym.array_spec.array_type == "ASSUMED_SHAPE" or self.is_dummy()
+        return self.sym.array_spec.array_type == "ASSUMED_SHAPE"
 
     def is_defered_len(self):
         # Only needed for things that need an extra function argument for thier length

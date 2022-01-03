@@ -108,7 +108,7 @@ class fVar_t:
                 
                 return ctype
 
-            elif self._obj.is_dummy():
+            elif self._obj.needs_array_desc():
                 shape = self._obj.shape
                 ndim = self._obj.ndim
 
@@ -315,7 +315,7 @@ class fVar_t:
 
                 cb_arr = callback
 
-            elif self._obj.is_dummy():
+            elif self._obj.needs_array_desc():
 
                 def callback(*args):
                     return _make_fAlloc15(self._obj.ndim)
@@ -359,7 +359,7 @@ class fVar_t:
                 v.flags.writeable = False
                 return v
 
-            elif self._obj.is_dummy():
+            elif self._obj.needs_array_desc():
                 if x.base_addr is None:
                     return None
 
