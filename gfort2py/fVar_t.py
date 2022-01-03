@@ -49,6 +49,10 @@ _BT_HOLLERITH = _BT_PROCEDURE + 1
 _BT_VOID = _BT_HOLLERITH + 1
 _BT_ASSUMED = _BT_VOID + 1
 
+# We store allocated arrays here to hold onto the reference 
+_storage = {}
+
+
 
 class fVar_t:
     def __init__(self, obj):
@@ -125,9 +129,10 @@ class fVar_t:
                 else:
                     shape = value.shape
                     value = self._array_check(value, False)
-                    self.__value = value
+                    
+                    _storage[self.mangled_name] = value
 
-                    ct.base_addr = value.ctypes.data
+                    ct.base_addr = _storage[self.mangled_name].ctypes.data
 
                     strides = []
                     for i in range(ndim):

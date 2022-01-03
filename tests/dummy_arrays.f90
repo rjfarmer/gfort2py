@@ -92,6 +92,10 @@ module dummy_arrays
 		c_int_alloc_5d=1
 	
 	end subroutine sub_alloc_int_1d_arrs
+
+	subroutine print_c_int_alloc_1d()
+		write(*,*) c_int_alloc_1d
+	end subroutine print_c_int_alloc_1d
 	
 	
 	subroutine sub_alloc_int_1d_cleanup()

@@ -19,7 +19,6 @@ MOD = "./tests/dummy_arrays.mod"
 
 x = gf.fFort(SO, MOD)
 
-@pytest.mark.skip
 class TestDummyArrayMethods:
     def assertEqual(self, x, y):
         assert x == y
@@ -211,6 +210,7 @@ class TestDummyArrayMethods:
         np.testing.assert_array_equal(x.c_real_dp_alloc_4d, v)
         y = x.sub_alloc_real_dp_1d_cleanup()
 
+    @pytest.mark.skip
     def test_c_real_dp_alloc_5d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
         y = x.sub_alloc_real_dp_1d_arrs()

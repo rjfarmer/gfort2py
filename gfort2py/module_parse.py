@@ -583,7 +583,7 @@ class symbol:
         return self.sym.array_spec.array_type == "ASSUMED_SIZE"
 
     def is_assumed_shape(self):
-        return self.sym.array_spec.array_type == "ASSUMED_SHAPE"
+        return self.sym.array_spec.array_type == "ASSUMED_SHAPE" or self.is_dummy()
 
     def is_defered_len(self):
         # Only needed for things that need an extra function argument for thier length
