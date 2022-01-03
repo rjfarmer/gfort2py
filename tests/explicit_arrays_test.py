@@ -55,7 +55,7 @@ class TestExplicitArrayMethods:
         np_test.assert_array_equal(x.b_int_exp_1d, v)
 
     def test_b_int_exp_2d(self):
-        v = np.asfortranarray(np.random.randint(0, 100, size=(5, 5)))
+        v = np.asfortranarray(np.random.randint(0, 100, size=(5, 5)), dtype="int32")
         x.b_int_exp_2d = v
         np_test.assert_array_equal(x.b_int_exp_2d, v)
 

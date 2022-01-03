@@ -18,7 +18,7 @@ class fVar(fObject):
 
     @property
     def value(self):
-        return self._value.get_from_ctype(self.in_dll(self._lib))
+        return self._value.from_ctype(self.in_dll(self._lib))
 
     @value.setter
     def value(self, value):

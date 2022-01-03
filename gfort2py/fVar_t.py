@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 import ctypes
 import numpy as np
+import copy
 
 
 _index_t = ctypes.c_int64
@@ -93,7 +94,7 @@ class fVar_t:
             if list(value.shape) != shape:
                 raise ValueError(f"Wrong shape, got {value.shape} expected {shape}")
 
-        value = value.flatten(order='F')
+        value = value.ravel(order='F')
         return value
 
     def from_param(self, value):
@@ -342,15 +343,15 @@ class fVar_t:
 
         if self._obj.is_array():
             if self._obj.is_explicit():
-                v = np.zeros(self._obj.shape(), order='F', dtype=self._obj.dtype())
-                #print(v.ctypes.data, value,self.sizeof, self._obj.size )
-                self.copy_array(ctypes.addressof(value), v.ctypes.data, self.sizeof, self._obj.size)
-        
+                v = np.zeros(shape=self._obj.shape(), order='F', dtype=self._obj.dtype())
+                #print(self._obj.name, v.ctypes.data, ctypes.addressof(x),self.sizeof, self._obj.size,self._obj.dtype(),self._obj.shape() )
+                self.copy_array(ctypes.addressof(x), v.ctypes.data, self.sizeof, self._obj.size)
+
                 return v
             elif self._obj.is_assumed_size():
-                v = np.zeros(self._obj.shape(), order='F', dtype=self._obj.dtype())
+                v = np.zeros(shape=self._obj.shape(), order='F', dtype=self._obj.dtype())
 
-                self.copy_array(ctypes.addressof(value), v.ctypes.data, self.sizeof, tuple([len(x)]))
+                self.copy_array(ctypes.addressof(x), v.ctypes.data, 1, ctypes.sizeof(x))
         
                 return v
 
@@ -364,7 +365,7 @@ class fVar_t:
 
                 shape = tuple(shape)
 
-                v = np.zeros(shape, order='F',dtype=self._obj.dtype())
+                v = np.zeros(shape=shape, order='F',dtype=self._obj.dtype())
 
                 self.copy_array(x.base_addr, v.ctypes.data, self.sizeof, np.size(v))
 
@@ -430,16 +431,8 @@ class fVar_t:
     def set_ctype(self, ctype, value):
         if self._obj.is_array():
             v = self.from_param(value)
-            if self._obj.is_explicit():
-                # Copy array
-                size = np.size(value) 
-                length = self.sizeof
-            elif self._obj.is_dummy():
-                # Copy just the array descriptor
-                size = ctypes.sizeof(v)
-                length = 1
-
-            self.copy_array(ctypes.addressof(v), ctypes.addressof(ctype), length, size)
+            self.copy_array(ctypes.addressof(v), ctypes.addressof(ctype), 1, 
+                            ctypes.sizeof(v))
 
             return
         elif isinstance(ctype, ctypes.Structure):
@@ -449,10 +442,6 @@ class fVar_t:
         else:
             ctype.value = self.from_param(value).value
             return
-
-    def get_from_ctype(self, ctype):
-        return self.from_ctype(ctype)
-
 
     def copy_array(self, inadd, outadd, length, size):
         ctypes.memmove(
