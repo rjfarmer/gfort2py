@@ -9,16 +9,6 @@ import gfort2py as gf
 
 import pytest
 
-import subprocess
-import numpy.testing as np_test
-
-from contextlib import contextmanager
-from io import StringIO
-from io import BytesIO
-
-# Decreases recursion depth to make debugging easier
-# sys.setrecursionlimit(10)
-
 SO = "./tests/strings.so"
 MOD = "./tests/strings.mod"
 

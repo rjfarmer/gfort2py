@@ -9,11 +9,6 @@ import gfort2py as gf
 
 import pytest
 
-from contextlib import contextmanager
-
-# Decreases recursion depth to make debugging easier
-# sys.setrecursionlimit(10)
-
 SO = "./tests/dummy_arrays.so"
 MOD = "./tests/dummy_arrays.mod"
 

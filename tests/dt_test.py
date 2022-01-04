@@ -5,20 +5,10 @@ import os, sys
 os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 
 import numpy as np
-import numpy.testing as np_test
+import numpy.testing as np.testing
 import gfort2py as gf
 
 import pytest
-
-import subprocess
-import numpy.testing as np_test
-
-from contextlib import contextmanager
-from io import StringIO
-from io import BytesIO
-
-# Decreases recursion depth to make debugging easier
-# sys.setrecursionlimit(10)
 
 SO = "./tests/dt.so"
 MOD = "./tests/dt.mod"
@@ -105,22 +95,22 @@ class TestDTMethods:
         self.assertEqual(x.f_struct.a_str, "9999999999")
 
         v = np.array([9, 10, 11, 12, 13], dtype="int32")
-        np_test.assert_array_equal(x.f_struct.b_int_exp_1d, v)
+        np.testing.assert_array_equal(x.f_struct.b_int_exp_1d, v)
 
         v = np.array([9, 10, 11, 12, 13], dtype="int32")
-        np_test.assert_array_equal(x.e_int_target_1d, v)
+        np.testing.assert_array_equal(x.e_int_target_1d, v)
 
     def test_func_set_f_struct_array_alloc(self):
         y = x.func_set_f_struct()
 
         v = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], dtype="int32")
-        np_test.assert_array_equal(x.f_struct.c_int_alloc_1d, v)
+        np.testing.assert_array_equal(x.f_struct.c_int_alloc_1d, v)
 
     def test_func_set_f_struct_array_ptr(self):
         y = x.func_set_f_struct()
 
         v = np.array([9, 10, 11, 12, 13], dtype="int32")
-        np_test.assert_array_equal(x.f_struct.d_int_point_1d, v)
+        np.testing.assert_array_equal(x.f_struct.d_int_point_1d, v)
 
     def test_recur_dt(self):  # Skip for now
         with pytest.raises(TypeError) as cm:
@@ -169,5 +159,5 @@ class TestDTMethods:
         self.assertEqual(s[0].a_int, 5)
         self.assertEqual(s[1].a_int, 9)
 
-        np_test.assert_array_equal(s[0].b_int_exp_1d, np.array([66, 66, 66, 66, 66]))
-        np_test.assert_array_equal(s[1].b_int_exp_1d, np.array([77, 77, 77, 77, 77]))
+        np.testing.assert_array_equal(s[0].b_int_exp_1d, np.array([66, 66, 66, 66, 66]))
+        np.testing.assert_array_equal(s[1].b_int_exp_1d, np.array([77, 77, 77, 77, 77]))
