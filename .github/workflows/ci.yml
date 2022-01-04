@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fortran-compiler:  [gfortran-9, gfortran-10]
+        fortran-compiler:  [gfortran-9, gfortran-10, gfortran-11]
         python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
     env:
       FC: ${{ matrix.fortran-compiler }}
@@ -23,6 +23,11 @@ jobs:
       if: contains(matrix.fortran-compiler, 'gfortran-10')
       run: |
         sudo apt-get install gfortran-10
+
+    - name: gfortran-11 setup compiler
+      if: contains(matrix.fortran-compiler, 'gfortran-11')
+      run: |
+        sudo apt-get install gfortran-11
 
     - name: Cache pip
       uses: actions/cache@v2
