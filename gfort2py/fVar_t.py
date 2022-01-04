@@ -2,6 +2,9 @@
 import ctypes
 import numpy as np
 
+from .fnumpy import *
+
+
 _index_t = ctypes.c_int64
 _size_t = ctypes.c_int64
 
@@ -51,6 +54,12 @@ _BT_ASSUMED = _BT_VOID + 1
 
 # We store allocated arrays here to hold onto the reference 
 _storage = {}
+
+
+def deallocate(var):
+    ref = var._value._obj.ref()
+    if ref in _storage:
+        _storage[ref] = None
 
 class fVar_t:
     def __init__(self, obj):
@@ -128,9 +137,11 @@ class fVar_t:
                     shape = value.shape
                     value = self._array_check(value, False)
 
+                    # Hold onto reference for dear life
                     _storage[self._obj.ref()] = value
+                    remove_ownership(_storage[self._obj.ref()])
 
-                    ct.base_addr = value.ctypes.data
+                    ct.base_addr = _storage[self._obj.ref()].ctypes.data
 
                     strides = []
                     for i in range(ndim):
@@ -380,6 +391,8 @@ class fVar_t:
                 
                 if self._obj.is_logical():
                     v = v.astype(bool)
+
+                remove_ownership(v)
                 
                 v.flags.writeable = False
                 return v
