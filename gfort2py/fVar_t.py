@@ -91,7 +91,7 @@ class fVar_t:
 
     def from_param(self, value):
 
-        if self._obj.is_optional and value is None:
+        if self._obj.is_optional() and value is None:
             return None
 
         if self._obj.is_array():
@@ -335,7 +335,7 @@ class fVar_t:
     def from_ctype(self, value):
         if value is None:
             return None
-
+            
         x = value
 
         if hasattr(value, "contents"):
@@ -379,23 +379,23 @@ class fVar_t:
             return complex(x.real, x.imag)
 
         if hasattr(x, "value"):
-            if self.type == "INTEGER":
-                return x.value
-            elif self.type == "REAL":
-                if self.kind == 16:
-                    raise NotImplementedError(
-                        f"Object of type {self.type} and kind {self.kind} not supported yet"
-                    )
-                return x.value
-            elif self.type == "LOGICAL":
-                return x.value == 1
-            elif self.type == "CHARACTER":
-                return "".join([i.decode() for i in x])
-            raise NotImplementedError(
-                f"Object of type {self.type} and kind {self.kind} not supported yet"
-            )
-        else:
-            return x
+            x = x.value
+
+        if self.type == "INTEGER":
+            return int(x)
+        elif self.type == "REAL":
+            if self.kind == 16:
+                raise NotImplementedError(
+                    f"Object of type {self.type} and kind {self.kind} not supported yet"
+                )
+            return float(x)
+        elif self.type == "LOGICAL":
+            return x == 1
+        elif self.type == "CHARACTER":
+            return "".join([i.decode() for i in x])
+        raise NotImplementedError(
+            f"Object of type {self.type} and kind {self.kind} not supported yet"
+        )
 
     @property
     def __doc__(self):

@@ -83,8 +83,8 @@ class TestDummyArrayMethods:
         v[:] = 5
         x.c_int_alloc_1d = v
         np.testing.assert_array_equal(x.c_int_alloc_1d, v)
-        y = x.sub_alloc_int_1d_cleanup()
         self.assertEqual(np.sum(x.c_int_alloc_1d), 25)
+        y = x.sub_alloc_int_1d_cleanup()
 
     def test_c_int_alloc_2d_set(self):
         y = x.sub_alloc_int_1d_cleanup()
