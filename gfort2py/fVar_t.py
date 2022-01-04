@@ -52,8 +52,6 @@ _BT_ASSUMED = _BT_VOID + 1
 # We store allocated arrays here to hold onto the reference 
 _storage = {}
 
-
-
 class fVar_t:
     def __init__(self, obj):
         self._obj = obj
@@ -130,9 +128,9 @@ class fVar_t:
                     shape = value.shape
                     value = self._array_check(value, False)
 
-                    _storage[self._obj.ref()] = np.ctypeslib.as_ctypes(value)
+                    _storage[self._obj.ref()] = value
 
-                    ct.base_addr = ctypes.addressof(_storage[self._obj.ref()])
+                    ct.base_addr = value.ctypes.data
 
                     strides = []
                     for i in range(ndim):
