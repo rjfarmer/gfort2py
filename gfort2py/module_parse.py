@@ -564,6 +564,9 @@ class symbol:
     def is_procedure(self):
         return self.flavor() == 'PROCEDURE'
 
+    def is_logical(self):
+        return self.sym.ts.type == 'LOGICAL'
+
     def is_subroutine(self):
         return self.sym.sym_ref.ref == 0
 
@@ -581,6 +584,9 @@ class symbol:
 
     def needs_array_desc(self):
         return self.is_dummy() or self.is_allocatable()
+
+    def not_a_pointer(self):
+        return self.needs_array_desc() and self.is_array() and  not self.is_assumed_shape() and not self.is_assumed_size() 
 
     def is_explicit(self):
         return self.sym.array_spec.array_type == "EXPLICIT"

@@ -350,12 +350,19 @@ class fVar_t:
                 #print(self._obj.name, v.ctypes.data, ctypes.addressof(x),self.sizeof, self._obj.size,self._obj.dtype(),self._obj.shape() )
                 self.copy_array(ctypes.addressof(x), v.ctypes.data, self.sizeof, self._obj.size)
                 
+                if self._obj.is_logical():
+                    v = v.astype(bool)
+
                 v.flags.writeable = False
                 return v
             elif self._obj.is_assumed_size():
                 v = np.zeros(shape=self._obj.shape(), order='F', dtype=self._obj.dtype())
 
                 self.copy_array(ctypes.addressof(x), v.ctypes.data, 1, ctypes.sizeof(x))
+                
+                if self._obj.is_logical():
+                    v = v.astype(bool)
+                
                 v.flags.writeable = False
                 return v
 
@@ -372,13 +379,17 @@ class fVar_t:
                 v = np.zeros(shape=shape, order='F',dtype=self._obj.dtype())
 
                 self.copy_array(x.base_addr, v.ctypes.data, self.sizeof, np.size(v))
+                
+                if self._obj.is_logical():
+                    v = v.astype(bool)
+                
                 v.flags.writeable = False
                 return v
 
         if self.type == "COMPLEX":
             return complex(x.real, x.imag)
 
-        if hasattr(x, "value"):
+        if hasattr(x, "value") and not self.type == "CHARACTER":
             x = x.value
 
         if self.type == "INTEGER":

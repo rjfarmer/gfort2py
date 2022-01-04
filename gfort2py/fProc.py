@@ -120,17 +120,25 @@ class fProc:
                 raise ValueError(f"Got None for {var.name}")
 
             if x is not None or var._obj.is_dummy():
-                z = var.from_param(x)
-
-                if var._obj.is_value():
-                    res.append(z)
-                elif var._obj.is_pointer():
-                    res.append(ctypes.pointer(ctypes.pointer(z)))
+                if var._obj.is_optional() and x is None:
+                    res.append(None)
                 else:
-                    res.append(ctypes.pointer(z))
+                    z = var.from_param(x)
 
-                if var._obj.is_defered_len():
-                    res_end.append(var.len(x))
+                    if var._obj.is_value():
+                        res.append(z)
+                    elif var._obj.is_pointer():
+                        if var._obj.not_a_pointer():
+                            print(self.name,var._obj.name,z)
+                            res.append(ctypes.pointer(z))
+                        else:
+                            res.append(ctypes.pointer(ctypes.pointer(z)))
+                    else:
+                        res.append(ctypes.pointer(z))
+
+
+                    if var._obj.is_defered_len():
+                        res_end.append(var.len(x))
             else:
                 res.append(None)
                 if var._obj.is_defered_len():

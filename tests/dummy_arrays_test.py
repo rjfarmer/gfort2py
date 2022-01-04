@@ -113,7 +113,6 @@ class TestDummyArrayMethods:
         np.testing.assert_array_equal(x.c_int_alloc_4d, v)
         y = x.sub_alloc_int_1d_cleanup()
 
-    @pytest.mark.skip
     def test_c_int_alloc_5d_set(self):
         y = x.sub_alloc_int_1d_cleanup()
         y = x.sub_alloc_int_1d_arrs()
@@ -123,7 +122,6 @@ class TestDummyArrayMethods:
         np.testing.assert_array_equal(x.c_int_alloc_5d, v)
         y = x.sub_alloc_int_1d_cleanup()
 
-    @pytest.mark.skip
     def test_c_int_alloc_1d_large(self):
         # Can have issues exiting when using large (>255) arrays
         y = x.sub_alloc_int_1d_cleanup()
@@ -369,7 +367,7 @@ class TestDummyArrayMethods:
         y = x.func_alltrue_arr_1d(xarr)
         y2 = x.func_allfalse_arr_1d(x2arr)
         self.assertEqual(y.res, True)
-        self.assertEqual(y2.result, True)
+        self.assertEqual(y2.res, True)
 
     def test_sub_arr_assumed_rank_int_1d(self, capfd): 
         v = np.arange(10, 15)
