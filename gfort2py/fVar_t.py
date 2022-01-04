@@ -129,10 +129,10 @@ class fVar_t:
                 else:
                     shape = value.shape
                     value = self._array_check(value, False)
-                    
-                    _storage[self.mangled_name] = value
 
-                    ct.base_addr = _storage[self.mangled_name].ctypes.data
+                    _storage[self._obj.ref()] = np.ctypeslib.as_ctypes(value)
+
+                    ct.base_addr = ctypes.addressof(_storage[self._obj.ref()])
 
                     strides = []
                     for i in range(ndim):

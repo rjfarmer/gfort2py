@@ -537,6 +537,9 @@ class symbol:
     def type(self):
         return self.sym.ts.type
 
+    def ref(self):
+        return self.head.id
+
     def flavor(self):
         return self.sym.attr.flavor
 

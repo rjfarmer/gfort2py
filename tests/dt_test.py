@@ -5,7 +5,6 @@ import os, sys
 os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 
 import numpy as np
-import numpy.testing as np.testing
 import gfort2py as gf
 
 import pytest
