@@ -3,6 +3,7 @@ import ctypes
 import numpy as np
 
 from .fnumpy import *
+from .fUnary import run_unary
 
 
 _index_t = ctypes.c_int64

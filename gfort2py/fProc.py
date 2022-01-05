@@ -4,7 +4,8 @@ import os
 import select
 import collections
 
-from .fVar_t import *
+from .fVar_t import fVar_t
+from .fUnary import run_unary
 
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
@@ -104,6 +105,8 @@ class fProc:
                 res_start.append(l)
 
         count = 0
+        input_args = []
+        # Build list of inputs
         for fval in self._obj.args():
             var = fVar_t(self._allobjs[fval.ref])
 
@@ -119,6 +122,12 @@ class fProc:
             if x is None and not var._obj.is_optional() and not var._obj.is_dummy():
                 raise ValueError(f"Got None for {var.name}")
 
+            input_args.append((x,var))
+
+        # Resolve unary operations
+
+        # Convert to ctypes
+        for x,var in input_args:
             if x is not None or var._obj.is_dummy():
                 if var._obj.is_optional() and x is None:
                     res.append(None)

@@ -286,6 +286,8 @@ class expression:
         if self.exp_type == "OP":
             self.value = None
             self.unary_op = args[3]
+            self.unary_args = [expression(*args[4]),expression(*args[5])]
+            self._unknown = args[6] # What is this for?
         elif self.exp_type == "FUNCTION":
             self.value = symbol_ref(args[3])
         elif self.exp_type == "CONSTANT":
@@ -579,6 +581,9 @@ class symbol:
     def is_array(self):
         return "DIMENSION" in self.sym.attr.attributes
 
+    def is_always_explicit(self):
+        return 'ALWAYS_EXPLICIT' in self.sym.attr.attributes
+
     def is_dummy(self):
         return "DUMMY" in self.sym.attr.attributes
 
@@ -586,13 +591,13 @@ class symbol:
         return "ALLOCATABLE" in self.sym.attr.attributes
 
     def needs_array_desc(self):
-        return self.is_dummy() or self.is_allocatable()
+        return self.is_dummy() or self.is_allocatable() or self.is_always_explicit()
 
     def not_a_pointer(self):
         return self.needs_array_desc() and self.is_array() and  not self.is_assumed_shape() and not self.is_assumed_size() 
 
     def is_explicit(self):
-        return self.sym.array_spec.array_type == "EXPLICIT"
+        return self.sym.array_spec.array_type == "EXPLICIT" and not self.is_always_explicit()
 
     def is_assumed_size(self):
         return self.sym.array_spec.array_type == "ASSUMED_SIZE"
