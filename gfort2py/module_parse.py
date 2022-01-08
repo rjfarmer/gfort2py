@@ -25,6 +25,7 @@ def string_clean(string):
 class VersionError(Exception):
     pass
 
+
 class NotAnArrayError(Exception):
     pass
 
@@ -286,8 +287,8 @@ class expression:
         if self.exp_type == "OP":
             self.value = None
             self.unary_op = args[3]
-            self.unary_args = [expression(*args[4]),expression(*args[5])]
-            self._unknown = args[6] # What is this for?
+            self.unary_args = [expression(*args[4]), expression(*args[5])]
+            self._unknown = args[6]  # What is this for?
         elif self.exp_type == "FUNCTION":
             self.value = symbol_ref(args[3])
         elif self.exp_type == "CONSTANT":
@@ -552,7 +553,7 @@ class symbol:
         return "POINTER" in self.sym.attr.attributes
 
     def is_parameter(self):
-        return self.flavor() == 'PARAMETER'
+        return self.flavor() == "PARAMETER"
 
     def is_value(self):
         return "VALUE" in self.sym.attr.attributes
@@ -560,17 +561,20 @@ class symbol:
     def is_optional(self):
         return "OPTIONAL" in self.sym.attr.attributes
 
+    def is_optional_value(self):
+        return self.is_optional() and self.is_value()
+
     def is_char(self):
         return self.type() == "CHARACTER"
 
     def is_variable(self):
-        return self.flavor() == 'VARIABLE'
+        return self.flavor() == "VARIABLE"
 
     def is_procedure(self):
-        return self.flavor() == 'PROCEDURE'
+        return self.flavor() == "PROCEDURE"
 
     def is_logical(self):
-        return self.sym.ts.type == 'LOGICAL'
+        return self.sym.ts.type == "LOGICAL"
 
     def is_subroutine(self):
         return self.sym.sym_ref.ref == 0
@@ -582,7 +586,7 @@ class symbol:
         return "DIMENSION" in self.sym.attr.attributes
 
     def is_always_explicit(self):
-        return 'ALWAYS_EXPLICIT' in self.sym.attr.attributes
+        return "ALWAYS_EXPLICIT" in self.sym.attr.attributes
 
     def is_dummy(self):
         return "DUMMY" in self.sym.attr.attributes
@@ -594,10 +598,18 @@ class symbol:
         return self.is_dummy() or self.is_allocatable() or self.is_always_explicit()
 
     def not_a_pointer(self):
-        return self.needs_array_desc() and self.is_array() and  not self.is_assumed_shape() and not self.is_assumed_size() 
+        return (
+            self.needs_array_desc()
+            and self.is_array()
+            and not self.is_assumed_shape()
+            and not self.is_assumed_size()
+        )
 
     def is_explicit(self):
-        return self.sym.array_spec.array_type == "EXPLICIT" and not self.is_always_explicit()
+        return (
+            self.sym.array_spec.array_type == "EXPLICIT"
+            and not self.is_always_explicit()
+        )
 
     def is_assumed_size(self):
         return self.sym.array_spec.array_type == "ASSUMED_SIZE"
@@ -663,7 +675,6 @@ class symbol:
         if self.is_procedure():
             return self.sym.sym_ref.ref
         raise AttributeError("Not a procedure")
-
 
     def args(self):
         if self.is_procedure():

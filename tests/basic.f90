@@ -170,7 +170,17 @@ module basic
 				write(*,*) 200
 			end if  
 		end subroutine sub_int_opt
-      
+    
+
+		subroutine sub_int_opt_val(x)
+			integer, optional, intent(in),value :: x
+		
+			if(present(x)) then
+				write(*,*) 100
+			else
+				write(*,*) 200
+			end if  
+		end subroutine sub_int_opt_val
       
 		logical function func_return_res(x) result(res1)
 			integer, intent(in) :: x

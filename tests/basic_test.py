@@ -169,6 +169,16 @@ class TestBasicMethods:
         out, err = capfd.readouterr()
         self.assertEqual(out.strip(), "200")
 
+    def test_sub_opt_val(self, capfd):
+
+        y = x.sub_int_opt_val(1)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), "100")
+
+        y = x.sub_int_opt_val(None)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), "200")
+
     def test_second_mod(self):
         y = x.sub_use_mod()
         self.assertEqual(x.test2_x, 1)

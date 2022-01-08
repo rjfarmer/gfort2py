@@ -9,6 +9,8 @@ from .fUnary import run_unary
 
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
+
+
 class _captureStdOut:
     def read_pipe(self, pipe_out):
         def more_data():
@@ -122,12 +124,12 @@ class fProc:
             if x is None and not var._obj.is_optional() and not var._obj.is_dummy():
                 raise ValueError(f"Got None for {var.name}")
 
-            input_args.append((x,var))
+            input_args.append((x, var))
 
         # Resolve unary operations
 
         # Convert to ctypes
-        for x,var in input_args:
+        for x, var in input_args:
             if x is not None or var._obj.is_dummy():
                 if var._obj.is_optional() and x is None:
                     res.append(None)
@@ -138,20 +140,26 @@ class fProc:
                         res.append(z)
                     elif var._obj.is_pointer():
                         if var._obj.not_a_pointer():
-                            print(self.name,var._obj.name,z)
+                            print(self.name, var._obj.name, z)
                             res.append(ctypes.pointer(z))
                         else:
                             res.append(ctypes.pointer(ctypes.pointer(z)))
                     else:
                         res.append(ctypes.pointer(z))
 
-
                     if var._obj.is_defered_len():
                         res_end.append(var.len(x))
+                    if var._obj.is_optional_value():
+                        ct = ctypes.c_byte
+                        res_end.append(ct(1))
+
             else:
                 res.append(None)
                 if var._obj.is_defered_len():
                     res_end.append(None)
+                if var._obj.is_optional_value():
+                    ct = ctypes.c_byte
+                    res_end.append(ct(0))
 
         return res_start + res + res_end
 
