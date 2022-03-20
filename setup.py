@@ -30,7 +30,7 @@ setup(name='gfort2py',
       description='Python bindings for Fortran',
       license="GPLv2+",
       author='Robert Farmer',
-      author_email='r.j.farmer@uva.nl',
+      author_email='robert.j.farmer37@gmail.com',
       url='https://github.com/rjfarmer/gfort2py',
       keywords='python fortran binding',
       packages=find_packages(),
@@ -55,7 +55,7 @@ setup(name='gfort2py',
       extras_require={
 		'dev': [
 			'coveralls',
-			'unittest2'
+			'pytest'
 			]
 		}
      )

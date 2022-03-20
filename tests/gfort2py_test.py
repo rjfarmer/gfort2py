@@ -5,10 +5,7 @@ os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 import numpy as np
 import gfort2py as gf
 
-try:
-	import unittest as unittest
-except ImportError:
-	import unittest2 as unittest
+import pytest
 	
 import subprocess
 import numpy.testing as np_test
@@ -28,29 +25,13 @@ x=gf.fFort('./tester.so','tester.mod',rerun=True)
 #Decreases recursion depth to make debugging easier
 #sys.setrecursionlimit(100)
 
+class TestStringMethods:
 
-@contextmanager
-def captured_output():
-	"""
-	For use when we need to grab the stdout/stderr from fortran (but only in testing)
-	Use as:
-	with captured_output() as (out,err):
-		func()
-	output=out.getvalue().strip()
-	error=err.getvalue().strip()
-	"""
-	new_out, new_err = StringIO(),StringIO()
-	old_out,old_err = sys.stdout, sys.stderr
-	try:
-		sys.stdout, sys.stderr = new_out, new_err
-		yield sys.stdout, sys.stderr
-	finally:
-		sys.stdout, sys.stderr = old_out, old_err
-
-class TestStringMethods(unittest.TestCase):
+	def assertEqual(self, x, y):
+		assert x == y
 	
 	def test_mising_var(self):	
-		with self.assertRaises(AttributeError) as cm:
+		with pytest.raises(AttributeError) as cm:
 			a=x.invalid_var.get()
 	
 	def test_a_str(self):
@@ -69,7 +50,7 @@ class TestStringMethods(unittest.TestCase):
 		self.assertEqual(x.a_int.get(),v)
 		
 	def test_a_int_str(self):
-		with self.assertRaises(ValueError) as cm:
+		with pytest.raises(ValueError) as cm:
 			x.a_int='abc'
 			
 	def test_a_real(self):
@@ -78,11 +59,11 @@ class TestStringMethods(unittest.TestCase):
 		self.assertEqual(x.a_real.get(),v)
 	
 	def test_a_real_str(self):	
-		with self.assertRaises(ValueError) as cm:
+		with pytest.raises(ValueError) as cm:
 			x.a_real='abc'
 			
 	def test_const_int_set(self):	
-		with self.assertRaises(ValueError) as cm:
+		with pytest.raises(ValueError) as cm:
 			x.const_int=2
 			
 	def test_const_int(self):	
@@ -104,7 +85,7 @@ class TestStringMethods(unittest.TestCase):
 		self.assertEqual(x.const_real_qp.get(),1.0)
 
 	def test_const_int_arr_error(self):	
-		with self.assertRaises(ValueError) as cm:
+		with pytest.raises(ValueError) as cm:
 			x.const_int_arr='abc'
 		
 	def test_const_int_arr(self):	
@@ -275,11 +256,11 @@ class TestStringMethods(unittest.TestCase):
 		x.a_cmplx_qp=v
 		self.assertEqual(x.a_cmplx_qp.get(),v)
 		
-	def test_sub_no_args(self):
-		with captured_output() as (out,err):
-			x.sub_no_args()
-		output=out.getvalue().strip()
-		self.assertEqual(output,"1")
+	def test_sub_no_args(self, capfd):
+		x.sub_no_args()
+		out, err = capfd.readouterr()
+		
+		self.assertEqual(out.strip(),"1")
 		
 	def test_sub_alter_mod(self):
 		y=x.sub_alter_mod()
@@ -291,7 +272,7 @@ class TestStringMethods(unittest.TestCase):
 		self.assertEqual(x.a_cmplx.get(),complex(99.0,99.0))
 		self.assertEqual(x.a_cmplx_dp.get(),complex(99.0,99.0))
 		
-	@unittest.skip("Skipping due to quad support")	
+	@pytest.mark.skip("Skipping due to quad support")	
 	def test_sub_alter_mod_qp(self):
 		y=x.sub_alter_mod()
 		self.assertEqual(x.a_real_qp.get(),99.0)
@@ -312,12 +293,12 @@ class TestStringMethods(unittest.TestCase):
 		y=x.func_int_in_multi(v,w,u)
 		self.assertEqual(y,v+w+u)
 		
-	def test_sub_int_in(self):
+	def test_sub_int_in(self, capfd):
 		v=5
-		with captured_output() as (out,err):
-			y=x.sub_int_in(v)
-		output=out.getvalue().strip()
-		self.assertEqual(int(output),2*v)	
+		y=x.sub_int_in(v)
+		out, err = capfd.readouterr()
+		
+		self.assertEqual(int(out.strip()),2*v)	
 
 	def test_func_int_no_args(self):
 		y=x.func_int_no_args()
@@ -331,164 +312,164 @@ class TestStringMethods(unittest.TestCase):
 		y=x.func_real_dp_no_args()
 		self.assertEqual(y,4.0)
 		
-	def test_sub_str_in_explicit(self):
+	def test_sub_str_in_explicit(self, capfd):
 		v='1324567980'
-		with captured_output() as (out,err):
-			y=x.sub_str_in_explicit(v)
-		output=out.getvalue().strip()
-		self.assertEqual(output,v)	
+		y=x.sub_str_in_explicit(v)
+		out, err = capfd.readouterr()
 		
-	def test_sub_str_in_implicit(self):
+		self.assertEqual(out.strip(),v)	
+		
+	def test_sub_str_in_implicit(self, capfd):
 		v='123456789'
-		with captured_output() as (out,err):
-			y=x.sub_str_in_implicit(v)
-		output=out.getvalue().strip()	
-		self.assertEqual(output,v)	
+		y=x.sub_str_in_implicit(v)
+		out, err = capfd.readouterr()
+			
+		self.assertEqual(out.strip(),v)	
 	
-	def test_sub_str_multi(self):
+	def test_sub_str_multi(self, capfd):
 		v=5
 		u='123456789'
 		w=4
-		with captured_output() as (out,err):
-			y=x.sub_str_multi(v,u,w)
-		output=out.getvalue().strip()	
-		self.assertEqual(output,str(v+w)+' '+u)	
+		y=x.sub_str_multi(v,u,w)
+		out, err = capfd.readouterr()
+			
+		self.assertEqual(out.strip(),str(v+w)+' '+u)	
 
-	def test_sub_array_n_int_1d(self):
+	def test_sub_array_n_int_1d(self, capfd):
 		v=np.arange(0,5)
 		o=' '.join([str(i) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_array_n_int_1d(np.size(v),v)
-		output=out.getvalue().strip()	
-		self.assertEqual(output,o.strip())
+		y=x.sub_array_n_int_1d(np.size(v),v)
+		out, err = capfd.readouterr()
+			
+		self.assertEqual(out.strip(),o.strip())
 
-	def test_sub_array_n_int_2d(self):
+	def test_sub_array_n_int_2d(self, capfd):
 		v=[0,1,2,3,4]*5
 		v=np.array(v).reshape(5,5)
 		o=' '.join([str(i) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_array_n_int_2d(5,5,v)
-		output=out.getvalue().strip()	
-		self.assertEqual(output,o.strip())
+		y=x.sub_array_n_int_2d(5,5,v)
+		out, err = capfd.readouterr()
+			
+		self.assertEqual(out.strip(),o.strip())
 		
 		
-	def test_sub_exp_array_int_1d(self):
+	def test_sub_exp_array_int_1d(self, capfd):
 		v=np.arange(0,5)
 		o=' '.join([str(i) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_exp_array_int_1d(v)
-		output=out.getvalue().strip()	
-		self.assertEqual(output,o.strip())	
+		y=x.sub_exp_array_int_1d(v)
+		out, err = capfd.readouterr()
+			
+		self.assertEqual(out.strip(),o.strip())	
 		
-	def test_sub_exp_array_int_2d(self):
+	def test_sub_exp_array_int_2d(self, capfd):
 		v=np.arange(0,5*5).reshape((5,5))
 		o=''.join([str(i).zfill(2).ljust(3) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_exp_array_int_2d(v)
-		output=out.getvalue().strip()	
-		self.assertEqual(output,o.strip())	
+		y=x.sub_exp_array_int_2d(v)
+		out, err = capfd.readouterr()
+			
+		self.assertEqual(out.strip(),o.strip())	
 
-	def test_sub_exp_array_int_3d(self):
+	def test_sub_exp_array_int_3d(self, capfd):
 		v=np.arange(0,5*5*5).reshape((5,5,5))
 		o=''.join([str(i).zfill(3).ljust(4) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_exp_array_int_3d(v)
-		output=out.getvalue().strip()	
-		self.assertEqual(output,o.strip())			
+		y=x.sub_exp_array_int_3d(v)
+		out, err = capfd.readouterr()
+			
+		self.assertEqual(out.strip(),o.strip())			
 
 
-	def test_sub_exp_array_real_1d(self):
+	def test_sub_exp_array_real_1d(self, capfd):
 		v=np.arange(0,5.0).reshape((5))
 		o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_exp_array_real_1d(v)
-		output=out.getvalue().strip()	
-		self.assertEqual(output,o.strip())	
+		y=x.sub_exp_array_real_1d(v)
+		out, err = capfd.readouterr()
+			
+		self.assertEqual(out.strip(),o.strip())	
 		
-	def test_sub_exp_array_real_2d(self):
+	def test_sub_exp_array_real_2d(self, capfd):
 		v=np.arange(0,5.0*5.0).reshape((5,5))
 		o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_exp_array_real_2d(v)
-		output=out.getvalue().strip()	
-		self.assertEqual(output,o.strip())	
+		y=x.sub_exp_array_real_2d(v)
+		out, err = capfd.readouterr()
+			
+		self.assertEqual(out.strip(),o.strip())	
 
-	def test_sub_exp_array_real_3d(self):
+	def test_sub_exp_array_real_3d(self, capfd):
 		v=np.arange(0,5.0*5.0*5.0).reshape((5,5,5))
 		o=' '.join(["{:>5.1f}".format(i) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_exp_array_real_3d(v)
-		output=out.getvalue().strip()	
-		self.assertEqual(output,o.strip())	 
+		y=x.sub_exp_array_real_3d(v)
+		out, err = capfd.readouterr()
+			
+		self.assertEqual(out.strip(),o.strip())	 
 
-	def test_sub_exp_array_int_1d_multi(self):
+	def test_sub_exp_array_int_1d_multi(self, capfd):
 		u=19
 		w=20
 		v=np.arange(0,5)
 		o=' '.join([str(i) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_exp_array_int_1d_multi(u,v,w)
-		output=out.getvalue().strip()	
-		self.assertEqual(output,str(u)+' '+o.strip()+' '+str(w)) 
+		y=x.sub_exp_array_int_1d_multi(u,v,w)
+		out, err = capfd.readouterr()
+			
+		self.assertEqual(out.strip(),str(u)+' '+o.strip()+' '+str(w)) 
  
  
-	def test_sub_exp_array_real_dp_1d(self):
+	def test_sub_exp_array_real_dp_1d(self, capfd):
 		v=np.arange(0,5.0).reshape((5))
 		o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_exp_array_real_dp_1d(v)
-		output=out.getvalue().strip()	
-		self.assertEqual(output,o.strip())	
+		y=x.sub_exp_array_real_dp_1d(v)
+		out, err = capfd.readouterr()
+			
+		self.assertEqual(out.strip(),o.strip())	
 		
-	def test_sub_exp_array_real_dp_2d(self):
+	def test_sub_exp_array_real_dp_2d(self, capfd):
 		v=np.arange(0,5.0*5.0).reshape((5,5))
 		o='  '.join(["{:>4.1f}".format(i) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_exp_array_real_dp_2d(v)
-		output=out.getvalue().strip()	
-		self.assertEqual(output,o.strip())	
+		y=x.sub_exp_array_real_dp_2d(v)
+		out, err = capfd.readouterr()
+			
+		self.assertEqual(out.strip(),o.strip())	
 
-	def test_sub_exp_array_real_dp_3d(self):
+	def test_sub_exp_array_real_dp_3d(self, capfd):
 		v=np.arange(0,5.0*5.0*5.0).reshape((5,5,5))
 		o=' '.join(["{:>5.1f}".format(i) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_exp_array_real_dp_3d(v)
-		output=out.getvalue().strip()	
-		self.assertEqual(output,o.strip())	   
+		y=x.sub_exp_array_real_dp_3d(v)
+		out, err = capfd.readouterr()
+			
+		self.assertEqual(out.strip(),o.strip())	   
 
-	def test_sub_int_out(self):
+	def test_sub_int_out(self, capfd):
 		v=5
-		with captured_output() as (out,err):
-			y=x.sub_int_out(v)
-		output=out.getvalue().strip()
+		y=x.sub_int_out(v)
+		out, err = capfd.readouterr()
+		
 		self.assertEqual(y,{'x':1})		
 
-	def test_sub_int_inout(self):
+	def test_sub_int_inout(self, capfd):
 		v=5
-		with captured_output() as (out,err):
-			y=x.sub_int_inout(v)
-		output=out.getvalue().strip()
+		y=x.sub_int_inout(v)
+		out, err = capfd.readouterr()
+		
 		self.assertEqual(y,{'x':2*v})
 		
-	def test_sub_int_no_intent(self):
+	def test_sub_int_no_intent(self, capfd):
 		v=5
-		with captured_output() as (out,err):
-			y=x.sub_int_no_intent(v)
-		output=out.getvalue().strip()
+		y=x.sub_int_no_intent(v)
+		out, err = capfd.readouterr()
+		
 		self.assertEqual(y,{'x':2*v})
 		
-	def test_sub_real_inout(self):
+	def test_sub_real_inout(self, capfd):
 		v=5.0
-		with captured_output() as (out,err):
-			y=x.sub_real_inout(v)
-		output=out.getvalue().strip()
+		y=x.sub_real_inout(v)
+		out, err = capfd.readouterr()
+		
 		self.assertEqual(y,{'x':2*v})
 		
-	def test_sub_exp_inout(self):
+	def test_sub_exp_inout(self, capfd):
 		v=np.array([1,2,3,4,5])
-		with captured_output() as (out,err):
-			y=x.sub_exp_inout(v)
-		output=out.getvalue().strip()
+		y=x.sub_exp_inout(v)
+		out, err = capfd.readouterr()
+		
 
 		np_test.assert_array_equal(y['x'],2*v)
 		
@@ -504,11 +485,11 @@ class TestStringMethods(unittest.TestCase):
 		self.assertEqual(y,{'x':5,'y':5})
 			
 	def test_dt_bad_dict(self):
-		with self.assertRaises(ValueError) as cm:
+		with pytest.raises(ValueError) as cm:
 			x.f_struct_simple = {'asw':2,'y':0}
 			
 	def test_dt_bad_value(self):
-		with self.assertRaises(TypeError) as cm:
+		with pytest.raises(TypeError) as cm:
 			x.f_struct_simple.x='asde'
 	
 	def test_c_int_alloc_1d_non_alloc(self):
@@ -848,97 +829,97 @@ class TestStringMethods(unittest.TestCase):
 		vTest[:]=10
 		np_test.assert_array_equal(y['x'],vTest)
 		
-	def test_sub_dt_in_s_simple(self):
-		with captured_output() as (out,err):
-			y=x.sub_f_simple_in({'x':1,'y':10})
-		output=out.getvalue().strip()
+	def test_sub_dt_in_s_simple(self, capfd):
+		y=x.sub_f_simple_in({'x':1,'y':10})
+		out, err = capfd.readouterr()
+		
 		o=' '.join([str(i) for i in [1,10]])
-		self.assertEqual(output,o)
+		self.assertEqual(out.strip(),o)
 	
-	def test_sub_dt_out_s_simple(self):
-		with captured_output() as (out,err):
-			y=x.sub_f_simple_out({})
-		output=out.getvalue().strip()
+	def test_sub_dt_out_s_simple(self, capfd):
+		y=x.sub_f_simple_out({})
+		out, err = capfd.readouterr()
+		
 		self.assertEqual(y['x'],{'x':1,'y':10})	
 	
-	def test_sub_dt_inout_s_simple(self):
-		with captured_output() as (out,err):
-			y=x.sub_f_simple_inout({'x':5,'y':3})
-		output=out.getvalue().strip()
+	def test_sub_dt_inout_s_simple(self, capfd):
+		y=x.sub_f_simple_inout({'x':5,'y':3})
+		out, err = capfd.readouterr()
+		
 		o='  '.join([str(i) for i in [5,3]])
-		self.assertEqual(output,o)
+		self.assertEqual(out.strip(),o)
 		self.assertEqual(y['zzz'],{'x':1,'y':10})
 		
-	def test_sub_dt_inoutp_s_simple(self):
-		with captured_output() as (out,err):
-			y=x.sub_f_simple_inoutp({'x':5,'y':3})
-		output=out.getvalue().strip()
+	def test_sub_dt_inoutp_s_simple(self, capfd):
+		y=x.sub_f_simple_inoutp({'x':5,'y':3})
+		out, err = capfd.readouterr()
+		
 		o='  '.join([str(i) for i in [5,3]])
-		self.assertEqual(output,o)
+		self.assertEqual(out.strip(),o)
 		self.assertEqual(y['zzz'],{'x':1,'y':10})
 		
-	def test_sub_int_p(self):
-		with captured_output() as (out,err):
-			y=x.sub_int_p(1)
-		output=out.getvalue().strip()
-		self.assertEqual(output,'1')
+	def test_sub_int_p(self, capfd):
+		y=x.sub_int_p(1)
+		out, err = capfd.readouterr()
+		
+		self.assertEqual(out.strip(),'1')
 		self.assertEqual(y['zzz'],5)
 
-	def test_sub_real_p(self):
-		with captured_output() as (out,err):
-			y=x.sub_real_p(1.0)
-		output=out.getvalue().strip()
-		self.assertEqual(output,'1.00')
+	def test_sub_real_p(self, capfd):
+		y=x.sub_real_p(1.0)
+		out, err = capfd.readouterr()
+		
+		self.assertEqual(out.strip(),'1.00')
 		self.assertEqual(y['zzz'],5.0)
 		
-	def test_sub_str_p(self):
-		with captured_output() as (out,err):
-			y=x.sub_str_p('abcdef')
-		output=out.getvalue().strip()
-		self.assertEqual(output,'abcdef')
+	def test_sub_str_p(self, capfd):
+		y=x.sub_str_p('abcdef')
+		out, err = capfd.readouterr()
+		
+		self.assertEqual(out.strip(),'abcdef')
 		self.assertEqual(y['zzz'],'xyzxyz')
 		
-	def test_sub_arr_exp_p(self):
+	def test_sub_arr_exp_p(self, capfd):
 		v=np.arange(0,5)
 		o=' '.join([str(i) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_exp_array_int_1d(v)
-		output=out.getvalue().strip()	
-		self.assertEqual(output,o.strip())
+		y=x.sub_exp_array_int_1d(v)
+		out, err = capfd.readouterr()
+			
+		self.assertEqual(out.strip(),o.strip())
 		
-	def test_sub_arr_assumed_rank_int_1d(self):
+	def test_sub_arr_assumed_rank_int_1d(self, capfd):
 		v=np.arange(10,15)
 		o=' '.join([str(i) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_arr_assumed_rank_int_1d(v)
-		output=out.getvalue().strip()	
+		y=x.sub_arr_assumed_rank_int_1d(v)
+		out, err = capfd.readouterr()
+			
 		np_test.assert_array_equal(y['zzz'],np.array([100]*5))
 		
-	def test_sub_arr_assumed_rank_real_1d(self):
+	def test_sub_arr_assumed_rank_real_1d(self, capfd):
 		v=np.arange(10.0,15.0)
 		o=' '.join([str(i) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_arr_assumed_rank_real_1d(v)
-		output=out.getvalue().strip()	
+		y=x.sub_arr_assumed_rank_real_1d(v)
+		out, err = capfd.readouterr()
+			
 		np_test.assert_array_equal(y['zzz'],np.array([100.0]*5))
 		
-	def test_sub_arr_assumed_rank_dp_1d(self):
+	def test_sub_arr_assumed_rank_dp_1d(self, capfd):
 		v=np.arange(10.0,15.0)
 		o=' '.join([str(i) for i in v.flatten()])
-		with captured_output() as (out,err):
-			y=x.sub_arr_assumed_rank_dp_1d(v)
-		output=out.getvalue().strip()	
+		y=x.sub_arr_assumed_rank_dp_1d(v)
+		out, err = capfd.readouterr()
+			
 		np_test.assert_array_equal(y['zzz'],np.array([100.0]*5))
 	
-	def test_sub_opt(self):
-		with captured_output() as (out,err):
-			y=x.sub_int_opt(1)
-		output=out.getvalue().strip()
-		self.assertEqual(output,'100')
-		with captured_output() as (out,err):
-			y=x.sub_int_opt()
-		output=out.getvalue().strip()
-		self.assertEqual(output,'200')
+	def test_sub_opt(self, capfd):
+		y=x.sub_int_opt(1)
+		out, err = capfd.readouterr()
+		
+		self.assertEqual(out.strip(),'100')
+		y=x.sub_int_opt()
+		out, err = capfd.readouterr()
+		
+		self.assertEqual(out.strip(),'200')
 	
 	def test_dt_copy(self):
 		x.f_struct_simple.x=99
@@ -987,7 +968,7 @@ class TestStringMethods(unittest.TestCase):
 		y=x.func_logical_multi(1.0,2.0,xarr,3.0,4.0)
 		self.assertEqual(y,True)
 
-	@unittest.skip("Skipping due to failure")
+	@pytest.mark.skip("Skipping due to failure")
 	def test_func_set_f_struct(self):
 		y = x.func_set_f_struct()
 		self.assertEqual(y,True)
@@ -1003,7 +984,7 @@ class TestStringMethods(unittest.TestCase):
 		v=np.array([9,10,11,12,13],dtype='int32')
 		np_test.assert_array_equal(x.e_int_target_1d,v)
 		
-	@unittest.skip("Skipping due to seg faults")	
+	@pytest.mark.skip("Skipping due to seg faults")	
 	def test_func_set_f_struct_array_alloc(self):
 		y = x.func_set_f_struct()
 		
@@ -1011,7 +992,7 @@ class TestStringMethods(unittest.TestCase):
 		np_test.assert_array_equal(x.f_struct.c_int_alloc_1d,v)
 
 		
-	@unittest.skip("Skipping due to seg faults")	
+	@pytest.mark.skip("Skipping due to seg faults")	
 	def test_func_set_f_struct_array_ptr(self):
 		y = x.func_set_f_struct()
 				
@@ -1035,20 +1016,20 @@ class TestStringMethods(unittest.TestCase):
 		y = x.func_func_arg([my_py_func,'func_func_run'])
 		self.assertEqual(y,10)
 		
-	@unittest.skip("Skipping as we cant set the ptr yet")
+	@pytest.mark.skip("Skipping as we cant set the ptr yet")
 	def test_proc_ptr_str(self):
 		x.sub_null_proc_ptr()
 		x.p_func_func_run_ptr = 'func_func_run'
 		y = x.p_func_func_run_ptr(1)
 		self.assertEqual(y,10)
 		
-	@unittest.skip("Skipping as we cant set the ptr yet")
+	@pytest.mark.skip("Skipping as we cant set the ptr yet")
 	def test_proc_ptr_ffunc(self):
 		x.p_func_func_run_ptr = x.func_func_run
 		y = x.p_func_func_run_ptr(1)
 		self.assertEqual(y,10)
 		
-	@unittest.skip("Skipping as we cant set the ptr yet")
+	@pytest.mark.skip("Skipping as we cant set the ptr yet")
 	def test_proc_ptr_py(self):
 		def my_py_func(x):
 			return 10*x
@@ -1065,13 +1046,13 @@ class TestStringMethods(unittest.TestCase):
 		
 	def test_call_null_proc_ptr(self):
 		x.sub_null_proc_ptr()
-		with self.assertRaises(ValueError) as cm:
+		with pytest.raises(ValueError) as cm:
 			y = x.p_func_func_run_ptr(1)
 
 		x.sub_null_proc_ptr()
 		x.sub_proc_ptr2()
 		x.sub_null_proc_ptr()
-		with self.assertRaises(ValueError) as cm:
+		with pytest.raises(ValueError) as cm:
 			y = x.p_func_func_run_ptr(1)
 		
 	def test_sub_man_args(self):

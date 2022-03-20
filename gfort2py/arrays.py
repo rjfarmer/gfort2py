@@ -130,7 +130,7 @@ class fExplicitArray(fVar):
         # if '_dt_arg' in self.__dict__:
             # if self._dt_arg:
                 # ct = getattr(ctypes, self.ctype)
-                # addr = self._data.ctypes.get_data()
+                # addr = self._data.ctypes.data
                 # t = ctypes.POINTER(ct)
                 # return ctypes.cast(addr,t)
 
@@ -322,8 +322,8 @@ class fDummyArray(fVar):
         if value.ndim > _GFC_MAX_DIMENSIONS:
             raise ValueError("Array too big")
         
-        p.base_addr = value.ctypes.get_data()
-        #p.base_addr = ctypes.cast(value.ctypes.get_data(), ctypes.POINTER(ctypes.c_void_p))
+        p.base_addr = value.ctypes.data
+        #p.base_addr = ctypes.cast(value.ctypes.data, ctypes.POINTER(ctypes.c_void_p))
         
         strides = []
         for i in range(self.ndim):
@@ -707,7 +707,7 @@ class fAssumedSize(fExplicitArray):
         """
         self._data = value
         ct = getattr(ctypes, self.ctype)
-        addr = self._data.ctypes.get_data()
+        addr = self._data.ctypes.data
         t = ctypes.POINTER(ct)
         return ctypes.cast(addr,t)
         
