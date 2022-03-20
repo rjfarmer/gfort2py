@@ -30,6 +30,3 @@ python setup.py sdist
 
 echo "Now do: twine upload dist/gfort2py-$VERSION.tar.gz"
 
-git checkout maint
-git merge master
-git push
