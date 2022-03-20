@@ -6,7 +6,7 @@ if [[ -z "$1" ]]; then
 fi
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if [[ "$BRANCH" != "master" ]]; then
+if [[ "$BRANCH" != "main" ]]; then
   echo 'Not on master branch'
   exit 1
 fi
