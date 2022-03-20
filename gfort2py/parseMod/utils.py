@@ -52,10 +52,4 @@ def output(filename, *args):
 def hextofloat(s):
     # Given hex like parameter '0.12decde@9' returns 5065465344.0
     man, exp =s.split('@')
-    exp=int(exp)
-    decimal = man.index('.')
-    man = man[decimal+1:]
-    man = man.ljust(exp,'0')
-    man = man[:exp]+'.'+man[exp:]
-    man = man +'P0'
-    return float.fromhex(man)
+    return float.fromhex(man) * 16**int(exp)
