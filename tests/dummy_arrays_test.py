@@ -14,7 +14,7 @@ MOD = "./tests/dummy_arrays.mod"
 
 x = gf.fFort(SO, MOD)
 
-@pytest.mark.skip
+
 class TestDummyArrayMethods:
     def assertEqual(self, x, y):
         assert x == y
@@ -25,7 +25,6 @@ class TestDummyArrayMethods:
     def test_c_int_alloc_1d_non_alloc(self):
         y = x.sub_alloc_int_1d_cleanup()
         self.assertEqual(x.c_int_alloc_1d, None)
-        x.deallocate('c_int_alloc_1d')
 
     def test_ndarray(self):
         y = x.sub_alloc_int_1d_cleanup()
@@ -39,7 +38,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5])
         v[:] = 1
         np.testing.assert_array_equal(x.c_int_alloc_1d, v)
-        x.deallocate('c_int_alloc_1d')
 
     def test_c_int_alloc_2d(self):
         y = x.sub_alloc_int_1d_cleanup()
@@ -47,8 +45,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5, 5])
         v[:] = 1
         np.testing.assert_array_equal(x.c_int_alloc_2d, v)
-        x.deallocate('c_int_alloc_2d')
-
 
     def test_c_int_alloc_3d(self):
         y = x.sub_alloc_int_1d_cleanup()
@@ -56,8 +52,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5, 5, 5])
         v[:] = 1
         np.testing.assert_array_equal(x.c_int_alloc_3d, v)
-        x.deallocate('c_int_alloc_3d')
-
 
     def test_c_int_alloc_4d(self):
         y = x.sub_alloc_int_1d_cleanup()
@@ -65,8 +59,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5, 5, 5, 5])
         v[:] = 1
         np.testing.assert_array_equal(x.c_int_alloc_4d, v)
-        x.deallocate('c_int_alloc_4d')
-
 
     def test_c_int_alloc_5d(self):
         y = x.sub_alloc_int_1d_cleanup()
@@ -74,8 +66,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5, 5, 5, 5, 5])
         v[:] = 1
         np.testing.assert_array_equal(x.c_int_alloc_5d, v)
-        x.deallocate('c_int_alloc_5d')
-
 
     def test_c_int_alloc_1d_set(self):
         y = x.sub_alloc_int_1d_cleanup()
@@ -85,7 +75,6 @@ class TestDummyArrayMethods:
         x.c_int_alloc_1d = v
         np.testing.assert_array_equal(x.c_int_alloc_1d, v)
         self.assertEqual(np.sum(x.c_int_alloc_1d), 25)
-        x.deallocate('c_int_alloc_1d')
 
     def test_c_int_alloc_2d_set(self):
         y = x.sub_alloc_int_1d_cleanup()
@@ -94,8 +83,6 @@ class TestDummyArrayMethods:
         v[:] = 5
         x.c_int_alloc_2d = v
         np.testing.assert_array_equal(x.c_int_alloc_2d, v)
-        x.deallocate('c_int_alloc_2d')
-
 
     def test_c_int_alloc_3d_set(self):
         y = x.sub_alloc_int_1d_cleanup()
@@ -104,8 +91,6 @@ class TestDummyArrayMethods:
         v[:] = 5
         x.c_int_alloc_3d = v
         np.testing.assert_array_equal(x.c_int_alloc_3d, v)
-        x.deallocate('c_int_alloc_3d')
-
 
     def test_c_int_alloc_4d_set(self):
         y = x.sub_alloc_int_1d_cleanup()
@@ -114,7 +99,6 @@ class TestDummyArrayMethods:
         v[:] = 5
         x.c_int_alloc_4d = v
         np.testing.assert_array_equal(x.c_int_alloc_4d, v)
-        x.deallocate('c_int_alloc_4d')
 
     def test_c_int_alloc_5d_set(self):
         y = x.sub_alloc_int_1d_cleanup()
@@ -123,7 +107,6 @@ class TestDummyArrayMethods:
         v[:] = 5
         x.c_int_alloc_5d = v
         np.testing.assert_array_equal(x.c_int_alloc_5d, v)
-        x.deallocate('c_int_alloc_5d')
 
     def test_c_int_alloc_1d_large(self):
         # Can have issues exiting when using large (>255) arrays
@@ -133,7 +116,6 @@ class TestDummyArrayMethods:
         v[:] = 5
         x.c_int_alloc_1d = v
         np.testing.assert_array_equal(x.c_int_alloc_1d, v)
-        x.deallocate('c_int_alloc_5d')
 
     def test_c_real_alloc_1d(self):
         y = x.sub_alloc_real_1d_cleanup()
@@ -141,7 +123,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5])
         v[:] = 1
         np.testing.assert_array_equal(x.c_real_alloc_1d, v)
-        x.deallocate('c_real_alloc_1d')
 
     def test_c_real_alloc_2d(self):
         y = x.sub_alloc_real_1d_cleanup()
@@ -149,7 +130,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5, 5])
         v[:] = 1
         np.testing.assert_array_equal(x.c_real_alloc_2d, v)
-        x.deallocate('c_real_alloc_2d')
 
     def test_c_real_alloc_3d(self):
         y = x.sub_alloc_real_1d_cleanup()
@@ -157,7 +137,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5, 5, 5])
         v[:] = 1
         np.testing.assert_array_equal(x.c_real_alloc_3d, v)
-        x.deallocate('c_real_alloc_3d')
 
     def test_c_real_alloc_4d(self):
         y = x.sub_alloc_real_1d_cleanup()
@@ -165,7 +144,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5, 5, 5, 5])
         v[:] = 1
         np.testing.assert_array_equal(x.c_real_alloc_4d, v)
-        x.deallocate('c_real_alloc_4d')
 
     def test_c_real_alloc_5d(self):
         y = x.sub_alloc_real_1d_cleanup()
@@ -173,7 +151,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5, 5, 5, 5, 5])
         v[:] = 1
         np.testing.assert_array_equal(x.c_real_alloc_5d, v)
-        x.deallocate('c_real_alloc_5d')
 
     def test_c_real_dp_alloc_1d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
@@ -182,7 +159,6 @@ class TestDummyArrayMethods:
         v[:] = 2.0
         x.c_real_dp_alloc_1d = v
         np.testing.assert_array_equal(x.c_real_dp_alloc_1d, v)
-        x.deallocate('c_real_dp_alloc_1d')
 
     def test_c_real_dp_alloc_2d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
@@ -191,7 +167,6 @@ class TestDummyArrayMethods:
         v[:] = 2.0
         x.c_real_dp_alloc_2d = v
         np.testing.assert_array_equal(x.c_real_dp_alloc_2d, v)
-        x.deallocate('c_real_dp_alloc_2d')
 
     def test_c_real_dp_alloc_3d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
@@ -200,7 +175,6 @@ class TestDummyArrayMethods:
         v[:] = 2.0
         x.c_real_dp_alloc_3d = v
         np.testing.assert_array_equal(x.c_real_dp_alloc_3d, v)
-        x.deallocate('c_real_dp_alloc_3d')
 
     def test_c_real_dp_alloc_4d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
@@ -209,7 +183,6 @@ class TestDummyArrayMethods:
         v[:] = 2.0
         x.c_real_dp_alloc_4d = v
         np.testing.assert_array_equal(x.c_real_dp_alloc_4d, v)
-        x.deallocate('c_real_dp_alloc_4d')
 
     @pytest.mark.skip
     def test_c_real_dp_alloc_5d_set(self):
@@ -219,7 +192,6 @@ class TestDummyArrayMethods:
         v[:] = 2.0
         x.c_real_dp_alloc_5d = v
         np.testing.assert_array_equal(x.c_real_dp_alloc_5d, v)
-        x.deallocate('c_real_dp_alloc_5d')
 
     def test_c_real_dp_alloc_1d(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
@@ -227,7 +199,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5])
         v[:] = 1
         np.testing.assert_array_equal(x.c_real_dp_alloc_1d, v)
-        x.deallocate('c_real_dp_alloc_1d')
 
     def test_c_real_dp_alloc_2d(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
@@ -235,7 +206,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5, 5])
         v[:] = 1
         np.testing.assert_array_equal(x.c_real_dp_alloc_2d, v)
-        x.deallocate('c_real_dp_alloc_2d')
 
     def test_c_real_dp_alloc_3d(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
@@ -243,7 +213,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5, 5, 5])
         v[:] = 1
         np.testing.assert_array_equal(x.c_real_dp_alloc_3d, v)
-        x.deallocate('c_real_dp_alloc_3d')
 
     def test_c_real_dp_alloc_4d(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
@@ -251,7 +220,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5, 5, 5, 5])
         v[:] = 1
         np.testing.assert_array_equal(x.c_real_dp_alloc_4d, v)
-        x.deallocate('c_real_dp_alloc_4d')
 
     def test_c_real_dp_alloc_5d(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
@@ -259,7 +227,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5, 5, 5, 5, 5])
         v[:] = 1
         np.testing.assert_array_equal(x.c_real_dp_alloc_5d, v)
-        x.deallocate('c_real_dp_alloc_5d')
 
     def test_c_real_dp_alloc_1d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
@@ -268,7 +235,6 @@ class TestDummyArrayMethods:
         v[:] = 2.0
         x.c_real_dp_alloc_1d = v
         np.testing.assert_array_equal(x.c_real_dp_alloc_1d, v)
-        x.deallocate('c_real_dp_alloc_1d')
 
     def test_c_real_dp_alloc_2d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
@@ -277,7 +243,6 @@ class TestDummyArrayMethods:
         v[:] = 2.0
         x.c_real_dp_alloc_2d = v
         np.testing.assert_array_equal(x.c_real_dp_alloc_2d, v)
-        x.deallocate('c_real_dp_alloc_2d')
 
     def test_c_real_dp_alloc_3d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
@@ -286,7 +251,6 @@ class TestDummyArrayMethods:
         v[:] = 2.0
         x.c_real_dp_alloc_3d = v
         np.testing.assert_array_equal(x.c_real_dp_alloc_3d, v)
-        x.deallocate('c_real_dp_alloc_3d')
 
     def test_c_real_dp_alloc_4d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
@@ -295,7 +259,6 @@ class TestDummyArrayMethods:
         v[:] = 2.0
         x.c_real_dp_alloc_4d = v
         np.testing.assert_array_equal(x.c_real_dp_alloc_4d, v)
-        x.deallocate('c_real_dp_alloc_4d')
 
     def test_c_real_dp_alloc_5d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
@@ -304,7 +267,6 @@ class TestDummyArrayMethods:
         v[:] = 2.0
         x.c_real_dp_alloc_5d = v
         np.testing.assert_array_equal(x.c_real_dp_alloc_5d, v)
-        x.deallocate('c_real_dp_alloc_5d')
 
     def test_func_assumed_shape_arr_1d(self):
         v = np.zeros([5], dtype="int32")
@@ -372,9 +334,9 @@ class TestDummyArrayMethods:
         self.assertEqual(y.res, True)
         self.assertEqual(y2.res, True)
 
-    def test_sub_arr_assumed_rank_int_1d(self, capfd): 
+    def test_sub_arr_assumed_rank_int_1d(self, capfd):
         v = np.arange(10, 15)
-        o = " ".join([str(i) for i in v.flatten(order='F')])
+        o = " ".join([str(i) for i in v.flatten(order="F")])
 
         y = x.sub_arr_assumed_rank_int_1d(v)
         out, err = capfd.readouterr()
@@ -382,7 +344,7 @@ class TestDummyArrayMethods:
 
     def test_sub_arr_assumed_rank_real_1d(self, capfd):
         v = np.arange(10.0, 15.0)
-        o = " ".join([str(i) for i in v.flatten(order='F')])
+        o = " ".join([str(i) for i in v.flatten(order="F")])
 
         y = x.sub_arr_assumed_rank_real_1d(v)
         out, err = capfd.readouterr()
@@ -390,7 +352,7 @@ class TestDummyArrayMethods:
 
     def test_sub_arr_assumed_rank_dp_1d(self, capfd):
         v = np.arange(10.0, 15.0)
-        o = " ".join([str(i) for i in v.flatten(order='F')])
+        o = " ".join([str(i) for i in v.flatten(order="F")])
 
         y = x.sub_arr_assumed_rank_dp_1d(v)
         out, err = capfd.readouterr()

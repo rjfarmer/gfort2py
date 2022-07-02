@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: GPL-2.0+
 import ctypes
 import numpy as np
+import weakref
 
-from .fnumpy import *
 from .fUnary import run_unary
+from .allocate import alloc, dealloc
 
 
 _index_t = ctypes.c_int64
@@ -11,11 +12,7 @@ _size_t = ctypes.c_int64
 
 
 class _bounds14(ctypes.Structure):
-    _fields_ = [
-        ("stride", _index_t), 
-        ("lbound", _index_t), 
-        ("ubound", _index_t)
-    ]
+    _fields_ = [("stride", _index_t), ("lbound", _index_t), ("ubound", _index_t)]
 
 
 class _dtype_type(ctypes.Structure):
@@ -40,27 +37,10 @@ def _make_fAlloc15(ndims):
 
     return _fAllocArray
 
-_BT_UNKNOWN = 0
-_BT_INTEGER = _BT_UNKNOWN + 1
-_BT_LOGICAL = _BT_INTEGER + 1
-_BT_REAL = _BT_LOGICAL + 1
-_BT_COMPLEX = _BT_REAL + 1
-_BT_DERIVED = _BT_COMPLEX + 1
-_BT_CHARACTER = _BT_DERIVED + 1
-_BT_CLASS = _BT_CHARACTER + 1
-_BT_PROCEDURE = _BT_CLASS + 1
-_BT_HOLLERITH = _BT_PROCEDURE + 1
-_BT_VOID = _BT_HOLLERITH + 1
-_BT_ASSUMED = _BT_VOID + 1
-
-# We store allocated arrays here to hold onto the reference 
-_storage = {}
-
 
 def deallocate(var):
-    ref = var._value._obj.ref()
-    if ref in _storage:
-        _storage[ref] = None
+    pass
+
 
 class fVar_t:
     def __init__(self, obj):
@@ -94,10 +74,10 @@ class fVar_t:
             if list(value.shape) != shape:
                 raise ValueError(f"Wrong shape, got {value.shape} expected {shape}")
 
-        value = value.ravel(order='F')
+        value = value.ravel(order="F")
         return value
 
-    def from_param(self, value):
+    def from_param(self, value, ctype=None):
 
         if self._obj.is_optional() and value is None:
             return None
@@ -105,82 +85,79 @@ class fVar_t:
         if self._obj.is_array():
             if self._obj.is_explicit():
                 value = self._array_check(value)
-                ctype = self.ctype(value)()
-                self.copy_array(value.ctypes.data,ctypes.addressof(ctype), self.sizeof, self._obj.size)
+                if ctype is None:
+                    ctype = self.ctype(value)()
+                self.copy_array(
+                    value.ctypes.data,
+                    ctypes.addressof(ctype),
+                    self.sizeof,
+                    self._obj.size,
+                )
                 return ctype
             elif self._obj.is_assumed_size():
                 value = self._array_check(value, know_shape=False)
-                ctype = self.ctype(value)()
+                if ctype is None:
+                    ctype = self.ctype(value)()
 
-                self.copy_array(value.ctypes.data, ctypes.addressof(ctype), self.sizeof, np.size(value))
-                
+                self.copy_array(
+                    value.ctypes.data,
+                    ctypes.addressof(ctype),
+                    self.sizeof,
+                    np.size(value),
+                )
+
                 return ctype
 
             elif self._obj.needs_array_desc():
                 shape = self._obj.shape
                 ndim = self._obj.ndim
 
-                ct = _make_fAlloc15(ndim)()
-
-                ct.base_addr = None
-                ct.dtype.elem_len = self.sizeof
-                ct.dtype.version = 0
-                ct.dtype.rank = ndim
-                ct.dtype.type = self.ftype()
-                ct.dtype.attribute = 0
-                ct.span = self.sizeof
-
-                ct.offset = 0
+                if ctype is None:
+                    ctype = _make_fAlloc15(ndim)()
 
                 if value is None:
-                    return ct
+                    return ctype
                 else:
                     shape = value.shape
                     value = self._array_check(value, False)
 
-                    # Hold onto reference for dear life
-                    _storage[self._obj.ref()] = value
-                    remove_ownership(_storage[self._obj.ref()])
+                    alloc("alloc", ctype, self.type, self.kind, shape)
 
-                    ct.base_addr = _storage[self._obj.ref()].ctypes.data
+                    self.copy_array(
+                        value.ctypes.data, ctype.base_addr, self.sizeof, np.size(value)
+                    )
 
-                    strides = []
-                    for i in range(ndim):
-                        ct.dims[i].lbound = _index_t(1)
-                        ct.dims[i].ubound = _index_t(shape[i])
-                        strides.append(ct.dims[i].ubound - ct.dims[i].lbound + 1)
+                    weakref.finalize(
+                        ctype,
+                        dealloc,
+                        "alloc",
+                        ctype,
+                        self.type,
+                        self.kind,
+                        shape,
+                        head="1",
+                    )
 
-                    sumstrides = 0
-                    for i in range(ndim):
-                        ct.dims[i].stride = _index_t(int(np.product(strides[:i])))
-                        sumstrides = sumstrides + ct.dims[i].stride
+                    return ctype
 
-                    ct.offset = -sumstrides
-
-                    # print(self._obj.name)
-                    # print(ct.base_addr)
-                    # print(ct.dtype.elem_len,ct.dtype.rank,ct.dtype.type)
-                    # print(ct.span,ct.offset)
-                    # for i in range(ndim):
-                    #     print(ct.dims[i].lbound,ct.dims[i].ubound,ct.dims[i].stride)
-
-                    return ct
+        if ctype is None:
+            ctype = self.ctype(value)
 
         if self.type == "INTEGER":
-            return self.ctype(value)(value)
+            return ctype(value)
         elif self.type == "REAL":
             if self.kind == 16:
                 print(
                     f"Object of type {self.type} and kind {self.kind} not supported yet, passing None"
                 )
-                return self.ctype(value)(None)
+                return ctype(None)
 
-            return self.ctype(value)(value)
+            return ctype(value)
         elif self.type == "LOGICAL":
             if value:
-                return self.ctype(value)(1)
+                return ctype(1)
             else:
-                return self.ctype(value)(0)
+                return ctype(0)
         elif self.type == "CHARACTER":
             strlen = self.len(value).value
 
@@ -194,11 +171,13 @@ class fVar_t:
 
             self._buf = bytearray(value)  # Need to keep hold of the reference
 
-            return self.ctype(value).from_buffer(self._buf)
+            return ctype.from_buffer(self._buf)
         elif self.type == "COMPLEX":
-            return self.ctype()(value.real, value.imag)
+            return ctype(value.real, value.imag)
 
-        raise NotImplementedError(f"Object of type {self.type} and kind {self.kind} not supported yet")
+        raise NotImplementedError(
+            f"Object of type {self.type} and kind {self.kind} not supported yet"
+        )
 
     def len(self, value=None):
         if self._obj.is_char():
@@ -206,13 +185,13 @@ class fVar_t:
                 l = len(value)
             else:
                 l = self._obj.strlen.value
-            
+
         elif self._obj.is_array():
             if self._obj.is_assumed_size():
                 l = np.size(value)
         else:
             l = None
-            
+
         return ctypes.c_int64(l)
 
     @property
@@ -345,7 +324,7 @@ class fVar_t:
     def from_ctype(self, value):
         if value is None:
             return None
-            
+
         x = value
 
         if hasattr(value, "contents"):
@@ -356,23 +335,28 @@ class fVar_t:
 
         if self._obj.is_array():
             if self._obj.is_explicit():
-                v = np.zeros(shape=self._obj.shape(), order='F', dtype=self._obj.dtype())
-                #print(self._obj.name, v.ctypes.data, ctypes.addressof(x),self.sizeof, self._obj.size,self._obj.dtype(),self._obj.shape() )
-                self.copy_array(ctypes.addressof(x), v.ctypes.data, self.sizeof, self._obj.size)
-                
+                v = np.zeros(
+                    shape=self._obj.shape(), order="F", dtype=self._obj.dtype()
+                )
+                self.copy_array(
+                    ctypes.addressof(x), v.ctypes.data, self.sizeof, self._obj.size
+                )
+
                 if self._obj.is_logical():
                     v = v.astype(bool)
 
                 v.flags.writeable = False
                 return v
             elif self._obj.is_assumed_size():
-                v = np.zeros(shape=self._obj.shape(), order='F', dtype=self._obj.dtype())
+                v = np.zeros(
+                    shape=self._obj.shape(), order="F", dtype=self._obj.dtype()
+                )
 
                 self.copy_array(ctypes.addressof(x), v.ctypes.data, 1, ctypes.sizeof(x))
-                
+
                 if self._obj.is_logical():
                     v = v.astype(bool)
-                
+
                 v.flags.writeable = False
                 return v
 
@@ -386,15 +370,17 @@ class fVar_t:
 
                 shape = tuple(shape)
 
-                v = np.zeros(shape=shape, order='F',dtype=self._obj.dtype())
+                v = np.zeros(shape=shape, order="F", dtype=self._obj.dtype())
 
                 self.copy_array(x.base_addr, v.ctypes.data, self.sizeof, np.size(v))
-                
+
+                weakref.finalize(
+                    x, dealloc, "alloc", x, self.type, self.kind, shape, head="2"
+                )
+
                 if self._obj.is_logical():
                     v = v.astype(bool)
 
-                remove_ownership(v)
-                
                 v.flags.writeable = False
                 return v
 
@@ -416,9 +402,10 @@ class fVar_t:
             return x == 1
         elif self.type == "CHARACTER":
             return "".join([i.decode() for i in x])
-        raise NotImplementedError(
-            f"Object of type {self.type} and kind {self.kind} not supported yet"
-        )
+        else:
+            raise NotImplementedError(
+                f"Object of type {self.type} and kind {self.kind} not supported yet"
+            )
 
     @property
     def __doc__(self):
@@ -443,24 +430,9 @@ class fVar_t:
     def sizeof(self):
         return self.kind
 
-    def ftype(self):
-        if self.type == "INTEGER":
-            return _BT_INTEGER
-        elif self.type == "LOGICAL":
-            return _BT_LOGICAL
-        elif self.type == "REAL":
-            return _BT_REAL
-        elif self.type == "COMPLEX":
-            return _BT_COMPLEX
-
-        raise NotImplementedError(f"Array of type {self.type} and kind {self.kind} not supported yet")
-
     def set_ctype(self, ctype, value):
         if self._obj.is_array():
-            v = self.from_param(value)
-            self.copy_array(ctypes.addressof(v), ctypes.addressof(ctype), 1, 
-                            ctypes.sizeof(v))
-
+            v = self.from_param(value, ctype)
             return
         elif isinstance(ctype, ctypes.Structure):
             for k in ctype.__dir__():
@@ -470,9 +442,9 @@ class fVar_t:
             ctype.value = self.from_param(value).value
             return
 
-    def copy_array(self, inadd, outadd, length, size):
+    def copy_array(self, src, dst, length, size):
         ctypes.memmove(
-            outadd,
-            inadd,
-            length*size,
+            dst,
+            src,
+            length * size,
         )

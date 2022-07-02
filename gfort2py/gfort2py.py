@@ -7,8 +7,11 @@ from .module_parse import module
 from .fVar import *
 from .fProc import *
 from .fVar_t import deallocate
+from .allocate import setup
+
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
+
 
 class fFort:
     _initialised = False
@@ -19,6 +22,8 @@ class fFort:
         self._module = module(self._mod_file)
 
         self._initialised = True
+
+        setup()
 
     def keys(self):
         return self._module.keys()
@@ -45,7 +50,9 @@ class fFort:
             elif self._module[key].is_parameter():
                 return fParam(self._lib, self._module, key).value
             else:
-                raise NotImplementedError(f"Object type {self._module[key].flavor()} not implemented yet")
+                raise NotImplementedError(
+                    f"Object type {self._module[key].flavor()} not implemented yet"
+                )
 
     def __setattr__(self, key, value):
         if key in self.__dict__:
@@ -75,5 +82,8 @@ class fFort:
         return f"{self._module.filename}"
 
     def deallocate(self, name):
-        if self._module[name].is_variable():
-            deallocate(fVar(self._lib, self._module, name))
+        pass
+
+
+def mod_info(mod_file):
+    return module(mod_file)
