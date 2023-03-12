@@ -42,25 +42,25 @@ class fProc:
 
     def __init__(self, lib, allobjs, key):
         self._allobjs = allobjs
-        self._obj = self._allobjs[key]
+        self.obj = self._allobjs[key]
         self._lib = lib
 
         self._func = getattr(lib, self.mangled_name)
 
     @property
     def mangled_name(self):
-        return self._obj.mangled_name
+        return self.obj.mangled_name
 
     def in_dll(self, lib):
         return self._func
 
     @property
     def module(self):
-        return self._obj.head.module
+        return self.obj.head.module
 
     @property
     def name(self):
-        return self._obj.name
+        return self.obj.name
 
     @property
     def __doc__(self):
@@ -81,13 +81,13 @@ class fProc:
         return self._convert_result(res, func_args)
 
     def _set_return(self):
-        if self._obj.is_subroutine():
+        if self.obj.is_subroutine():
             self._func.restype = None  # Subroutine
         else:
-            fvar = fVar_t(self._allobjs[self._obj.return_arg()])
+            fvar = fVar_t(self._allobjs[self.obj.return_arg()])
 
             if (
-                fvar._obj.is_char()
+                fvar.obj.is_char()
             ):  # Return a character is done as a character + len at start of arg list
                 self._func.restype = None
             else:
@@ -99,9 +99,9 @@ class fProc:
         res = []
         res_end = []
 
-        if self._obj.is_function():
-            fvar = fVar_t(self._allobjs[self._obj.return_arg()])
-            if fvar._obj.is_char():
+        if self.obj.is_function():
+            fvar = fVar_t(self._allobjs[self.obj.return_arg()])
+            if fvar.obj.is_char():
                 l = fvar.len()
                 res_start.append(fvar.from_param(" " * l.value))
                 res_start.append(l)
@@ -109,11 +109,11 @@ class fProc:
         count = 0
         input_args = []
         # Build list of inputs
-        for fval in self._obj.args():
+        for fval in self.obj.args():
             var = fVar_t(self._allobjs[fval.ref])
 
             try:
-                x = kwargs[var._obj.name]
+                x = kwargs[var.obj.name]
             except KeyError:
                 if count <= len(args):
                     x = args[count]
@@ -121,7 +121,7 @@ class fProc:
                 else:
                     raise TypeError("Not enough arguments passed")
 
-            if x is None and not var._obj.is_optional() and not var._obj.is_dummy():
+            if x is None and not var.obj.is_optional() and not var.obj.is_dummy():
                 raise ValueError(f"Got None for {var.name}")
 
             input_args.append((x, var))
@@ -130,34 +130,35 @@ class fProc:
 
         # Convert to ctypes
         for x, var in input_args:
-            if x is not None or var._obj.is_dummy():
-                if var._obj.is_optional() and x is None:
+            if x is not None or var.obj.is_dummy():
+                if var.obj.is_optional() and x is None:
                     res.append(None)
                 else:
                     z = var.from_param(x)
 
-                    if var._obj.is_value():
+                    if var.obj.is_value():
                         res.append(z)
-                    elif var._obj.is_pointer():
-                        if var._obj.not_a_pointer():
-                            print(self.name, var._obj.name, z)
+                    elif var.obj.is_pointer():
+                        if var.obj.not_a_pointer():
+                            # print(self.name, var.obj.name, z)
                             res.append(ctypes.pointer(z))
                         else:
                             res.append(ctypes.pointer(ctypes.pointer(z)))
                     else:
+                        # print(z)
                         res.append(ctypes.pointer(z))
 
-                    if var._obj.is_defered_len():
+                    if var.obj.is_defered_len():
                         res_end.append(var.len(x))
-                    if var._obj.is_optional_value():
+                    if var.obj.is_optional_value():
                         ct = ctypes.c_byte
                         res_end.append(ct(1))
 
             else:
                 res.append(None)
-                if var._obj.is_defered_len():
+                if var.obj.is_defered_len():
                     res_end.append(None)
-                if var._obj.is_optional_value():
+                if var.obj.is_optional_value():
                     ct = ctypes.c_byte
                     res_end.append(ct(0))
 
@@ -166,21 +167,21 @@ class fProc:
     def _convert_result(self, result, args):
         res = {}
 
-        if self._obj.is_function():
-            fvar = fVar_t(self._allobjs[self._obj.return_arg()])
-            if fvar._obj.is_char():
+        if self.obj.is_function():
+            fvar = fVar_t(self._allobjs[self.obj.return_arg()])
+            if fvar.obj.is_char():
                 result = args[0]
                 _ = args.pop(0)
                 _ = args.pop(0)  # Twice to pop first and second value
 
-        if len(self._obj.args()):
-            for ptr, fval in zip(args, self._obj.args()):
+        if len(self.obj.args()):
+            for ptr, fval in zip(args, self.obj.args()):
                 res[self._allobjs[fval.ref].head.name] = fVar_t(
                     self._allobjs[fval.ref]
                 ).from_ctype(ptr)
 
-        if self._obj.is_function():
-            result = fVar_t(self._allobjs[self._obj.return_arg()]).from_ctype(result)
+        if self.obj.is_function():
+            result = fVar_t(self._allobjs[self.obj.return_arg()]).from_ctype(result)
 
         return self.Result(result, res)
 
@@ -190,14 +191,14 @@ class fProc:
     @property
     def __doc__(self):
 
-        if self._obj.is_subroutine():
+        if self.obj.is_subroutine():
             ftype = f"subroutine {self.name}"
         else:
-            fv = fVar_t(self._allobjs[self._obj.return_arg()]).typekind
+            fv = fVar_t(self._allobjs[self.obj.return_arg()]).typekind
             ftype = f"{fv} function {self.name}"
 
         args = []
-        for fval in self._obj.args():
+        for fval in self.obj.args():
             args.append(fVar_t(self._allobjs[fval.ref]).__doc__)
 
         args = ", ".join(args)

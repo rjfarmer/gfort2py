@@ -369,7 +369,7 @@ class arrayspec:
 
     @property
     def size(self):
-        return np.product(self.pyshape)
+        return np.prod(self.pyshape)
 
 
 @dataclass(init=False)
@@ -646,7 +646,7 @@ class symbol:
     @property
     def size(self):
         if self.is_array():
-            return np.product(self.shape())
+            return np.prod(self.shape())
         else:
             raise NotAnArrayError("Not an array")
 

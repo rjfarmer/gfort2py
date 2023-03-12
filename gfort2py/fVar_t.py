@@ -44,23 +44,23 @@ def deallocate(var):
 
 class fVar_t:
     def __init__(self, obj):
-        self._obj = obj
+        self.obj = obj
 
-        self.type, self.kind = self._obj.type_kind()
+        self.type, self.kind = self.obj.type_kind()
 
     def name(self):
-        return self._obj.name
+        return self.obj.name
 
     def mangled_name(self):
-        return self._obj.mangled_name
+        return self.obj.mangled_name
 
     def module(self):
-        return self._obj.module
+        return self.obj.module
 
     def _array_check(self, value, know_shape=True):
-        value = value.astype(self._obj.dtype())
-        shape = self._obj.shape()
-        ndim = self._obj.ndim
+        value = value.astype(self.obj.dtype())
+        shape = self.obj.shape()
+        ndim = self.obj.ndim
 
         if not value.flags["F_CONTIGUOUS"]:
             value = np.asfortranarray(value)
@@ -79,11 +79,11 @@ class fVar_t:
 
     def from_param(self, value, ctype=None):
 
-        if self._obj.is_optional() and value is None:
+        if self.obj.is_optional() and value is None:
             return None
 
-        if self._obj.is_array():
-            if self._obj.is_explicit():
+        if self.obj.is_array():
+            if self.obj.is_explicit():
                 value = self._array_check(value)
                 if ctype is None:
                     ctype = self.ctype(value)()
@@ -91,10 +91,10 @@ class fVar_t:
                     value.ctypes.data,
                     ctypes.addressof(ctype),
                     self.sizeof,
-                    self._obj.size,
+                    self.obj.size,
                 )
                 return ctype
-            elif self._obj.is_assumed_size():
+            elif self.obj.is_assumed_size():
                 value = self._array_check(value, know_shape=False)
                 if ctype is None:
                     ctype = self.ctype(value)()
@@ -108,9 +108,9 @@ class fVar_t:
 
                 return ctype
 
-            elif self._obj.needs_array_desc():
-                shape = self._obj.shape
-                ndim = self._obj.ndim
+            elif self.obj.needs_array_desc():
+                shape = self.obj.shape
+                ndim = self.obj.ndim
 
                 if ctype is None:
                     ctype = _make_fAlloc15(ndim)()
@@ -180,14 +180,14 @@ class fVar_t:
         )
 
     def len(self, value=None):
-        if self._obj.is_char():
-            if self._obj.is_defered_len():
+        if self.obj.is_char():
+            if self.obj.is_defered_len():
                 l = len(value)
             else:
-                l = self._obj.strlen.value
+                l = self.obj.strlen.value
 
-        elif self._obj.is_array():
-            if self._obj.is_assumed_size():
+        elif self.obj.is_array():
+            if self.obj.is_assumed_size():
                 l = np.size(value)
         else:
             l = None
@@ -240,7 +240,7 @@ class fVar_t:
         elif self.type == "CHARACTER":
             try:
                 strlen = (
-                    self._obj.sym.ts.charlen.value
+                    self.obj.sym.ts.charlen.value
                 )  # We know the string length at compile time
 
                 def callback(*args):
@@ -290,24 +290,24 @@ class fVar_t:
 
                 cb_var = callback
 
-        if self._obj.is_array():
-            if self._obj.is_explicit():
+        if self.obj.is_array():
+            if self.obj.is_explicit():
 
                 def callback(*args):
-                    return cb_var() * self._obj.size
+                    return cb_var() * self.obj.size
 
                 cb_arr = callback
-            elif self._obj.is_assumed_size():
+            elif self.obj.is_assumed_size():
 
                 def callback(value, *args):
                     return cb_var() * np.size(value)
 
                 cb_arr = callback
 
-            elif self._obj.needs_array_desc():
+            elif self.obj.needs_array_desc():
 
                 def callback(*args):
-                    return _make_fAlloc15(self._obj.ndim)
+                    return _make_fAlloc15(self.obj.ndim)
 
                 cb_arr = callback
 
@@ -333,44 +333,40 @@ class fVar_t:
             else:
                 x = value.contents
 
-        if self._obj.is_array():
-            if self._obj.is_explicit():
-                v = np.zeros(
-                    shape=self._obj.shape(), order="F", dtype=self._obj.dtype()
-                )
+        if self.obj.is_array():
+            if self.obj.is_explicit():
+                v = np.zeros(shape=self.obj.shape(), order="F", dtype=self.obj.dtype())
                 self.copy_array(
-                    ctypes.addressof(x), v.ctypes.data, self.sizeof, self._obj.size
+                    ctypes.addressof(x), v.ctypes.data, self.sizeof, self.obj.size
                 )
 
-                if self._obj.is_logical():
+                if self.obj.is_logical():
                     v = v.astype(bool)
 
                 v.flags.writeable = False
                 return v
-            elif self._obj.is_assumed_size():
-                v = np.zeros(
-                    shape=self._obj.shape(), order="F", dtype=self._obj.dtype()
-                )
+            elif self.obj.is_assumed_size():
+                v = np.zeros(shape=self.obj.shape(), order="F", dtype=self.obj.dtype())
 
                 self.copy_array(ctypes.addressof(x), v.ctypes.data, 1, ctypes.sizeof(x))
 
-                if self._obj.is_logical():
+                if self.obj.is_logical():
                     v = v.astype(bool)
 
                 v.flags.writeable = False
                 return v
 
-            elif self._obj.needs_array_desc():
+            elif self.obj.needs_array_desc():
                 if x.base_addr is None:
                     return None
 
                 shape = []
-                for i in range(self._obj.ndim):
+                for i in range(self.obj.ndim):
                     shape.append(x.dims[i].ubound - x.dims[i].lbound + 1)
 
                 shape = tuple(shape)
 
-                v = np.zeros(shape=shape, order="F", dtype=self._obj.dtype())
+                v = np.zeros(shape=shape, order="F", dtype=self.obj.dtype())
 
                 self.copy_array(x.base_addr, v.ctypes.data, self.sizeof, np.size(v))
 
@@ -378,7 +374,7 @@ class fVar_t:
                     x, dealloc, "alloc", x, self.type, self.kind, shape, head="2"
                 )
 
-                if self._obj.is_logical():
+                if self.obj.is_logical():
                     v = v.astype(bool)
 
                 v.flags.writeable = False
@@ -409,7 +405,7 @@ class fVar_t:
 
     @property
     def __doc__(self):
-        return f"{self._obj.head.name}={self.typekind}"
+        return f"{self.obj.head.name}={self.typekind}"
 
     @property
     def typekind(self):
@@ -420,7 +416,7 @@ class fVar_t:
         elif self.type == "CHARACTER":
             try:
                 strlen = (
-                    self._obj.sym.ts.charlen.value
+                    self.obj.sym.ts.charlen.value
                 )  # We know the string length at compile time
                 return f"{self.type}(LEN={strlen})"
             except AttributeError:
@@ -431,7 +427,7 @@ class fVar_t:
         return self.kind
 
     def set_ctype(self, ctype, value):
-        if self._obj.is_array():
+        if self.obj.is_array():
             v = self.from_param(value, ctype)
             return
         elif isinstance(ctype, ctypes.Structure):

@@ -4,6 +4,7 @@ import numpy as np
 
 from .fVar_t import *
 
+
 class fVar:
     def __init__(self, lib, allobjs, key):
         self._allobjs = allobjs
@@ -12,7 +13,7 @@ class fVar:
         self._value = fVar_t(self._allobjs[key])
 
     def from_param(self, value):
-        return self._value.from_param(value)
+        return self._value.from_param()(value)
 
     @property
     def value(self):
@@ -36,6 +37,8 @@ class fVar:
     def module(self):
         return self._value.module
 
+    def from_address(self, addr):
+        return self._value.ctype().from_address(addr)
 
 
 class fParam:
@@ -51,3 +54,13 @@ class fParam:
     @value.setter
     def value(self, value):
         raise AttributeError("Parameters can't be altered")
+
+    def __repr__(self):
+        return repr(self.value)
+
+    def __str__(self):
+        return str(self.value)
+
+    @property
+    def module(self):
+        return self._value.module
