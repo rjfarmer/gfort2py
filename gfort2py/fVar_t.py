@@ -294,7 +294,11 @@ class fVar_t:
             if self.obj.is_explicit():
 
                 def callback(*args):
-                    return cb_var() * self.obj.size
+                    c = cb_var()
+                    for dim in self.obj.shape():
+                        c = c * dim
+
+                    return c
 
                 cb_arr = callback
             elif self.obj.is_assumed_size():
@@ -335,27 +339,14 @@ class fVar_t:
 
         if self.obj.is_array():
             if self.obj.is_explicit():
-                v = np.zeros(shape=self.obj.shape(), order="F", dtype=self.obj.dtype())
-                self.copy_array(
-                    ctypes.addressof(x), v.ctypes.data, self.sizeof, self.obj.size
-                )
-
-                if self.obj.is_logical():
-                    v = v.astype(bool)
-
-                v.flags.writeable = False
-                return v
+                # If x is a 1d array of prod(shape) then force a reshape
+                return np.ctypeslib.as_array(
+                    x, shape=self.obj.shape(), order="F", dtype=self.obj.dtype()
+                ).T
             elif self.obj.is_assumed_size():
-                v = np.zeros(shape=self.obj.shape(), order="F", dtype=self.obj.dtype())
-
-                self.copy_array(ctypes.addressof(x), v.ctypes.data, 1, ctypes.sizeof(x))
-
-                if self.obj.is_logical():
-                    v = v.astype(bool)
-
-                v.flags.writeable = False
-                return v
-
+                return np.ctypeslib.as_array(
+                    x, shape=self.obj.shape(), order="F", dtype=self.obj.dtype()
+                ).T
             elif self.obj.needs_array_desc():
                 if x.base_addr is None:
                     return None
@@ -366,19 +357,12 @@ class fVar_t:
 
                 shape = tuple(shape)
 
-                v = np.zeros(shape=shape, order="F", dtype=self.obj.dtype())
+                PTR = ctypes.POINTER(ctypes.c_void_p)
+                x_ptr = ctypes.cast(x.base_addr, PTR)
 
-                self.copy_array(x.base_addr, v.ctypes.data, self.sizeof, np.size(v))
-
-                weakref.finalize(
-                    x, dealloc, "alloc", x, self.type, self.kind, shape, head="2"
+                return np.ctypeslib.as_array(
+                    x_ptr, shape=shape, order="F", dtype=self.obj.dtype()
                 )
-
-                if self.obj.is_logical():
-                    v = v.astype(bool)
-
-                v.flags.writeable = False
-                return v
 
         if self.type == "COMPLEX":
             return complex(x.real, x.imag)
