@@ -6,25 +6,26 @@ from .fVar_t import *
 
 
 class fVar:
-    def __init__(self, obj):
+    def __init__(self, obj, _cvalue=None):
         self.obj = obj
+        self._cvalue = _cvalue
 
         if self.obj.is_array():
             if self.obj.is_explicit():
-                self._value = fExplicitArr(self.obj)
+                self._value = fExplicitArr(self.obj, self._cvalue)
             elif self.obj.is_assumed_size():
-                self._value = fAssumedSize(self.obj)
-            elif self.obj.is_assumed_shape():
-                self._value = fAssumedShape(self.obj)
+                self._value = fAssumedSize(self.obj, self._cvalue)
+            elif self.obj.is_assumed_shape() or self.obj.is_allocatable():
+                self._value = fAssumedShape(self.obj, self._cvalue)
             else:
                 raise TypeError("Unknown array type")
         else:
             if self.obj.is_char():
-                self._value = fStr(self.obj)
+                self._value = fStr(self.obj, self._cvalue)
             elif self.obj.is_complex():
-                self._value = fCmplx(self.obj)
+                self._value = fCmplx(self.obj, self._cvalue)
             else:
-                self._value = fScalar(self.obj)
+                self._value = fScalar(self.obj, self._cvalue)
 
 
     def from_param(self, value):
@@ -66,6 +67,12 @@ class fVar:
 
     def ctype_len(self):
         return self._value.ctype_len()
+
+    def len(self):
+        return self._value.len()
+
+    def from_ctype(self, ct):
+        return self._value.from_ctype(ct)
 
 class fParam:
     def __init__(self, obj):

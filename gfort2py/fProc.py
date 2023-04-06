@@ -4,7 +4,7 @@ import os
 import select
 import collections
 
-from .fVar import fVar, ptr_unpack
+from .fVar import fVar
 from .fUnary import run_unary
 
 
@@ -84,14 +84,14 @@ class fProc:
         if self.obj.is_subroutine():
             self._func.restype = None  # Subroutine
         else:
-            fvar = fVar(self.obj.return_arg())
+            self._return_var = fVar(self.return_var())
 
             if (
-                fvar.obj.is_char()
+                self._return_var.obj.is_char()
             ):  # Returning a character is done as a character + len at start of arg list
                 self._func.restype = None
             else:
-                self._func.restype = fvar
+                self._func.restype = self._return_var.ctype()
 
     def _convert_args(self, *args, **kwargs):
 
@@ -100,14 +100,13 @@ class fProc:
         res_end = []
 
         if self.obj.is_function():
-            fvar = fVar(self.obj.return_arg())
-            if fvar.obj.is_char():
-                l = fvar.len()
-                res_start.append(fvar.from_param(" " * l.value))
-                res_start.append(fvar.ctype_len(l))
+            if self._return_var.obj.is_char():
+                l = self._return_var.len()
+                res_start.append(self._return_var.from_param(" " * l.value))
+                res_start.append(self._return_var.ctype_len(l))
 
         count = 0
-        input_args = []
+        self.input_args = []
         # Build list of inputs
         for fval in self.obj.args():
             var = fVar(self._allobjs[fval.ref])
@@ -124,17 +123,17 @@ class fProc:
             if x is None and not var.obj.is_optional() and not var.obj.is_dummy():
                 raise ValueError(f"Got None for {var.name}")
 
-            input_args.append((x, var))
+            self.input_args.append((x, var))
 
         # Resolve unary operations
 
         # Convert to ctypes
-        for value, var in input_args:
+        for value, var in self.input_args:
             if x is not None or var.obj.is_dummy():
                 if var.obj.is_optional() and value is None:
                     res.append(None)
                 else:
-                    z = var.from_param(value)
+                    z = var.from_param(value)()
 
                     if var.obj.is_value():
                         res.append(z)
@@ -166,18 +165,20 @@ class fProc:
         res = {}
 
         if self.obj.is_function():
-            if result.obj.is_char():
+            if self._return_var.obj.is_char():
                 result = args[0]
                 _ = args.pop(0)
                 _ = args.pop(0)  # Twice to pop first and second value
 
         if len(self.obj.args()):
-            for ptr, fval in zip(args, self.obj.args()):
+            for ptr, ia in zip(args, self.input_args):
+                ct, fval = ia
                 x = ptr_unpack(ptr)
-                res[fval.ref].head.name = fVar(fval.ref,x).value
+                res[fval.name] = fval.from_ctype(x)
 
         if self.obj.is_function():
-            result = fVar(self.obj.return_arg(),result).value
+            result = self._return_var.from_ctype(result)
+            
 
         return self.Result(result, res)
 
@@ -199,3 +200,16 @@ class fProc:
 
         args = ", ".join(args)
         return f"{ftype} ({args})"
+
+    def return_var(self):
+        return self._allobjs[self.obj.return_arg()]
+
+
+def ptr_unpack(ptr):
+    x = ptr
+    if hasattr(ptr, "contents"):
+        if hasattr(ptr.contents, "contents"):
+            x = ptr.contents.contents
+        else:
+            x = ptr.contents
+    return x
