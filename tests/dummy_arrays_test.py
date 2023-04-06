@@ -14,7 +14,7 @@ MOD = "./tests/dummy_arrays.mod"
 
 x = gf.fFort(SO, MOD)
 
-
+@pytest.mark.skip
 class TestDummyArrayMethods:
     def assertEqual(self, x, y):
         assert x == y

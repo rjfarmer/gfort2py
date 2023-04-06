@@ -36,7 +36,7 @@ def run_unary(unary, x, y, *, ops=default_ops) :
     op = ops[unary]
 
     if op is None:
-        raise NotImplementedError(f"Unary op {unary} not implemeneted")
+        raise NotImplementedError(f"Unary op {unary} not implemented")
 
     return op(x,y)
 

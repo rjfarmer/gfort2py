@@ -22,5 +22,7 @@
         "**/*.pyc": true,
         "tests/*.f90.*":true,
         "tests/*.gz*":true,
-    }
+    },
+    "esbonio.sphinx.confDir": "${workspaceFolder}/docs/source",
+    "python.formatting.provider": "black"
 }

@@ -6,50 +6,74 @@ from .fVar_t import *
 
 
 class fVar:
-    def __init__(self, lib, allobjs, key):
-        self._allobjs = allobjs
-        self._lib = lib
+    def __init__(self, obj):
+        self.obj = obj
 
-        self._value = fVar_t(self._allobjs[key])
+        if self.obj.is_array():
+            if self.obj.is_explicit():
+                self._value = fExplicitArr(self.obj)
+            elif self.obj.is_assumed_size():
+                self._value = fAssumedSize(self.obj)
+            elif self.obj.is_assumed_shape():
+                self._value = fAssumedShape(self.obj)
+            else:
+                raise TypeError("Unknown array type")
+        else:
+            if self.obj.is_char():
+                self._value = fStr(self.obj)
+            elif self.obj.is_complex():
+                self._value = fCmplx(self.obj)
+            else:
+                self._value = fScalar(self.obj)
+
 
     def from_param(self, value):
-        return self._value.from_param()(value)
+        return self._value.from_param(value)
+
+    def ctype(self):
+        return self._value.ctype()
 
     @property
     def value(self):
-        return self._value.from_ctype(self._in_dll(self._lib))
+        return self._value.value
 
     @value.setter
     def value(self, value):
-        ct = self._in_dll(self._lib)
-        self._value.set_ctype(ct, value)
+        self._value.value = value
 
     def __repr__(self):
-        return repr(self.value)
+        return repr(self._value)
 
     def __str__(self):
         return str(self.value)
 
-    def _in_dll(self, lib):
-        return self._value.ctype().in_dll(lib, self._value.mangled_name())
+    def in_dll(self, lib):
+        return self._value.in_dll(lib)
 
     @property
     def module(self):
         return self._value.module
 
     def from_address(self, addr):
-        return self._value.ctype().from_address(addr)
+        return self._value.from_address(addr)
 
+    def __doc__(self):
+        return self._value.__doc__()
+
+    @property
+    def name(self):
+        return self._value.name
+
+    def ctype_len(self):
+        return self._value.ctype_len()
 
 class fParam:
-    def __init__(self, lib, allobjs, key):
-        self._allobjs = allobjs
-        self._obj = self._allobjs[key]
-        self._lib = lib
+    def __init__(self, obj):
+        self.obj = obj
 
     @property
     def value(self):
-        return self._obj.value()
+        return self.obj.value()
 
     @value.setter
     def value(self, value):

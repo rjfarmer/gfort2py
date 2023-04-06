@@ -4,7 +4,7 @@ import os
 import select
 import collections
 
-from .fVar_t import fVar_t
+from .fVar import fVar, ptr_unpack
 from .fUnary import run_unary
 
 
@@ -40,9 +40,9 @@ class _captureStdOut:
 class fProc:
     Result = collections.namedtuple("Result", ["res", "args"])
 
-    def __init__(self, lib, allobjs, key):
+    def __init__(self, lib, obj, allobjs):
         self._allobjs = allobjs
-        self.obj = self._allobjs[key]
+        self.obj = obj
         self._lib = lib
 
         self._func = getattr(lib, self.mangled_name)
@@ -84,14 +84,14 @@ class fProc:
         if self.obj.is_subroutine():
             self._func.restype = None  # Subroutine
         else:
-            fvar = fVar_t(self._allobjs[self.obj.return_arg()])
+            fvar = fVar(self.obj.return_arg())
 
             if (
                 fvar.obj.is_char()
-            ):  # Return a character is done as a character + len at start of arg list
+            ):  # Returning a character is done as a character + len at start of arg list
                 self._func.restype = None
             else:
-                self._func.restype = fvar.ctype()
+                self._func.restype = fvar
 
     def _convert_args(self, *args, **kwargs):
 
@@ -100,20 +100,20 @@ class fProc:
         res_end = []
 
         if self.obj.is_function():
-            fvar = fVar_t(self._allobjs[self.obj.return_arg()])
+            fvar = fVar(self.obj.return_arg())
             if fvar.obj.is_char():
                 l = fvar.len()
                 res_start.append(fvar.from_param(" " * l.value))
-                res_start.append(l)
+                res_start.append(fvar.ctype_len(l))
 
         count = 0
         input_args = []
         # Build list of inputs
         for fval in self.obj.args():
-            var = fVar_t(self._allobjs[fval.ref])
+            var = fVar(self._allobjs[fval.ref])
 
             try:
-                x = kwargs[var.obj.name]
+                x = kwargs[var.name]
             except KeyError:
                 if count <= len(args):
                     x = args[count]
@@ -129,12 +129,12 @@ class fProc:
         # Resolve unary operations
 
         # Convert to ctypes
-        for x, var in input_args:
+        for value, var in input_args:
             if x is not None or var.obj.is_dummy():
-                if var.obj.is_optional() and x is None:
+                if var.obj.is_optional() and value is None:
                     res.append(None)
                 else:
-                    z = var.from_param(x)
+                    z = var.from_param(value)
 
                     if var.obj.is_value():
                         res.append(z)
@@ -148,19 +148,17 @@ class fProc:
                         # print(z)
                         res.append(ctypes.pointer(z))
 
-                    if var.obj.is_defered_len():
-                        res_end.append(var.len(x))
+                    if var.obj.is_deferred_len():
+                        res_end.append(var.ctype_len(value))
                     if var.obj.is_optional_value():
-                        ct = ctypes.c_byte
-                        res_end.append(ct(1))
+                        res_end.append(ctypes.c_byte(1))
 
             else:
                 res.append(None)
-                if var.obj.is_defered_len():
+                if var.obj.is_deferred_len():
                     res_end.append(None)
                 if var.obj.is_optional_value():
-                    ct = ctypes.c_byte
-                    res_end.append(ct(0))
+                    res_end.append(ctypes.c_byte(0))
 
         return res_start + res + res_end
 
@@ -168,20 +166,18 @@ class fProc:
         res = {}
 
         if self.obj.is_function():
-            fvar = fVar_t(self._allobjs[self.obj.return_arg()])
-            if fvar.obj.is_char():
+            if result.obj.is_char():
                 result = args[0]
                 _ = args.pop(0)
                 _ = args.pop(0)  # Twice to pop first and second value
 
         if len(self.obj.args()):
             for ptr, fval in zip(args, self.obj.args()):
-                res[self._allobjs[fval.ref].head.name] = fVar_t(
-                    self._allobjs[fval.ref]
-                ).from_ctype(ptr)
+                x = ptr_unpack(ptr)
+                res[fval.ref].head.name = fVar(fval.ref,x).value
 
         if self.obj.is_function():
-            result = fVar_t(self._allobjs[self.obj.return_arg()]).from_ctype(result)
+            result = fVar(self.obj.return_arg(),result).value
 
         return self.Result(result, res)
 
@@ -194,12 +190,12 @@ class fProc:
         if self.obj.is_subroutine():
             ftype = f"subroutine {self.name}"
         else:
-            fv = fVar_t(self._allobjs[self.obj.return_arg()]).typekind
+            fv = fVar(self.obj.return_arg()).typekind
             ftype = f"{fv} function {self.name}"
 
         args = []
         for fval in self.obj.args():
-            args.append(fVar_t(self._allobjs[fval.ref]).__doc__)
+            args.append(fVar(fval.ref).__doc__)
 
         args = ", ".join(args)
         return f"{ftype} ({args})"

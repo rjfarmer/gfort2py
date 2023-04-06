@@ -6,24 +6,19 @@ import os
 from .module_parse import module
 from .fVar import *
 from .fProc import *
-from .fVar_t import deallocate
-from .allocate import setup
-
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
 
 class fFort:
-    _initialised = False
+    _initialized = False
 
     def __init__(self, libname, mod_file):
         self._lib = ctypes.CDLL(libname)
         self._mod_file = mod_file
         self._module = module(self._mod_file)
 
-        self._initialised = True
-
-        setup()
+        self._initialized = True
 
     def keys(self):
         return self._module.keys()
@@ -38,17 +33,19 @@ class fFort:
         if key in self.__dict__:
             return self.__dict__[key]
 
-        if "_initialised" in self.__dict__:
-            if self._initialised:
+        if "_initialized" in self.__dict__:
+            if self._initialized:
                 if key not in self.keys():
                     raise AttributeError(f"{self._mod_file}  has no attribute {key}")
 
             if self._module[key].is_variable():
-                return fVar(self._lib, self._module, key).value
+                f = fVar(self._module[key])
+                f.in_dll(self._lib)
+                return f.value
             elif self._module[key].is_procedure():
-                return fProc(self._lib, self._module, key)
+                return fProc(self._lib, self._module[key], self._module)
             elif self._module[key].is_parameter():
-                return fParam(self._lib, self._module, key).value
+                return fParam(self._module[key]).value
             else:
                 raise NotImplementedError(
                     f"Object type {self._module[key].flavor()} not implemented yet"
@@ -59,10 +56,11 @@ class fFort:
             self.__dict__[key] = value
             return
 
-        if "_initialised" in self.__dict__:
-            if self._initialised:
+        if "_initialized" in self.__dict__:
+            if self._initialized:
                 if self._module[key].is_variable():
-                    f = fVar(self._lib, self._module, key)
+                    f = fVar(self._module[key])
+                    f.in_dll(self._lib)
                     f.value = value
                     return
                 elif self._module[key].is_parameter():
@@ -80,10 +78,6 @@ class fFort:
 
     def __str__(self):
         return f"{self._module.filename}"
-
-    def deallocate(self, name):
-        pass
-
 
 def mod_info(mod_file):
     return module(mod_file)

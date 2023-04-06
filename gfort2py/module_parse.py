@@ -576,6 +576,9 @@ class symbol:
     def is_logical(self):
         return self.sym.ts.type == "LOGICAL"
 
+    def is_complex(self):
+        return self.sym.ts.type == "COMPLEX"
+
     def is_subroutine(self):
         return self.sym.sym_ref.ref == 0
 
@@ -617,8 +620,8 @@ class symbol:
     def is_assumed_shape(self):
         return self.sym.array_spec.array_type == "ASSUMED_SHAPE"
 
-    def is_defered_len(self):
-        # Only needed for things that need an extra function argument for thier length
+    def is_deferred_len(self):
+        # Only needed for things that need an extra function argument for their length
         if self.is_char():
             try:
                 self.sym.ts.charlen.value
@@ -632,9 +635,9 @@ class symbol:
 
     @property
     def strlen(self):
-        if self.is_char() and not self.is_defered_len():
+        if self.is_char() and not self.is_deferred_len():
             return self.sym.ts.charlen
-        raise AttributeError("Not a defered length type")
+        raise AttributeError("Not a deferred length type")
 
     @property
     def ndim(self):
@@ -664,7 +667,7 @@ class symbol:
             if not self.is_array():
                 return v
             else:
-                return np.array(v, dtype=self.dtype()).reshape(self.shape())
+                return np.array(v, dtype=self.dtype()).reshape(self.shape(),order='F')
         else:
             raise AttributeError("Not a parameter")
 
