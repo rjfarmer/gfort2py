@@ -3,12 +3,21 @@ import ctypes
 import os
 import select
 import collections
+import functools
+from dataclasses import dataclass
 
 from .fVar import fVar
 from .fUnary import run_unary
 
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
+
+
+
+@dataclass
+class variable:
+    value: 'typing.Any'
+    fvar: 'typing.Any'
 
 
 class _captureStdOut:
@@ -44,6 +53,7 @@ class fProc:
         self._allobjs = allobjs
         self.obj = obj
         self._lib = lib
+        self._return_value = None
 
         self._func = getattr(lib, self.mangled_name)
 
@@ -61,10 +71,6 @@ class fProc:
     @property
     def name(self):
         return self.obj.name
-
-    @property
-    def __doc__(self):
-        return f"Procedure"
 
     def __call__(self, *args, **kwargs):
 
@@ -84,29 +90,28 @@ class fProc:
         if self.obj.is_subroutine():
             self._func.restype = None  # Subroutine
         else:
-            self._return_var = fVar(self.return_var())
-
             if (
-                self._return_var.obj.is_char()
+                self.return_var.obj.is_char()
             ):  # Returning a character is done as a character + len at start of arg list
                 self._func.restype = None
             else:
-                self._func.restype = self._return_var.ctype()
+                self._func.restype = self.return_var.ctype()
 
-    def _convert_args(self, *args, **kwargs):
 
-        res_start = []
+    def args_start(self):
         res = []
-        res_end = []
-
         if self.obj.is_function():
-            if self._return_var.obj.is_char():
-                l = self._return_var.len()
-                res_start.append(self._return_var.from_param(" " * l.value))
-                res_start.append(self._return_var.ctype_len(l))
+            if self.return_var.obj.is_char():
+                l = self.return_var.len()
+                res.append(self.return_var.from_param(" " * l))
+                res.append(self.return_var.ctype_len())
 
+        return res
+
+
+    def args_check(self,*args,**kwargs):
         count = 0
-        self.input_args = []
+        arguments = []
         # Build list of inputs
         for fval in self.obj.args():
             var = fVar(self._allobjs[fval.ref])
@@ -123,62 +128,79 @@ class fProc:
             if x is None and not var.obj.is_optional() and not var.obj.is_dummy():
                 raise ValueError(f"Got None for {var.name}")
 
-            self.input_args.append((x, var))
+            arguments.append(variable(x,var))
 
-        # Resolve unary operations
+        return arguments
 
+    def args_convert(self, input_args):
+        args = []
+        args_end = []
         # Convert to ctypes
-        for value, var in self.input_args:
-            if x is not None or var.obj.is_dummy():
-                if var.obj.is_optional() and value is None:
-                    res.append(None)
+        for var in input_args:
+            if var.value is not None or var.fvar.obj.is_dummy():
+                if var.fvar.obj.is_optional() and var.value is None:
+                    args.append(None)
                 else:
-                    z = var.from_param(value)()
+                    z = var.fvar.from_param(var.value)
 
-                    if var.obj.is_value():
-                        res.append(z)
-                    elif var.obj.is_pointer():
-                        if var.obj.not_a_pointer():
-                            # print(self.name, var.obj.name, z)
-                            res.append(ctypes.pointer(z))
+                    if var.fvar.obj.is_value():
+                        args.append(z)
+                    elif var.fvar.obj.is_pointer():
+                        if var.fvar.obj.not_a_pointer():
+                            args.append(ctypes.pointer(z))
                         else:
-                            res.append(ctypes.pointer(ctypes.pointer(z)))
+                            args.append(ctypes.pointer(ctypes.pointer(z)))
                     else:
-                        # print(z)
-                        res.append(ctypes.pointer(z))
+                        args.append(ctypes.pointer(z))
 
-                    if var.obj.is_deferred_len():
-                        res_end.append(var.ctype_len(value))
-                    if var.obj.is_optional_value():
-                        res_end.append(ctypes.c_byte(1))
+                    if var.fvar.obj.is_deferred_len():
+                        args_end.append(var.fvar.ctype_len())
+                    if var.fvar.obj.is_optional_value():
+                        args_end.append(ctypes.c_byte(1))
 
             else:
-                res.append(None)
-                if var.obj.is_deferred_len():
-                    res_end.append(None)
-                if var.obj.is_optional_value():
-                    res_end.append(ctypes.c_byte(0))
+                args.append(None)
+                if var.fvar.obj.is_deferred_len():
+                    args_end.append(None)
+                if var.fvar.obj.is_optional_value():
+                    args_end.append(ctypes.c_byte(0))
 
-        return res_start + res + res_end
+        return args, args_end        
+
+    def _convert_args(self, *args, **kwargs):
+
+        args_start = self.args_start()
+
+        self.input_args = self.args_check(*args, **kwargs)
+
+        args_mid, args_end = self.args_convert(self.input_args)
+
+        return args_start + args_mid + args_end
 
     def _convert_result(self, result, args):
         res = {}
 
         if self.obj.is_function():
-            if self._return_var.obj.is_char():
+            if self.return_var.obj.is_char():
                 result = args[0]
                 _ = args.pop(0)
                 _ = args.pop(0)  # Twice to pop first and second value
 
         if len(self.obj.args()):
-            for ptr, ia in zip(args, self.input_args):
-                ct, fval = ia
-                x = ptr_unpack(ptr)
-                res[fval.name] = fval.from_ctype(x)
+            for var in self.input_args:
+                try:
+                    x = ptr_unpack(var.fvar.value)
+                except AttributeError: # unset optional arguments 
+                    x = None
+
+                if hasattr(result,'_type_'):
+                    res[var.fvar.name] = var.fvar.from_ctype(x)
+                else:
+                    res[var.fvar.name] = x
 
         if self.obj.is_function():
-            result = self._return_var.from_ctype(result)
-            
+            if hasattr(result,'_b_base_'): #A ctype object
+                result = self.return_var.from_ctype(result)
 
         return self.Result(result, res)
 
@@ -191,8 +213,7 @@ class fProc:
         if self.obj.is_subroutine():
             ftype = f"subroutine {self.name}"
         else:
-            fv = fVar(self.obj.return_arg()).typekind
-            ftype = f"{fv} function {self.name}"
+            ftype = f"{self.return_var.__doc__()} function {self.name}"
 
         args = []
         for fval in self.obj.args():
@@ -201,9 +222,11 @@ class fProc:
         args = ", ".join(args)
         return f"{ftype} ({args})"
 
+    @property
     def return_var(self):
-        return self._allobjs[self.obj.return_arg()]
-
+        if self._return_value is None:
+            self._return_value = fVar(self._allobjs[self.obj.return_arg()])
+        return self._return_value
 
 def ptr_unpack(ptr):
     x = ptr

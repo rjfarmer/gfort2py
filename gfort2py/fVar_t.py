@@ -87,23 +87,24 @@ class fVar_t():
         self._cvalue = ct
         return self.value
 
-class fScalar(fVar_t):
-    def ctype(self):
-        return self._ctype_base
-
-    def from_param(self, param):
-        if self._cvalue is None:
-            self._cvalue = self.ctype()
-        self._cvalue.value = param
-        return self._cvalue
-
     def from_address(self, addr):
         self._cvalue = self.ctype().from_address(addr)
         return self._cvalue
 
     def in_dll(self, lib):
         self._cvalue =  self.ctype().in_dll(lib, self.mangled_name)
-        return  self._cvalue
+        return  self._cvalue 
+
+class fScalar(fVar_t):
+    def ctype(self):
+        return self._ctype_base
+
+    def from_param(self, param):
+        if self._cvalue is None:
+            self._cvalue = self.ctype()(param)
+        else:
+            self._cvalue.value = param
+        return self._cvalue
 
     @property
     def value(self):
@@ -137,18 +138,11 @@ class fCmplx(fVar_t):
 
     def from_param(self, param):
         if self._cvalue is None:
-            self._cvalue = self.ctype()
+            self._cvalue = self.ctype()()
+
         self._cvalue.real = param.real
         self._cvalue.imag = param.imag
         return self._cvalue
-
-    def from_address(self, addr):
-        self._cvalue = self.ctype().from_address(addr)
-        return self._cvalue
-
-    def in_dll(self, lib):
-        self._cvalue =  self.ctype().in_dll(lib, self.mangled_name)
-        return  self._cvalue
 
     @property
     def value(self):
@@ -178,7 +172,8 @@ class fExplicitArr(fVar_t):
 
     def from_param(self, value):
         if self._cvalue is None:
-            self._cvalue = self.ctype()
+            self._cvalue = self.ctype()()
+
         self._value = self._array_check(value)
         _copy_array(
             self._value.ctypes.data,
@@ -187,14 +182,6 @@ class fExplicitArr(fVar_t):
             self.obj.size,
         )
         return self._cvalue
-
-    def from_address(self, addr):
-        self._cvalue = self.ctype().from_address(addr)
-        return self._cvalue
-
-    def in_dll(self, lib):
-        self._cvalue =  self.ctype().in_dll(lib, self.mangled_name)
-        return  self._cvalue
 
     @property
     def value(self):
@@ -232,15 +219,6 @@ class fAssumedShape(fVar_t):
         )
         return self._cvalue
 
-
-    def from_address(self, addr):
-        self._cvalue = self.ctype().from_address(addr)
-        return self._cvalue
-
-    def in_dll(self, lib):
-        self._cvalue =  self.ctype().in_dll(lib, self.mangled_name)
-        return  self._cvalue
-
     @property
     def value(self):
         if self._cvalue.base_addr is None:
@@ -272,9 +250,9 @@ class fAssumedSize(fVar_t):
 
     def from_param(self, value):
         if self._cvalue is None:
-            self._cvalue = self.ctype()
+            self._cvalue = self.ctype()()
+
         self._value = self._array_check(value)
-        self._cvalue = self.ctype()
         _copy_array(
             self._value.ctypes.data,
             ctypes.addressof(self._cvalue),
@@ -282,14 +260,6 @@ class fAssumedSize(fVar_t):
             np.size(value),
         )
         return self._cvalue
-
-    def from_address(self, addr):
-        self._cvalue = self.ctype().from_address(addr)
-        return self._cvalue
-
-    def in_dll(self, lib):
-        self._cvalue =  self.ctype().in_dll(lib, self.mangled_name)
-        return  self._cvalue
 
     @property
     def value(self):
@@ -313,12 +283,19 @@ class fAssumedSize(fVar_t):
 
 
 class fStr(fVar_t):
+    def __init__(self,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        self._len = None
+
     def ctype(self):
         return self._ctype_base * self.len()
 
     def from_param(self, value):
+        if self.obj.is_deferred_len():
+            self._len = len(value)
+
         if self._cvalue is None:
-            self._cvalue = self.ctype()
+            self._cvalue = self.ctype()()
 
         self._value = value
 
@@ -330,33 +307,27 @@ class fStr(fVar_t):
         else:
             self._value = self._value + b" " * (self.len() - len(self._value))
 
-        self._buf = bytearray(self._value)  # Need to keep hold of the reference
-        for idx,i in enumerate(self._buf):
-            self._cvalue[idx] = i
+        #self._buf = bytearray(self._value)  # Need to keep hold of the reference
+        self._cvalue.value = self._value
 
-        return self._cvalue
-
-    def from_address(self, addr):
-        self._cvalue = self.ctype().from_address(addr)
-        return self._cvalue
-
-    def in_dll(self, lib):
-        self._cvalue =  self.ctype().in_dll(lib, self.mangled_name)
         return self._cvalue
 
     @property
     def value(self):
-        return "".join([i.decode() for i in self._cvalue])
+        #return "".join([i.decode() for i in self._cvalue.value])
+        return self._cvalue.value.decode()
 
     @value.setter
     def value(self, value):
         self.from_param(value)
 
     def len(self):
-        if self.obj.is_deferred_len():
-            return len(self._cvalue)
-        else:
-            return self.obj.strlen.value
+        if self._len is None:
+            if self.obj.is_deferred_len():
+                self._len = len(self._cvalue)
+            else:
+                self._len = self.obj.strlen.value
+        return self._len
 
     def ctype_len(self):
         return ctypes.c_int64(self.len())
