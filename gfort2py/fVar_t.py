@@ -108,18 +108,16 @@ class fScalar(fVar_t):
 
     @property
     def value(self):
-        x = self._cvalue.value
-
         if self.type == "INTEGER":
-            return int(x)
+            return int(self._cvalue.value)
         elif self.type == "REAL":
             if self.kind == 16:
                 raise NotImplementedError(
                     f"Quad precision floats not supported yet"
                 )
-            return float(x)
+            return float(self._cvalue.value)
         elif self.type == "LOGICAL":
-            return x == 1
+            return self._cvalue.value == 1
 
     @value.setter
     def value(self, value):

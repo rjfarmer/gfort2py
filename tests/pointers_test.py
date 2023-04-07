@@ -15,7 +15,7 @@ MOD = "./tests/ptrs.mod"
 x = gf.fFort(SO, MOD)
 
 
-@pytest.mark.skip
+#@pytest.mark.skip
 class TestPtrsMethods:
     def assertEqual(self, x, y):
         assert x == y
@@ -42,8 +42,9 @@ class TestPtrsMethods:
 
     def test_a_real_qp_point(self):
         v = 1.0
-        x.a_real_qp_point = v
-        self.assertEqual(x.a_real_qp_point, v)
+        with pytest.raises(NotImplementedError) as cm:
+            x.a_real_qp_point = v
+            self.assertEqual(x.a_real_qp_point, v)
 
     def test_a_str_point(self):
         v = "abcdefghij"
@@ -72,8 +73,9 @@ class TestPtrsMethods:
 
     def test_a_real_qp_target(self):
         v = 1.0
-        x.a_real_qp_target = v
-        self.assertEqual(x.a_real_qp_target, v)
+        with pytest.raises(NotImplementedError) as cm:
+            x.a_real_qp_target = v
+            self.assertEqual(x.a_real_qp_target, v)
 
     def test_a_str_target(self):
         v = "abcdefghij"
