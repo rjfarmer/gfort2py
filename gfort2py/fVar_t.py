@@ -74,7 +74,7 @@ class fVar_t():
             )
 
         if know_shape:
-            if list(value.shape) != shape:
+            if not self.obj.is_allocatable and list(value.shape) != shape:
                 raise ValueError(f"Wrong shape, got {value.shape} expected {shape}")
 
         value = value.ravel(order="F")
@@ -202,6 +202,20 @@ class fExplicitArr(fVar_t):
 
 
 class fAssumedShape(fVar_t):
+
+    _BT_UNKNOWN = 0
+    _BT_INTEGER = _BT_UNKNOWN + 1
+    _BT_LOGICAL = _BT_INTEGER + 1
+    _BT_REAL = _BT_LOGICAL + 1
+    _BT_COMPLEX = _BT_REAL + 1
+    _BT_DERIVED = _BT_COMPLEX + 1
+    _BT_CHARACTER = _BT_DERIVED + 1
+    _BT_CLASS = _BT_CHARACTER + 1
+    _BT_PROCEDURE = _BT_CLASS + 1
+    _BT_HOLLERITH = _BT_PROCEDURE + 1
+    _BT_VOID = _BT_HOLLERITH + 1
+    _BT_ASSUMED = _BT_VOID + 1
+
     def ctype(self):
         return _make_fAlloc15(self.obj.ndim)
 
@@ -209,14 +223,35 @@ class fAssumedShape(fVar_t):
         if self._cvalue is None:
             self._cvalue = self.ctype()()
 
-        self._value = self._array_check(value, False)
+        if value is not None:
+            self._value = self._array_check(value, False)
 
-        _copy_array(
-            self._value.ctypes.data, 
-            self._cvalue.base_addr, 
-            ctypes.sizeof(self._ctype_base()), 
-            np.size(value)
-        )
+            _copy_array(
+                self._value.ctypes.data, 
+                self._cvalue.base_addr, 
+                ctypes.sizeof(self._ctype_base()), 
+                np.size(value)
+            )
+
+            self._cvalue.offset = -np.prod(np.shape(value))
+            self._cvalue.span = ctypes.sizeof(self._ctype_base())
+
+            strides = []
+            shape = np.shape(value)
+            for i in range(self.ndim):
+                self._cvalue.dims[i].lbound = _index_t(1)
+                self._cvalue.dims[i].ubound = _index_t(shape[i]) 
+                strides.append(self._cvalue.dims[i].ubound - self._cvalue.dims[i].lbound + 1)
+
+            for i in range(self.ndim):
+                self._cvalue.dims[i].span = _index_t(int(np.prod(strides[:i])))
+
+        self._cvalue.dtype.elem_len = self._cvalue.span
+        self._cvalue.dtype.version = 0
+        self._cvalue.dtype.rank = self.ndim
+        self._cvalue.dtype.type = self.ftype()
+        self._cvalue.dtype.attribute = 0
+
         return self._cvalue
 
     @property
@@ -243,6 +278,25 @@ class fAssumedShape(fVar_t):
 
     def __doc__(self):
         return f"{self.type}(KIND={self.kind})(:) :: {self.name}"
+
+    @property
+    def ndim(self):
+        return self.obj.ndim
+
+
+    def ftype(self):
+        if self.obj.type() == "INTEGER":
+            return self._BT_INTEGER
+        elif self.obj.type() == "LOGICAL":
+            return self._BT_LOGICAL
+        elif self.obj.type() == "REAL":
+            return self._BT_REAL
+        elif self.obj.type() == "COMPLEX":
+            return self._BT_COMPLEX
+
+        raise NotImplementedError(f"Assume shape array of type {self.type} and kind {self.kind} not supported yet")
+
+
 
 class fAssumedSize(fVar_t):
     def ctype(self):

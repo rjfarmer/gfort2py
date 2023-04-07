@@ -15,7 +15,7 @@ class fVar:
                 self._value = fExplicitArr(self.obj, self._cvalue)
             elif self.obj.is_assumed_size():
                 self._value = fAssumedSize(self.obj, self._cvalue)
-            elif self.obj.is_assumed_shape() or self.obj.is_allocatable():
+            elif self.obj.is_assumed_shape() or self.obj.is_allocatable() or self.obj.is_pointer():
                 self._value = fAssumedShape(self.obj, self._cvalue)
             else:
                 raise TypeError("Unknown array type")

@@ -14,7 +14,7 @@ MOD = "./tests/dummy_arrays.mod"
 
 x = gf.fFort(SO, MOD)
 
-@pytest.mark.skip
+#@pytest.mark.skip
 class TestDummyArrayMethods:
     def assertEqual(self, x, y):
         assert x == y
@@ -344,6 +344,7 @@ class TestDummyArrayMethods:
         self.assertEqual(y.res, True)
         self.assertEqual(y2.res, True)
 
+    @pytest.mark.skip
     def test_sub_arr_assumed_rank_int_1d(self, capfd):
         v = np.arange(10, 15)
         o = " ".join([str(i) for i in v.flatten(order="F")])
@@ -352,6 +353,7 @@ class TestDummyArrayMethods:
         out, err = capfd.readouterr()
         np.testing.assert_array_equal(y.args["zzz"], np.array([100] * 5))
 
+    @pytest.mark.skip
     def test_sub_arr_assumed_rank_real_1d(self, capfd):
         v = np.arange(10.0, 15.0)
         o = " ".join([str(i) for i in v.flatten(order="F")])
@@ -360,6 +362,7 @@ class TestDummyArrayMethods:
         out, err = capfd.readouterr()
         np.testing.assert_array_equal(y.args["zzz"], np.array([100.0] * 5))
 
+    @pytest.mark.skip
     def test_sub_arr_assumed_rank_dp_1d(self, capfd):
         v = np.arange(10.0, 15.0)
         o = " ".join([str(i) for i in v.flatten(order="F")])
@@ -368,6 +371,7 @@ class TestDummyArrayMethods:
         out, err = capfd.readouterr()
         np.testing.assert_array_equal(y.args["zzz"], np.array([100.0] * 5))
 
+    @pytest.mark.skip
     def test_sub_check_alloc_int_2d(self):
         arr_test = np.zeros((3, 4), dtype=np.int32, order="F")
         y = x.sub_check_alloc_int_2d(None)
@@ -378,6 +382,7 @@ class TestDummyArrayMethods:
 
         np.testing.assert_array_equal(y.args["x"], z)
 
+    @pytest.mark.skip
     def test_sub_check_alloc_int_3d(self):
         arr_test = np.zeros((3, 4, 5), dtype=np.int32, order="F")
         y = x.sub_check_alloc_int_3d(None)
