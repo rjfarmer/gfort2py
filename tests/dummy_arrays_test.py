@@ -325,7 +325,7 @@ class TestDummyArrayMethods:
         y = x.func_assumed_size_arr_real_dp_1d(v)
         self.assertEqual(y.res, True)
 
-    @pytest.mark.skip
+    #@pytest.mark.skip
     def test_sub_alloc_arr_1d(self):
         y = x.sub_alloc_arr_1d(None)
         vTest = np.zeros(10)
