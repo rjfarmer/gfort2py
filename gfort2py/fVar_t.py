@@ -60,6 +60,24 @@ class fVar_t():
     def module(self):
         return self.obj.module
 
+    def ctype_len(self):
+        return None
+
+    def from_ctype(self, ct):
+        self._cvalue = ct
+        return self.value
+
+    def from_address(self, addr):
+        self._cvalue = self.ctype().from_address(addr)
+        return self._cvalue
+
+    def in_dll(self, lib):
+        self._cvalue =  self.ctype().in_dll(lib, self.mangled_name)
+        return  self._cvalue 
+
+
+class fArray_t(fVar_t):
+
     def _array_check(self, value, know_shape=True):
         value = value.astype(self.obj.dtype())
         shape = self.obj.shape()
@@ -80,20 +98,19 @@ class fVar_t():
         value = value.ravel(order="F")
         return value
 
-    def ctype_len(self):
-        return None
+    @property
+    def ndim(self):
+        return self.obj.ndim
 
-    def from_ctype(self, ct):
-        self._cvalue = ct
-        return self.value
+    def _copy_array(self, src, dst, length, size):
+        ctypes.memmove(
+            dst,
+            src,
+            length * size,
+        )
 
-    def from_address(self, addr):
-        self._cvalue = self.ctype().from_address(addr)
-        return self._cvalue
 
-    def in_dll(self, lib):
-        self._cvalue =  self.ctype().in_dll(lib, self.mangled_name)
-        return  self._cvalue 
+
 
 class fScalar(fVar_t):
     def ctype(self):
@@ -164,7 +181,7 @@ class fCmplx(fVar_t):
 
 
 
-class fExplicitArr(fVar_t):
+class fExplicitArr(fArray_t):
     def ctype(self):
         return self._ctype_base * self.obj.size
 
@@ -173,7 +190,7 @@ class fExplicitArr(fVar_t):
             self._cvalue = self.ctype()()
 
         self._value = self._array_check(value)
-        _copy_array(
+        self._copy_array(
             self._value.ctypes.data,
             ctypes.addressof(self._cvalue),
             ctypes.sizeof(self._ctype_base),
@@ -199,7 +216,7 @@ class fExplicitArr(fVar_t):
         return len(self._value)
 
 
-class fAssumedShape(fVar_t):
+class fAssumedShape(fArray_t):
 
     _BT_UNKNOWN = 0
     _BT_INTEGER = _BT_UNKNOWN + 1
@@ -224,7 +241,7 @@ class fAssumedShape(fVar_t):
         if value is not None:
             self._value = self._array_check(value, False)
 
-            _copy_array(
+            self._copy_array(
                 self._value.ctypes.data, 
                 self._cvalue.base_addr, 
                 ctypes.sizeof(self._ctype_base()), 
@@ -277,11 +294,6 @@ class fAssumedShape(fVar_t):
     def __doc__(self):
         return f"{self.type}(KIND={self.kind})(:) :: {self.name}"
 
-    @property
-    def ndim(self):
-        return self.obj.ndim
-
-
     def ftype(self):
         if self.obj.type() == "INTEGER":
             return self._BT_INTEGER
@@ -296,7 +308,7 @@ class fAssumedShape(fVar_t):
 
 
 
-class fAssumedSize(fVar_t):
+class fAssumedSize(fArray_t):
     def ctype(self):
         return self._ctype_base() * np.prod(self._value.shape())
 
@@ -305,7 +317,7 @@ class fAssumedSize(fVar_t):
             self._cvalue = self.ctype()()
 
         self._value = self._array_check(value)
-        _copy_array(
+        self._copy_array(
             self._value.ctypes.data,
             ctypes.addressof(self._cvalue),
             self.sizeof,
@@ -332,6 +344,10 @@ class fAssumedSize(fVar_t):
 
     def ctype_len(self):
         return ctypes.c_int64(self.len())
+
+    @property
+    def ndim(self):
+        return 1
 
 
 class fStr(fVar_t):
@@ -394,16 +410,6 @@ class fStr(fVar_t):
 
     def sizeof(self):
         return ctypes.sizeof(self.ctype)
-
-
-
-
-def _copy_array(src, dst, length, size):
-    ctypes.memmove(
-        dst,
-        src,
-        length * size,
-    )
 
 
 def ctype_map(type, kind):
