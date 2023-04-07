@@ -314,8 +314,10 @@ class fStr(fVar_t):
 
     @property
     def value(self):
-        #return "".join([i.decode() for i in self._cvalue.value])
-        return self._cvalue.value.decode()
+        try:
+            return self._cvalue.value.decode()
+        except AttributeError:
+            return str(self._cvalue) # Functions returning str's give us str not bytes
 
     @value.setter
     def value(self, value):
