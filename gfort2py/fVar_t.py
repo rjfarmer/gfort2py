@@ -2,8 +2,6 @@
 import ctypes
 import numpy as np
 
-from .fUnary import run_unary
-
 _index_t = ctypes.c_int64
 _size_t = ctypes.c_int64
 
@@ -34,12 +32,15 @@ def _make_fAlloc15(ndims):
 
     return _fAllocArray
 
+
 def _make_dt():
     class _fDerivedType(ctypes.Structure):
         pass
+
     return _fDerivedType
 
-class fVar_t():
+
+class fVar_t:
     def __init__(self, obj, cvalue=None):
         self.obj = obj
         self._cvalue = cvalue
@@ -72,12 +73,11 @@ class fVar_t():
         return self._cvalue
 
     def in_dll(self, lib):
-        self._cvalue =  self.ctype().in_dll(lib, self.mangled_name)
-        return  self._cvalue 
+        self._cvalue = self.ctype().in_dll(lib, self.mangled_name)
+        return self._cvalue
 
 
 class fArray_t(fVar_t):
-
     def _array_check(self, value, know_shape=True):
         value = value.astype(self.obj.dtype())
         shape = self.obj.shape()
@@ -110,8 +110,6 @@ class fArray_t(fVar_t):
         )
 
 
-
-
 class fScalar(fVar_t):
     def ctype(self):
         return self._ctype_base
@@ -129,9 +127,7 @@ class fScalar(fVar_t):
             return int(self._cvalue.value)
         elif self.type == "REAL":
             if self.kind == 16:
-                raise NotImplementedError(
-                    f"Quad precision floats not supported yet"
-                )
+                raise NotImplementedError(f"Quad precision floats not supported yet")
             return float(self._cvalue.value)
         elif self.type == "LOGICAL":
             return self._cvalue.value == 1
@@ -180,7 +176,6 @@ class fCmplx(fVar_t):
         return f"{self.type}(KIND={self.kind}) :: {self.name}"
 
 
-
 class fExplicitArr(fArray_t):
     def ctype(self):
         return self._ctype_base * self.obj.size
@@ -200,7 +195,7 @@ class fExplicitArr(fArray_t):
 
     @property
     def value(self):
-        return np.ctypeslib.as_array(self._cvalue).reshape(self.obj.shape(),order='F')
+        return np.ctypeslib.as_array(self._cvalue).reshape(self.obj.shape(), order="F")
 
     @value.setter
     def value(self, value):
@@ -217,7 +212,6 @@ class fExplicitArr(fArray_t):
 
 
 class fAssumedShape(fArray_t):
-
     _BT_UNKNOWN = 0
     _BT_INTEGER = _BT_UNKNOWN + 1
     _BT_LOGICAL = _BT_INTEGER + 1
@@ -241,25 +235,31 @@ class fAssumedShape(fArray_t):
         if value is not None:
             self._value = self._array_check(value, False)
 
-            self._copy_array(
-                self._value.ctypes.data, 
-                self._cvalue.base_addr, 
-                ctypes.sizeof(self._ctype_base()), 
-                np.size(value)
-            )
+            # self._copy_array(
+            #     self._value.ctypes.data,
+            #     self._cvalue.base_addr,
+            #     ctypes.sizeof(self._ctype_base()),
+            #     np.size(value)
+            # )
+            self._cvalue.base_addr = self._value.ctypes.data
 
-            self._cvalue.offset = -np.prod(np.shape(value))
             self._cvalue.span = ctypes.sizeof(self._ctype_base())
 
             strides = []
             shape = np.shape(value)
             for i in range(self.ndim):
                 self._cvalue.dims[i].lbound = _index_t(1)
-                self._cvalue.dims[i].ubound = _index_t(shape[i]) 
-                strides.append(self._cvalue.dims[i].ubound - self._cvalue.dims[i].lbound + 1)
+                self._cvalue.dims[i].ubound = _index_t(shape[i])
+                strides.append(
+                    self._cvalue.dims[i].ubound - self._cvalue.dims[i].lbound + 1
+                )
 
+            spans = []
             for i in range(self.ndim):
-                self._cvalue.dims[i].span = _index_t(int(np.prod(strides[:i])))
+                spans.append(int(np.prod(strides[:i])))
+                self._cvalue.dims[i].stride = _index_t(spans[-1])
+
+            self._cvalue.offset = -np.sum(spans)
 
         self._cvalue.dtype.elem_len = self._cvalue.span
         self._cvalue.dtype.version = 0
@@ -284,8 +284,7 @@ class fAssumedShape(fArray_t):
         PTR = ctypes.POINTER(self._ctype_base)
         x_ptr = ctypes.cast(self._cvalue.base_addr, PTR)
 
-        return np.ctypeslib.as_array(x_ptr,shape=size).reshape(shape,order='F')
-
+        return np.ctypeslib.as_array(x_ptr, shape=size).reshape(shape, order="F")
 
     @value.setter
     def value(self, value):
@@ -304,8 +303,32 @@ class fAssumedShape(fArray_t):
         elif self.obj.type() == "COMPLEX":
             return self._BT_COMPLEX
 
-        raise NotImplementedError(f"Assumed shape array of type {self.type} and kind {self.kind} not supported yet")
+        raise NotImplementedError(
+            f"Assumed shape array of type {self.type} and kind {self.kind} not supported yet"
+        )
 
+    def __del__(self):
+        if self._cvalue is not None:
+            self._cvalue.base_addr = None
+
+    def print(self):
+        if self._cvalue is None:
+            return ""
+
+        print(f"base_addr {self._cvalue.base_addr}")
+        print(f"offset {self._cvalue.offset}")
+        print(f"dtype")
+        print(f"\t elem_len {self._cvalue.dtype.elem_len}")
+        print(f"\t version {self._cvalue.dtype.version}")
+        print(f"\t rank {self._cvalue.dtype.rank}")
+        print(f"\t type {self._cvalue.dtype.type}")
+        print(f"\t attribute {self._cvalue.dtype.attribute}")
+        print(f"span {self._cvalue.span}")
+        print(f"dims {self.ndim}")
+        for i in range(self.ndim):
+            print(f"\t lbound {self._cvalue.dims[i].lbound}")
+            print(f"\t ubound {self._cvalue.dims[i].ubound}")
+            print(f"\t stride {self._cvalue.dims[i].stride}")
 
 
 class fAssumedSize(fArray_t):
@@ -327,7 +350,9 @@ class fAssumedSize(fArray_t):
 
     @property
     def value(self):
-        return np.ctypeslib.as_array(self._cvalue,shape=np.prod(self.obj.shape())).reshape(self.obj.shape(),order='F')
+        return np.ctypeslib.as_array(
+            self._cvalue, shape=np.prod(self.obj.shape())
+        ).reshape(self.obj.shape(), order="F")
 
     @value.setter
     def value(self, value):
@@ -351,8 +376,8 @@ class fAssumedSize(fArray_t):
 
 
 class fStr(fVar_t):
-    def __init__(self,*args,**kwargs):
-        super().__init__(*args,**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._len = None
 
     def ctype(self):
@@ -371,11 +396,11 @@ class fStr(fVar_t):
             self._value = self._value.encode()
 
         if len(self._value) > self.len():
-            self._value = self._value[:self.len()]
+            self._value = self._value[: self.len()]
         else:
             self._value = self._value + b" " * (self.len() - len(self._value))
 
-        #self._buf = bytearray(self._value)  # Need to keep hold of the reference
+        # self._buf = bytearray(self._value)  # Need to keep hold of the reference
         self._cvalue.value = self._value
 
         return self._cvalue
@@ -385,7 +410,7 @@ class fStr(fVar_t):
         try:
             return self._cvalue.value.decode()
         except AttributeError:
-            return str(self._cvalue) # Functions returning str's give us str not bytes
+            return str(self._cvalue)  # Functions returning str's give us str not bytes
 
     @value.setter
     def value(self, value):
@@ -445,11 +470,11 @@ def ctype_map(type, kind):
             raise TypeError("Complex type of kind={kind} not supported")
 
         class complex(ctypes.Structure):
-                _fields_ = [
-                    ("real", ct),
-                    ("imag", ct),
-                ]
+            _fields_ = [
+                ("real", ct),
+                ("imag", ct),
+            ]
+
         return complex
     else:
         raise TypeError(f"Type={type} and kind={kind} not supported")
-
