@@ -304,7 +304,7 @@ class fAssumedShape(fArray_t):
         elif self.obj.type() == "COMPLEX":
             return self._BT_COMPLEX
 
-        raise NotImplementedError(f"Assume shape array of type {self.type} and kind {self.kind} not supported yet")
+        raise NotImplementedError(f"Assumed shape array of type {self.type} and kind {self.kind} not supported yet")
 
 
 
