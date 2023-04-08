@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         fortran-compiler:  [gfortran-9, gfortran-10, gfortran-11]
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
     env:
       FC: ${{ matrix.fortran-compiler }}
       CC: gcc
