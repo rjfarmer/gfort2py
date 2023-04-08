@@ -333,26 +333,26 @@ class fAssumedShape(fArray_t):
 
 class fAssumedSize(fArray_t):
     def ctype(self):
-        return self._ctype_base() * np.prod(self._value.shape())
+        return self._ctype_base * np.prod(self._value.shape)
 
     def from_param(self, value):
+        self._value = self._array_check(value)
         if self._cvalue is None:
             self._cvalue = self.ctype()()
 
-        self._value = self._array_check(value)
         self._copy_array(
             self._value.ctypes.data,
             ctypes.addressof(self._cvalue),
-            self.sizeof,
+            ctypes.sizeof(self._ctype_base),
             np.size(value),
         )
         return self._cvalue
 
     @property
     def value(self):
-        return np.ctypeslib.as_array(
-            self._cvalue, shape=np.prod(self.obj.shape())
-        ).reshape(self.obj.shape(), order="F")
+        return np.ctypeslib.as_array(self._cvalue, shape=np.size(self._value)).reshape(
+            self._value.shape, order="F"
+        )
 
     @value.setter
     def value(self, value):
