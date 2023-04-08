@@ -13,11 +13,10 @@ from .fUnary import run_unary
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
 
-
 @dataclass
 class variable:
-    value: 'typing.Any'
-    fvar: 'typing.Any'
+    value: "typing.Any"
+    fvar: "typing.Any"
 
 
 class _captureStdOut:
@@ -73,7 +72,6 @@ class fProc:
         return self.obj.name
 
     def __call__(self, *args, **kwargs):
-
         self._set_return()
 
         func_args = self._convert_args(*args, **kwargs)
@@ -97,7 +95,6 @@ class fProc:
             else:
                 self._func.restype = self.return_var.ctype()
 
-
     def args_start(self):
         res = []
         if self.obj.is_function():
@@ -108,8 +105,7 @@ class fProc:
 
         return res
 
-
-    def args_check(self,*args,**kwargs):
+    def args_check(self, *args, **kwargs):
         count = 0
         arguments = []
         # Build list of inputs
@@ -128,7 +124,7 @@ class fProc:
             if x is None and not var.obj.is_optional() and not var.obj.is_dummy():
                 raise ValueError(f"Got None for {var.name}")
 
-            arguments.append(variable(x,var))
+            arguments.append(variable(x, var))
 
         return arguments
 
@@ -140,6 +136,7 @@ class fProc:
             if var.value is not None or var.fvar.obj.is_dummy():
                 if var.fvar.obj.is_optional() and var.value is None:
                     args.append(None)
+                    args_end.append(ctypes.c_byte(0))
                 else:
                     z = var.fvar.from_param(var.value)
 
@@ -165,10 +162,9 @@ class fProc:
                 if var.fvar.obj.is_optional_value():
                     args_end.append(ctypes.c_byte(0))
 
-        return args, args_end        
+        return args, args_end
 
     def _convert_args(self, *args, **kwargs):
-
         args_start = self.args_start()
 
         self.input_args = self.args_check(*args, **kwargs)
@@ -190,16 +186,16 @@ class fProc:
             for var in self.input_args:
                 try:
                     x = ptr_unpack(var.fvar.value)
-                except AttributeError: # unset optional arguments 
+                except AttributeError:  # unset optional arguments
                     x = None
 
-                if hasattr(result,'_type_'):
+                if hasattr(result, "_type_"):
                     res[var.fvar.name] = var.fvar.from_ctype(x)
                 else:
                     res[var.fvar.name] = x
 
         if self.obj.is_function():
-            if hasattr(result,'_b_base_'): #A ctype object
+            if hasattr(result, "_b_base_"):  # A ctype object
                 result = self.return_var.from_ctype(result)
 
         return self.Result(result, res)
@@ -209,7 +205,6 @@ class fProc:
 
     @property
     def __doc__(self):
-
         if self.obj.is_subroutine():
             ftype = f"subroutine {self.name}"
         else:
@@ -227,6 +222,7 @@ class fProc:
         if self._return_value is None:
             self._return_value = fVar(self._allobjs[self.obj.return_arg()])
         return self._return_value
+
 
 def ptr_unpack(ptr):
     x = ptr
