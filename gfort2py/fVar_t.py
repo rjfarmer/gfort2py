@@ -41,7 +41,7 @@ def _make_dt():
 
 
 class fVar_t:
-    def __init__(self, obj, cvalue=None):
+    def __init__(self, obj, allobjs=None, cvalue=None):
         self.obj = obj
         self._cvalue = cvalue
 
@@ -435,6 +435,48 @@ class fStr(fVar_t):
 
     def sizeof(self):
         return ctypes.sizeof(self.ctype)
+
+
+class fDT(fVar_t):
+    def __init__(self, obj, allobjs, cvalue=None):
+        self.obj = obj
+        self.allobjs = allobjs
+        self._cvalue = cvalue
+
+    def ctype(self):
+        pass
+
+    def from_address(self, addr):
+        pass
+
+    def in_dll(self, lib):
+        pass
+
+    def from_param(self, param):
+        pass
+
+    @property
+    def value(self):
+        pass
+
+    @value.setter
+    def value(self, value):
+        self.from_param(value)
+
+    def keys(self):
+        pass
+
+    def values(self):
+        pass
+
+    def items(self):
+        pass
+
+    def __getitem__(self, key):
+        pass
+
+    def __setitem__(self, key, value):
+        pass
 
 
 def ctype_map(type, kind):

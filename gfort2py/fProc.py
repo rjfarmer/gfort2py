@@ -110,7 +110,7 @@ class fProc:
         arguments = []
         # Build list of inputs
         for fval in self.obj.args():
-            var = fVar(self._allobjs[fval.ref])
+            var = fVar(self._allobjs[fval.ref], allobjs=self._allobjs)
 
             try:
                 x = kwargs[var.name]
@@ -212,7 +212,7 @@ class fProc:
 
         args = []
         for fval in self.obj.args():
-            args.append(fVar(fval.ref).__doc__)
+            args.append(fVar(fval.ref, allobjs=self._allobjs).__doc__)
 
         args = ", ".join(args)
         return f"{ftype} ({args})"
@@ -220,7 +220,9 @@ class fProc:
     @property
     def return_var(self):
         if self._return_value is None:
-            self._return_value = fVar(self._allobjs[self.obj.return_arg()])
+            self._return_value = fVar(
+                self._allobjs[self.obj.return_arg()], allobjs=self._allobjs
+            )
         return self._return_value
 
 

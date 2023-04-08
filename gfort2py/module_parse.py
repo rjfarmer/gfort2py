@@ -172,7 +172,7 @@ class namespace:
 @dataclass
 class header:
     id: int
-    name: str  # If first letter is captialised then its a dt
+    name: str  # If first letter is capitalized then its a dt
     module: str
     bindc: str
     parent_id: int
@@ -633,6 +633,9 @@ class symbol:
 
         return False
 
+    def is_derived(self):
+        return self.sym.ts.type == "DERIVED"
+
     @property
     def strlen(self):
         if self.is_char() and not self.is_deferred_len():
@@ -667,7 +670,7 @@ class symbol:
             if not self.is_array():
                 return v
             else:
-                return np.array(v, dtype=self.dtype()).reshape(self.shape(),order='F')
+                return np.array(v, dtype=self.dtype()).reshape(self.shape(), order="F")
         else:
             raise AttributeError("Not a parameter")
 

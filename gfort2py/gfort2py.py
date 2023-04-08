@@ -39,7 +39,7 @@ class fFort:
                     raise AttributeError(f"{self._mod_file}  has no attribute {key}")
 
             if self._module[key].is_variable():
-                f = fVar(self._module[key])
+                f = fVar(self._module[key], allobjs=self._module)
                 f.in_dll(self._lib)
                 return f.value
             elif self._module[key].is_procedure():
@@ -59,7 +59,7 @@ class fFort:
         if "_initialized" in self.__dict__:
             if self._initialized:
                 if self._module[key].is_variable():
-                    f = fVar(self._module[key])
+                    f = fVar(self._module[key], allobjs=self._module)
                     f.in_dll(self._lib)
                     f.value = value
                     return
@@ -78,6 +78,7 @@ class fFort:
 
     def __str__(self):
         return f"{self._module.filename}"
+
 
 def mod_info(mod_file):
     return module(mod_file)
