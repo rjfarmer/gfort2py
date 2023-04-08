@@ -18,6 +18,7 @@ class fFort:
         self._mod_file = mod_file
         self._module = module(self._mod_file)
 
+        self._saved = {}
         self._initialized = True
 
     def keys(self):
@@ -39,9 +40,10 @@ class fFort:
                     raise AttributeError(f"{self._mod_file}  has no attribute {key}")
 
             if self._module[key].is_variable():
-                f = fVar(self._module[key], allobjs=self._module)
-                f.in_dll(self._lib)
-                return f.value
+                if key not in self._saved:
+                    self._saved[key] = fVar(self._module[key], allobjs=self._module)
+                self._saved[key].in_dll(self._lib)
+                return self._saved[key].value
             elif self._module[key].is_procedure():
                 return fProc(self._lib, self._module[key], self._module)
             elif self._module[key].is_parameter():
@@ -59,9 +61,10 @@ class fFort:
         if "_initialized" in self.__dict__:
             if self._initialized:
                 if self._module[key].is_variable():
-                    f = fVar(self._module[key], allobjs=self._module)
-                    f.in_dll(self._lib)
-                    f.value = value
+                    if key not in self._saved:
+                        self._saved[key] = fVar(self._module[key], allobjs=self._module)
+                    self._saved[key].in_dll(self._lib)
+                    self._saved[key].value = value
                     return
                 elif self._module[key].is_parameter():
                     raise AttributeError("Can not alter a parameter")

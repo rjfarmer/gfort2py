@@ -68,7 +68,6 @@ class TestDummyArrayMethods:
         v[:] = 1
         np.testing.assert_array_equal(x.c_int_alloc_5d, v)
 
-    @pytest.mark.skip
     def test_c_int_alloc_1d_set(self):
         y = x.sub_alloc_int_1d_cleanup()
         y = x.sub_alloc_int_1d_arrs()
@@ -78,7 +77,6 @@ class TestDummyArrayMethods:
         np.testing.assert_array_equal(x.c_int_alloc_1d, v)
         self.assertEqual(np.sum(x.c_int_alloc_1d), 25)
 
-    @pytest.mark.skip
     def test_c_int_alloc_2d_set(self):
         y = x.sub_alloc_int_1d_cleanup()
         y = x.sub_alloc_int_1d_arrs()
@@ -87,7 +85,6 @@ class TestDummyArrayMethods:
         x.c_int_alloc_2d = v
         np.testing.assert_array_equal(x.c_int_alloc_2d, v)
 
-    @pytest.mark.skip
     def test_c_int_alloc_3d_set(self):
         y = x.sub_alloc_int_1d_cleanup()
         y = x.sub_alloc_int_1d_arrs()
@@ -96,7 +93,6 @@ class TestDummyArrayMethods:
         x.c_int_alloc_3d = v
         np.testing.assert_array_equal(x.c_int_alloc_3d, v)
 
-    @pytest.mark.skip
     def test_c_int_alloc_4d_set(self):
         y = x.sub_alloc_int_1d_cleanup()
         y = x.sub_alloc_int_1d_arrs()
@@ -159,7 +155,6 @@ class TestDummyArrayMethods:
         v[:] = 1
         np.testing.assert_array_equal(x.c_real_alloc_5d, v)
 
-    @pytest.mark.skip
     def test_c_real_dp_alloc_1d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
         y = x.sub_alloc_real_dp_1d_arrs()
@@ -168,7 +163,6 @@ class TestDummyArrayMethods:
         x.c_real_dp_alloc_1d = v
         np.testing.assert_array_equal(x.c_real_dp_alloc_1d, v)
 
-    @pytest.mark.skip
     def test_c_real_dp_alloc_2d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
         y = x.sub_alloc_real_dp_1d_arrs()
@@ -177,7 +171,6 @@ class TestDummyArrayMethods:
         x.c_real_dp_alloc_2d = v
         np.testing.assert_array_equal(x.c_real_dp_alloc_2d, v)
 
-    @pytest.mark.skip
     def test_c_real_dp_alloc_3d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
         y = x.sub_alloc_real_dp_1d_arrs()
@@ -186,7 +179,6 @@ class TestDummyArrayMethods:
         x.c_real_dp_alloc_3d = v
         np.testing.assert_array_equal(x.c_real_dp_alloc_3d, v)
 
-    @pytest.mark.skip
     def test_c_real_dp_alloc_4d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
         y = x.sub_alloc_real_dp_1d_arrs()
@@ -239,7 +231,6 @@ class TestDummyArrayMethods:
         v[:] = 1
         np.testing.assert_array_equal(x.c_real_dp_alloc_5d, v)
 
-    @pytest.mark.skip
     def test_c_real_dp_alloc_1d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
         y = x.sub_alloc_real_dp_1d_arrs()
@@ -248,7 +239,6 @@ class TestDummyArrayMethods:
         x.c_real_dp_alloc_1d = v
         np.testing.assert_array_equal(x.c_real_dp_alloc_1d, v)
 
-    @pytest.mark.skip
     def test_c_real_dp_alloc_2d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
         y = x.sub_alloc_real_dp_1d_arrs()
@@ -257,7 +247,6 @@ class TestDummyArrayMethods:
         x.c_real_dp_alloc_2d = v
         np.testing.assert_array_equal(x.c_real_dp_alloc_2d, v)
 
-    @pytest.mark.skip
     def test_c_real_dp_alloc_3d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
         y = x.sub_alloc_real_dp_1d_arrs()

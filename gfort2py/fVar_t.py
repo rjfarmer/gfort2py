@@ -43,6 +43,7 @@ def _make_dt():
 class fVar_t:
     def __init__(self, obj, allobjs=None, cvalue=None):
         self.obj = obj
+        self.allobjs = allobjs
         self._cvalue = cvalue
 
         self.type, self.kind = self.obj.type_kind()
@@ -437,23 +438,41 @@ class fStr(fVar_t):
         return ctypes.sizeof(self.ctype)
 
 
-class fDT(fVar_t):
-    def __init__(self, obj, allobjs, cvalue=None):
+class fDT:
+    def __init__(self, obj, allobjs=None, cvalue=None):
         self.obj = obj
         self.allobjs = allobjs
         self._cvalue = cvalue
 
+        # Get obj for derived type spec
+        self._dt_obj = self.allobjs[self.obj.sym.ts.class_ref.ref]
+
     def ctype(self):
         pass
 
+    @property
+    def name(self):
+        return self.obj.name
+
+    @property
+    def mangled_name(self):
+        return self.obj.mangled_name
+
+    @property
+    def module(self):
+        return self.obj.module
+
+    def from_ctype(self, ct):
+        self._cvalue = ct
+        return self.value
+
     def from_address(self, addr):
-        pass
+        self._cvalue = self.ctype().from_address(addr)
+        return self._cvalue
 
     def in_dll(self, lib):
-        pass
-
-    def from_param(self, param):
-        pass
+        self._cvalue = self.ctype().in_dll(lib, self.mangled_name)
+        return self._cvalue
 
     @property
     def value(self):
@@ -472,10 +491,14 @@ class fDT(fVar_t):
     def items(self):
         pass
 
-    def __getitem__(self, key):
-        pass
+    def __getattr__(self, key):
+        if key in self.__dict__:
+            return self.__dict__[key]
 
-    def __setitem__(self, key, value):
+    def __setattr__(self, key, value):
+        self.__dict__[key] = value
+
+    def __contains__(self, key):
         pass
 
 
