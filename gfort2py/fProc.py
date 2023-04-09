@@ -7,7 +7,6 @@ import functools
 from dataclasses import dataclass
 
 from .fVar import fVar
-from .fUnary import run_unary
 
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
