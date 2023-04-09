@@ -567,7 +567,7 @@ class fDT(fVar_t):
         return key in self.keys()
 
     def __getattr__(self, key):
-        if "_dt_args" in self.__dict__ and "_cvalue" in self.__dict__:
+        if "_dt_args" in self.__dict__ and "cvalue" in self.__dict__:
             if key in self._dt_args:
                 if self.cvalue is not None:
                     return getattr(self.cvalue, key)
