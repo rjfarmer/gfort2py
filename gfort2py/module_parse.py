@@ -139,6 +139,178 @@ def print_args(x):
     print()
 
 
+class utils:
+    def shape(self):
+        if self.is_array():
+            return self.sym.array_spec.pyshape
+        else:
+            raise NotAnArrayError("Not an array")
+
+    def dtype(self):
+        t = self.type()
+        k = int(self.kind())
+
+        if t == "INTEGER" or t == "LOGICAL":
+            if k == 4:
+                return "i4"
+            elif k == 8:
+                return "i8"
+        elif t == "REAL":
+            if k == 4:
+                return "f4"
+            elif k == 8:
+                return "f8"
+        elif t == "COMPLEX":
+            if k == 4:
+                return "c4"
+            elif k == 8:
+                return "c8"
+
+        raise NotImplementedError(f"Object of type {t} and kind {k} not supported yet")
+
+    def type(self):
+        return self.sym.ts.type
+
+    def ref(self):
+        return self.head.id
+
+    def flavor(self):
+        return self.sym.attr.flavor
+
+    def kind(self):
+        return self.sym.ts.kind
+
+    def is_pointer(self):
+        return "POINTER" in self.sym.attr.attributes
+
+    def is_parameter(self):
+        return self.flavor() == "PARAMETER"
+
+    def is_value(self):
+        return "VALUE" in self.sym.attr.attributes
+
+    def is_optional(self):
+        return "OPTIONAL" in self.sym.attr.attributes
+
+    def is_optional_value(self):
+        return self.is_optional() and self.is_value()
+
+    def is_char(self):
+        return self.type() == "CHARACTER"
+
+    def is_variable(self):
+        return self.flavor() == "VARIABLE"
+
+    def is_procedure(self):
+        return self.flavor() == "PROCEDURE"
+
+    def is_logical(self):
+        return self.sym.ts.type == "LOGICAL"
+
+    def is_complex(self):
+        return self.sym.ts.type == "COMPLEX"
+
+    def is_subroutine(self):
+        return self.sym.sym_ref.ref == 0
+
+    def is_function(self):
+        return self.sym.sym_ref.ref != 0
+
+    def is_array(self):
+        return "DIMENSION" in self.sym.attr.attributes
+
+    def is_always_explicit(self):
+        return "ALWAYS_EXPLICIT" in self.sym.attr.attributes
+
+    def is_dummy(self):
+        return "DUMMY" in self.sym.attr.attributes
+
+    def is_allocatable(self):
+        return "ALLOCATABLE" in self.sym.attr.attributes
+
+    def needs_array_desc(self):
+        return self.is_dummy() or self.is_allocatable() or self.is_always_explicit()
+
+    def not_a_pointer(self):
+        return (
+            self.needs_array_desc()
+            and self.is_array()
+            and not self.is_assumed_shape()
+            and not self.is_assumed_size()
+        )
+
+    def is_explicit(self):
+        return (
+            self.sym.array_spec.array_type == "EXPLICIT"
+            and not self.is_always_explicit()
+        )
+
+    def is_assumed_size(self):
+        return self.sym.array_spec.array_type == "ASSUMED_SIZE"
+
+    def is_assumed_shape(self):
+        return self.sym.array_spec.array_type == "ASSUMED_SHAPE"
+
+    def is_deferred_len(self):
+        # Only needed for things that need an extra function argument for their length
+        if self.is_char():
+            try:
+                self.sym.ts.charlen.value
+                return False
+            except AttributeError:
+                return True
+        elif self.is_array():
+            return self.is_assumed_size()
+
+        return False
+
+    def is_derived(self):
+        return self.sym.ts.type == "DERIVED"
+
+    @property
+    def strlen(self):
+        if self.is_char() and not self.is_deferred_len():
+            return self.sym.ts.charlen
+        raise AttributeError("Not a deferred length type")
+
+    @property
+    def ndim(self):
+        if self.is_array():
+            return self.sym.array_spec.rank
+        else:
+            raise NotAnArrayError("Not an array")
+
+    @property
+    def size(self):
+        if self.is_array():
+            return np.prod(self.shape())
+        else:
+            raise NotAnArrayError("Not an array")
+
+    def value(self):
+        if self.is_parameter():
+            v = self.sym.parameter.value
+            if not self.is_array():
+                return v
+            else:
+                return np.array(v, dtype=self.dtype()).reshape(self.shape(), order="F")
+        else:
+            raise AttributeError("Not a parameter")
+
+    def type_kind(self):
+        return self.type(), self.kind()
+
+    def return_arg(self):
+        if self.is_procedure():
+            return self.sym.sym_ref.ref
+        raise AttributeError("Not a procedure")
+
+    def args(self):
+        if self.is_procedure():
+            return self.sym.formal_arg
+        raise AttributeError("Not a procedure")
+
+
 @dataclass(init=False)
 class attribute:
     flavor: str = ""
@@ -373,7 +545,7 @@ class arrayspec:
 
 
 @dataclass(init=False)
-class component:
+class component(utils):
     id: int = -1
     name: str = ""
     ts: typespec = None
@@ -405,6 +577,10 @@ class component:
 
         if not self.attr.proc == "UNKNOWN-PROC":
             self.proc_ptr = typebound_proc(args[8])
+
+        # This lets us reuse the code for accessing symbols
+        # inside the parent utils class
+        self.sym = self
 
 
 @dataclass(init=False)
@@ -499,7 +675,7 @@ class data:
 
 
 @dataclass(init=False)
-class symbol:
+class symbol(utils):
     head: header = None
     sym: data = None
     raw: str = ""
@@ -509,153 +685,6 @@ class symbol:
         self.sym = data(*args[5])
         self.raw = args
 
-    def shape(self):
-        if self.is_array():
-            return self.sym.array_spec.pyshape
-        else:
-            raise NotAnArrayError("Not an array")
-
-    def dtype(self):
-        t = self.type()
-        k = int(self.kind())
-
-        if t == "INTEGER" or t == "LOGICAL":
-            if k == 4:
-                return "i4"
-            elif k == 8:
-                return "i8"
-        elif t == "REAL":
-            if k == 4:
-                return "f4"
-            elif k == 8:
-                return "f8"
-        elif t == "COMPLEX":
-            if k == 4:
-                return "c4"
-            elif k == 8:
-                return "c8"
-
-        raise NotImplementedError(f"Object of type {t} and kind {k} not supported yet")
-
-    def type(self):
-        return self.sym.ts.type
-
-    def ref(self):
-        return self.head.id
-
-    def flavor(self):
-        return self.sym.attr.flavor
-
-    def kind(self):
-        return self.sym.ts.kind
-
-    def is_pointer(self):
-        return "POINTER" in self.sym.attr.attributes
-
-    def is_parameter(self):
-        return self.flavor() == "PARAMETER"
-
-    def is_value(self):
-        return "VALUE" in self.sym.attr.attributes
-
-    def is_optional(self):
-        return "OPTIONAL" in self.sym.attr.attributes
-
-    def is_optional_value(self):
-        return self.is_optional() and self.is_value()
-
-    def is_char(self):
-        return self.type() == "CHARACTER"
-
-    def is_variable(self):
-        return self.flavor() == "VARIABLE"
-
-    def is_procedure(self):
-        return self.flavor() == "PROCEDURE"
-
-    def is_logical(self):
-        return self.sym.ts.type == "LOGICAL"
-
-    def is_complex(self):
-        return self.sym.ts.type == "COMPLEX"
-
-    def is_subroutine(self):
-        return self.sym.sym_ref.ref == 0
-
-    def is_function(self):
-        return self.sym.sym_ref.ref != 0
-
-    def is_array(self):
-        return "DIMENSION" in self.sym.attr.attributes
-
-    def is_always_explicit(self):
-        return "ALWAYS_EXPLICIT" in self.sym.attr.attributes
-
-    def is_dummy(self):
-        return "DUMMY" in self.sym.attr.attributes
-
-    def is_allocatable(self):
-        return "ALLOCATABLE" in self.sym.attr.attributes
-
-    def needs_array_desc(self):
-        return self.is_dummy() or self.is_allocatable() or self.is_always_explicit()
-
-    def not_a_pointer(self):
-        return (
-            self.needs_array_desc()
-            and self.is_array()
-            and not self.is_assumed_shape()
-            and not self.is_assumed_size()
-        )
-
-    def is_explicit(self):
-        return (
-            self.sym.array_spec.array_type == "EXPLICIT"
-            and not self.is_always_explicit()
-        )
-
-    def is_assumed_size(self):
-        return self.sym.array_spec.array_type == "ASSUMED_SIZE"
-
-    def is_assumed_shape(self):
-        return self.sym.array_spec.array_type == "ASSUMED_SHAPE"
-
-    def is_deferred_len(self):
-        # Only needed for things that need an extra function argument for their length
-        if self.is_char():
-            try:
-                self.sym.ts.charlen.value
-                return False
-            except AttributeError:
-                return True
-        elif self.is_array():
-            return self.is_assumed_size()
-
-        return False
-
-    def is_derived(self):
-        return self.sym.ts.type == "DERIVED"
-
-    @property
-    def strlen(self):
-        if self.is_char() and not self.is_deferred_len():
-            return self.sym.ts.charlen
-        raise AttributeError("Not a deferred length type")
-
-    @property
-    def ndim(self):
-        if self.is_array():
-            return self.sym.array_spec.rank
-        else:
-            raise NotAnArrayError("Not an array")
-
-    @property
-    def size(self):
-        if self.is_array():
-            return np.prod(self.shape())
-        else:
-            raise NotAnArrayError("Not an array")
-
     @property
     def name(self):
         return self.head.name
@@ -663,29 +692,6 @@ class symbol:
     @property
     def mangled_name(self):
         return self.head.mn_name
-
-    def value(self):
-        if self.is_parameter():
-            v = self.sym.parameter.value
-            if not self.is_array():
-                return v
-            else:
-                return np.array(v, dtype=self.dtype()).reshape(self.shape(), order="F")
-        else:
-            raise AttributeError("Not a parameter")
-
-    def type_kind(self):
-        return self.type(), self.kind()
-
-    def return_arg(self):
-        if self.is_procedure():
-            return self.sym.sym_ref.ref
-        raise AttributeError("Not a procedure")
-
-    def args(self):
-        if self.is_procedure():
-            return self.sym.formal_arg
-        raise AttributeError("Not a procedure")
 
 
 class module(object):
