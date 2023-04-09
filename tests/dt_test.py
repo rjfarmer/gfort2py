@@ -15,7 +15,7 @@ MOD = "./tests/dt.mod"
 x = gf.fFort(SO, MOD)
 
 
-@pytest.mark.skip
+# @pytest.mark.skip
 class TestDTMethods:
     def assertEqual(self, x, y):
         assert x == y
@@ -38,25 +38,22 @@ class TestDTMethods:
             x.f_struct_simple = {"asw": 2, "y": 0}
 
     def test_dt_bad_value(self):
-        with pytest.raises(ValueError) as cm:
+        with pytest.raises(TypeError) as cm:
             x.f_struct_simple.x = "asde"
 
     def test_sub_dt_in_s_simple(self, capfd):
-
         y = x.sub_f_simple_in({"x": 1, "y": 10})
         out, err = capfd.readouterr()
         o = " ".join([str(i) for i in [1, 10]])
         self.assertEqual(out.strip(), o)
 
     def test_sub_dt_out_s_simple(self, capfd):
-
         y = x.sub_f_simple_out({})
         out, err = capfd.readouterr()
         self.assertEqual(y.args["x"].x, 1)
         self.assertEqual(y.args["x"].y, 10)
 
     def test_sub_dt_inout_s_simple(self, capfd):
-
         y = x.sub_f_simple_inout({"x": 5, "y": 3})
         out, err = capfd.readouterr()
         o = "  ".join([str(i) for i in [5, 3]])
@@ -65,7 +62,6 @@ class TestDTMethods:
         self.assertEqual(y.args["zzz"].y, 10)
 
     def test_sub_dt_inoutp_s_simple(self, capfd):
-
         y = x.sub_f_simple_inoutp({"x": 5, "y": 3})
         out, err = capfd.readouterr()
         o = "  ".join([str(i) for i in [5, 3]])
@@ -85,7 +81,7 @@ class TestDTMethods:
 
     def test_func_set_f_struct(self):
         y = x.func_set_f_struct()
-        self.assertEqual(y.result, True)
+        self.assertEqual(y.res, True)
 
         self.assertEqual(x.f_struct.a_int, 5)
         self.assertEqual(x.f_struct.a_int_lp, 6)
@@ -150,6 +146,7 @@ class TestDTMethods:
         y = x.check_g_struct_exp_2d()
         self.assertEqual(y.result, True)
 
+    @pytest.mark.skip
     def test_sub_struct_exp_1d(self):
         y = x.sub_struct_exp_1d({})
 

@@ -6,8 +6,10 @@ import numpy as np
 class fVar:
     def __new__(cls, obj, *args, **kwargs):
         if obj.is_derived():
-            return fDT(obj, *args, **kwargs)
-            # TODO: Handle arrays
+            if obj.is_array():
+                raise NotImplementedError
+            else:
+                return fDT(obj, *args, **kwargs)
         elif obj.is_array():
             if obj.is_explicit():
                 return fExplicitArr(obj, *args, **kwargs)
@@ -80,18 +82,11 @@ def _make_fAlloc15(ndims):
     return _fAllocArray
 
 
-def _make_dt():
-    class _fDerivedType(ctypes.Structure):
-        pass
-
-    return _fDerivedType
-
-
 class fVar_t:
     def __init__(self, obj, allobjs=None, cvalue=None):
         self.obj = obj
         self.allobjs = allobjs
-        self._cvalue = cvalue
+        self.cvalue = cvalue
 
         self.type, self.kind = self.obj.type_kind()
 
@@ -113,16 +108,16 @@ class fVar_t:
         return None
 
     def from_ctype(self, ct):
-        self._cvalue = ct
+        self.cvalue = ct
         return self.value
 
     def from_address(self, addr):
-        self._cvalue = self.ctype().from_address(addr)
-        return self._cvalue
+        self.cvalue = self.ctype().from_address(addr)
+        return self.cvalue
 
     def in_dll(self, lib):
-        self._cvalue = self.ctype().in_dll(lib, self.mangled_name)
-        return self._cvalue
+        self.cvalue = self.ctype().in_dll(lib, self.mangled_name)
+        return self.cvalue
 
 
 class fArray_t(fVar_t):
@@ -163,22 +158,22 @@ class fScalar(fVar_t):
         return self._ctype_base
 
     def from_param(self, param):
-        if self._cvalue is None:
-            self._cvalue = self.ctype()(param)
+        if self.cvalue is None:
+            self.cvalue = self.ctype()(param)
         else:
-            self._cvalue.value = param
-        return self._cvalue
+            self.cvalue.value = param
+        return self.cvalue
 
     @property
     def value(self):
         if self.type == "INTEGER":
-            return int(self._cvalue.value)
+            return int(self.cvalue.value)
         elif self.type == "REAL":
             if self.kind == 16:
                 raise NotImplementedError(f"Quad precision floats not supported yet")
-            return float(self._cvalue.value)
+            return float(self.cvalue.value)
         elif self.type == "LOGICAL":
-            return self._cvalue.value == 1
+            return self.cvalue.value == 1
 
     @value.setter
     def value(self, value):
@@ -196,16 +191,16 @@ class fCmplx(fVar_t):
         return self._ctype_base
 
     def from_param(self, param):
-        if self._cvalue is None:
-            self._cvalue = self.ctype()()
+        if self.cvalue is None:
+            self.cvalue = self.ctype()()
 
-        self._cvalue.real = param.real
-        self._cvalue.imag = param.imag
-        return self._cvalue
+        self.cvalue.real = param.real
+        self.cvalue.imag = param.imag
+        return self.cvalue
 
     @property
     def value(self):
-        x = self._cvalue
+        x = self.cvalue
 
         if self.kind == 16:
             raise NotImplementedError(
@@ -229,21 +224,21 @@ class fExplicitArr(fArray_t):
         return self._ctype_base * self.obj.size
 
     def from_param(self, value):
-        if self._cvalue is None:
-            self._cvalue = self.ctype()()
+        if self.cvalue is None:
+            self.cvalue = self.ctype()()
 
         self._value = self._array_check(value)
         self._copy_array(
             self._value.ctypes.data,
-            ctypes.addressof(self._cvalue),
+            ctypes.addressof(self.cvalue),
             ctypes.sizeof(self._ctype_base),
             self.obj.size,
         )
-        return self._cvalue
+        return self.cvalue
 
     @property
     def value(self):
-        return np.ctypeslib.as_array(self._cvalue).reshape(self.obj.shape(), order="F")
+        return np.ctypeslib.as_array(self.cvalue).reshape(self.obj.shape(), order="F")
 
     @value.setter
     def value(self, value):
@@ -277,60 +272,60 @@ class fAssumedShape(fArray_t):
         return _make_fAlloc15(self.obj.ndim)
 
     def from_param(self, value):
-        if self._cvalue is None:
-            self._cvalue = self.ctype()()
+        if self.cvalue is None:
+            self.cvalue = self.ctype()()
 
         if value is not None:
             self._value = self._array_check(value, False)
 
             # self._copy_array(
             #     self._value.ctypes.data,
-            #     self._cvalue.base_addr,
+            #     self.cvalue.base_addr,
             #     ctypes.sizeof(self._ctype_base()),
             #     np.size(value)
             # )
-            self._cvalue.base_addr = self._value.ctypes.data
+            self.cvalue.base_addr = self._value.ctypes.data
 
-            self._cvalue.span = ctypes.sizeof(self._ctype_base())
+            self.cvalue.span = ctypes.sizeof(self._ctype_base())
 
             strides = []
             shape = np.shape(value)
             for i in range(self.ndim):
-                self._cvalue.dims[i].lbound = _index_t(1)
-                self._cvalue.dims[i].ubound = _index_t(shape[i])
+                self.cvalue.dims[i].lbound = _index_t(1)
+                self.cvalue.dims[i].ubound = _index_t(shape[i])
                 strides.append(
-                    self._cvalue.dims[i].ubound - self._cvalue.dims[i].lbound + 1
+                    self.cvalue.dims[i].ubound - self.cvalue.dims[i].lbound + 1
                 )
 
             spans = []
             for i in range(self.ndim):
                 spans.append(int(np.prod(strides[:i])))
-                self._cvalue.dims[i].stride = _index_t(spans[-1])
+                self.cvalue.dims[i].stride = _index_t(spans[-1])
 
-            self._cvalue.offset = -np.sum(spans)
+            self.cvalue.offset = -np.sum(spans)
 
-        self._cvalue.dtype.elem_len = self._cvalue.span
-        self._cvalue.dtype.version = 0
-        self._cvalue.dtype.rank = self.ndim
-        self._cvalue.dtype.type = self.ftype()
-        self._cvalue.dtype.attribute = 0
+        self.cvalue.dtype.elem_len = self.cvalue.span
+        self.cvalue.dtype.version = 0
+        self.cvalue.dtype.rank = self.ndim
+        self.cvalue.dtype.type = self.ftype()
+        self.cvalue.dtype.attribute = 0
 
-        return self._cvalue
+        return self.cvalue
 
     @property
     def value(self):
-        if self._cvalue.base_addr is None:
+        if self.cvalue.base_addr is None:
             return None
 
         shape = []
         for i in range(self.obj.ndim):
-            shape.append(self._cvalue.dims[i].ubound - self._cvalue.dims[i].lbound + 1)
+            shape.append(self.cvalue.dims[i].ubound - self.cvalue.dims[i].lbound + 1)
 
         shape = tuple(shape)
         size = (np.prod(shape),)
 
         PTR = ctypes.POINTER(self._ctype_base)
-        x_ptr = ctypes.cast(self._cvalue.base_addr, PTR)
+        x_ptr = ctypes.cast(self.cvalue.base_addr, PTR)
 
         return np.ctypeslib.as_array(x_ptr, shape=size).reshape(shape, order="F")
 
@@ -356,27 +351,27 @@ class fAssumedShape(fArray_t):
         )
 
     def __del__(self):
-        if self._cvalue is not None:
-            self._cvalue.base_addr = None
+        if self.cvalue is not None:
+            self.cvalue.base_addr = None
 
     def print(self):
-        if self._cvalue is None:
+        if self.cvalue is None:
             return ""
 
-        print(f"base_addr {self._cvalue.base_addr}")
-        print(f"offset {self._cvalue.offset}")
+        print(f"base_addr {self.cvalue.base_addr}")
+        print(f"offset {self.cvalue.offset}")
         print(f"dtype")
-        print(f"\t elem_len {self._cvalue.dtype.elem_len}")
-        print(f"\t version {self._cvalue.dtype.version}")
-        print(f"\t rank {self._cvalue.dtype.rank}")
-        print(f"\t type {self._cvalue.dtype.type}")
-        print(f"\t attribute {self._cvalue.dtype.attribute}")
-        print(f"span {self._cvalue.span}")
+        print(f"\t elem_len {self.cvalue.dtype.elem_len}")
+        print(f"\t version {self.cvalue.dtype.version}")
+        print(f"\t rank {self.cvalue.dtype.rank}")
+        print(f"\t type {self.cvalue.dtype.type}")
+        print(f"\t attribute {self.cvalue.dtype.attribute}")
+        print(f"span {self.cvalue.span}")
         print(f"dims {self.ndim}")
         for i in range(self.ndim):
-            print(f"\t lbound {self._cvalue.dims[i].lbound}")
-            print(f"\t ubound {self._cvalue.dims[i].ubound}")
-            print(f"\t stride {self._cvalue.dims[i].stride}")
+            print(f"\t lbound {self.cvalue.dims[i].lbound}")
+            print(f"\t ubound {self.cvalue.dims[i].ubound}")
+            print(f"\t stride {self.cvalue.dims[i].stride}")
 
 
 class fAssumedSize(fArray_t):
@@ -385,20 +380,20 @@ class fAssumedSize(fArray_t):
 
     def from_param(self, value):
         self._value = self._array_check(value)
-        if self._cvalue is None:
-            self._cvalue = self.ctype()()
+        if self.cvalue is None:
+            self.cvalue = self.ctype()()
 
         self._copy_array(
             self._value.ctypes.data,
-            ctypes.addressof(self._cvalue),
+            ctypes.addressof(self.cvalue),
             ctypes.sizeof(self._ctype_base),
             np.size(value),
         )
-        return self._cvalue
+        return self.cvalue
 
     @property
     def value(self):
-        return np.ctypeslib.as_array(self._cvalue, shape=np.size(self._value)).reshape(
+        return np.ctypeslib.as_array(self.cvalue, shape=np.size(self._value)).reshape(
             self._value.shape, order="F"
         )
 
@@ -435,8 +430,8 @@ class fStr(fVar_t):
         if self.obj.is_deferred_len():
             self._len = len(value)
 
-        if self._cvalue is None:
-            self._cvalue = self.ctype()()
+        if self.cvalue is None:
+            self.cvalue = self.ctype()()
 
         self._value = value
 
@@ -449,16 +444,16 @@ class fStr(fVar_t):
             self._value = self._value + b" " * (self.len() - len(self._value))
 
         # self._buf = bytearray(self._value)  # Need to keep hold of the reference
-        self._cvalue.value = self._value
+        self.cvalue.value = self._value
 
-        return self._cvalue
+        return self.cvalue
 
     @property
     def value(self):
         try:
-            return self._cvalue.value.decode()
+            return self.cvalue.value.decode()
         except AttributeError:
-            return str(self._cvalue)  # Functions returning str's give us str not bytes
+            return str(self.cvalue)  # Functions returning str's give us str not bytes
 
     @value.setter
     def value(self, value):
@@ -467,7 +462,7 @@ class fStr(fVar_t):
     def len(self):
         if self._len is None:
             if self.obj.is_deferred_len():
-                self._len = len(self._cvalue)
+                self._len = len(self.cvalue)
             else:
                 self._len = self.obj.strlen.value
         return self._len
@@ -485,68 +480,114 @@ class fStr(fVar_t):
         return ctypes.sizeof(self.ctype)
 
 
-class fDT:
+class fDT(fVar_t):
     def __init__(self, obj, allobjs=None, cvalue=None):
         self.obj = obj
         self.allobjs = allobjs
-        self._cvalue = cvalue
+        self.cvalue = cvalue
 
         # Get obj for derived type spec
         self._dt_obj = self.allobjs[self.obj.sym.ts.class_ref.ref]
 
+        # Store fVar's for each component
+        self._dt_args = {}
+
+        self._ctype = None
+
     def ctype(self):
-        pass
+        if self._ctype is None:
+            # See if this is a "simple" (no other dt's) dt
+            if not any([var.is_derived() for var in self._dt_obj.sym.comp]):
+                fields = []
+                for var in self._dt_obj.sym.comp:
+                    self._dt_args[var.name] = fVar(var, allobjs=self.allobjs)
+                    # print(var.name,self._dt_args[var.name].ctype())
+                    fields.append((var.name, self._dt_args[var.name].ctype()))
 
-    @property
-    def name(self):
-        return self.obj.name
+                class _fDerivedType(ctypes.Structure):
+                    _fields_ = fields
 
-    @property
-    def mangled_name(self):
-        return self.obj.mangled_name
+            else:
+                raise NotImplementedError
 
-    @property
-    def module(self):
-        return self.obj.module
+            self._ctype = _fDerivedType
+            return self._ctype
+        else:
+            return self._ctype
 
     def from_ctype(self, ct):
-        self._cvalue = ct
+        self.cvalue = ct
         return self.value
 
     def from_address(self, addr):
-        self._cvalue = self.ctype().from_address(addr)
-        return self._cvalue
+        self.cvalue = self.ctype().from_address(addr)
+        return self.cvalue
 
     def in_dll(self, lib):
-        self._cvalue = self.ctype().in_dll(lib, self.mangled_name)
-        return self._cvalue
+        self.cvalue = self.ctype().in_dll(lib, self.mangled_name)
+        return self.cvalue
+
+    def from_param(self, param):
+        if self.cvalue is None:
+            self.cvalue = self.ctype()()
+
+        for key, value in param.items():
+            if key not in self._dt_args:
+                raise KeyError(f"Key {key} not present in {self._dt_obj.name}")
+
+            if not isinstance(value, fVar_t):
+                self._dt_args[key].from_param(value)
+            else:
+                self._dt_args[key].from_ctype(value.cvalue())
+
+            v = self._dt_args[key].cvalue
+
+            setattr(self.cvalue, key, v)
+
+        return self.cvalue
 
     @property
     def value(self):
-        pass
+        return self
 
     @value.setter
     def value(self, value):
         self.from_param(value)
 
     def keys(self):
-        pass
+        return [i.name for i in self._dt_obj.sym.comp]
 
     def values(self):
-        pass
+        return [getattr(self, key) for key in self.keys()]
 
     def items(self):
-        pass
+        return [(key, getattr(self, key)) for key in self.keys()]
+
+    def __contains__(self, key):
+        return key in self.keys()
 
     def __getattr__(self, key):
+        if "_dt_args" in self.__dict__ and "_cvalue" in self.__dict__:
+            if key in self._dt_args:
+                if self.cvalue is not None:
+                    return getattr(self.cvalue, key)
+            if key not in self.__dict__:
+                raise KeyError(f"Key {key} not in object")
+
         if key in self.__dict__:
             return self.__dict__[key]
 
     def __setattr__(self, key, value):
-        self.__dict__[key] = value
+        # print(key,value,'_dt_args' in self.__dict__)
+        if "_dt_args" in self.__dict__:
+            if key == "value":
+                self.from_param(value)
+                return
+            if key in self._dt_args:
+                self.from_param({key: value})
+                return
 
-    def __contains__(self, key):
-        pass
+        self.__dict__[key] = value
 
 
 def ctype_map(type, kind):
