@@ -108,7 +108,11 @@ class fVar_t:
         return None
 
     def from_ctype(self, ct):
-        self.cvalue = ct
+        if hasattr(ct, "__ctypes_from_outparam__"):
+            self.cvalue = ct
+        else:  # Not actually a ctype
+            self.from_param(ct)
+            # Do it this way so we get the conversion code in value called (i.e decodeing bytes to a string)
         return self.value
 
     def from_address(self, addr):
@@ -570,12 +574,15 @@ class fDT(fVar_t):
         if "_dt_args" in self.__dict__ and "cvalue" in self.__dict__:
             if key in self._dt_args:
                 if self.cvalue is not None:
-                    return getattr(self.cvalue, key)
+                    # print(key,getattr(self.cvalue, key))
+                    return self._dt_args[key].from_ctype(getattr(self.cvalue, key))
             if key not in self.__dict__:
-                raise KeyError(f"Key {key} not in object")
+                raise AttributeError
 
         if key in self.__dict__:
             return self.__dict__[key]
+        else:
+            raise AttributeError
 
     def __setattr__(self, key, value):
         # print(key,value,'_dt_args' in self.__dict__)
@@ -588,6 +595,9 @@ class fDT(fVar_t):
                 return
 
         self.__dict__[key] = value
+
+    def __dir__(self):
+        return list(self._dt_args.keys())
 
 
 def ctype_map(type, kind):
