@@ -148,7 +148,7 @@ class TestDTMethods:
         y = x.check_g_struct_exp_2d()
         self.assertEqual(y.result, True)
 
-    @pytest.mark.skip
+    # @pytest.mark.skip
     def test_sub_struct_exp_1d(self):
         y = x.sub_struct_exp_1d({})
 

@@ -524,9 +524,8 @@ class fDT(fVar_t):
                 raise NotImplementedError
 
             self._ctype = _fDerivedType
-            return self._ctype
-        else:
-            return self._ctype
+
+        return self._ctype
 
     def from_ctype(self, ct):
         self.cvalue = ct
@@ -544,7 +543,6 @@ class fDT(fVar_t):
         if self.cvalue is None:
             self.cvalue = self.ctype()()
 
-        # print(param)
         for key, value in param.items():
             # print(key,value)
             if key not in self._dt_args:
@@ -617,12 +615,6 @@ class fDT(fVar_t):
 
         self.__dict__[key] = value
 
-    def __get__(self):
-        return self
-
-    def __set__(self, value):
-        self.value = value
-
 
 class fExplicitDT(fVar_t):
     def __init__(self, obj, allobjs=None, cvalue=None):
@@ -642,7 +634,7 @@ class fExplicitDT(fVar_t):
 
     def __getitem__(self, index):
         if self.cvalue is None:
-            self.cvalue = self.ctype()
+            self.cvalue = self.ctype()()
 
         if isinstance(index, tuple):
             ind = np.ravel_multi_index(index, self.obj.shape(), order="F")
@@ -661,7 +653,7 @@ class fExplicitDT(fVar_t):
 
     def __setitem__(self, index, value):
         if self.cvalue is None:
-            self.cvalue = self.ctype()
+            self.cvalue = self.ctype()()
 
         if isinstance(index, tuple):
             ind = np.ravel_multi_index(index, self.obj.shape(), order="F")
@@ -679,13 +671,13 @@ class fExplicitDT(fVar_t):
         self._saved[ind].value = value
 
     def from_param(self, param):
-        pass
+        if self.cvalue is None:
+            self.cvalue = self.ctype()()
 
-    def from_address(self, addr):
-        pass
+        for index, value in enumerate(param):
+            self.__setitem__(index, value)
 
-    def from_ctype(self, addr):
-        pass
+        return self.cvalue
 
     @property
     def value(self):
