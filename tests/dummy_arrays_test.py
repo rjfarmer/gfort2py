@@ -277,50 +277,50 @@ class TestDummyArrayMethods:
         v = np.zeros([5], dtype="int32")
         v[0] = 2.0
         y = x.func_assumed_shape_arr_1d(v)
-        self.assertEqual(y.res, True)
+        self.assertEqual(y.result, True)
         np.testing.assert_array_equal(y.args["x"], np.array([9, 9, 9, 9, 9]))
 
     def test_func_assumed_shape_arr_2d(self):
         v = np.zeros([5, 5], dtype="int32")
         v[1, 0] = 2.0
         y = x.func_assumed_shape_arr_2d(v)
-        self.assertEqual(y.res, True)
+        self.assertEqual(y.result, True)
 
     def test_func_assumed_shape_arr_3d(self):
         v = np.zeros([5, 5, 5], dtype="int32")
         v[2, 1, 0] = 2.0
         y = x.func_assumed_shape_arr_3d(v)
-        self.assertEqual(y.res, True)
+        self.assertEqual(y.result, True)
 
     def test_func_assumed_shape_arr_4d(self):
         v = np.zeros([5, 5, 5, 5], dtype="int32")
         v[3, 2, 1, 0] = 2.0
         y = x.func_assumed_shape_arr_4d(v)
-        self.assertEqual(y.res, True)
+        self.assertEqual(y.result, True)
 
     def test_func_assumed_shape_arr_5d(self):
         v = np.zeros([5, 5, 5, 5, 5], dtype="int32")
         v[4, 3, 2, 1, 0] = 2.0
         y = x.func_assumed_shape_arr_5d(v)
-        self.assertEqual(y.res, True)
+        self.assertEqual(y.result, True)
 
     def test_func_assumed_size_arr_1d(self):
         v = np.zeros([5], dtype="int32")
         v[1] = 2
         y = x.func_assumed_size_arr_1d(v)
-        self.assertEqual(y.res, True)
+        self.assertEqual(y.result, True)
 
     def test_func_assumed_size_arr_real_1d(self):
         v = np.zeros([5], dtype="float32")
         v[1] = 2.0
         y = x.func_assumed_size_arr_real_1d(v)
-        self.assertEqual(y.res, True)
+        self.assertEqual(y.result, True)
 
     def test_func_assumed_size_arr_real_dp_1d(self):
         v = np.zeros([5], dtype="float64")
         v[1] = 2.0
         y = x.func_assumed_size_arr_real_dp_1d(v)
-        self.assertEqual(y.res, True)
+        self.assertEqual(y.result, True)
 
     def test_sub_alloc_arr_1d(self):
         y = x.sub_alloc_arr_1d(None)
@@ -336,8 +336,8 @@ class TestDummyArrayMethods:
 
         y = x.func_alltrue_arr_1d(xarr)
         y2 = x.func_allfalse_arr_1d(x2arr)
-        self.assertEqual(y.res, True)
-        self.assertEqual(y2.res, True)
+        self.assertEqual(y.result, True)
+        self.assertEqual(y2.result, True)
 
     def test_sub_arr_assumed_rank_int_1d(self, capfd):
         v = np.arange(10, 15)

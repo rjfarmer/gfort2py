@@ -57,4 +57,4 @@ class TestComplexMethods:
     def test_func_ret_cmplx(self):
         v = complex(1.0, 1.0)
         y = x.func_ret_cmplx(v)
-        self.assertEqual(y.res, v * 5)
+        self.assertEqual(y.result, v * 5)

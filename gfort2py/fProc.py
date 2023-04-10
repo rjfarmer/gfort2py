@@ -45,7 +45,7 @@ class _captureStdOut:
 
 
 class fProc:
-    Result = collections.namedtuple("Result", ["res", "args"])
+    Result = collections.namedtuple("Result", ["result", "args"])
 
     def __init__(self, lib, obj, allobjs):
         self._allobjs = allobjs
