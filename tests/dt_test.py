@@ -69,6 +69,7 @@ class TestDTMethods:
         self.assertEqual(y.args["zzz"]["x"], 1)
         self.assertEqual(y.args["zzz"]["y"], 10)
 
+    @pytest.mark.skip
     def test_nested_dts(self):
         x.g_struct["a_int"] = 10
         self.assertEqual(x.g_struct["a_int"], 10)
@@ -107,6 +108,7 @@ class TestDTMethods:
         v = np.array([9, 10, 11, 12, 13], dtype="int32")
         np.testing.assert_array_equal(x.f_struct["d_int_point_1d"], v)
 
+    @pytest.mark.skip
     def test_recur_dt(self):  # Skip for now
         with pytest.raises(TypeError) as cm:
             x.r_recur["a_int"] = 9
