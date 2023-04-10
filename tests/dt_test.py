@@ -70,7 +70,7 @@ class TestDTMethods:
         self.assertEqual(y.args["zzz"]["y"], 10)
 
     def test_nested_dts(self):
-        x.g_struct.a_int = 10
+        x.g_struct["a_int"] = 10
         self.assertEqual(x.g_struct["a_int"], 10)
         x.g_struct = {"a_int": 10, "f_struct": {"a_int": 3}}
         self.assertEqual(x.g_struct["f_struct"]["a_int"], 3)
@@ -117,9 +117,9 @@ class TestDTMethods:
             self.assertEqual(x.r_recur["s_recur"]["s_recur"]["a_int"], 9)
 
     def test_arr_dt_exp_1d_set(self):
-        x.g_struct_exp_1d[0].a_int = 5
+        x.g_struct_exp_1d[0]["a_int"] = 5
         self.assertEqual(x.g_struct_exp_1d[0]["a_int"], 5)
-        x.g_struct_exp_1d[1].a_int = 9
+        x.g_struct_exp_1d[1]["a_int"] = 9
         self.assertEqual(x.g_struct_exp_1d[1]["a_int"], 9)
         self.assertEqual(
             x.g_struct_exp_1d[0]["a_int"], 5
