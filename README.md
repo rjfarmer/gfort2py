@@ -6,7 +6,7 @@
 
 
 # gfort2py
-Library to allow calling fortran code from python. Requires gfortran>=8.0, Works with python 3.*
+Library to allow calling fortran code from python. Requires gfortran>=8.0, Works with python >= 3.6
 
 Current stable version is 2.0.0
 
@@ -23,13 +23,7 @@ pip install --user gfort2py
 
 ## Why use this over other fortran to python translators?
 
-gfort2py use gfortran .mod files to translate your fortran code's ABI to python 
-compatible types using python's ctype library. The advantage here is that it can
-(in principle) handle anything the compiler can compile. gfort2py is almost entirely
-python and there are no changes needed to your fortran source code (some changes in the build
-process may be needed, as gfort2py needs your code compiled as a shared library). Disadvantage
-means we are tied to gfortran and can't support other compilers and may break when
-gfortran updates its .mod file format, though this happens rarely.
+gfort2py use gfortran .mod files to translate your fortran code's ABI to python compatible types using python's ctype library. The advantage here is that it can (in principle) handle anything the compiler can compile. gfort2py is almost entirely python and there are no changes needed to your fortran source code (some changes in the build process may be needed, as gfort2py needs your code compiled as a shared library). The disadvantage however is that we are tied to gfortran and can't support other compilers and may break when gfortran updates its .mod file format, though this happens rarely.
 
 
 ## Using
@@ -59,7 +53,7 @@ x=gf.fFort(SHARED_LIB_NAME,MOD_FILE_NAME)
 
 ````
 
-x now contains all variables, parameters and procedurs from the module (tab completable). 
+x now contains all variables, parameters and procedures from the module (tab completable). 
 
 ### Functions
 ````python
@@ -68,8 +62,7 @@ y = x.func_name(a,b,c)
 
 Will call the fortran function with variables a,b,c and will return the result in y.
 
-Y will be  named tuple which contains (result, args). Where result is a python object for the return value (0 if a subroutine)
-and where args is a dict containing all arguments passed to the procedure.
+Y will be  named tuple which contains (result, args). Where result is a python object for the return value (0 if a subroutine) and where args is a dict containing all arguments passed to the procedure (both those with intent (in) which will be unchanged and intent(inout/out) which may have changed).
 
 
 ### Variables
@@ -87,20 +80,19 @@ x.some_var
 Will return a python object 
 
 
-Optional arguments that are not present should pass None.
+Optional arguments that are not present should be passed as a python ``None``.
 
 
 ### Arrays
 
-Arrays should be passed as a numpy array of the correct size and shape
+Arrays should be passed as a numpy array of the correct size and shape.
 
 
 Remember that fortran by default has 1-based array numbering while numpy
 is 0-based.
 
 
-If a procedure expects an unallocted array, then pass None as the argument, otherwise pass a
-array of the correct shape.
+If a procedure expects an unallocted array, then pass None as the argument, otherwise pass an array of the correct shape.
 
 ### Derived types
 
@@ -111,19 +103,13 @@ x.my_dt={'x':1,'y':'abc'}
 
 ````python
 y=x.my_dt
-y.x
-y.y
+y['x']
+y['y']
 ````
 If the derived type contains another derived type then you can set a dict in a dict
 
 ````python
 x.my_dt={'x':1,'y':{'a':1}}
-````
-
-This can then be accessed either via:
-
-````python
-x.my_dt.y
 ````
 
 When setting the components of a derived type you do not need to specify
@@ -140,11 +126,13 @@ type(my_type), dimension(5,5) :: my_dt2
 Elements can be access via a notation similar to the numpy slice:
 
 ````python
-x.my_dt[0].x
-x.my_dt2[0,0].x
+x.my_dt[0]['x']
+x.my_dt2[0,0]['x']
 ````
 
 You can only access one component at a time (i.e no striding [:]). Allocatable derived types are not yet supported.
+
+A breaking change from gfrot2py <2 is that now components of a derived type can only be accessed via the item interface ``['x']`` and not as attributes ``.x``. This was done so that we do not have a name collision between python functions (``keys``, ``items`` etc) and any fortran derived type components.
 
 
 ## Testing
