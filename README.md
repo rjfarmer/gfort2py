@@ -138,7 +138,13 @@ A breaking change from gfrot2py <2 is that now components of a derived type can 
 ## Testing
 
 ````bash
-./run_test.sh
+pytest
+````
+
+or 
+
+````bash
+tox
 ````
 
 To run unit tests
@@ -165,7 +171,7 @@ To run unit tests
 - [ ] Arrays of strings
 - [ ] Classes
 - [ ] Abstract interfaces
-- [x] Common blocks (parital)
+- [x] Common blocks (partial)
 - [ ] Equivalences 
 - [ ] Namelists
 - [ ] Quad precision variables
@@ -272,12 +278,12 @@ x.func_ptr = x.func_arg # With the function itself
 
 ## Contributing
 
-Pull requests should target the maint branch for fixing issues, please check the test suite
-passes before sending a pull request.
-Maint will be periodically merged with master for new releases, master should never have 
-a broken test suite.
+Bug reports are of course welcome and PR's should target the current dev branch.
 
-Fortran programmers who don't know python can still help by adding more fortran examples to the test suite (even for features that 
-aren't currently implemented)
+For those wanting to get more involved, adding Fortran examples to the test suite of currently untested or unsupported features would be helpful. Bonus points if you also provide a python test case (that can be marked ``@pytest.mark.skip`` if it does not work) that demonstrates the proposed interface to the new fortran feature.
+
+For those wanting to go further and add the new feature themselves open a bug report and we can chat about what needs doing.
+
+
 
 
