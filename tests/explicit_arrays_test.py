@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 import os, sys
+import ctypes
 
 os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 

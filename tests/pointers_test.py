@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 import os, sys
+import ctypes
 
 os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 
@@ -15,7 +16,7 @@ MOD = "./tests/ptrs.mod"
 x = gf.fFort(SO, MOD)
 
 
-#@pytest.mark.skip
+# @pytest.mark.skip
 class TestPtrsMethods:
     def assertEqual(self, x, y):
         assert x == y

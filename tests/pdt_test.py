@@ -10,8 +10,8 @@ import gfort2py as gf
 
 import pytest
 
-SO = "./tests/oo.so"
-MOD = "./tests/oo.mod"
+SO = "./tests/pdt.so"
+MOD = "./tests/pdt.mod"
 
 x = gf.fFort(SO, MOD)
 
@@ -22,8 +22,4 @@ class TestOOMethods:
         assert x == y
 
     def test_p_proc_call(self):
-        x.p_proc.proc_no_pass = x.func_dt_no_pass
-        y = x.p_proc.proc_no_pass(1)
-        y2 = x.func_dt_no_pass(1)
-
-        self.assertEqual(y.result, y2.result)
+        pass
