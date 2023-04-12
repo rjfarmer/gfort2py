@@ -81,6 +81,13 @@ module proc_ptrs
 
         p_func_func_run_ptr => x
     end subroutine sub_proc_ptr_setter
+
+    subroutine sub_proc_ptr_setter2()      
+        procedure(func_func_run), pointer:: x => func_func_run
+
+        p_func_func_run_ptr => x
+    end subroutine sub_proc_ptr_setter2
+
     
     integer function proc_proc_func_arg(x)
          procedure(func_func_run), pointer :: x

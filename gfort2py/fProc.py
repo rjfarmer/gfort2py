@@ -141,6 +141,8 @@ class fProc:
 
                     if var.fvar.obj.is_value():
                         args.append(z)
+                    elif var.fvar.obj.is_proc_pointer():
+                        args.append(z)
                     elif var.fvar.obj.is_pointer():
                         if var.fvar.obj.not_a_pointer():
                             args.append(ctypes.pointer(z))

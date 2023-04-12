@@ -44,12 +44,15 @@ class fFort:
                     self._saved[key] = fVar(self._module[key], allobjs=self._module)
                 self._saved[key].in_dll(self._lib)
                 return self._saved[key].value
+            elif self._module[key].is_proc_pointer():
+                # Must come before fProc
+                if key not in self._saved:
+                    self._saved[key] = fVar(self._module[key], allobjs=self._module)
+                return self._saved[key]
             elif self._module[key].is_procedure():
                 return fProc(self._lib, self._module[key], self._module)
             elif self._module[key].is_parameter():
                 return fParam(self._module[key]).value
-            elif self._module[key].is_proc_pointer():
-                raise NotImplementedError
             else:
                 raise NotImplementedError(
                     f"Object type {self._module[key].flavor()} not implemented yet"
@@ -71,7 +74,10 @@ class fFort:
                 elif self._module[key].is_parameter():
                     raise AttributeError("Can not alter a parameter")
                 elif self._module[key].is_proc_pointer():
-                    raise NotImplementedError
+                    if key not in self._saved:
+                        self._saved[key] = fVar(self._module[key], allobjs=self._module)
+                    self._saved[key].value = value
+                    return
                 else:
                     raise NotImplementedError(
                         f"Object type {self._module[key].flavor()} not implemented yet"

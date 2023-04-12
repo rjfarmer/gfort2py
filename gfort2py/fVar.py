@@ -692,19 +692,21 @@ class fExplicitDT(fVar_t):
 
 class fProcPointer(fVar_t):
     def ctype(self):
-        return self._ctype_base
+        return self._func
 
     def from_param(self, param):
         # if not isinstance(param, fProc):
         #     raise TypeError('Must be a procedure')
 
-        if self.cvalue is not None:
-            self.cvalue = self._ctype()()
+        self._func = param._func
 
-        addr = param.from_address()
-        PTR = ctypes.POINTER(self._ctype_base)
-        x_ptr = ctypes.cast(addr, PTR)
-        self.cvalue = x_ptr
+        @ctypes.CFUNCTYPE(None)
+        def call(*args, **kwargs):
+            self._func.__call__(*args, **kwargs)
+
+        self._call = call(ctypes.addressof(self._func))
+
+        return self._call
 
     @property
     def value(self):
@@ -713,6 +715,9 @@ class fProcPointer(fVar_t):
     @value.setter
     def value(self, value):
         self.from_param(value)
+
+    def __call__(self, *args, **kwargs):
+        return self._call(*args, **kwargs)
 
 
 def ctype_map(type, kind):
