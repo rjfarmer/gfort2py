@@ -14,6 +14,9 @@ module proc_ptrs
     procedure(func_func_run), pointer:: p_func_func_run_ptr => NULL()
     procedure(func_func_run), pointer:: p_func_func_run_ptr2 => func_func_run
     
+    procedure(func_func_run_dp), pointer:: p_func_func_run_dp_ptr => NULL()
+
+
     contains
     
     
@@ -42,6 +45,13 @@ module proc_ptrs
         func_func_run = 10*x
         
     end function func_func_run   
+
+    real(dp) function func_func_run_dp(x)
+        real(dp) :: x
+        !write(*,*) "x is",x,LOC(x)
+        func_func_run_dp = 10*x
+        
+    end function func_func_run_dp
     
     integer function func_func_run2(x)
         integer :: x
@@ -65,6 +75,12 @@ module proc_ptrs
         p_func_func_run_ptr => null()
     end subroutine sub_null_proc_ptr
     
+
+    subroutine sub_proc_ptr_setter(x)      
+        procedure(func_func_run) :: x
+
+        p_func_func_run_ptr => x
+    end subroutine sub_proc_ptr_setter
     
     integer function proc_proc_func_arg(x)
          procedure(func_func_run), pointer :: x

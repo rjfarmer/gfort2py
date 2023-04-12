@@ -204,6 +204,9 @@ class utils:
     def is_procedure(self):
         return self.flavor() == "PROCEDURE"
 
+    def is_proc_pointer(self):
+        return "PROC_POINTER" in self.sym.attr.attributes
+
     def is_logical(self):
         return self.sym.ts.type == "LOGICAL"
 
@@ -400,8 +403,13 @@ class actual_arglist:
         self.kwargs = kwargs
 
 
+@dataclass(init=False)
 class typebound_proc:
-    pass
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+        print(self.args, self.kwargs)
 
 
 @dataclass(init=False)

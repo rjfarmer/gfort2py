@@ -12,6 +12,8 @@ class fVar:
                 raise NotImplementedError
             else:
                 return fDT(obj, *args, **kwargs)
+        elif obj.is_proc_pointer():
+            return fProcPointer(obj, *args, **kwargs)
         elif obj.is_array():
             if obj.is_explicit():
                 return fExplicitArr(obj, *args, **kwargs)
@@ -678,6 +680,31 @@ class fExplicitDT(fVar_t):
             self.__setitem__(index, value)
 
         return self.cvalue
+
+    @property
+    def value(self):
+        return self
+
+    @value.setter
+    def value(self, value):
+        self.from_param(value)
+
+
+class fProcPointer(fVar_t):
+    def ctype(self):
+        return self._ctype_base
+
+    def from_param(self, param):
+        # if not isinstance(param, fProc):
+        #     raise TypeError('Must be a procedure')
+
+        if self.cvalue is not None:
+            self.cvalue = self._ctype()()
+
+        addr = param.from_address()
+        PTR = ctypes.POINTER(self._ctype_base)
+        x_ptr = ctypes.cast(addr, PTR)
+        self.cvalue = x_ptr
 
     @property
     def value(self):

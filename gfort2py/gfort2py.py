@@ -48,6 +48,8 @@ class fFort:
                 return fProc(self._lib, self._module[key], self._module)
             elif self._module[key].is_parameter():
                 return fParam(self._module[key]).value
+            elif self._module[key].is_proc_pointer():
+                raise NotImplementedError
             else:
                 raise NotImplementedError(
                     f"Object type {self._module[key].flavor()} not implemented yet"
@@ -68,6 +70,8 @@ class fFort:
                     return
                 elif self._module[key].is_parameter():
                     raise AttributeError("Can not alter a parameter")
+                elif self._module[key].is_proc_pointer():
+                    raise NotImplementedError
                 else:
                     raise NotImplementedError(
                         f"Object type {self._module[key].flavor()} not implemented yet"
