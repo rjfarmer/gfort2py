@@ -4,8 +4,10 @@ import numpy as np
 import os
 
 from .module_parse import module
-from .fVar import *
-from .fProc import *
+
+from .fVar import fVar
+from .fProc import fProc
+from .fParameters import fParam
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
