@@ -25,7 +25,10 @@ class fVar:
                 raise TypeError("Unknown array type")
         else:
             if obj.is_char():
-                return fStr(obj, *args, **kwargs)
+                if obj.is_allocatable():
+                    return fAllocStr(obj, *args, **kwargs)
+                else:
+                    return fStr(obj, *args, **kwargs)
             elif obj.is_complex():
                 return fCmplx(obj, *args, **kwargs)
             else:
@@ -488,6 +491,80 @@ class fStr(fVar_t):
         return ctypes.sizeof(self.ctype)
 
 
+class fAllocStr(fStr):
+    def __init__(self, *args, **kwargs):
+        self._len = None
+        super().__init__(*args, **kwargs)
+
+    def ctype(self):
+        self._ctype_ptr = self._ctype_base
+        return ctypes.POINTER(self._ctype_ptr)
+
+    @property
+    def _ctype_base(self):
+        return ctypes.c_char * self.len()
+
+    @_ctype_base.setter
+    def _ctype_base(self, value):
+        return ctypes.c_char * self.len()
+
+    def from_param(self, value):
+        self._len = len(value)
+
+        self._value = value
+
+        if hasattr(self._value, "encode"):
+            self._value = self._value.encode()
+
+        if self.cvalue is None:
+            self.cvalue = self.ctype()()
+        else:
+            addr = ctypes.addressof(self.cvalue)
+            PTR = ctypes.POINTER(self._ctype_base)
+            self.cvalue = ctypes.cast(addr, PTR)
+
+        if len(self._value) > self.len():
+            self._value = self._value[: self.len()]
+        else:
+            self._value = self._value + b" " * (self.len() - len(self._value))
+
+        self.cvalue.contents.value = self._value
+
+        return self.cvalue
+
+    @property
+    def value(self):
+        try:
+            return self.cvalue.contents.value.decode()
+        except ValueError:
+            return None
+        except AttributeError:
+            if self.cvalue is None:
+                return None
+            else:
+                return str(
+                    self.cvalue
+                )  # Functions returning str's give us str not bytes
+
+    @value.setter
+    def value(self, value):
+        self.from_param(value)
+
+    def len(self):
+        if self._len is None:
+            self._len = 1
+        return self._len
+
+    def in_dll(self, lib):
+        return self.ctype().in_dll(lib, self.mangled_name)
+
+    def __doc__(self):
+        return f"character(LEN=(:)), allocatable :: {self.name}"
+
+    def sizeof(self):
+        return ctypes.sizeof(self.ctype)
+
+
 class fDT(fVar_t):
     def __init__(self, obj, allobjs=None, cvalue=None):
         self.obj = obj
@@ -695,18 +772,8 @@ class fProcPointer(fVar_t):
         return self._func
 
     def from_param(self, param):
-        # if not isinstance(param, fProc):
-        #     raise TypeError('Must be a procedure')
-
-        self._func = param._func
-
-        @ctypes.CFUNCTYPE(None)
-        def call(*args, **kwargs):
-            self._func.__call__(*args, **kwargs)
-
-        self._call = call(ctypes.addressof(self._func))
-
-        return self._call
+        # memmove?
+        raise NotImplementedError
 
     @property
     def value(self):
@@ -715,9 +782,6 @@ class fProcPointer(fVar_t):
     @value.setter
     def value(self, value):
         self.from_param(value)
-
-    def __call__(self, *args, **kwargs):
-        return self._call(*args, **kwargs)
 
 
 def ctype_map(type, kind):

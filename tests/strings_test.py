@@ -73,7 +73,7 @@ class TestStringMethods:
 
     @pytest.mark.skip("Skipping")
     def test_str_alloc(self):
-        self.assertEqual(x.str_alloc, "")  # Empty at start
+        self.assertEqual(x.str_alloc, None)  # Empty at start
 
         x.str_alloc = "abcdefghijklmnop"
         self.assertEqual(x.str_alloc, "abcdefghijklmnop")
