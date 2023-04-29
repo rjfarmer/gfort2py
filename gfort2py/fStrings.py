@@ -71,18 +71,20 @@ class fAllocStr(fStr):
         super().__init__(*args, **kwargs)
 
     def ctype(self):
-        self._ctype_ptr = self._ctype_base
-        return ctypes.POINTER(self._ctype_ptr)
+        return self._ctype_base
 
     @property
     def _ctype_base(self):
-        return ctypes.c_char * self.len()
+        return ctypes.c_char_p * self.len()
 
     @_ctype_base.setter
     def _ctype_base(self, value):
-        return ctypes.c_char * self.len()
+        return ctypes.c_char_p * self.len()
 
     def from_param(self, value):
+        if value is None:
+            return ctypes.c_char_p(None)
+
         self._len = len(value)
 
         self._value = value
@@ -90,35 +92,31 @@ class fAllocStr(fStr):
         if hasattr(self._value, "encode"):
             self._value = self._value.encode()
 
-        if self.cvalue is None:
-            self.cvalue = self.ctype()()
-        else:
-            addr = ctypes.addressof(self.cvalue)
-            PTR = ctypes.POINTER(self._ctype_base)
-            self.cvalue = ctypes.cast(addr, PTR)
+        self.cvalue = self.ctype().from_address(ctypes.addressof(self.cvalue))
+
+        if value is None or not len(value):
+            return self.cvalue
 
         if len(self._value) > self.len():
             self._value = self._value[: self.len()]
         else:
             self._value = self._value + b" " * (self.len() - len(self._value))
 
-        self.cvalue.contents.value = self._value
+        self.cvalue[0] = self._value
 
         return self.cvalue
 
     @property
     def value(self):
         try:
-            return self.cvalue.contents.value.decode()
-        except ValueError:
+            x = self.cvalue[0]
+        except:
             return None
-        except AttributeError:
-            if self.cvalue is None:
-                return None
-            else:
-                return str(
-                    self.cvalue
-                )  # Functions returning str's give us str not bytes
+
+        if x is None:
+            return None
+        else:
+            return x.decode()
 
     @value.setter
     def value(self, value):
@@ -130,7 +128,8 @@ class fAllocStr(fStr):
         return self._len
 
     def in_dll(self, lib):
-        return self.ctype().in_dll(lib, self.mangled_name)
+        self.cvalue = self.ctype().in_dll(lib, self.mangled_name)
+        return self.cvalue
 
     def __doc__(self):
         return f"character(LEN=(:)), allocatable :: {self.name}"

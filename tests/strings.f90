@@ -66,8 +66,8 @@ module strings
 		check_str_alloc = .false.
 		
 		if(allocated(str_alloc)) then
-		    write(*,*) allocated(str_alloc)
-			write(*,*) str_alloc
+		    !write(*,*) allocated(str_alloc)
+			!write(*,*) str_alloc
 			if(ver==1) then
 				if(str_alloc(1:16)=='abcdefghijklmnop')  check_str_alloc = .true.
 			else if (ver==2) then 
@@ -77,7 +77,29 @@ module strings
 	
 	end function check_str_alloc
 	
+
+	subroutine alter_str_alloc()
+		
+		str_alloc = 'qwerty'
 	
+	end subroutine alter_str_alloc
+	
+
+	subroutine sub_str_alloc2(x)
+		character(len=:),allocatable :: x
+		
+		if(.not.allocated(x)) then
+			x='zxcvbnm'
+			return
+		end if
+
+		if(x(1:5) == 'qwerty') then
+			x = 'asdfghjkl'
+		end if
+	
+	end subroutine sub_str_alloc2
+	
+
 	
 	function func_str_int_len(i) result(s)
 		! Github issue #12

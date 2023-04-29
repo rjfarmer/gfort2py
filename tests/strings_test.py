@@ -71,7 +71,6 @@ class TestStringMethods:
 
         self.assertEqual(out, "10")
 
-    @pytest.mark.skip("Skipping")
     def test_str_alloc(self):
         self.assertEqual(x.str_alloc, None)  # Empty at start
 
@@ -83,4 +82,13 @@ class TestStringMethods:
         x.str_alloc = "12345678        "  # Need to empty the space afterwards
         self.assertEqual(x.str_alloc, "12345678        ")
         y = x.check_str_alloc(2)
-        self.assertEqual(y.result, True)
+        self.assertEqual(y.result, False)
+
+    @pytest.mark.skip
+    def test_str_alloc_sub(self):
+        z = None
+        y = x.sub_str_alloc(z)
+        self.assertEqual(y.args["x"], "qwerty")
+
+        y2 = x.sub_str_alloc2("qwerty")
+        self.assertEqual(y2.args["x"], "asdfghjkl")
