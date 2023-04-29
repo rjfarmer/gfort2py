@@ -88,7 +88,7 @@ class TestStringMethods:
     def test_str_alloc_sub(self):
         z = None
         y = x.sub_str_alloc(z)
-        self.assertEqual(y.args["x"], "qwerty")
+        self.assertEqual(y.args["x_alloc"], "qwerty")
 
         y2 = x.sub_str_alloc2("qwerty")
         self.assertEqual(y2.args["x"], "asdfghjkl")

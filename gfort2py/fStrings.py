@@ -68,6 +68,7 @@ class fStr(fVar_t):
 class fAllocStr(fStr):
     def __init__(self, *args, **kwargs):
         self._len = None
+        self._len_ctype = None
         super().__init__(*args, **kwargs)
 
     def ctype(self):
@@ -83,7 +84,7 @@ class fAllocStr(fStr):
 
     def from_param(self, value):
         if value is None:
-            return ctypes.c_char_p(None)
+            return (ctypes.c_char_p * 1)()
 
         self._len = len(value)
 
@@ -92,7 +93,9 @@ class fAllocStr(fStr):
         if hasattr(self._value, "encode"):
             self._value = self._value.encode()
 
+        print(self.cvalue)
         self.cvalue = self.ctype().from_address(ctypes.addressof(self.cvalue))
+        print(self.cvalue)
 
         if value is None or not len(value):
             return self.cvalue
@@ -123,6 +126,9 @@ class fAllocStr(fStr):
         self.from_param(value)
 
     def len(self):
+        if self._len_ctype is not None:
+            self._len = self._len_ctype.contents.value
+
         if self._len is None:
             self._len = 1
         return self._len
