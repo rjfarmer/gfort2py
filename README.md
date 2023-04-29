@@ -165,9 +165,9 @@ To run unit tests
 - [x] Nested derived types
 - [X] Explicit Arrays of derived types
 - [ ] Allocatable Arrays of derived types
-- [X] Procedure pointers inside derived types (only those that are nopass)
+- [ ] Procedure pointers inside derived types (only those that are nopass)
 - [X] Derived types with dimension(:) array components (pointer, allocatable, target)
-- [ ] Allocatable strings
+- [X] Allocatable strings
 - [ ] Arrays of strings
 - [ ] Classes
 - [ ] Abstract interfaces
