@@ -21,7 +21,8 @@ class fVar:
             else:
                 return fDT(obj, fVar, *args, **kwargs)
         elif obj.is_proc_pointer():
-            return fProcPointer(obj, *args, **kwargs)
+            raise NotImplementedError
+            # return fProcPointer(obj, *args, **kwargs)
         elif obj.is_array():
             if obj.is_explicit():
                 return fExplicitArr(obj, *args, **kwargs)
@@ -34,7 +35,8 @@ class fVar:
         else:
             if obj.is_char():
                 if obj.is_allocatable():
-                    return fAllocStr(obj, *args, **kwargs)
+                    raise NotImplementedError
+                    # return fAllocStr(obj, *args, **kwargs)
                 else:
                     return fStr(obj, *args, **kwargs)
             elif obj.is_complex():
