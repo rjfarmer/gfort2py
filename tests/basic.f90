@@ -221,4 +221,15 @@ module basic
 		end subroutine sub_use_mod
    
 
+		logical function func_test_bool(x)
+			integer,intent(in) :: x
+
+			if(x==0) then
+				func_test_bool = .false.
+			else
+				func_test_bool = .true.
+			end if
+
+		end function func_test_bool
+
 end module basic

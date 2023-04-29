@@ -196,8 +196,7 @@ class fProc:
                     res[var.fvar.name] = x
 
         if self.obj.is_function():
-            if hasattr(result, "_b_base_"):  # A ctype object
-                result = self.return_var.from_ctype(result)
+            result = self.return_var.from_ctype(result)
 
         return self.Result(result, res)
 

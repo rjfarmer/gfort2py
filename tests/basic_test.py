@@ -208,3 +208,11 @@ class TestBasicMethods:
         y = x.func_result(9, 0)
         self.assertEqual(y.result, 18)
         self.assertEqual(y.args["y"], 9)
+
+    def test_func_bool(self):
+        y = x.func_test_bool(1)
+        assert type(y.result) == bool
+        self.assertEqual(y.result, True)
+        y = x.func_test_bool(0)
+        assert type(y.result) == bool
+        self.assertEqual(y.result, False)
