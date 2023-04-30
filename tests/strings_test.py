@@ -84,11 +84,15 @@ class TestStringMethods:
         y = x.check_str_alloc(2)
         self.assertEqual(y.result, False)
 
-    @pytest.mark.skip
     def test_str_alloc_sub(self):
         z = None
         y = x.sub_str_alloc(z)
-        self.assertEqual(y.args["x_alloc"], "qwerty")
+        self.assertEqual(y.args["x_alloc"], "abcdef")
 
+        y2 = x.sub_str_alloc2(None)
+        self.assertEqual(y2.args["x"], "zxcvbnm")
+
+    @pytest.mark.skip
+    def test_str_alloc_sub_realloc(self):
         y2 = x.sub_str_alloc2("qwerty")
         self.assertEqual(y2.args["x"], "asdfghjkl")

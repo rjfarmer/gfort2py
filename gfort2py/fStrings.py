@@ -93,10 +93,10 @@ class fAllocStr(fStr):
         if hasattr(self._value, "encode"):
             self._value = self._value.encode()
 
-        self.cvalue = self.ctype().from_address(ctypes.addressof(self.cvalue))
-
-        if value is None or not len(value):
-            return self.cvalue
+        if self.cvalue is None:
+            self.cvalue = self.ctype()()
+        elif len(value) != len(self.cvalue):
+            self.cvalue = self.ctype().from_address(ctypes.addressof(self.cvalue))
 
         if len(self._value) > self.len():
             self._value = self._value[: self.len()]
@@ -140,3 +140,15 @@ class fAllocStr(fStr):
 
     def sizeof(self):
         return ctypes.sizeof(self.ctype)
+
+    def to_proc(self, value):
+        if value is None:
+            l = 0
+        else:
+            l = len(value)
+
+        self._len_ctype = ctypes.pointer(ctypes.c_int64(l))
+
+        self.cvalue = self.from_param(value)
+
+        return self.Args(None, self.cvalue, self._len_ctype)

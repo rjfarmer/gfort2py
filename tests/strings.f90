@@ -86,15 +86,20 @@ module strings
 	
 
 	subroutine sub_str_alloc2(x)
-		character(len=:),allocatable :: x
+		character(len=:),allocatable,intent(inout) :: x
 		
 		if(.not.allocated(x)) then
 			x='zxcvbnm'
 			return
 		end if
 
-		if(x(1:5) == 'qwerty') then
-			x = 'asdfghjkl'
+		if(allocated(x)) then
+			write(*,*) "*",x,"*",len_trim(x)
+			if(x == 'qwerty') then
+				write(*,*) "Set 1"
+				x = 'asdfghjkl'
+				! write(*,*) "Set 2"
+			end if
 		end if
 	
 	end subroutine sub_str_alloc2

@@ -166,8 +166,8 @@ To run unit tests
 - [X] Explicit Arrays of derived types
 - [ ] Allocatable Arrays of derived types
 - [ ] Procedure pointers inside derived types (only those that are nopass)
-- [X] Derived types with dimension(:) array components (pointer, allocatable, target)
-- [X] Allocatable strings
+- [x] Derived types with dimension(:) array components (pointer, allocatable, target)
+- [x] Allocatable strings
 - [ ] Arrays of strings
 - [ ] Classes
 - [ ] Abstract interfaces
@@ -189,14 +189,14 @@ To run unit tests
 - [x] Argument intents (in, out, inout and none)
 - [x] Passing characters of fixed size (len=10 or len=* etc)
 - [x] Functions that return a character as their result
-- [ ] Allocatable strings
+- [x] Allocatable strings (Only for things that do not get altered inside the procedure)
 - [ ] Arrays of strings
 - [x] Pointer arguments 
 - [x] Optional arguments
 - [x] Value arguments
-- [ ] Keyword arguments
+- [x] Keyword arguments
 - [ ] Generic/Elemental functions
-- [x] Functions as an argument
+- [ ] Functions as an argument
 
 ### Accessing common block elements
 
