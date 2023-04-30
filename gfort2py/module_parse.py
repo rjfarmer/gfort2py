@@ -400,23 +400,43 @@ class formal_arglist:
 
 @dataclass(init=False)
 class typebound_proc:
-    args: None
-    kwargs: None
+    name: str = ""
+    access: str = ""
+    overridable: str = ""
+    nopass: str = ""
+    is_generic: str = ""
+    ppc: str = ""
+    pass_arg: str = ""
+    pass_arg_num: symbol_ref = None
+    proc_ref: symbol_ref = None
 
     def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
+        self.name = string_clean(args[0][0])
+        self.access = args[0][1][0]
+        self.overridable = args[0][1][1]
+        self.nopass = args[0][1][2]
+        self.is_generic = args[0][1][3]
+        self.ppc = args[0][1][4]
+        self.pass_arg = string_clean(args[0][1][5])
+        self.pass_arg_num = symbol_ref(args[0][1][6])
+
+        # TODO: Handle is_generic
+        self.proc_ref = symbol_ref(args[0][1][7][0])
 
 
 @dataclass(init=False)
 class derived_ns:
+    unknown1: str = None
     proc: t.List[typebound_proc] = None
-    args: None
-    kwargs: None
 
     def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
+        if not len(args):
+            return
+        self.unknown1 = args[0]
+        self.proc = []
+        for i in args[1]:
+            self.proc.append(typebound_proc(i))
+        print()
 
 
 @dataclass(init=False)
