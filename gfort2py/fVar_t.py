@@ -1,7 +1,10 @@
 import ctypes
+import collections
 
 
 class fVar_t:
+    Args = collections.namedtuple("arg", ["prepend", "arg", "append"])
+
     def __init__(self, obj, allobjs=None, cvalue=None):
         self.obj = obj
         self.allobjs = allobjs
@@ -41,6 +44,36 @@ class fVar_t:
     def in_dll(self, lib):
         self.cvalue = self.ctype().in_dll(lib, self.mangled_name)
         return self.cvalue
+
+    def to_proc(self, value):
+        start = None
+        arg = None
+        end = None
+
+        if self.obj.is_optional() and value is None:
+            end = ctypes.c_byte(0)
+            arg = None
+            return self.Args(start, arg, end)
+
+        raw_arg = self.from_param(value)
+        if self.obj.is_optional():
+            end = ctypes.c_byte(1)
+
+        if self.obj.is_value():
+            arg = raw_arg
+        else:
+            if self.obj.is_pointer():
+                if self.obj.not_a_pointer():
+                    arg = ctypes.pointer(raw_arg)
+                else:
+                    arg = ctypes.pointer(ctypes.pointer(raw_arg))
+            else:
+                arg = ctypes.pointer(raw_arg)
+
+            if self.obj.is_deferred_len():
+                end = self.ctype_len(value)
+
+        return self.Args(start, arg, end)
 
 
 def ctype_map(type, kind):

@@ -259,7 +259,7 @@ class fAssumedSize(fArray_t):
     def len(self):
         return len(self._value)
 
-    def ctype_len(self):
+    def ctype_len(self, *args):
         return ctypes.c_int64(self.len())
 
     @property

@@ -52,7 +52,7 @@ class fStr(fVar_t):
                 self._len = self.obj.strlen.value
         return self._len
 
-    def ctype_len(self):
+    def ctype_len(self, *args):
         return ctypes.c_int64(self.len())
 
     def __doc__(self):
@@ -93,9 +93,7 @@ class fAllocStr(fStr):
         if hasattr(self._value, "encode"):
             self._value = self._value.encode()
 
-        print(self.cvalue)
         self.cvalue = self.ctype().from_address(ctypes.addressof(self.cvalue))
-        print(self.cvalue)
 
         if value is None or not len(value):
             return self.cvalue

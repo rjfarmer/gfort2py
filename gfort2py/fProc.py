@@ -132,36 +132,10 @@ class fProc:
         args_end = []
         # Convert to ctypes
         for var in input_args:
-            if var.value is not None or var.fvar.obj.is_dummy():
-                if var.fvar.obj.is_optional() and var.value is None:
-                    args.append(None)
-                    args_end.append(ctypes.c_byte(0))
-                else:
-                    z = var.fvar.from_param(var.value)
-
-                    if var.fvar.obj.is_value():
-                        args.append(z)
-                    elif var.fvar.obj.is_proc_pointer():
-                        args.append(z)
-                    elif var.fvar.obj.is_pointer():
-                        if var.fvar.obj.not_a_pointer():
-                            args.append(ctypes.pointer(z))
-                        else:
-                            args.append(ctypes.pointer(ctypes.pointer(z)))
-                    else:
-                        args.append(ctypes.pointer(z))
-
-                    if var.fvar.obj.is_deferred_len():
-                        args_end.append(var.fvar.ctype_len())
-                    if var.fvar.obj.is_optional_value():
-                        args_end.append(ctypes.c_byte(1))
-
-            else:
-                args.append(None)
-                if var.fvar.obj.is_deferred_len():
-                    args_end.append(None)
-                if var.fvar.obj.is_optional_value():
-                    args_end.append(ctypes.c_byte(0))
+            _, a, e = var.fvar.to_proc(var.value)
+            args.append(a)
+            if e is not None:
+                args_end.append(e)
 
         return args, args_end
 
