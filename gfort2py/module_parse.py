@@ -270,6 +270,9 @@ class utils:
     def is_derived(self):
         return self.sym.ts.type == "DERIVED"
 
+    def is_pdt_def(self):
+        return "PDT_TEMPLATE" in self.sym.attr.attributes
+
     @property
     def strlen(self):
         if self.is_char() and not self.is_deferred_len():
@@ -391,6 +394,9 @@ class formal_arglist:
 
 @dataclass(init=False)
 class derived_ns:
+    args: None
+    kwargs: None
+
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
@@ -398,6 +404,9 @@ class derived_ns:
 
 @dataclass(init=False)
 class actual_arglist:
+    args: None
+    kwargs: None
+
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
@@ -405,11 +414,12 @@ class actual_arglist:
 
 @dataclass(init=False)
 class typebound_proc:
+    args: None
+    kwargs: None
+
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
-
-        print(self.args, self.kwargs)
 
 
 @dataclass(init=False)
@@ -484,11 +494,11 @@ class expression:
                     hextofloat(string_clean(args[3])), hextofloat(string_clean(args[4]))
                 )
             else:
-                print(args)
+                raise NotImplementedError(args)
         elif self.exp_type == "VARIABLE":
             self.value = symbol_ref(args[3])
         elif self.exp_type == "SUBSTRING":
-            print(args)
+            raise NotImplementedError(args)
         elif self.exp_type == "ARRAY":
             self.value = []
             for i in args[3]:
@@ -498,9 +508,9 @@ class expression:
         elif self.exp_type == "NULL":
             self.value = args[3]
         elif self.exp_type == "COMPCALL":
-            print(args)
+            raise NotImplementedError(args)
         elif self.exp_type == "PPC":
-            print(args)
+            raise NotImplementedError(args)
         else:
             raise AttributeError(f"Can't match {self.exp_type}")
 
@@ -620,6 +630,9 @@ class namelist:
 
 @dataclass(init=False)
 class simd_dec:
+    args: None
+    kwargs: None
+
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
