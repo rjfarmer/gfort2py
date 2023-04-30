@@ -12,7 +12,7 @@ class fDT(fVar_t):
         self.cvalue = cvalue
 
         # Get obj for derived type spec
-        self._dt_obj = self.allobjs[self.obj.sym.ts.class_ref.ref]
+        self._dt_obj = self.allobjs[self.obj.dt_type()]
 
         self._init_args()
 
@@ -21,8 +21,8 @@ class fDT(fVar_t):
     def _init_args(self):
         # Store fVar's for each component
         self._dt_args = {}
-        if not any([var.is_derived() for var in self._dt_obj.sym.comp]):
-            for var in self._dt_obj.sym.comp:
+        if not any([var.is_derived() for var in self._dt_obj.dt_components()]):
+            for var in self._dt_obj.dt_components():
                 self._dt_args[var.name] = self.fvar(var, allobjs=self.allobjs)
         else:
             raise NotImplementedError
@@ -30,9 +30,9 @@ class fDT(fVar_t):
     def ctype(self):
         if self._ctype is None:
             # See if this is a "simple" (no other dt's) dt
-            if not any([var.is_derived() for var in self._dt_obj.sym.comp]):
+            if not any([var.is_derived() for var in self._dt_obj.dt_components()]):
                 fields = []
-                for var in self._dt_obj.sym.comp:
+                for var in self._dt_obj.dt_components():
                     # print(var.name,self._dt_args[var.name].ctype())
                     fields.append((var.name, self._dt_args[var.name].ctype()))
 
@@ -88,7 +88,7 @@ class fDT(fVar_t):
         self.from_param(value)
 
     def keys(self):
-        return [i.name for i in self._dt_obj.sym.comp]
+        return [i.name for i in self._dt_obj.dt_components()]
 
     def values(self):
         return [self.__getitem__(key) for key in self.keys()]
@@ -143,7 +143,7 @@ class fExplicitDT(fVar_t):
         self.cvalue = cvalue
 
         # Get obj for derived type spec
-        self._dt_obj = self.allobjs[self.obj.sym.ts.class_ref.ref]
+        self._dt_obj = self.allobjs[self.obj.dt_type()]
 
         self._dt_ctype = fDT(self.obj, self.fvar, allobjs=self.allobjs)
         self._saved = {}

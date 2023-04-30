@@ -316,6 +316,12 @@ class utils:
             return self.sym.formal_arg
         raise AttributeError("Not a procedure")
 
+    def dt_type(self):
+        return self.sym.ts.class_ref.ref
+
+    def dt_components(self):
+        return self.sym.comp
+
 
 @dataclass(init=False)
 class attribute:
@@ -393,7 +399,18 @@ class formal_arglist:
 
 
 @dataclass(init=False)
+class typebound_proc:
+    args: None
+    kwargs: None
+
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+
+@dataclass(init=False)
 class derived_ns:
+    proc: t.List[typebound_proc] = None
     args: None
     kwargs: None
 
@@ -404,16 +421,6 @@ class derived_ns:
 
 @dataclass(init=False)
 class actual_arglist:
-    args: None
-    kwargs: None
-
-    def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-
-
-@dataclass(init=False)
-class typebound_proc:
     args: None
     kwargs: None
 
