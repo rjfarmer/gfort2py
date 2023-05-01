@@ -7,7 +7,7 @@ import functools
 from dataclasses import dataclass
 
 from .fVar import fVar
-
+from .fVar_t import fVar_t
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
@@ -47,7 +47,7 @@ class _captureStdOut:
 class fProc:
     Result = collections.namedtuple("Result", ["result", "args"])
 
-    def __init__(self, lib, obj, allobjs):
+    def __init__(self, lib, obj, allobjs, **kwargs):
         self._allobjs = allobjs
         self.obj = obj
         self._lib = lib
@@ -123,7 +123,7 @@ class fProc:
             if x is None and not var.obj.is_optional() and not var.obj.is_dummy():
                 raise ValueError(f"Got None for {var.name}")
 
-            if isinstance(x, fVar):
+            if isinstance(x, fVar_t):
                 var = x
                 x = var.value
 

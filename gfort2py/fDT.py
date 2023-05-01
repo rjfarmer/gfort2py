@@ -4,6 +4,17 @@ import numpy as np
 from .fVar_t import fVar_t
 
 
+_all_dts = {}
+
+
+def make_dt(name):
+    class _fDerivedType(ctypes.Structure):
+        pass
+
+    _fDerivedType.__name__ = name
+    return _fDerivedType
+
+
 class fDT(fVar_t):
     def __init__(self, obj, fvar, allobjs=None, cvalue=None):
         self.obj = obj
@@ -13,6 +24,7 @@ class fDT(fVar_t):
 
         # Get obj for derived type spec
         self._dt_obj = self.allobjs[self.obj.dt_type()]
+        self._dt_name = self._dt_obj.name
 
         self._init_args()
 
@@ -29,20 +41,28 @@ class fDT(fVar_t):
 
     def ctype(self):
         if self._ctype is None:
-            # See if this is a "simple" (no other dt's) dt
-            if not any([var.is_derived() for var in self._dt_obj.dt_components()]):
-                fields = []
-                for var in self._dt_obj.dt_components():
-                    # print(var.name,self._dt_args[var.name].ctype())
+            fields = []
+            for var in self._dt_obj.dt_components():
+                if not var.is_derived():
                     fields.append((var.name, self._dt_args[var.name].ctype()))
+                else:
+                    if var.name not in _all_dts:
+                        _all_dts[var.name] = make_dt(var.name)
 
-                class _fDerivedType(ctypes.Structure):
-                    _fields_ = fields
+                    fields.append((var.name, _all_dts[var.name]))
 
+            class _fDerivedType(ctypes.Structure):
+                _fields_ = fields
+
+            if self._dt_name not in _all_dts:
+                _all_dts[self._dt_name] = _fDerivedType
             else:
-                raise NotImplementedError
+                try:
+                    _all_dts[self._dt_name]._fields_ = fields
+                except AttributeError:
+                    pass
 
-            self._ctype = _fDerivedType
+            self._ctype = _all_dts[self._dt_name]
 
         return self._ctype
 
@@ -63,19 +83,26 @@ class fDT(fVar_t):
             self.cvalue = self.ctype()()
 
         for key, value in param.items():
-            # print(key,value)
             if key not in self._dt_args:
                 raise KeyError(f"{key} not present in {self._dt_obj.name}")
 
-            if not isinstance(value, fVar_t):
-                self._dt_args[key].from_param(value)
+            if self._dt_args[key].obj.is_derived():
+                self._dt_args[key] = self.fvar(
+                    self.allobjs[key],
+                    allobjs=self.allobjs,
+                    cvalue=getattr(self.cvalue, key),
+                )
+                for k, v in value.items():
+                    self._dt_args[key].__setitem__(k, v)
             else:
-                self._dt_args[key].from_ctype(value.cvalue())
+                if not isinstance(value, fVar_t):
+                    self._dt_args[key].from_param(value)
+                else:
+                    self._dt_args[key].from_ctype(value.cvalue())
 
-            v = self._dt_args[key].cvalue
+                v = self._dt_args[key].cvalue
 
-            # print(self.cvalue)
-            setattr(self.cvalue, key, v)
+                setattr(self.cvalue, key, v)
 
         return self.cvalue
 

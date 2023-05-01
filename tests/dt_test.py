@@ -77,7 +77,7 @@ class TestDTMethods:
         x.g_struct = {"a_int": 10, "f_struct": {"a_int": 3}}
         self.assertEqual(x.g_struct["f_struct"]["a_int"], 3)
         x.g_struct["f_struct"]["a_int"] = 8
-        self.assertEqual(x.g_struct["f_struc"]["a_int"], 8)
+        self.assertEqual(x.g_struct["f_struct"]["a_int"], 8)
         y = x.func_check_nested_dt()
         self.assertEqual(y.result, True)
 
@@ -111,13 +111,12 @@ class TestDTMethods:
 
     @pytest.mark.skip
     def test_recur_dt(self):  # Skip for now
-        with pytest.raises(TypeError) as cm:
-            x.r_recur["a_int"] = 9
-            self.assertEqual(x.r_recur["a_int"], 9)
-            x.r_recur["s_recur"]["a_int"] = 9
-            self.assertEqual(x.r_recur["s_recur"]["a_int"], 9)
-            x.r_recur["s_recur"]["s_recur"]["a_int"] = 9
-            self.assertEqual(x.r_recur["s_recur"]["s_recur"]["a_int"], 9)
+        x.r_recur["a_int"] = 9
+        self.assertEqual(x.r_recur["a_int"], 9)
+        x.r_recur["s_recur"]["a_int"] = 9
+        self.assertEqual(x.r_recur["s_recur"]["a_int"], 9)
+        x.r_recur["s_recur"]["s_recur"]["a_int"] = 9
+        self.assertEqual(x.r_recur["s_recur"]["s_recur"]["a_int"], 9)
 
     def test_arr_dt_exp_1d_set(self):
         x.g_struct_exp_1d[0]["a_int"] = 5
