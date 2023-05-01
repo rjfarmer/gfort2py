@@ -123,6 +123,10 @@ class fProc:
             if x is None and not var.obj.is_optional() and not var.obj.is_dummy():
                 raise ValueError(f"Got None for {var.name}")
 
+            if isinstance(x, fVar):
+                var = x
+                x = var.value
+
             arguments.append(variable(x, var))
 
         return arguments

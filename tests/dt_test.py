@@ -164,3 +164,13 @@ class TestDTMethods:
         np.testing.assert_array_equal(
             s[1]["b_int_exp_1d"], np.array([77, 77, 77, 77, 77])
         )
+
+    def test_fvar_as_arg(self, capfd):
+        y = x.f_struct_simple
+        y["x"] = 99
+        y["y"] = 98
+
+        z = x.sub_f_simple_in(y)
+        out, err = capfd.readouterr()
+        o = "99 98"
+        self.assertEqual(out.strip(), o)
