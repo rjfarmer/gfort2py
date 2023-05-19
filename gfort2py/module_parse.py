@@ -122,10 +122,13 @@ def hextofloat(s):
     man, exp = s.split("@")
     exp = int(exp)
     decimal = man.index(".")
+    negative = man[0] == "-"
     man = man[decimal + 1 :]
     man = man.ljust(exp, "0")
     man = man[:exp] + "." + man[exp:]
     man = man + "P0"
+    if negative:
+        man = "-" + man
     return float.fromhex(man)
 
 
