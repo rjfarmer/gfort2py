@@ -30,6 +30,9 @@ module basic
 		real(dp), parameter :: const_real_dp=1.0_dp
 		real(dp), parameter :: const_real_pi_dp=3.14_dp
 		real(qp), parameter :: const_real_qp=1.0_qp
+
+		integer, parameter :: const_neg_int = -1.0
+		real(dp),parameter :: const_neg_real = -3.14_dp
 			
 		! Variables
 		integer           :: a_int

@@ -216,3 +216,7 @@ class TestBasicMethods:
         y = x.func_test_bool(0)
         assert type(y.result) == bool
         self.assertEqual(y.result, False)
+
+    def test_negatives(self):
+        assert x.const_neg_int == -1
+        assert x.const_neg_real == -3.14
