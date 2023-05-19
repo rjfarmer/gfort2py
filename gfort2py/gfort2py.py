@@ -5,6 +5,7 @@ import os
 
 from .module_parse import module
 
+from .fDT import _all_dts, make_dt
 from .fVar import fVar
 from .fProc import fProc
 from .fParameters import fParam
@@ -22,6 +23,41 @@ class fFort:
 
         self._saved = {}
         self._initialized = True
+
+        _all_dts_full = False
+        while not _all_dts_full:
+            _all_dts_full = True
+            for key in self._module.keys():
+                sym = self._module[key]
+                if (len(sym.dt_components()) > 0
+                    and not sym.name.startswith("_")
+                ):
+                    if sym.name not in _all_dts:
+                        fields = []
+                        all_components_found = True
+                        for var in sym.dt_components():
+                            if not var.is_derived():
+                                fields.append(
+                                    (
+                                        var.name,
+                                        fVar(var, allobjs=self._module).ctype()
+                                    )
+                                )
+                            else:
+                                var_dt_name = self._module[var.dt_type()].name
+                                if var_dt_name not in _all_dts:
+                                    if var.is_pointer():
+                                        _all_dts[var_dt_name] = ctypes.pointer
+                                    else:
+                                        _all_dts_full = False
+                                        all_components_found = False
+                                        break
+                                else:
+                                    fields.append((var.name, _all_dts[var_dt_name]))
+
+                        if all_components_found:
+                            _all_dts[sym.name] = make_dt(sym.name)
+                            _all_dts[sym.name]._fields_ = fields
 
     def keys(self):
         return self._module.keys()
