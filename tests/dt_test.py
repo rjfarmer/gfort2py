@@ -173,3 +173,9 @@ class TestDTMethods:
         out, err = capfd.readouterr()
         o = "99 98"
         self.assertEqual(out.strip(), o)
+
+    def test_func_return_s_struct_nested_2(self):
+        y = x.func_return_s_struct_nested_2()
+        self.assertEqual(y.result["a_int"], 123)
+        self.assertEqual(y.result["f_nested"]["a_int"], 234)
+        self.assertEqual(y.result["f_nested"]["f_struct"]["a_int"], 345)

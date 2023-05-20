@@ -277,4 +277,12 @@ module dt
     end function check_recur
 
 
+    function func_return_s_struct_nested_2() result(s)
+        type(s_struct_nested_2)::s
+        s%a_int = 123
+        s%f_nested%a_int = 234
+        s%f_nested%f_struct%a_int = 345
+    end function func_return_s_struct_nested_2
+
+
 end module dt

@@ -33,23 +33,15 @@ class fDT(fVar_t):
     def _init_args(self):
         # Store fVar's for each component
         self._dt_args = {}
-        if not any([var.is_derived() for var in self._dt_obj.dt_components()]):
-            for var in self._dt_obj.dt_components():
-                self._dt_args[var.name] = self.fvar(var, allobjs=self.allobjs)
-        else:
-            raise NotImplementedError
+        for var in self._dt_obj.dt_components():
+            self._dt_args[var.name] = self.fvar(var, allobjs=self.allobjs)
+
 
     def ctype(self):
         if self._ctype is None:
             fields = []
             for var in self._dt_obj.dt_components():
-                if not var.is_derived():
-                    fields.append((var.name, self._dt_args[var.name].ctype()))
-                else:
-                    if var.name not in _all_dts:
-                        _all_dts[var.name] = make_dt(var.name)
-
-                    fields.append((var.name, _all_dts[var.name]))
+                fields.append((var.name, self._dt_args[var.name].ctype()))
 
             class _fDerivedType(ctypes.Structure):
                 _fields_ = fields
