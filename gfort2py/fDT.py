@@ -34,8 +34,13 @@ class fDT(fVar_t):
         # Store fVar's for each component
         self._dt_args = {}
         for var in self._dt_obj.dt_components():
-            self._dt_args[var.name] = self.fvar(var, allobjs=self.allobjs)
+            # Catch dt's which contain themselves:
+            if var.is_derived() and var.dt_type() == self.obj.dt_type():
+                raise NotImplementedError(
+                    "Derived types containing themselves not supported yet"
+                )
 
+            self._dt_args[var.name] = self.fvar(var, allobjs=self.allobjs)
 
     def ctype(self):
         if self._ctype is None:

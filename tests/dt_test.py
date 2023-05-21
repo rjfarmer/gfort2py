@@ -108,14 +108,15 @@ class TestDTMethods:
         v = np.array([9, 10, 11, 12, 13], dtype="int32")
         np.testing.assert_array_equal(x.f_struct["d_int_point_1d"], v)
 
-    @pytest.mark.skip
+    # @pytest.mark.skip
     def test_recur_dt(self):  # Skip for now
-        x.r_recur["a_int"] = 9
-        self.assertEqual(x.r_recur["a_int"], 9)
-        x.r_recur["s_recur"]["a_int"] = 9
-        self.assertEqual(x.r_recur["s_recur"]["a_int"], 9)
-        x.r_recur["s_recur"]["s_recur"]["a_int"] = 9
-        self.assertEqual(x.r_recur["s_recur"]["s_recur"]["a_int"], 9)
+        with pytest.raises(NotImplementedError) as cm:
+            x.r_recur["a_int"] = 9
+            self.assertEqual(x.r_recur["a_int"], 9)
+            x.r_recur["s_recur"]["a_int"] = 9
+            self.assertEqual(x.r_recur["s_recur"]["a_int"], 9)
+            x.r_recur["s_recur"]["s_recur"]["a_int"] = 9
+            self.assertEqual(x.r_recur["s_recur"]["s_recur"]["a_int"], 9)
 
     def test_arr_dt_exp_1d_set(self):
         x.g_struct_exp_1d[0]["a_int"] = 5
