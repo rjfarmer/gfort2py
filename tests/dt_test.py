@@ -70,7 +70,6 @@ class TestDTMethods:
         self.assertEqual(y.args["zzz"]["x"], 1)
         self.assertEqual(y.args["zzz"]["y"], 10)
 
-    @pytest.mark.skip
     def test_nested_dts(self):
         x.g_struct["a_int"] = 10
         self.assertEqual(x.g_struct["a_int"], 10)
@@ -148,7 +147,6 @@ class TestDTMethods:
         y = x.check_g_struct_exp_2d()
         self.assertEqual(y.result, True)
 
-    # @pytest.mark.skip
     def test_sub_struct_exp_1d(self):
         y = x.sub_struct_exp_1d({})
 
