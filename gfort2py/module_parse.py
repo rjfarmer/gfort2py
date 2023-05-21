@@ -439,7 +439,6 @@ class derived_ns:
         self.proc = []
         for i in args[1]:
             self.proc.append(typebound_proc(i))
-        print()
 
 
 @dataclass(init=False)
