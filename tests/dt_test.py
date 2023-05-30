@@ -178,3 +178,12 @@ class TestDTMethods:
         self.assertEqual(y.result["a_int"], 123)
         self.assertEqual(y.result["f_nested"]["a_int"], 234)
         self.assertEqual(y.result["f_nested"]["f_struct"]["a_int"], 345)
+
+    def test_derived_type_intent_out(self, capfd):
+        # GH: #32
+        p = {}
+        y = x.derived_structure(p)
+        out, err = capfd.readouterr()
+        self.assertEqual(out.strip(), "10 20 30 40")
+
+        assert np.all(y.args["p"]["iq"] == np.array([10, 20, 30, 40]))

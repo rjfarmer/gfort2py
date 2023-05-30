@@ -109,6 +109,11 @@ module dt
     
     integer, target, dimension(5) :: e_int_target_1d
     
+    !GH: #32
+    type :: point 
+        integer, dimension(4) :: iq
+    end type point
+
     
     contains
 
@@ -283,6 +288,14 @@ module dt
         s%f_nested%a_int = 234
         s%f_nested%f_struct%a_int = 345
     end function func_return_s_struct_nested_2
+
+
+    subroutine derived_structure(p)
+        ! GH: #32
+        type(point), intent(out) :: p
+        p = point([10,20,30,40])
+        write(*,'(4(I2,1X))') p
+    end subroutine derived_structure
 
 
 end module dt
