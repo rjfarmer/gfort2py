@@ -34,7 +34,7 @@ Compile code with -fPIC and -shared as options, then link together as a shared l
 gfortran -fPIC -shared -c file.f90
 gfortran -fPIC -shared -o libfile file.f90
 ````
-If your code comes as  program that does everything, then just turn the program into a function call inside a module,
+If your code comes as program that does everything, then just turn the program into a function call inside a module,
 then create a new file with your program that uses the module and calls the function you just made.
 
 If the shared library needs other
@@ -180,6 +180,7 @@ To run unit tests
 - [ ] Equivalences 
 - [ ] Namelists
 - [ ] Quad precision variables
+- [ ] function overloading 
 
 ### Procedures
 
@@ -202,6 +203,7 @@ To run unit tests
 - [x] Keyword arguments
 - [ ] Generic/Elemental functions
 - [ ] Functions as an argument
+- [ ] Unary operations (arguments that involve an expresson to evaluate like dimension(n+1))
 
 ### Accessing common block elements
 
