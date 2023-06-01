@@ -123,7 +123,7 @@ type(my_type), dimension(5) :: my_dt
 type(my_type), dimension(5,5) :: my_dt2
 ````
 
-Elements can be access via a notation similar to the numpy slice:
+Elements can be access via a notation similar to a slice:
 
 ````python
 x.my_dt[0]['x']
@@ -132,7 +132,12 @@ x.my_dt2[0,0]['x']
 
 You can only access one component at a time (i.e no striding [:]). Allocatable derived types are not yet supported.
 
-A breaking change from gfrot2py <2 is that now components of a derived type can only be accessed via the item interface ``['x']`` and not as attributes ``.x``. This was done so that we do not have a name collision between python functions (``keys``, ``items`` etc) and any fortran derived type components.
+Derived types that are dummy arguments to a procedure are returned as a ``fDT`` type. This is a dict-like object where the components
+can only be accessed via the item interface ``['x']`` and not as attributes ``.x``.  This was done so that we do not have a name collision
+between python functions (``keys``, ``items`` etc) and any fortran derived type components.
+
+It is currently not possible to pass a ``fDT`` as an argument to a procedure.
+
 
 
 ## Testing
@@ -165,9 +170,9 @@ To run unit tests
 - [x] Nested derived types
 - [X] Explicit Arrays of derived types
 - [ ] Allocatable Arrays of derived types
-- [ ] Procedure pointers inside derived types (only those that are nopass)
+- [ ] Procedure pointers inside derived types
 - [x] Derived types with dimension(:) array components (pointer, allocatable, target)
-- [x] Allocatable strings
+- [x] Allocatable strings (partial)
 - [ ] Arrays of strings
 - [ ] Classes
 - [ ] Abstract interfaces
@@ -245,6 +250,7 @@ x.my_func(x.func_arg) # With the function itself
 It is left the the user to make sure that the function func_arg takes the correct inputs and returns the correct output
 
 
+<!-- Needs readding once fixed
 #### Procedure pointers
 
 Consider a procedure like:
@@ -273,7 +279,7 @@ You must still first set it to something
 
 ````python
 x.func_ptr = x.func_arg # With the function itself
-````
+```` -->
 
 
 ## Contributing
