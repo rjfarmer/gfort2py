@@ -39,7 +39,8 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run coveralls
-      env: GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      env: 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         pip install .
         coverage run --source=gfort2py -m pytest tests/
