@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: Coveralls
 on: [push, pull_request]
 
 jobs:
@@ -6,8 +6,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fortran-compiler:  [gfortran-8, gfortran-9, gfortran-10, gfortran-11, gfortran-12]
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
+        fortran-compiler:  [gfortran-12]
+        python-version: ['3.11']
     env:
       FC: ${{ matrix.fortran-compiler }}
       CC: gcc
@@ -19,33 +19,10 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: gfortran-8 setup compiler
-      if: contains(matrix.fortran-compiler, 'gfortran-8')
-      run: |
-        sudo apt-get install gfortran-10
-
-    - name: gfortran-9 setup compiler
-      if: contains(matrix.fortran-compiler, 'gfortran-9')
-      run: |
-        sudo apt-get install gfortran-10
-
-    - name: gfortran-10 setup compiler
-      if: contains(matrix.fortran-compiler, 'gfortran-10')
-      run: |
-        sudo apt-get install gfortran-10
-
-    - name: gfortran-11 setup compiler
-      if: contains(matrix.fortran-compiler, 'gfortran-11')
-      run: |
-        sudo apt-get install gfortran-11
-
     - name: gfortran-12 setup compiler
       if: contains(matrix.fortran-compiler, 'gfortran-12')
       run: |
         sudo apt-get install gfortran-12
-
-    - name: Coveralls
-      uses: coverallsapp/github-action@v2
 
     - name: Cache pip
       uses: actions/cache@v2
@@ -58,9 +35,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install tox tox-gh-actions
+        pip install  coveralls
         pip install -r requirements.txt
 
-    - name: Test with tox
-      run: tox -e py
+    - name: Run coveralls
+      run: |
+        coverage run --source=gfort2py -m pytest tests/
+        coveralls
 
