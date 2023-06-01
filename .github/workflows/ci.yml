@@ -43,10 +43,7 @@ jobs:
       if: contains(matrix.fortran-compiler, 'gfortran-12')
       run: |
         sudo apt-get install gfortran-12
-
-    - name: Coveralls
-      uses: coverallsapp/github-action@v2
-
+        
     - name: Cache pip
       uses: actions/cache@v2
       with:
