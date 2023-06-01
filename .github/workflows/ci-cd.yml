@@ -16,13 +16,10 @@ jobs:
       uses: actions/setup-python@v3
 
     - name: Install dependices
-      run: >-
+      run: |
         sudo apt-get install gfortran-12
         python -m pip install --upgrade pip
-        python3 -m
-        pip install
-        build wheel pytest
-        --user
+        python3 -m pip install build wheel pytest
         pip install -r requirements.txt
     - name: Build a binary wheel and a source tarball
       run: >-
