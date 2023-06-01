@@ -1,0 +1,41 @@
+name: Publish to pypi
+on: [push]
+
+jobs:
+  pypi-publish:
+    name: Upload release to PyPI
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/gfort2py
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+    steps:
+    - name: Install pypa/build
+      run: >-
+        python3 -m
+        pip install
+        build wheel
+        --user
+    - name: Build a binary wheel and a source tarball
+      run: >-
+        python3 -m
+        build
+        --sdist
+        --wheel
+        --outdir dist/
+        .
+    - name: Install dependencies
+      run: |
+        sudo apt-get install gfortran-12
+        python -m pip install --upgrade pip
+        pip install  pytest
+        pip install -r requirements.txt
+
+    - name: Test
+        pip install . 
+        pytest
+
+    - name: Publish package distributions to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
