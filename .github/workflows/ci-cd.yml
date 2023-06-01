@@ -15,12 +15,15 @@ jobs:
     - name: Set up Python 
       uses: actions/setup-python@v3
 
-    - name: Install pypa/build
+    - name: Install dependices
       run: >-
+        sudo apt-get install gfortran-12
+        python -m pip install --upgrade pip
         python3 -m
         pip install
-        build wheel
+        build wheel pytest
         --user
+        pip install -r requirements.txt
     - name: Build a binary wheel and a source tarball
       run: >-
         python3 -m
@@ -29,16 +32,9 @@ jobs:
         --wheel
         --outdir dist/
         .
-    - name: Install dependencies
-      run: |
-        sudo apt-get install gfortran-12
-        python -m pip install --upgrade pip
-        pip install  pytest
-        pip install -r requirements.txt
-
     - name: Test
       run: |
-        pip install dist/gfort2py/*.tar.gz
+        pip install dist/gfort2py*.tar.gz
         pytest
 
     - name: Publish package distributions to PyPI
