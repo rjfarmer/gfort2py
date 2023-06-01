@@ -40,6 +40,7 @@ jobs:
 
     - name: Run coveralls
       run: |
+        pip install .
         coverage run --source=gfort2py -m pytest tests/
         coveralls
 
