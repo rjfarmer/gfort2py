@@ -227,7 +227,7 @@ x.b
 x.c
 ````
 
-### Procedure pointers:
+<!-- ### Procedure pointers:
 
 #### Procedures as arguments
 
@@ -249,7 +249,7 @@ Assuming that func_arg is another fortran function then we can call my_func as:
 x.my_func(x.func_arg) # With the function itself
 ````
 
-It is left the the user to make sure that the function func_arg takes the correct inputs and returns the correct output
+It is left the the user to make sure that the function func_arg takes the correct inputs and returns the correct output -->
 
 
 <!-- Needs readding once fixed
