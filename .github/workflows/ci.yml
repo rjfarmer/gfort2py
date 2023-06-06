@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fortran-compiler:  [gfortran-9, gfortran-10, gfortran-11, gfortran-12]
+        fortran-compiler:  [gfortran-8, gfortran-9, gfortran-10, gfortran-11, gfortran-12]
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
     env:
       FC: ${{ matrix.fortran-compiler }}
@@ -22,6 +22,7 @@ jobs:
 
     - name: Setup compiler ${{ matrix.fortran-compiler }}
       run: |
+        sudo apt-get update
         sudo apt-get install ${{ matrix.fortran-compiler }}
 
     - name: Install dependencies
