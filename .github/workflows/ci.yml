@@ -20,30 +20,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
 
-    - name: gfortran-8 setup compiler
-      if: contains(matrix.fortran-compiler, 'gfortran-8')
+    - name: Setup compiler ${{ matrix.fortran-compiler }}
       run: |
-        sudo apt-get install gfortran-10
-
-    - name: gfortran-9 setup compiler
-      if: contains(matrix.fortran-compiler, 'gfortran-9')
-      run: |
-        sudo apt-get install gfortran-10
-
-    - name: gfortran-10 setup compiler
-      if: contains(matrix.fortran-compiler, 'gfortran-10')
-      run: |
-        sudo apt-get install gfortran-10
-
-    - name: gfortran-11 setup compiler
-      if: contains(matrix.fortran-compiler, 'gfortran-11')
-      run: |
-        sudo apt-get install gfortran-11
-
-    - name: gfortran-12 setup compiler
-      if: contains(matrix.fortran-compiler, 'gfortran-12')
-      run: |
-        sudo apt-get install gfortran-12
+        sudo apt-get install ${{ matrix.fortran-compiler }}
 
     - name: Install dependencies
       run: |
