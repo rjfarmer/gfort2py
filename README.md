@@ -286,7 +286,7 @@ x.func_ptr = x.func_arg # With the function itself
 
 ## Contributing
 
-Bug reports are of course welcome and PR's should target the current dev branch.
+Bug reports are of course welcome and PR's should target the main branch.
 
 For those wanting to get more involved, adding Fortran examples to the test suite of currently untested or unsupported features would be helpful. Bonus points if you also provide a python test case (that can be marked ``@pytest.mark.skip`` if it does not work) that demonstrates the proposed interface to the new fortran feature.
 
