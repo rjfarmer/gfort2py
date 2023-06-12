@@ -96,3 +96,108 @@ class TestStringMethods:
     def test_str_alloc_sub_realloc(self):
         y2 = x.sub_str_alloc2("qwerty")
         self.assertEqual(y2.args["x"], "asdfghjkl")
+
+    @pytest.mark.skip
+    def test_str_array_type_chceck(self):
+        with pytest.raises(TypeError) as cm:
+            x.a_str_exp_1d = np.zeros(5, dtype=np.unicode_)
+
+    @pytest.mark.skip
+    def test_str_func_inout_str(self, capfd):
+        z = np.array(
+            ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
+            dtype="S10",
+        )
+
+        x.str_array_inout(z)
+        out, err = capfd.readouterr()
+
+        assert out == "aaaaaaaaa\nbbbbbbbbb\ncccccccccc\ndddddddddd\neeeeeeeeee\n"
+
+        z2 = np.array(
+            ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
+            dtype="S10",
+        )
+
+        assert np.all(z == z2)
+
+    @pytest.mark.skip
+    def test_func_str_array_dt(self):
+        data = {
+            "start_guard": 123456789,
+            "a_str_exp_1d": np.array(
+                ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
+                dtype="S10",
+            ),
+            "end_guard": 123456789,
+        }
+
+        assert not x.func_str_array_dt(data).result
+
+        data = {
+            "start_guard": 123456789,
+            "a_str_exp_1d": np.array(
+                ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
+                dtype="S10",
+            ),
+            "end_guard": 123456789,
+        }
+
+        assert not x.func_str_array_dt(data).result
+
+    @pytest.mark.skip
+    def test_str_func_inout_str2(self, capfd):
+        z = np.array(
+            ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
+            dtype="S10",
+        )
+
+        x.str_array_inout2(z)
+        out, err = capfd.readouterr()
+
+        assert out == "aaaaaaaaa\nbbbbbbbbb\ncccccccccc\ndddddddddd\neeeeeeeeee\n"
+
+        z2 = np.array(
+            ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
+            dtype="S10",
+        )
+
+        assert np.all(z == z2)
+
+    @pytest.mark.skip
+    def test_str_func_inout_str3(self, capfd):
+        z = np.array(
+            ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
+            dtype="S10",
+        )
+
+        x.str_array_inout3(z)
+        out, err = capfd.readouterr()
+
+        assert out == "aaaaaaaaa\nbbbbbbbbb\ncccccccccc\ndddddddddd\neeeeeeeeee\n"
+
+        z2 = np.array(
+            ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
+            dtype="S10",
+        )
+
+        assert np.all(z == z2)
+
+    @pytest.mark.skip
+    def test_str_func_inout_str4(self, capfd):
+        z = np.array(
+            ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
+            dtype="S10",
+        )
+
+        x.str_array_inout4(z)
+        out, err = capfd.readouterr()
+
+        assert out == "aaaaaaaaa\nbbbbbbbbb\ncccccccccc\ndddddddddd\neeeeeeeeee\n"
+
+        z2 = np.array(
+            ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
+            dtype="S10",
+        )
+
+        assert np.all(z == z2)

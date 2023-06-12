@@ -17,8 +17,24 @@ module strings
 	character(len=10) :: a_str
 	character(len=10) :: a_str_set='abcdefghjk'
 	character(:), allocatable :: str_alloc
+
+
+	character(len=10),dimension(5) :: a_str_exp_1d
+	character(len=10),dimension(5,5) :: a_str_exp_2d
+	character(len=10),dimension(5,5,5) :: a_str_exp_3d
 	
 	
+	character(len=10),dimension(:),allocatable :: b_str_alloc_1d
+	character(len=10),dimension(:,:),allocatable :: b_str_alloc_2d
+	character(len=10),dimension(:,:,:),allocatable :: b_str_alloc_3d
+
+
+	type str_array_dt
+		integer :: start_guard = 123456789
+		character(len=10),dimension(5) :: a_str_exp_1d
+		integer :: end_guard = 123456789
+	end type str_array_dt
+
 	contains
 	
 	subroutine sub_str_in_explicit(x)
@@ -123,6 +139,109 @@ module strings
 		write(s, '(i0)') i
 		sz = len_trim(s)
 	end function str_int_len
+
+
+	subroutine str_array_inout(x)
+		character(len=10),dimension(5) :: x
+
+		integer :: i
+
+		do i=1,5
+			write(*,*) trim(x(i))
+		end do
+
+
+		x(1) = 'zzzzzzzzzz'
+		x(2) = 'yyyyyyyyyy'
+		x(3) = 'qqqqqqqqqq'
+		x(4) = 'wwwwwwwwww'
+		x(5) = 'xxxxxxxxxx'
+
+
+	end subroutine str_array_inout
+
+
+	subroutine str_array_inout2(x,n)
+		character(len=10),dimension(n) :: x
+		integer,intent(in) :: n
+
+		integer :: i
+
+		do i=1,5
+			write(*,*) trim(x(i))
+		end do
+
+
+		x(1) = 'zzzzzzzzzz'
+		x(2) = 'yyyyyyyyyy'
+		x(3) = 'qqqqqqqqqq'
+		x(4) = 'wwwwwwwwww'
+		x(5) = 'xxxxxxxxxx'
+
+
+	end subroutine str_array_inout2
+
+
+	subroutine str_array_inout3(x)
+		character(len=10),dimension(:) :: x
+
+		integer :: i
+
+		do i=1,5
+			write(*,*) trim(x(i))
+		end do
+
+
+		x(1) = 'zzzzzzzzzz'
+		x(2) = 'yyyyyyyyyy'
+		x(3) = 'qqqqqqqqqq'
+		x(4) = 'wwwwwwwwww'
+		x(5) = 'xxxxxxxxxx'
+
+
+	end subroutine str_array_inout3
+
+
+	subroutine str_array_inout4(x)
+		character(len=*),dimension(5) :: x
+
+		integer :: i
+
+		do i=1,5
+			write(*,*) trim(x(i))
+		end do
+
+
+		x(1) = 'zzzzzzzzzz'
+		x(2) = 'yyyyyyyyyy'
+		x(3) = 'qqqqqqqqqq'
+		x(4) = 'wwwwwwwwww'
+		x(5) = 'xxxxxxxxxx'
+
+
+	end subroutine str_array_inout4
+
+
+	logical function func_str_array_dt(x)
+		type(str_array_dt) :: x
+
+		func_str_array_dt = .false.
+
+		if(x%start_guard/=123456789 .or. x% end_guard/=123456789) then
+			return
+		end if
+
+
+		if(x%a_str_exp_1d(1) /= 'zzzzzzzzzz') return
+		if(x%a_str_exp_1d(2) /= 'yyyyyyyyyy') return
+		if(x%a_str_exp_1d(3) /= 'qqqqqqqqqq') return
+		if(x%a_str_exp_1d(4) /= 'wwwwwwwwww') return
+		if(x%a_str_exp_1d(5) /= 'xxxxxxxxxx') return
+
+		func_str_array_dt = .true.
+
+
+	end function func_str_array_dt
 		  
 
 end module strings
