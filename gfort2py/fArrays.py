@@ -2,6 +2,7 @@ import ctypes
 import numpy as np
 
 from .fVar_t import fVar_t
+from .utils import copy_array
 
 
 _index_t = ctypes.c_int64
@@ -60,13 +61,6 @@ class fArray_t(fVar_t):
     def ndim(self):
         return self.obj.ndim
 
-    def _copy_array(self, src, dst, length, size):
-        ctypes.memmove(
-            dst,
-            src,
-            length * size,
-        )
-
 
 class fExplicitArr(fArray_t):
     def ctype(self):
@@ -77,7 +71,7 @@ class fExplicitArr(fArray_t):
             self.cvalue = self.ctype()()
 
         self._value = self._array_check(value)
-        self._copy_array(
+        copy_array(
             self._value.ctypes.data,
             ctypes.addressof(self.cvalue),
             ctypes.sizeof(self._ctype_base),
@@ -127,7 +121,7 @@ class fAssumedShape(fArray_t):
         if value is not None:
             self._value = self._array_check(value, False)
 
-            # self._copy_array(
+            # copy_array(
             #     self._value.ctypes.data,
             #     self.cvalue.base_addr,
             #     ctypes.sizeof(self._ctype_base()),
@@ -232,7 +226,7 @@ class fAssumedSize(fArray_t):
         if self.cvalue is None:
             self.cvalue = self.ctype()()
 
-        self._copy_array(
+        copy_array(
             self._value.ctypes.data,
             ctypes.addressof(self.cvalue),
             ctypes.sizeof(self._ctype_base),

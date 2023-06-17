@@ -163,12 +163,15 @@ class fProc:
 
         if len(self.obj.args()):
             for var in self.input_args:
-                try:
-                    x = ptr_unpack(var.fvar.value)
-                except AttributeError:  # unset optional arguments
-                    x = None
+                if var.fvar.unpack:
+                    try:
+                        x = ptr_unpack(var.fvar.value)
+                    except AttributeError:  # unset optional arguments
+                        x = None
+                else:
+                    x = var.fvar.cvalue
 
-                if hasattr(result, "_type_"):
+                if hasattr(x, "_type_"):
                     res[var.fvar.name] = var.fvar.from_ctype(x)
                 else:
                     res[var.fvar.name] = x

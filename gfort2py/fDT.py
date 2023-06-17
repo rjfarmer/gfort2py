@@ -21,6 +21,7 @@ class fDT(fVar_t):
         self.fvar = fvar
         self.allobjs = allobjs
         self.cvalue = cvalue
+        self.unpack = True
 
         # Get obj for derived type spec
         self._dt_obj = self.allobjs[self.obj.dt_type()]
@@ -165,6 +166,7 @@ class fExplicitDT(fVar_t):
         self.fvar = fvar
         self.allobjs = allobjs
         self.cvalue = cvalue
+        self.unpack = True
 
         # Get obj for derived type spec
         self._dt_obj = self.allobjs[self.obj.dt_type()]

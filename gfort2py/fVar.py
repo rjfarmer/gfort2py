@@ -6,7 +6,7 @@ from .fVar_t import fVar_t
 
 from .fScalars import fScalar, fCmplx
 from .fArrays import fExplicitArr, fAssumedShape, fAssumedSize
-from .fStrings import fStr, fAllocStr
+from .fStrings import fStr, fAllocStr, fStrExplicit
 from .fDT import fDT, fExplicitDT
 from .fProcPtr import fProcPointer
 
@@ -24,7 +24,9 @@ class fVar:
             raise NotImplementedError
             # return fProcPointer(obj, *args, **kwargs)
         elif obj.is_array():
-            if obj.is_explicit():
+            if obj.is_char():
+                return fStrExplicit(obj, *args, **kwargs)
+            elif obj.is_explicit():
                 return fExplicitArr(obj, *args, **kwargs)
             elif obj.is_assumed_size():
                 return fAssumedSize(obj, *args, **kwargs)

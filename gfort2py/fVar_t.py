@@ -9,6 +9,7 @@ class fVar_t:
         self.obj = obj
         self.allobjs = allobjs
         self.cvalue = cvalue
+        self.unpack = True
 
         self.type, self.kind = self.obj.type_kind()
 

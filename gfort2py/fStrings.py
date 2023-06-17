@@ -1,6 +1,8 @@
 import ctypes
+import numpy as np
 
 from .fVar_t import fVar_t
+from .utils import copy_array
 
 
 class fStr(fVar_t):
@@ -146,6 +148,121 @@ class fAllocStr(fStr):
             l = 0
         else:
             l = len(value)
+
+        self._len_ctype = ctypes.pointer(ctypes.c_int64(l))
+
+        self.cvalue = self.from_param(value)
+
+        return self.Args(None, self.cvalue, self._len_ctype)
+
+
+class fStrExplicit(fStr):
+    def __init__(self, *args, **kwargs):
+        self._len_ctype = None
+        self._len = None
+        super().__init__(*args, **kwargs)
+        self.unpack = False
+
+    def ctype(self):
+        return self._ctype_base
+
+    @property
+    def _ctype_base(self):
+        return ctypes.c_char_p * self.len() * self.obj.size
+
+    @_ctype_base.setter
+    def _ctype_base(self, value):
+        return ctypes.c_char_p * self.len() * self.obj.size
+
+    def _array_check(self, value, know_shape=True):
+        shape = self.obj.shape()
+        ndim = self.obj.ndim
+
+        if not np.issubdtype(value.dtype, np.bytes_):
+            raise TypeError("Character strings must be bytes (S dtype)")
+
+        if not value.flags["F_CONTIGUOUS"]:
+            value = np.asfortranarray(value)
+
+        if value.ndim != ndim:
+            raise ValueError(
+                f"Wrong number of dimensions, got {value.ndim} expected {ndim}"
+            )
+
+        if know_shape:
+            if not self.obj.is_allocatable and list(value.shape) != shape:
+                raise ValueError(f"Wrong shape, got {value.shape} expected {shape}")
+
+        value = value.ravel(order="F")
+        return value
+
+    def from_param(self, value):
+        if value is None:
+            raise ValueError("Character array must not be None")
+
+        self._value = self._array_check(value)
+
+        self._len = self._value.dtype.itemsize
+
+        if self.cvalue is None:
+            self.cvalue = self.ctype()()
+
+        copy_array(
+            self._value.ctypes.data,
+            ctypes.addressof(self.cvalue),
+            ctypes.sizeof(self._ctype_base),
+            1,
+        )
+
+        return self.cvalue
+
+    def from_ctype(self, ct):
+        self.cvalue = ct
+
+        return self.value
+
+    @property
+    def value(self):
+        z = np.zeros(self.obj.shape(), dtype=f"S{self.len()}")
+
+        copy_array(
+            ctypes.addressof(self.cvalue),
+            z.ctypes.data,
+            ctypes.sizeof(self._ctype_base),
+            1,
+        )
+
+        return z
+
+    @value.setter
+    def value(self, value):
+        self.from_param(value)
+
+    def len(self):
+        if self._len_ctype is not None:
+            self._len = self._len_ctype.contents.value
+
+        if self._len is None:
+            self._len = 1
+        return self._len
+
+    def in_dll(self, lib):
+        self.cvalue = self.ctype().in_dll(lib, self.mangled_name)
+        return self.cvalue
+
+    def __doc__(self):
+        return (
+            f"character(LEN=({self.len()})),dimension({self.obj.shape}) :: {self.name}"
+        )
+
+    def sizeof(self):
+        return ctypes.sizeof(self.ctype)
+
+    def to_proc(self, value):
+        if value is None:
+            l = 0
+        else:
+            l = value.dtype.itemsize
 
         self._len_ctype = ctypes.pointer(ctypes.c_int64(l))
 

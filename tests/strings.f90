@@ -146,9 +146,7 @@ module strings
 
 		integer :: i
 
-		do i=1,5
-			write(*,*) trim(x(i))
-		end do
+		write(*,*) x(1:5)
 
 
 		x(1) = 'zzzzzzzzzz'
@@ -167,9 +165,7 @@ module strings
 
 		integer :: i
 
-		do i=1,5
-			write(*,*) trim(x(i))
-		end do
+		write(*,*) x(1:5)
 
 
 		x(1) = 'zzzzzzzzzz'
@@ -187,9 +183,7 @@ module strings
 
 		integer :: i
 
-		do i=1,5
-			write(*,*) trim(x(i))
-		end do
+		write(*,*) x(1:5)
 
 
 		x(1) = 'zzzzzzzzzz'
@@ -207,9 +201,7 @@ module strings
 
 		integer :: i
 
-		do i=1,5
-			write(*,*) trim(x(i))
-		end do
+		write(*,*) x(1:5)
 
 
 		x(1) = 'zzzzzzzzzz'
