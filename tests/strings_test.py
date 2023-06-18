@@ -143,7 +143,6 @@ class TestStringMethods:
 
         assert not x.func_str_array_dt(data).result
 
-    @pytest.mark.skip
     def test_str_func_inout_str2(self, capfd):
         z = np.array(
             ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],

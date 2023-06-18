@@ -1,6 +1,8 @@
 import ctypes
 import collections
 
+from .utils import resolve_other_args
+
 
 class fVar_t:
     Args = collections.namedtuple("arg", ["prepend", "arg", "append"])
@@ -46,10 +48,12 @@ class fVar_t:
         self.cvalue = self.ctype().in_dll(lib, self.mangled_name)
         return self.cvalue
 
-    def to_proc(self, value):
+    def to_proc(self, value, other_args):
         start = None
         arg = None
         end = None
+
+        self.obj = resolve_other_args(self.obj, other_args)
 
         if self.obj.is_optional() and value is None:
             end = ctypes.c_byte(0)

@@ -493,7 +493,8 @@ class expression:
     exp_type: str = ""
     ts: typespec = None
     rank: int = -1
-    value: t.Any = None
+    _value: t.Any = None
+    _resolved_value: t.Any = None  # value may by a symbol_ref, so this is the value after resolving the reference
     arglist: actual_arglist = None  # PDT's?
     charlen: int = -1
     unary_op: str = ""
@@ -502,46 +503,58 @@ class expression:
         self.exp_type = args[0]
         self.ts = typespec(*args[1])
         self.rank = int(args[2])
+        self._resolved_value = None
 
         if self.exp_type == "OP":
-            self.value = None
+            self._value = None
             self.unary_op = args[3]
             self.unary_args = [expression(*args[4]), expression(*args[5])]
             self._unknown = args[6]  # What is this for?
         elif self.exp_type == "FUNCTION":
-            self.value = symbol_ref(args[3])
+            self._value = symbol_ref(args[3])
         elif self.exp_type == "CONSTANT":
             if self.ts.type == "REAL":
-                self.value = hextofloat(string_clean(args[3]))
+                self._value = hextofloat(string_clean(args[3]))
             elif self.ts.type == "INTEGER":
-                self.value = int(string_clean(args[3]))
+                self._value = int(string_clean(args[3]))
             elif self.ts.type == "CHARACTER":
                 self.charlen = int(args[3])
-                self.value = string_clean(args[4])
+                self._value = string_clean(args[4])
             elif self.ts.type == "COMPLEX":
-                self.value = complex(
+                self._value = complex(
                     hextofloat(string_clean(args[3])), hextofloat(string_clean(args[4]))
                 )
             else:
                 raise NotImplementedError(args)
         elif self.exp_type == "VARIABLE":
-            self.value = symbol_ref(args[3])
+            self._value = symbol_ref(args[3])
         elif self.exp_type == "SUBSTRING":
             raise NotImplementedError(args)
         elif self.exp_type == "ARRAY":
-            self.value = []
+            self._value = []
             for i in args[3]:
-                self.value.append(
+                self._value.append(
                     expression(*i[0]).value
                 )  # Wheres the extra component comming from?
         elif self.exp_type == "NULL":
-            self.value = args[3]
+            self._value = args[3]
         elif self.exp_type == "COMPCALL":
             raise NotImplementedError(args)
         elif self.exp_type == "PPC":
             raise NotImplementedError(args)
         else:
             raise AttributeError(f"Can't match {self.exp_type}")
+
+    @property
+    def value(self):
+        if self._resolved_value is not None:
+            return self._resolved_value
+        else:
+            return self._value
+
+    @value.setter
+    def value(self, value):
+        self._resolved_value = value
 
 
 @dataclass(init=False)

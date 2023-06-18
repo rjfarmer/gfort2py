@@ -4,6 +4,8 @@ import numpy as np
 from .fVar_t import fVar_t
 from .utils import copy_array
 
+from .utils import resolve_other_args
+
 
 class fStr(fVar_t):
     def __init__(self, *args, **kwargs):
@@ -143,7 +145,9 @@ class fAllocStr(fStr):
     def sizeof(self):
         return ctypes.sizeof(self.ctype)
 
-    def to_proc(self, value):
+    def to_proc(self, value, other_args):
+        self.obj = resolve_other_args(self.obj, other_args)
+
         if value is None:
             l = 0
         else:
@@ -172,7 +176,10 @@ class fStrExplicit(fStr):
 
     @_ctype_base.setter
     def _ctype_base(self, value):
-        return ctypes.c_char * self.len() * self.obj.size
+        try:
+            return ctypes.c_char * self.len() * self.obj.size
+        except TypeError:
+            pass  # Dont allways now size when loading class
 
     def _array_check(self, value, know_shape=True):
         shape = self.obj.shape()
@@ -258,7 +265,8 @@ class fStrExplicit(fStr):
     def sizeof(self):
         return ctypes.sizeof(self.ctype)
 
-    def to_proc(self, value):
+    def to_proc(self, value, other_args):
+        self.obj = resolve_other_args(self.obj, other_args)
         if value is None:
             l = 0
         else:

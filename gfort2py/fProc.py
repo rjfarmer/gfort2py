@@ -16,6 +16,7 @@ _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 class variable:
     value: "typing.Any"
     fvar: "typing.Any"
+    symbol_ref: int
 
 
 class _captureStdOut:
@@ -127,7 +128,7 @@ class fProc:
                 var = x
                 x = var.value
 
-            arguments.append(variable(x, var))
+            arguments.append(variable(x, var, fval.ref))
 
         return arguments
 
@@ -136,7 +137,7 @@ class fProc:
         args_end = []
         # Convert to ctypes
         for var in input_args:
-            _, a, e = var.fvar.to_proc(var.value)
+            _, a, e = var.fvar.to_proc(var.value, input_args)
             args.append(a)
             if e is not None:
                 args_end.append(e)
