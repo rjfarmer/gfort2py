@@ -119,7 +119,6 @@ class TestStringMethods:
 
         assert np.all(res.args["x"] == z2)
 
-    @pytest.mark.skip
     def test_func_str_array_dt(self):
         data = {
             "start_guard": 123456789,
@@ -141,7 +140,7 @@ class TestStringMethods:
             "end_guard": 123456789,
         }
 
-        assert not x.func_str_array_dt(data).result
+        assert x.func_str_array_dt(data).result
 
     def test_str_func_inout_str2(self, capfd):
         z = np.array(

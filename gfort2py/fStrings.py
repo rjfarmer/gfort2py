@@ -250,7 +250,11 @@ class fStrExplicit(fStr):
             self._len = self._len_ctype.value
 
         if self._len is None:
-            self._len = 1
+            if self.obj.is_deferred_len():
+                self._len = len(self.cvalue)
+            else:
+                self._len = self.obj.strlen.value
+
         return self._len
 
     def in_dll(self, lib):
