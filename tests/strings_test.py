@@ -101,7 +101,6 @@ class TestStringMethods:
         with pytest.raises(TypeError) as cm:
             x.a_str_exp_1d = np.zeros(5, dtype=np.unicode_)
 
-    @pytest.mark.skip
     def test_str_func_inout_str(self, capfd):
         z = np.array(
             ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
@@ -151,7 +150,7 @@ class TestStringMethods:
             dtype="S10",
         )
 
-        res = x.str_array_inout2(z)
+        res = x.str_array_inout2(z, 5)
         out, err = capfd.readouterr()
 
         assert out == " aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee\n\n"

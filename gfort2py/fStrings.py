@@ -168,11 +168,11 @@ class fStrExplicit(fStr):
 
     @property
     def _ctype_base(self):
-        return ctypes.c_char_p * self.len() * self.obj.size
+        return ctypes.c_char * self.len() * self.obj.size
 
     @_ctype_base.setter
     def _ctype_base(self, value):
-        return ctypes.c_char_p * self.len() * self.obj.size
+        return ctypes.c_char * self.len() * self.obj.size
 
     def _array_check(self, value, know_shape=True):
         shape = self.obj.shape()
@@ -240,7 +240,7 @@ class fStrExplicit(fStr):
 
     def len(self):
         if self._len_ctype is not None:
-            self._len = self._len_ctype.contents.value
+            self._len = self._len_ctype.value
 
         if self._len is None:
             self._len = 1
@@ -264,8 +264,12 @@ class fStrExplicit(fStr):
         else:
             l = value.dtype.itemsize
 
-        self._len_ctype = ctypes.pointer(ctypes.c_int64(l))
+        self._len_ctype = ctypes.c_int64(l)
 
         self.cvalue = self.from_param(value)
 
         return self.Args(None, self.cvalue, self._len_ctype)
+
+    def __del__(self):
+        self.cvalue = None
+        self._len_ctype = None
