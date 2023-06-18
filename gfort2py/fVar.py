@@ -25,7 +25,12 @@ class fVar:
             # return fProcPointer(obj, *args, **kwargs)
         elif obj.is_array():
             if obj.is_char():
-                return fStrExplicit(obj, *args, **kwargs)
+                if obj.is_explicit():
+                    return fStrExplicit(obj, *args, **kwargs)
+                else:
+                    raise TypeError(
+                        "Assumed shape character arrays not currently supported"
+                    )
             elif obj.is_explicit():
                 return fExplicitArr(obj, *args, **kwargs)
             elif obj.is_assumed_size():
