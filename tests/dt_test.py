@@ -173,6 +173,11 @@ class TestDTMethods:
         o = "99 98"
         self.assertEqual(out.strip(), o)
 
+        z2 = x.sub_f_simple_in(z.args["x"])
+        out, err = capfd.readouterr()
+        o = "99 98"
+        self.assertEqual(out.strip(), o)
+
     def test_func_return_s_struct_nested_2(self):
         y = x.func_return_s_struct_nested_2()
         self.assertEqual(y.result["a_int"], 123)

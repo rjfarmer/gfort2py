@@ -172,10 +172,11 @@ class fProc:
                 else:
                     x = var.fvar.cvalue
 
+                name = self._allobjs[var.symbol_ref].name
                 if hasattr(x, "_type_"):
-                    res[var.fvar.name] = var.fvar.from_ctype(x)
+                    res[name] = var.fvar.from_ctype(x)
                 else:
-                    res[var.fvar.name] = x
+                    res[name] = x
 
         if self.obj.is_function():
             result = self.return_var.from_ctype(result)

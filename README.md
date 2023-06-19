@@ -136,8 +136,7 @@ Derived types that are dummy arguments to a procedure are returned as a ``fDT`` 
 can only be accessed via the item interface ``['x']`` and not as attributes ``.x``.  This was done so that we do not have a name collision
 between python functions (``keys``, ``items`` etc) and any fortran derived type components.
 
-It is currently not possible to pass a ``fDT`` as an argument to a procedure.
-
+You can pass a ``fDT`` as an argument to a procedure.
 
 
 ## Testing
