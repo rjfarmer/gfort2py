@@ -168,6 +168,8 @@ class utils:
                 return "c4"
             elif k == 8:
                 return "c8"
+        elif t == "CHARACTER":
+            return f"S{self.strlen.value}"
 
         raise NotImplementedError(f"Object of type {t} and kind {k} not supported yet")
 

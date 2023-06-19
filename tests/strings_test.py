@@ -197,3 +197,24 @@ class TestStringMethods:
         )
 
         assert np.all(res.args["x"] == z2)
+
+    def test_str_array_param(self):
+        assert np.all(x.a_str_p_1d == np.array(["aa", "bb", "cc"], dtype="S2"))
+
+    def test_check_a_str_exp_1d(self, capfd):
+        x.a_str_exp_1d = np.array(
+            ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
+            dtype="S10",
+        )
+
+        res = x.check_a_str_exp_1d()
+        out, err = capfd.readouterr()
+
+        assert out == " aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee\n\n"
+
+        z2 = np.array(
+            ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
+            dtype="S10",
+        )
+
+        assert np.all(x.a_str_exp_1d == z2)

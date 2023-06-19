@@ -29,6 +29,10 @@ module strings
 	character(len=10),dimension(:,:,:),allocatable :: b_str_alloc_3d
 
 
+	character(len=2),dimension(3), parameter :: a_str_p_1d = (/'aa','bb','cc'/)
+
+
+
 	type str_array_dt
 		integer :: start_guard = 123456789
 		character(len=10),dimension(5) :: a_str_exp_1d
@@ -234,6 +238,21 @@ module strings
 
 
 	end function func_str_array_dt
+
+
+	subroutine check_a_str_exp_1d()
+
+
+		write(*,*) a_str_exp_1d(1:5)
+
+
+		a_str_exp_1d(1) = 'zzzzzzzzzz'
+		a_str_exp_1d(2) = 'yyyyyyyyyy'
+		a_str_exp_1d(3) = 'qqqqqqqqqq'
+		a_str_exp_1d(4) = 'wwwwwwwwww'
+		a_str_exp_1d(5) = 'xxxxxxxxxx'
+
+	end subroutine check_a_str_exp_1d
 		  
 
 end module strings
