@@ -155,3 +155,7 @@ test similar things should have similar names, i.e all thing testing explicit ar
 # Skipping tests
 
 For things that don't work yet you can use the python decorator ``@pytest.mark.skip`` to skip the test. NOthing needs to be done on the Fortran side for tests that don't work yet.
+
+# Bug reports
+
+Bug reports make excellent test cases. If you can reduce the problem done to its minimal working example and add it to the test suite then there is a much better chance that the bug wont be re-introduced once it has been fixed. It also makes fixing things easier if there is a minimal working example.
