@@ -291,6 +291,8 @@ Bug reports are of course welcome and PR's should target the main branch.
 
 For those wanting to get more involved, adding Fortran examples to the test suite of currently untested or unsupported features would be helpful. Bonus points if you also provide a python test case (that can be marked ``@pytest.mark.skip`` if it does not work) that demonstrates the proposed interface to the new fortran feature.
 
+See [how to write a test case](tests/README.md) for details on how to write test cases.
+
 For those wanting to go further and add the new feature themselves open a bug report and we can chat about what needs doing.
 
 
