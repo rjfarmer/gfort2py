@@ -115,7 +115,7 @@ class fAllocStr(fStr):
     def value(self):
         try:
             x = self.cvalue[0]
-        except:
+        except Exception:
             return None
 
         if x is None:
