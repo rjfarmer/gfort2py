@@ -4,5 +4,3 @@ include COPYING.txt
 include setup.py
 include setup.cfg
 include pyproject.toml
-recursive-include gfort2py *.f90 *.pyx *.py *.c Makefile
-recursive-include tests *.f90 *.pyx *.py *.c Makefile
