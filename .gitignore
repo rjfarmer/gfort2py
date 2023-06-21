@@ -100,7 +100,7 @@ ENV/
 *.o
 *.fpy
 *.pickle
-
+.vscode/*
 
 docs/build
 docs/source/_build
