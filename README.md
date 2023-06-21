@@ -284,6 +284,25 @@ You must still first set it to something
 x.func_ptr = x.func_arg # With the function itself
 ```` -->
 
+## Accessing module file data
+
+For those wanting to explore the module file format, there is a routine ``mod_info`` available from the top-level ``gfort2py`` module:
+
+````
+module = gf.mod_info('file.mod')
+````
+
+That will parse the mod file and convert it into an intermediate format inside ``module``.
+
+Variables or procedures can be looked up via the item interface (I also recommend using pprint for easier viewing):
+
+````
+from pprint import pprint
+
+pprint(module['a_variable'])
+````
+
+Accessing the list of all available components can be had via ``module.keys()``.
 
 ## Contributing
 
