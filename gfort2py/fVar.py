@@ -6,7 +6,7 @@ from .fVar_t import fVar_t
 
 from .fScalars import fScalar, fCmplx
 from .fArrays import fExplicitArr, fAssumedShape, fAssumedSize
-from .fStrings import fStr, fAllocStr, fStrExplicit
+from .fStrings import fStr, fAllocStr, fStrExplicit, fStrAssumedShape
 from .fDT import fDT, fExplicitDT
 from .fProcPtr import fProcPointer
 
@@ -27,9 +27,11 @@ class fVar:
             if obj.is_char():
                 if obj.is_explicit():
                     return fStrExplicit(obj, *args, **kwargs)
+                elif obj.is_assumed_shape() or obj.is_allocatable() or obj.is_pointer():
+                    return fStrAssumedShape(obj, *args, **kwargs)
                 else:
                     raise TypeError(
-                        "Assumed shape character arrays not currently supported"
+                        "Unknown type of character array not currently supported"
                     )
             elif obj.is_explicit():
                 return fExplicitArr(obj, *args, **kwargs)

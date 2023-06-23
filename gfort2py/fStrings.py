@@ -2,9 +2,8 @@ import ctypes
 import numpy as np
 
 from .fVar_t import fVar_t
-from .utils import copy_array
-
-from .utils import resolve_other_args
+from .fArrays import fAssumedShape
+from .utils import copy_array, resolve_other_args
 
 
 class fStr(fVar_t):
@@ -285,3 +284,62 @@ class fStrExplicit(fStr):
     def __del__(self):
         self.cvalue = None
         self._len_ctype = None
+
+
+class fStrAssumedShape(fAssumedShape):
+    def __init__(self, *args, **kwargs):
+        self._len_ctype = None
+        self._len = None
+        super().__init__(*args, **kwargs)
+        self.unpack = False
+
+    @property
+    def _ctype_base(self):
+        # print(self.len(),self.obj.size)
+        return ctypes.c_char * int(self.len() * self.obj.size)
+
+    @_ctype_base.setter
+    def _ctype_base(self, value):
+        try:
+            return ctypes.c_char * int(self.len() * self.obj.size)
+        except TypeError:
+            pass  # Dont allways now size when loading class
+
+    def _array_check(self, value, know_shape=True):
+        if not np.issubdtype(value.dtype, np.bytes_):
+            raise TypeError("Character strings must be bytes (S dtype)")
+
+        return super()._array_check(value, know_shape)
+
+    @property
+    def value(self):
+        value = super().value
+        return value.as_dtype(f"S{self.len()}")
+
+    def len(self):
+        if self._len_ctype is not None:
+            self._len = self._len_ctype.value
+
+        if self._len is None:
+            if self.obj.is_deferred_len():
+                self._len = len(self.cvalue)
+            else:
+                self._len = self.obj.strlen.value
+
+        return self._len
+
+    def sizeof(self):
+        return ctypes.sizeof(self.ctype)
+
+    def to_proc(self, value, other_args):
+        self.obj = resolve_other_args(self.obj, other_args)
+        if value is None:
+            l = 0
+        else:
+            l = value.dtype.itemsize
+
+        self._len_ctype = ctypes.c_int64(l)
+
+        self.cvalue = self.from_param(value)
+
+        return self.Args(None, self.cvalue, self._len_ctype)
