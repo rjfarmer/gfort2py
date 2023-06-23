@@ -342,6 +342,10 @@ class fStrAssumedShape(fAssumedShape):
 
         return z
 
+    @value.setter
+    def value(self, value):
+        self.from_param(value)
+
     def len(self):
         if self._len_ctype is not None:
             self._len = self._len_ctype.value

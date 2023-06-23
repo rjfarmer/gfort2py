@@ -270,4 +270,37 @@ module strings
 	end subroutine check_a_str_exp_1d
 		  
 
+	subroutine alloc_b_str_alloc_1d()
+
+		if(allocated(b_str_alloc_1d)) deallocate(b_str_alloc_1d)
+
+		allocate(b_str_alloc_1d(5))
+
+		b_str_alloc_1d(1) = 'zzzzzzzzzz'
+		b_str_alloc_1d(2) = 'yyyyyyyyyy'
+		b_str_alloc_1d(3) = 'qqqqqqqqqq'
+		b_str_alloc_1d(4) = 'wwwwwwwwww'
+		b_str_alloc_1d(5) = 'xxxxxxxxxx'		
+
+	end subroutine alloc_b_str_alloc_1d
+
+
+	logical function check_b_str_alloc_1d()
+
+		check_b_str_alloc_1d  =.false.
+
+		if(.not.allocated(b_str_alloc_1d)) return
+
+
+		if(b_str_alloc_1d(1) /= 'zzzzzzzzzz') return
+		if(b_str_alloc_1d(2) /= 'yyyyyyyyyy') return
+		if(b_str_alloc_1d(3) /= 'qqqqqqqqqq') return
+		if(b_str_alloc_1d(4) /= 'wwwwwwwwww') return
+		if(b_str_alloc_1d(5) /= 'xxxxxxxxxx') return
+
+		check_b_str_alloc_1d = .true.
+
+	end function check_b_str_alloc_1d
+
+
 end module strings

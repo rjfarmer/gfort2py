@@ -229,3 +229,33 @@ class TestStringMethods:
         )
 
         assert np.all(x.a_str_exp_1d == z2)
+
+    def test_b_str_alloc_1d(self):
+        x.b_str_alloc_1d = np.array(
+            ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
+            dtype="S10",
+        )
+
+        res = x.check_b_str_alloc_1d()
+
+        assert res.result
+
+        x.b_str_alloc_1d = np.array(
+            ["aaaaaaaaaa", "bbbbbbbbbb"],
+            dtype="S10",
+        )
+
+        res = x.check_b_str_alloc_1d()
+
+        assert not res.result
+
+    def test_alloc_b_str_alloc_1d(self):
+        res = x.alloc_b_str_alloc_1d()
+
+        assert np.all(
+            x.b_str_alloc_1d
+            == np.array(
+                ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
+                dtype="S10",
+            )
+        )
