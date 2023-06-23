@@ -313,27 +313,28 @@ class fStrAssumedShape(fAssumedShape):
 
     @property
     def value(self):
-        if self.cvalue.contents.base_addr is None:
+        if hasattr(self.cvalue, "contents"):
+            cv = self.cvalue.contents
+        else:
+            cv = self.cvalue
+
+        if cv.base_addr is None:
             return None
 
         shape = []
         for i in range(self.obj.ndim):
-            shape.append(
-                self.cvalue.contents.dims[i].ubound
-                - self.cvalue.contents.dims[i].lbound
-                + 1
-            )
+            shape.append(cv.dims[i].ubound - cv.dims[i].lbound + 1)
 
         shape = tuple(shape)
         size = (np.prod(shape),)
 
         PTR = ctypes.POINTER(self._ctype_base)
-        x_ptr = ctypes.cast(self.cvalue.contents.base_addr, PTR)
+        x_ptr = ctypes.cast(cv.base_addr, PTR)
 
         z = np.zeros(shape, dtype=f"S{self.len()}")
 
         copy_array(
-            self.cvalue.contents.base_addr,
+            cv.base_addr,
             z.ctypes.data,
             ctypes.sizeof(ctypes.c_char * int(self.len())),
             np.prod(shape),
@@ -359,7 +360,7 @@ class fStrAssumedShape(fAssumedShape):
     def to_proc(self, value, other_args):
         self.obj = resolve_other_args(self.obj, other_args)
         if value is None:
-            l = 0
+            l = self.obj.strlen.value
         else:
             l = value.dtype.itemsize
 

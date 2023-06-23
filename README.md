@@ -173,7 +173,7 @@ To run unit tests
 - [x] Derived types with dimension(:) array components (pointer, allocatable, target)
 - [x] Allocatable strings (partial)
 - [x] Explicit Arrays of strings
-- [ ] allocatable arrays of strings
+- [x] Allocatable arrays of strings
 - [ ] Classes
 - [ ] Abstract interfaces
 - [x] Common blocks (partial)
@@ -196,8 +196,8 @@ To run unit tests
 - [x] Passing characters of fixed size (len=10 or len=* etc)
 - [x] Functions that return a character as their result
 - [x] Allocatable strings (Only for things that do not get altered inside the procedure)
-- [x] explicit arrays of strings
-- [ ] allocatable arrays of strings
+- [x] Explicit arrays of strings
+- [x] Allocatable arrays of strings
 - [x] Pointer arguments 
 - [x] Optional arguments
 - [x] Value arguments
