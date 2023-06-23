@@ -291,7 +291,7 @@ class fStrAssumedShape(fAssumedShape):
         self._len_ctype = None
         self._len = None
         super().__init__(*args, **kwargs)
-        self.unpack = False
+        self.unpack = True
 
     @property
     def _ctype_base(self):
@@ -303,7 +303,7 @@ class fStrAssumedShape(fAssumedShape):
         try:
             return ctypes.c_char * int(self.len() * self.obj.size)
         except TypeError:
-            pass  # Dont allways now size when loading class
+            pass  # Dont always now the size when loading the class
 
     def _array_check(self, value, know_shape=True):
         if not np.issubdtype(value.dtype, np.bytes_):
@@ -313,8 +313,33 @@ class fStrAssumedShape(fAssumedShape):
 
     @property
     def value(self):
-        value = super().value
-        return value.as_dtype(f"S{self.len()}")
+        if self.cvalue.contents.base_addr is None:
+            return None
+
+        shape = []
+        for i in range(self.obj.ndim):
+            shape.append(
+                self.cvalue.contents.dims[i].ubound
+                - self.cvalue.contents.dims[i].lbound
+                + 1
+            )
+
+        shape = tuple(shape)
+        size = (np.prod(shape),)
+
+        PTR = ctypes.POINTER(self._ctype_base)
+        x_ptr = ctypes.cast(self.cvalue.contents.base_addr, PTR)
+
+        z = np.zeros(shape, dtype=f"S{self.len()}")
+
+        copy_array(
+            self.cvalue.contents.base_addr,
+            z.ctypes.data,
+            ctypes.sizeof(ctypes.c_char * int(self.len())),
+            np.prod(shape),
+        )
+
+        return z
 
     def len(self):
         if self._len_ctype is not None:
@@ -340,6 +365,6 @@ class fStrAssumedShape(fAssumedShape):
 
         self._len_ctype = ctypes.c_int64(l)
 
-        self.cvalue = self.from_param(value)
+        self.cvalue = ctypes.pointer(self.from_param(value))
 
         return self.Args(None, self.cvalue, self._len_ctype)

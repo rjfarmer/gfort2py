@@ -218,6 +218,21 @@ module strings
 	end subroutine str_array_inout4
 
 
+	subroutine str_array_allocate(x)
+		character(len=10),dimension(:),allocatable :: x
+
+		allocate(x(5))
+
+		x(1) = 'zzzzzzzzzz'
+		x(2) = 'yyyyyyyyyy'
+		x(3) = 'qqqqqqqqqq'
+		x(4) = 'wwwwwwwwww'
+		x(5) = 'xxxxxxxxxx'
+
+
+	end subroutine str_array_allocate
+
+
 	logical function func_str_array_dt(x)
 		type(str_array_dt) :: x
 

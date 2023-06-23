@@ -160,7 +160,6 @@ class TestStringMethods:
 
         assert np.all(res.args["x"] == z2)
 
-    @pytest.mark.skip
     def test_str_func_inout_str3(self, capfd):
         z = np.array(
             ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
@@ -171,6 +170,19 @@ class TestStringMethods:
         out, err = capfd.readouterr()
 
         assert out == " aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee\n\n"
+
+        z2 = np.array(
+            ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
+            dtype="S10",
+        )
+
+        assert np.all(res.args["x"] == z2)
+
+    @pytest.mark.skip
+    def test_str_func_inout_alloc(self, capfd):
+        z = None
+
+        res = x.str_array_inout3(z)
 
         z2 = np.array(
             ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
