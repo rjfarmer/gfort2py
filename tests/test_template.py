@@ -10,12 +10,11 @@ import gfort2py as gf
 
 import pytest
 
-SO = "./tests/.so"
+SO = f"./tests/.{gf.lib_ext()}"
 MOD = "./tests/.mod"
 
 # x=gf.fFort(SO,MOD)
 
 
 class TestStringMethods:
-    def assertEqual(self, x, y):
-        assert x == y
+    pass

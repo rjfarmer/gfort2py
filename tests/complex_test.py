@@ -10,7 +10,7 @@ import gfort2py as gf
 
 import pytest
 
-SO = "./tests/complex.so"
+SO = f"./tests/complex.{gf.lib_ext()}"
 MOD = "./tests/comp.mod"
 
 x = gf.fFort(SO, MOD)

@@ -2,6 +2,7 @@
 import ctypes
 import numpy as np
 import os
+import platform
 
 from .module_parse import module
 
@@ -97,3 +98,11 @@ class fFort:
 
 def mod_info(mod_file):
     return module(mod_file)
+
+
+def lib_ext():
+    os = platform.system()
+    if os == "Darwin":
+        return "dylib"
+    else:
+        return "so"

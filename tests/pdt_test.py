@@ -10,7 +10,7 @@ import gfort2py as gf
 
 import pytest
 
-SO = "./tests/pdt.so"
+SO = f"./tests/pdt.{gf.lib_ext()}"
 MOD = "./tests/pdt.mod"
 
 x = gf.fFort(SO, MOD)
@@ -18,8 +18,5 @@ x = gf.fFort(SO, MOD)
 
 @pytest.mark.skip
 class TestOOMethods:
-    def assertEqual(self, x, y):
-        assert x == y
-
     def test_p_proc_call(self):
         pass
