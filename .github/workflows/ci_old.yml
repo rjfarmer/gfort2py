@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: ci - gfortran8
 on: [push, pull_request]
 
 jobs:
