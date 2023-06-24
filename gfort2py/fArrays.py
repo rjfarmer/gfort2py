@@ -111,6 +111,10 @@ class fAssumedShape(fArray_t):
     _BT_VOID = _BT_HOLLERITH + 1
     _BT_ASSUMED = _BT_VOID + 1
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.is_array = True
+
     def ctype(self):
         return _make_fAlloc15(self.obj.ndim)
 

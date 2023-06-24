@@ -3,6 +3,8 @@ import numpy as np
 
 from .fVar_t import fVar_t
 
+from .utils import copy_array
+
 
 _all_dts = {}
 
@@ -100,7 +102,15 @@ class fDT(fVar_t):
 
                 v = self._dt_args[key].cvalue
 
-                setattr(self.cvalue, key, v)
+                if self._dt_args[key].is_array:
+                    copy_array(
+                        ctypes.addressof(v),
+                        ctypes.addressof(getattr(self.cvalue, key)),
+                        1,
+                        ctypes.sizeof(v),
+                    )
+                else:
+                    setattr(self.cvalue, key, v)
 
         return self.cvalue
 

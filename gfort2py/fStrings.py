@@ -292,6 +292,7 @@ class fStrAssumedShape(fAssumedShape):
         self._len = None
         super().__init__(*args, **kwargs)
         self.unpack = True
+        self.is_array = True
 
     @property
     def _ctype_base(self):
@@ -327,9 +328,6 @@ class fStrAssumedShape(fAssumedShape):
 
         shape = tuple(shape)
         size = (np.prod(shape),)
-
-        PTR = ctypes.POINTER(self._ctype_base)
-        x_ptr = ctypes.cast(cv.base_addr, PTR)
 
         z = np.zeros(shape, dtype=f"S{self.len()}")
 

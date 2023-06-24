@@ -12,6 +12,7 @@ class fVar_t:
         self.allobjs = allobjs
         self.cvalue = cvalue
         self.unpack = True
+        self.is_array = False
 
         self.type, self.kind = self.obj.type_kind()
 

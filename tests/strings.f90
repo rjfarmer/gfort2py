@@ -39,6 +39,13 @@ module strings
 		integer :: end_guard = 123456789
 	end type str_array_dt
 
+	type str_array_dt_alloc
+		integer :: start_guard = 123456789
+		character(len=10),dimension(:),allocatable :: b_str_alloc_1d
+		integer :: end_guard = 123456789
+	end type str_array_dt_alloc
+
+
 	contains
 	
 	subroutine sub_str_in_explicit(x)
@@ -253,6 +260,31 @@ module strings
 
 
 	end function func_str_array_dt
+
+
+	logical function func_str_array_dt_alloc(x)
+		type(str_array_dt_alloc) :: x
+
+		func_str_array_dt_alloc = .false.
+
+		if(x%start_guard/=123456789 .or. x% end_guard/=123456789) then
+			write(*,*) x%start_guard, x%end_guard
+			return
+		end if
+
+		allocate(x% b_str_alloc_1d(5))
+
+
+		x% b_str_alloc_1d(1) = 'zzzzzzzzzz'
+		x% b_str_alloc_1d(2) = 'yyyyyyyyyy'
+		x% b_str_alloc_1d(3) = 'qqqqqqqqqq'
+		x% b_str_alloc_1d(4) = 'wwwwwwwwww'
+		x% b_str_alloc_1d(5) = 'xxxxxxxxxx'
+
+		func_str_array_dt_alloc = .true.
+
+
+	end function func_str_array_dt_alloc
 
 
 	subroutine check_a_str_exp_1d()

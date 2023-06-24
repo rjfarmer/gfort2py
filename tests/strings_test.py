@@ -142,6 +142,24 @@ class TestStringMethods:
 
         assert x.func_str_array_dt(data).result
 
+    def test_func_str_array_dt_alloc(self):
+        data = {
+            "start_guard": 123456789,
+            "b_str_alloc_1d": None,
+            "end_guard": 123456789,
+        }
+
+        res = x.func_str_array_dt_alloc(data)
+
+        assert res.result
+
+        z = np.array(
+            ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
+            dtype="S10",
+        )
+
+        assert np.all(z == res.args["x"]["b_str_alloc_1d"])
+
     def test_str_func_inout_str2(self, capfd):
         z = np.array(
             ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],

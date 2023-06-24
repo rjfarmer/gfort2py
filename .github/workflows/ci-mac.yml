@@ -21,7 +21,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
 
-    - name: Setup compiler ${{ matrix.fortran-compiler }}
+    - name: Setup gfortran-${{ matrix.fortran-compiler }}
       run: |
         brew install gcc@${{ matrix.fortran-compiler }}
         ln -s /usr/local/bin/gfortran-${{ matrix.fortran-compiler }} /usr/local/bin/gfortran
