@@ -6,9 +6,9 @@
 
 
 # gfort2py
-Library to allow calling fortran code from python. Requires gfortran>=8.0, Works with python >= 3.6
+Library to allow calling Fortran code from Python. Requires gfortran>=8.0, Works with python >= 3.7
 
-Current stable version is 1.1.7
+The current stable version is 1.1.7
 
 ## Build
 ````bash
@@ -18,27 +18,45 @@ python3 setup.py install --user
 
 or install via pip
 ````bash
-pip install --user gfort2py
+python -m pip install --upgrade --user gfort2py
 ````
 
-## Why use this over other fortran to python translators?
+## Why use this over other Fortran to Python translators?
 
-gfort2py use gfortran .mod files to translate your fortran code's ABI to python compatible types using python's ctype library. The advantage here is that it can (in principle) handle anything the compiler can compile. gfort2py is almost entirely python and there are no changes needed to your fortran source code (some changes in the build process may be needed, as gfort2py needs your code compiled as a shared library). The disadvantage however is that we are tied to gfortran and can't support other compilers and may break when gfortran updates its .mod file format, though this happens rarely.
+gfort2py has three main aims:
 
+1. Make it trivially easy to call Fortran code from Python
+2. Minimise the number of changes needed in the Fortran code to make this work.
+3. Support as many Fortran features as possible.
+
+We achieve this by tightly coupling the code to the gfortran compiler, by doing so we can easily embed assumptions about how advanced Fortran features work which makes development easier and minimises the number of changes needed on the Fortran side. 
+
+gfort2py use the gfortran ``mod`` files to translate your Fortran code's ABI to Python-compatible types using Python's ctype library.
+By using the ``mod`` file we can determine the call signature of all procedures, components of derived types, and the size and shapes of all module-level variables. As long as your code is inside a Fortran module, no other changes are needed to your Fortran code.
+
+The downside to this approach is that we are tightly tied to gfortran's ABI, which means we can not support other non-gfortran compilers and we do not support all versions of gfortran. When gfortran next breaks its ABI (which happens rarely, the last break was gfortran 8) we will re-evaluate our supported gfortran versions.
 
 ## Using
 ### Fortran side
-Compile code with -fPIC and -shared as options, then link together as a shared lib at the end
+Your Fortran code must be inside a module and then compiled as a shared library.
 
+On linux: 
 ````bash
 gfortran -fPIC -shared -c file.f90
 gfortran -fPIC -shared -o libfile file.f90
 ````
+
+On MacOS: 
+````bash
+gfortran -dynamiclib -c file.f90
+gfortran -dynamiclib -o libfile file.f90
+````
+
 If your code comes as program that does everything, then just turn the program into a function call inside a module,
 then create a new file with your program that uses the module and calls the function you just made.
 
 If the shared library needs other
-shared libraries you will need to set LD_LIBRARY_PATH environment variable, and its also recommended is to run chrpath on the 
+shared libraries you will need to set LD_LIBRARY_PATH environment variable, and it is also recommended is to run chrpath on the 
 shared libraries so you can access them from anywhere.
 
 ### Python side
@@ -46,23 +64,23 @@ shared libraries so you can access them from anywhere.
 
 import gfort2py as gf
 
-SHARED_LIB_NAME='./test_mod.so'
+SHARED_LIB_NAME=f'./test_mod.{gf.lib_ext()}' # Handle whether on Linux or Mac
 MOD_FILE_NAME='tester.mod'
 
 x=gf.fFort(SHARED_LIB_NAME,MOD_FILE_NAME)
 
 ````
 
-x now contains all variables, parameters and procedures from the module (tab completable). 
+``x`` now contains all variables, parameters and procedures from the module (tab completable). 
 
 ### Functions
 ````python
 y = x.func_name(a,b,c)
 ````
 
-Will call the fortran function with variables a,b,c and will return the result in y.
+Will call the Fortran function with variables ``a,b,c`` and returns the result in ``y``.
 
-Y will be  named tuple which contains (result, args). Where result is a python object for the return value (0 if a subroutine) and where args is a dict containing all arguments passed to the procedure (both those with intent (in) which will be unchanged and intent(inout/out) which may have changed).
+``y`` will be  named tuple which contains (result, args). Where result is a python object for the return value (0 if a subroutine) and where args is a dict containing all arguments passed to the procedure (both those with intent (in) which will be unchanged and intent(inout/out) which may have changed).
 
 
 ### Variables
@@ -71,28 +89,28 @@ Y will be  named tuple which contains (result, args). Where result is a python o
 x.some_var = 1
 ````
 
-Sets a module variable to 1, will attempt to coerce it to the fortran type
+Sets a module variable to 1, will attempt to coerce it to the Fortran type
 
 ````python
 x.some_var
 ````
 
-Will return a python object 
+Will return a Python object 
 
 
-Optional arguments that are not present should be passed as a python ``None``.
+Optional arguments that are not present should be passed as a Python ``None``.
 
 
 ### Arrays
 
-Arrays should be passed as a numpy array of the correct size and shape.
+Arrays should be passed as a NumPy array of the correct size and shape.
 
 
-Remember that fortran by default has 1-based array numbering while numpy
+Remember that Fortran by default has 1-based array numbering while Numpy
 is 0-based.
 
 
-If a procedure expects an unallocted array, then pass None as the argument, otherwise pass an array of the correct shape.
+If a procedure expects an unallocated array, then pass None as the argument, otherwise pass an array of the correct shape.
 
 ### Derived types
 
@@ -123,7 +141,7 @@ type(my_type), dimension(5) :: my_dt
 type(my_type), dimension(5,5) :: my_dt2
 ````
 
-Elements can be access via a notation similar to a slice:
+Elements can be accessed via an index:
 
 ````python
 x.my_dt[0]['x']
@@ -134,7 +152,7 @@ You can only access one component at a time (i.e no striding [:]). Allocatable d
 
 Derived types that are dummy arguments to a procedure are returned as a ``fDT`` type. This is a dict-like object where the components
 can only be accessed via the item interface ``['x']`` and not as attributes ``.x``.  This was done so that we do not have a name collision
-between python functions (``keys``, ``items`` etc) and any fortran derived type components.
+between Python functions (``keys``, ``items`` etc) and any Fortran-derived type components.
 
 You can pass a ``fDT`` as an argument to a procedure.
 
@@ -204,11 +222,11 @@ To run unit tests
 - [x] Keyword arguments
 - [ ] Generic/Elemental functions
 - [ ] Functions as an argument
-- [ ] Unary operations (arguments that involve an expresson to evaluate like dimension(n+1))
+- [ ] Unary operations (arguments that involve an expression to evaluate like dimension(n+1))
 
 ### Accessing common block elements
 
-There's no direct way to access the common block elements, but if you declare the the common block as a module variable you may access the elements by their name:
+There's no direct way to access the common block elements, but if you declare the common block as a module variable you may access the elements by their name:
 
 
 ````fortran
@@ -308,7 +326,7 @@ Accessing the list of all available components can be had via ``module.keys()``.
 
 Bug reports are of course welcome and PR's should target the main branch.
 
-For those wanting to get more involved, adding Fortran examples to the test suite of currently untested or unsupported features would be helpful. Bonus points if you also provide a python test case (that can be marked ``@pytest.mark.skip`` if it does not work) that demonstrates the proposed interface to the new fortran feature.
+For those wanting to get more involved, adding Fortran examples to the test suite of currently untested or unsupported features would be helpful. Bonus points if you also provide a Python test case (that can be marked ``@pytest.mark.skip`` if it does not work) that demonstrates the proposed interface to the new Fortran feature. Features with test cases will move higher in the order of things I add to the code.
 
 See [how to write a test case](tests/README.md) for details on how to write test cases.
 
