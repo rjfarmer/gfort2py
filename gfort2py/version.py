@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0+
+
 try:
     from importlib import metadata
 except ImportError:  # for Python<3.8

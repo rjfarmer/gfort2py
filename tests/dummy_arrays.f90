@@ -312,4 +312,22 @@ module dummy_arrays
 	end subroutine sub_check_alloc_int_3d
 
 
+	function func_return_alloc_int_1d() result(v)
+
+		integer,allocatable,dimension(:) :: v
+
+		allocate(v(5))
+
+		v = 1
+
+	end function func_return_alloc_int_1d
+
+
+	subroutine func2
+		integer,allocatable,dimension(:) :: v
+
+		v = func_return_alloc_int_1d()
+
+	end subroutine func2
+
 end module dummy_arrays

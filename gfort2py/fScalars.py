@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0+
+
 import ctypes
 
 from .fVar_t import fVar_t

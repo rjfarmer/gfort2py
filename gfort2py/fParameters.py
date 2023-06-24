@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+
 class fParam:
     def __init__(self, obj):
         self.obj = obj
