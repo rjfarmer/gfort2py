@@ -1,0 +1,38 @@
+name: Mac CI
+on: [push, pull_request]
+
+jobs:
+  CI:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        fortran-compiler:  ['8','9','10','11','12']
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
+      fail-fast: false
+    env:
+      FC: gfortran
+      CC: gcc
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Setup compiler ${{ matrix.fortran-compiler }}
+      run: |
+        brew install gcc@${{ matrix.fortran-compiler }}
+        ln -s /usr/local/bin/gfortran-${{ matrix.fortran-compiler }} /usr/local/bin/gfortran
+        ln -s /usr/local/bin/gcc-${{ matrix.fortran-compiler }} /usr/local/bin/gcc
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install tox tox-gh-actions
+        pip install -r requirements.txt
+
+    - name: Test with tox
+      run: tox -e py
+
