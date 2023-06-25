@@ -220,3 +220,7 @@ class TestBasicMethods:
     def test_negatives(self):
         assert x.const_neg_int == -1
         assert x.const_neg_real == -3.14
+
+    def test_logical_parammeters(self):
+        assert x.const_logical_true
+        assert not x.const_logical_false

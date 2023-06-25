@@ -25,6 +25,10 @@ module basic
 		integer, parameter      :: const_int=1
 		integer, parameter      :: const_int_p1=const_int+1
 		integer(lp), parameter  :: const_int_lp=1_lp
+
+		logical,parameter :: const_logical_true=.true.
+		logical,parameter :: const_logical_false=.false.
+
 		
 		real, parameter     :: const_real=1.0
 		real(dp), parameter :: const_real_dp=1.0_dp

@@ -526,6 +526,8 @@ class expression:
                 self._value = complex(
                     hextofloat(string_clean(args[3])), hextofloat(string_clean(args[4]))
                 )
+            elif self.ts.type == "LOGICAL":
+                self._value = int(args[3]) == 1
             else:
                 raise NotImplementedError(args)
         elif self.exp_type == "VARIABLE":
