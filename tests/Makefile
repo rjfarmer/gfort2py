@@ -12,16 +12,20 @@ GZ = $(patsubst %.mod,%.gz,$(MODS))
 
 UNAME_S := $(shell uname -s)
 
-ifeq ($(UNAME_S),Linux)
-   # Rpaths need to resolve relative to module/test folder plus the final location of the library
+ifeq ($(OS),Windows_NT)
+   LIB_FLAGS = -shared
+   LIB_SUFFIX = dll
+   LIBS = $(patsubst %.f90,%.dll,$(SRCS))
+else ifeq ($(UNAME_S),Linux)
    LIB_FLAGS = -fPIC -shared
    LIB_SUFFIX = so
    LIBS = $(patsubst %.f90,%.so,$(SRCS))
-endif
-ifeq ($(UNAME_S),Darwin)
+else ifeq ($(UNAME_S),Darwin)
    LIB_FLAGS = -dynamiclib
    LIB_SUFFIX = dylib
    LIBS = $(patsubst %.f90,%.dylib,$(SRCS))
+else
+$(error Unknown OS)
 endif
 
 

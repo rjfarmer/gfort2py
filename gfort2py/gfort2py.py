@@ -104,5 +104,7 @@ def lib_ext():
     os = platform.system()
     if os == "Darwin":
         return "dylib"
+    elif os == "Windows":
+        return "dll"
     else:
         return "so"

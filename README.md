@@ -52,6 +52,12 @@ gfortran -dynamiclib -c file.f90
 gfortran -dynamiclib -o libfile file.f90
 ````
 
+On Windows:
+````bash
+gfortran -shared -c file.f90
+gfortran -shared -o libfile.dll file.f90
+````
+
 If your code comes as program that does everything, then just turn the program into a function call inside a module,
 then create a new file with your program that uses the module and calls the function you just made.
 
