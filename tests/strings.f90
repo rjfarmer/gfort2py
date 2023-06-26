@@ -46,6 +46,11 @@ module strings
 	end type str_array_dt_alloc
 
 
+	type str_array_dt_out
+		character(len=12) :: a_str1, a_str2
+		integer ::  a_int
+	end type str_array_dt_out
+
 	contains
 	
 	subroutine sub_str_in_explicit(x)
@@ -333,6 +338,17 @@ module strings
 		check_b_str_alloc_1d = .true.
 
 	end function check_b_str_alloc_1d
+
+
+	subroutine set_str_array_dt_out(x)
+		type(str_array_dt_out),intent(out) :: x
+
+		x%a_str1 = 'qwertyuiop[]'
+		x%a_str2 = 'asdfghjkl;zx'
+
+		x% a_int = 99
+
+	end subroutine set_str_array_dt_out
 
 
 end module strings

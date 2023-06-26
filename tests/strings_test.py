@@ -277,3 +277,10 @@ class TestStringMethods:
                 dtype="S10",
             )
         )
+
+    def test_set_str_array_dt_out(self):
+        res = x.set_str_array_dt_out({})
+
+        assert res.args["x"]["a_str1"] == "qwertyuiop[]"
+        assert res.args["x"]["a_str2"] == "asdfghjkl;zx"
+        assert res.args["x"]["a_int"] == 99
