@@ -279,3 +279,9 @@ class TestExplicitArrayMethods:
         arr_test[0, 3] = 5
 
         np.testing.assert_array_equal(y.args["arr"], arr_test)
+
+    def test_logical_param_array(self):
+        assert np.all(
+            x.const_logical_arr
+            == np.array([True, False, True, False, True], dtype=bool)
+        )
