@@ -1,0 +1,19 @@
+{
+    "creators": [
+        {
+            "name": "Farmer, Robert",
+            "orcid": "0000-0003-3441-7624"
+        }
+    ],
+    "description": "Python bindings for Fortran",
+    "keywords": [
+        "Python",
+        "Fortran",
+        "Code Generators"
+    ],
+    "license": {
+        "id": "GPL-2.0+"
+    },
+    "title" : "gfort2py"
+}
+
