@@ -2,13 +2,11 @@
 [![Coverage Status](https://coveralls.io/repos/github/rjfarmer/gfort2py/badge.svg?branch=main)](https://coveralls.io/github/rjfarmer/gfort2py?branch=main)
 [![PyPI version](https://badge.fury.io/py/gfort2py.svg)](https://badge.fury.io/py/gfort2py)
 [![DOI](https://zenodo.org/badge/72889348.svg)](https://zenodo.org/badge/latestdoi/72889348)
-
+[![Python versions](https://img.shields.io/pypi/pyversions/gfort2py.svg)](https://img.shields.io/pypi/pyversions/gfort2py.svg)
 
 
 # gfort2py
 Library to allow calling Fortran code from Python. Requires gfortran>=8.0, Works with python >= 3.7
-
-The current stable version is 2.0.0
 
 ## Build
 ````bash
