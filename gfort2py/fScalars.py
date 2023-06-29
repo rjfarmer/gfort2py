@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 import ctypes
+import numpy as np
 
 from .fVar_t import fVar_t
 
@@ -23,7 +24,10 @@ class fScalar(fVar_t):
         elif self.type == "REAL":
             if self.kind == 16:
                 raise NotImplementedError(f"Quad precision floats not supported yet")
-            return float(self.cvalue.value)
+            elif self.kind == 8:
+                return np.double(self.cvalue.value)
+            else:
+                return float(self.cvalue.value)
         elif self.type == "LOGICAL":
             return self.cvalue.value == 1
 

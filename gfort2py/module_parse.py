@@ -117,7 +117,7 @@ class generics:
 #################################
 
 
-def hextofloat(s):
+def hextofloat(s, double=False):
     # Given hex like parameter '0.12decde@9' returns 5065465344.0
     man, exp = s.split("@")
     exp = int(exp)
@@ -129,7 +129,10 @@ def hextofloat(s):
     man = man + "P0"
     if negative:
         man = "-" + man
-    return float.fromhex(man)
+    if double:
+        return np.double.fromhex(man)
+    else:
+        return float.fromhex(man)
 
 
 #####################################
@@ -516,7 +519,7 @@ class expression:
             self._value = symbol_ref(args[3])
         elif self.exp_type == "CONSTANT":
             if self.ts.type == "REAL":
-                self._value = hextofloat(string_clean(args[3]))
+                self._value = hextofloat(string_clean(args[3]), self.ts.kind == 8)
             elif self.ts.type == "INTEGER":
                 self._value = int(string_clean(args[3]))
             elif self.ts.type == "CHARACTER":
@@ -524,7 +527,8 @@ class expression:
                 self._value = string_clean(args[4])
             elif self.ts.type == "COMPLEX":
                 self._value = complex(
-                    hextofloat(string_clean(args[3])), hextofloat(string_clean(args[4]))
+                    hextofloat(string_clean(args[3]), self.ts.kind == 8),
+                    hextofloat(string_clean(args[4]), self.ts.kind == 8),
                 )
             elif self.ts.type == "LOGICAL":
                 self._value = int(args[3]) == 1
