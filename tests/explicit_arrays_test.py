@@ -274,6 +274,12 @@ class TestExplicitArrayMethods:
         y = x.func_mesh_exp3(z, i)
         assert np.all(y.args["x"] == np.arange(1, (i * 2) + 1 + 1))
 
+    def test_mesh_exp4(self):
+        i = 5
+        z = np.zeros(((i + 3) * 2) + 1)
+        y = x.func_mesh_exp4(z, i)
+        assert np.all(y.args["x"] == np.arange(1, ((i + 3) * 2) + 1 + 1))
+
     def test_check_exp_2d_2m3(self):
         # Github issue #19
         arr_test = np.zeros((3, 4), dtype=int, order="F")
