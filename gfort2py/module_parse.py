@@ -266,8 +266,7 @@ class utils:
         # Only needed for things that need an extra function argument for their length
         if self.is_char():
             try:
-                self.sym.ts.charlen.value
-                return False
+                return self.sym.ts.charlen.value == -1
             except AttributeError:
                 return True
         elif self.is_array():
@@ -467,8 +466,10 @@ class typespec:
     type2: str = ""  # Repeat of type
     charlen: int = -1  # If character
     deferred_cl: bool = False  # if character and deferred length
+    args = None
 
     def __init__(self, *args):
+        self.args = args
         self.type = args[0]
         if self.type == "CLASS" or self.type == "DERIVED":
             self.class_ref = symbol_ref(args[1])
@@ -482,11 +483,15 @@ class typespec:
         self.is_iso_c = bool(int(args[4]))
         self.type2 = args[5]
         try:
-            self.charlen = expression(
-                *args[6][0]
-            )  # TODO: might this need to be iterated for mulit-d strings?
+            if not args[6][0]:
+                self.charlen = -1
+            else:
+                self.charlen = expression(
+                    *args[6][0]
+                )  # TODO: might this need to be iterated for mulit-d strings?
         except IndexError:
             self.charlen = -1
+
         try:
             self.deferred_cl = args[7] == "DEFERRED_CL"
         except (TypeError, IndexError):
@@ -507,12 +512,12 @@ class expression:
     _unknown: t.Any = None
 
     def __init__(self, *args):
+        self._resolved_value = None
         if not len(args):
             return
         self.exp_type = args[0]
         self.ts = typespec(*args[1])
         self.rank = int(args[2])
-        self._resolved_value = None
 
         if self.exp_type == "OP":
             self._value = None
