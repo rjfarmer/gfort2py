@@ -20,6 +20,9 @@ class TestBasicMethods:
     def assertEqual(self, x, y):
         assert x == y
 
+    def test_version(self):
+        assert gf.__version__
+
     def test_mising_var(self):
         with pytest.raises(AttributeError) as cm:
             a = x.invalid_var
