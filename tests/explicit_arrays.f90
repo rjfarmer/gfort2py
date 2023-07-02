@@ -143,6 +143,30 @@ module explicit_arrays
 		end do
 		
 	end function func_mesh_exp
+
+
+	subroutine func_mesh_exp2(x,N) 
+		integer, intent(in) :: N
+		integer :: x(N+1)
+		integer :: i
+		
+		do i=1,n+1
+			x(i) = i
+		end do
+		
+	end subroutine func_mesh_exp2
+
+
+	subroutine func_mesh_exp3(x,N) 
+		integer, intent(in) :: N
+		integer :: x((N*2)+1)
+		integer :: i
+		
+		do i=1,(N*2)+1
+			x(i) = i
+		end do
+		
+	end subroutine func_mesh_exp3
 	
 	
 	subroutine check_exp_2d_2m3(arr, success)

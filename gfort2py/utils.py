@@ -3,6 +3,8 @@
 import ctypes
 import itertools
 
+from .fUnary import run_unary
+
 
 def copy_array(src, dst, length, size):
     ctypes.memmove(
@@ -27,10 +29,27 @@ def resolve_other_args(obj, other_args):
         return obj
 
     for i in itertools.chain(obj.sym.array_spec.lower, obj.sym.array_spec.upper):
-        if not isinstance(i.value, int):
-            ref = i.value.ref
-            for j in other_args:
-                if ref == j.symbol_ref:
-                    i.value = j.value
+        i = _resolve_arg(i, other_args)
 
     return obj
+
+
+def _resolve_arg(arg, other_args):
+    if arg.exp_type == "CONSTANT":
+        return arg
+    elif arg.exp_type == "VARIABLE":
+        ref = arg.value.ref
+        for j in other_args:
+            if ref == j.symbol_ref:
+                arg.value = j.value
+    elif arg.exp_type == "OP":
+        # Unary operator
+        op = arg.unary_op
+        arg1 = _resolve_arg(arg.unary_args[0], other_args)
+        arg2 = _resolve_arg(arg.unary_args[1], other_args)
+
+        # print(op,arg1.value,arg2.value)
+        # print(run_unary(op,arg1.value,arg2.value))
+        arg.value = run_unary(op, arg1.value, arg2.value)
+
+    return arg

@@ -35,6 +35,9 @@ default_ops = {
 
 
 def run_unary(unary, x, y, *, ops=default_ops):
+    if unary == "PARENTHESES":
+        return x
+
     op = ops[unary]
 
     if op is None:

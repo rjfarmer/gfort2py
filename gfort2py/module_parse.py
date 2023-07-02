@@ -503,8 +503,12 @@ class expression:
     arglist: actual_arglist = None  # PDT's?
     charlen: int = -1
     unary_op: str = ""
+    unary_args: t.Any = None
+    _unknown: t.Any = None
 
     def __init__(self, *args):
+        if not len(args):
+            return
         self.exp_type = args[0]
         self.ts = typespec(*args[1])
         self.rank = int(args[2])
@@ -514,7 +518,10 @@ class expression:
             self._value = None
             self.unary_op = args[3]
             self.unary_args = [expression(*args[4]), expression(*args[5])]
-            self._unknown = args[6]  # What is this for?
+            try:
+                self._unknown = args[6]  # What is this for?
+            except IndexError:
+                pass
         elif self.exp_type == "FUNCTION":
             self._value = symbol_ref(args[3])
         elif self.exp_type == "CONSTANT":

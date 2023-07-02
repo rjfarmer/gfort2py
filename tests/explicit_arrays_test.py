@@ -255,12 +255,24 @@ class TestExplicitArrayMethods:
         y = x.func_logical_multi(1.0, 2.0, xarr, 3.0, 4.0)
         self.assertEqual(y.result, True)
 
-    @pytest.mark.skip("Skipping as we seg fault")
+    @pytest.mark.skip
     def test_mesh_exp(self):
         # Github issue #13
         i = 5
         y = x.func_mesh_exp(i)
-        self.assertEqual(y.result, np.arrange(0, i))
+        np.all(y.result == np.arrange(0, i + 1 + 1))
+
+    def test_mesh_exp2(self):
+        i = 5
+        z = np.zeros(i + 1)
+        y = x.func_mesh_exp2(z, i)
+        assert np.all(y.args["x"] == np.arange(1, i + 1 + 1))
+
+    def test_mesh_exp3(self):
+        i = 5
+        z = np.zeros((i * 2) + 1)
+        y = x.func_mesh_exp3(z, i)
+        assert np.all(y.args["x"] == np.arange(1, (i * 2) + 1 + 1))
 
     def test_check_exp_2d_2m3(self):
         # Github issue #19
