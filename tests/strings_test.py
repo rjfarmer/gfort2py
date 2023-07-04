@@ -284,3 +284,7 @@ class TestStringMethods:
         assert res.args["x"]["a_str1"] == "qwertyuiop[]"
         assert res.args["x"]["a_str2"] == "asdfghjkl;zx"
         assert res.args["x"]["a_int"] == 99
+
+    def test_set_chr_star_star(self):
+        res = x.set_chr_star_star("            ")
+        assert res.args["x"] == "abcdefghijkl"

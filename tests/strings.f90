@@ -351,4 +351,10 @@ module strings
 	end subroutine set_str_array_dt_out
 
 
+	subroutine set_chr_star_star(x)
+		character*(*), intent(out) :: x
+		x = "abcdefghijkl"
+	end subroutine set_chr_star_star
+
+
 end module strings
