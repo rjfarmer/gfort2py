@@ -105,6 +105,7 @@ class generics:
     name: str = ""
     module: str = ""
     id: t.List[int] = -1
+    raw: t.Any
 
     def __init__(self, *args):
         self.name = string_clean(args[0])
@@ -112,6 +113,8 @@ class generics:
         self.id = []
         for i in args[2:]:
             self.id.append(int(i))
+
+        self.raw = args
 
 
 #################################
@@ -340,6 +343,7 @@ class attribute:
     ext_attr: int = -1
     extension: int = -1
     attributes: t.Set[str] = None
+    raw: t.Any
 
     def __init__(self, *args):
         self.flavor = string_clean(args[0])
@@ -350,6 +354,7 @@ class attribute:
         self.ext_attr = int(args[5])
         self.extension = int(args[6])
         self.attributes = set([string_clean(i) for i in args[7:]])
+        self.raw = args
 
 
 @dataclass
@@ -392,11 +397,14 @@ class symbol_ref:
 @dataclass(init=False)
 class formal_arglist:
     symbol: t.List[symbol_ref] = None
+    raw: t.Any
 
     def __init__(self, *args):
         self.symbol = []
         for i in args:
             self.symbol.append(symbol_ref(i))
+
+        self.raw = args
 
     def __len__(self):
         return len(self.symbol)
@@ -416,6 +424,8 @@ class typebound_proc:
     pass_arg: str = ""
     pass_arg_num: symbol_ref = None
     proc_ref: symbol_ref = None
+    raw: t.Any
+    kwraw: t.Any
 
     def __init__(self, *args, **kwargs):
         self.name = string_clean(args[0][0])
@@ -430,11 +440,16 @@ class typebound_proc:
         # TODO: Handle is_generic
         self.proc_ref = symbol_ref(args[0][1][7][0])
 
+        self.raw = args
+        self.kwargs = kwargs
+
 
 @dataclass(init=False)
 class derived_ns:
     unknown1: str = None
     proc: t.List[typebound_proc] = None
+    raw: t.Any
+    kwraw: t.Any
 
     def __init__(self, *args, **kwargs):
         if not len(args):
@@ -444,14 +459,17 @@ class derived_ns:
         for i in args[1]:
             self.proc.append(typebound_proc(i))
 
+        self.raw = args
+        self.kwargs = kwargs
+
 
 @dataclass(init=False)
 class actual_arglist:
-    args: None
-    kwargs: None
+    raw: t.Any
+    kwraw: t.Any
 
     def __init__(self, *args, **kwargs):
-        self.args = args
+        self.raw = args
         self.kwargs = kwargs
 
 
@@ -469,7 +487,7 @@ class typespec:
     args = None
 
     def __init__(self, *args):
-        self.args = args
+        self.raw = args
         self.type = args[0]
         if self.type == "CLASS" or self.type == "DERIVED":
             self.class_ref = symbol_ref(args[1])
@@ -510,8 +528,10 @@ class expression:
     unary_op: str = ""
     unary_args: t.Any = None
     _unknown: t.Any = None
+    raw: t.Any
 
     def __init__(self, *args):
+        self.raw = args
         self._resolved_value = None
         if not len(args):
             return
@@ -584,8 +604,10 @@ class arrayspec:
     array_type: str = ""
     lower: t.List[expression] = None
     upper: t.List[expression] = None
+    raw: t.Any
 
     def __init__(self, *args):
+        self.raw = args
         if not len(args):
             return
 
@@ -636,8 +658,10 @@ class component(utils):
     access: str = ""
     initializer: expression = None
     proc_ptr: typebound_proc = None
+    raw: t.Any
 
     def __init__(self, *args):
+        self.raw = args
         args = list(args)
 
         self.id = int(args[0])
@@ -666,11 +690,14 @@ class component(utils):
 @dataclass(init=False)
 class components:
     comp: t.List[component] = None
+    raw: t.Any
 
     def __init__(self, *args):
         self.comp = []
         for i in args:
             self.comp.append(component(*i))
+
+        self.raw = args
 
     def __len__(self):
         return len(self.comp)
@@ -682,8 +709,10 @@ class components:
 @dataclass(init=False)
 class namelist:
     sym_ref: t.List[symbol_ref] = None
+    raw: t.Any
 
     def __init__(self, *args):
+        self.raw = args
         self.sym_ref = []
         if len(args):
             for i in args:
@@ -696,7 +725,7 @@ class simd_dec:
     kwargs: None
 
     def __init__(self, *args, **kwargs):
-        self.args = args
+        self.raw = args
         self.kwargs = kwargs
 
 
@@ -720,8 +749,10 @@ class data:
     intrinsic_symbol: int = -1
     hash: int = -1
     simd: simd_dec = None
+    raw: t.Any
 
     def __init__(self, *args):
+        self.raw = args
         args = list(
             args
         )  # Do it this was as there are optional terms we may need to pop
@@ -762,6 +793,7 @@ class symbol(utils):
     head: header = None
     sym: data = None
     raw: str = ""
+    raw: t.Any
 
     def __init__(self, *args):
         self.head = header(*args[0:5])
