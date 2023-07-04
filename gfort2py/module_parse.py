@@ -84,14 +84,14 @@ class Summary:
 @dataclass
 class c_item:
     name: str
-    id: int
+    common_link: int
     saved_flag: bool
     _unknown: int
     _unknown2: str
 
     def __post_init__(self):
         self.name = string_clean(self.name)
-        self.id = int(self.id)
+        self.common_link = symbol_ref(self.common_link)
         self.saved_flag = int(self.saved_flag)
         self._unknown = int(self._unknown)
         self._unknown2 = string_clean(self._unknown2)
@@ -283,6 +283,9 @@ class utils:
     def is_pdt_def(self):
         return "PDT_TEMPLATE" in self.sym.attr.attributes
 
+    def in_common_block(self):
+        return "IN_CMMMON" in self.sym.attr.attributes
+
     @property
     def strlen(self):
         if self.is_char() and not self.is_deferred_len():
@@ -425,7 +428,7 @@ class typebound_proc:
     pass_arg_num: symbol_ref = None
     proc_ref: symbol_ref = None
     raw: t.Any
-    kwraw: t.Any
+    kwargs: t.Any
 
     def __init__(self, *args, **kwargs):
         self.name = string_clean(args[0][0])
@@ -449,9 +452,12 @@ class derived_ns:
     unknown1: str = None
     proc: t.List[typebound_proc] = None
     raw: t.Any
-    kwraw: t.Any
+    kwargs: t.Any
 
     def __init__(self, *args, **kwargs):
+        self.raw = args
+        self.kwargs = kwargs
+
         if not len(args):
             return
         self.unknown1 = args[0]
@@ -459,14 +465,11 @@ class derived_ns:
         for i in args[1]:
             self.proc.append(typebound_proc(i))
 
-        self.raw = args
-        self.kwargs = kwargs
-
 
 @dataclass(init=False)
 class actual_arglist:
     raw: t.Any
-    kwraw: t.Any
+    kwargs: t.Any
 
     def __init__(self, *args, **kwargs):
         self.raw = args
@@ -855,7 +858,7 @@ class module(object):
         result = {}
         for i in data:
             d = c_item(*i)
-            result[d.id] = d
+            result[d.name] = d
         return result
 
     def proc_generics(self, data):
