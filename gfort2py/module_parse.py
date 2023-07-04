@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0+
 
+# https://github.com/gcc-mirror/gcc/blob/master/gcc/fortran/module.cc
 from pyparsing import OneOrMore, nestedExpr
 from dataclasses import dataclass
 import numpy as np
@@ -82,19 +83,37 @@ class Summary:
 
 
 @dataclass
-class c_item:
-    name: str
-    common_link: int
-    saved_flag: bool
-    _unknown: int
-    _unknown2: str
+class symbol_ref:
+    ref: int = -1
 
     def __post_init__(self):
-        self.name = string_clean(self.name)
-        self.common_link = symbol_ref(self.common_link)
-        self.saved_flag = int(self.saved_flag)
-        self._unknown = int(self._unknown)
-        self._unknown2 = string_clean(self._unknown2)
+        self.ref = int(self.ref)
+
+
+#################################
+
+
+@dataclass(init=False)
+class c_item:
+    name: str = ""
+    common_link: symbol_ref = -1
+    saved_flag: bool = False
+    thread_private: bool = False
+    omp_device_type: bool = False
+    is_bind_c: bool = False
+    binding_label: str = ""
+    raw: t.Any
+
+    def __init__(self, *args):
+        self.name = string_clean(args[0])
+        self.common_link = symbol_ref(args[1])
+        self.saved_flag = bin(int(args[2]))[-1] == "1"
+        self.thread_private = bin(int(args[2]))[-2] == "1"
+        self.omp_device_type = bin(int(args[2]))[-3] == "1"
+        self.is_bind_c = args[3] == 1
+        self.binding_label = string_clean(args[4])
+
+        self.raw = args
 
 
 #################################
@@ -389,14 +408,6 @@ class header:
             return f"__{self.module}_MOD_{self.name}"
 
 
-@dataclass
-class symbol_ref:
-    ref: int = -1
-
-    def __post_init__(self):
-        self.ref = int(self.ref)
-
-
 @dataclass(init=False)
 class formal_arglist:
     symbol: t.List[symbol_ref] = None
@@ -530,7 +541,6 @@ class expression:
     charlen: int = -1
     unary_op: str = ""
     unary_args: t.Any = None
-    _unknown: t.Any = None
     raw: t.Any
 
     def __init__(self, *args):
@@ -546,10 +556,6 @@ class expression:
             self._value = None
             self.unary_op = args[3]
             self.unary_args = [expression(*args[4]), expression(*args[5])]
-            try:
-                self._unknown = args[6]  # What is this for?
-            except IndexError:
-                pass
         elif self.exp_type == "FUNCTION":
             self._value = symbol_ref(args[3])
         elif self.exp_type == "CONSTANT":
@@ -587,6 +593,11 @@ class expression:
             raise NotImplementedError(args)
         else:
             raise AttributeError(f"Can't match {self.exp_type}")
+
+        try:
+            self.arglist = actual_arglist(*args[6])
+        except IndexError:
+            self.arglist = []
 
     @property
     def value(self):
