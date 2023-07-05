@@ -36,6 +36,11 @@ class TestBasicMethods:
         with pytest.raises(AttributeError) as cm:
             a = x.invalid_var
 
+    def test_lookups(self):
+        assert len(x.keys())
+        assert "a_int" in x
+        assert len(dir(x))
+
     def test_a_int(self):
         v = 1
         x.a_int = v
