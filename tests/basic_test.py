@@ -23,6 +23,15 @@ class TestBasicMethods:
     def test_version(self):
         assert gf.__version__
 
+    def test_mod_info(self):
+        assert len(gf.mod_info(MOD).keys())
+
+    def test_doc(self):
+        assert x.__doc__ == f"MODULE={MOD}"
+
+    def test_str(self):
+        assert str(x) == MOD
+
     def test_mising_var(self):
         with pytest.raises(AttributeError) as cm:
             a = x.invalid_var
