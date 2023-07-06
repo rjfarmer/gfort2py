@@ -93,6 +93,11 @@ class TestBasicMethods:
         self.assertEqual(x.a_real, 99.0)
         self.assertEqual(x.a_real_dp, 99.0)
 
+    def test_int_lp(self):
+        x.a_int_lp = 5
+        assert x.a_int_lp == 5
+        assert x.a_int_lp_set == 6
+
     @pytest.mark.skip("Skipping due to quad support")
     def test_sub_alter_mod_qp(self):
         y = x.sub_alter_mod()
