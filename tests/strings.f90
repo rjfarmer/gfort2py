@@ -9,7 +9,7 @@ module strings
 	! Parameters
 	integer, parameter :: dp = selected_real_kind(p=15)
 	integer, parameter :: qp = selected_real_kind(p=30)
-	integer, parameter :: lp = selected_int_kind(8)
+	integer, parameter :: lp = selected_int_kind(16)
 	
 	
 	character(len=10),parameter :: const_str='1234567890'

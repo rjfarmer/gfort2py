@@ -9,7 +9,7 @@ module ptrs
 	! Parameters
 	integer, parameter :: dp = selected_real_kind(p=15)
 	integer, parameter :: qp = selected_real_kind(p=30)
-	integer, parameter :: lp = selected_int_kind(8)
+	integer, parameter :: lp = selected_int_kind(16)
 	
 	integer,pointer            :: a_int_point => null()
 	integer(lp),pointer        :: a_int_lp_point => null()

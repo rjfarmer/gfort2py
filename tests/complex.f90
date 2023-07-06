@@ -9,7 +9,7 @@ module comp
 		! Parameters
 		integer, parameter :: dp = selected_real_kind(p=15)
 		integer, parameter :: qp = selected_real_kind(p=30)
-		integer, parameter :: lp = selected_int_kind(8)
+		integer, parameter :: lp = selected_int_kind(16)
 		
 		
 		complex, parameter         :: const_cmplx=(1.0,1.0)

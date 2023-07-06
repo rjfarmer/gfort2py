@@ -20,7 +20,7 @@ module basic
 	     ! Parameters
 		integer, parameter :: dp = selected_real_kind(p=15)
 		integer, parameter :: qp = selected_real_kind(p=30)
-		integer, parameter :: lp = selected_int_kind(8)
+		integer, parameter :: lp = selected_int_kind(16)
 		
 		integer, parameter      :: const_int=1
 		integer, parameter      :: const_int_p1=const_int+1

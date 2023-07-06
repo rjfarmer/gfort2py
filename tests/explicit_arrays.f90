@@ -9,7 +9,7 @@ module explicit_arrays
 	! Parameters
 	integer, parameter :: dp = selected_real_kind(p=15)
 	integer, parameter :: qp = selected_real_kind(p=30)
-	integer, parameter :: lp = selected_int_kind(8)
+	integer, parameter :: lp = selected_int_kind(16)
 	
 	
 	integer,parameter,dimension(10) :: const_int_arr=(/1,2,3,4,5,6,7,8,9,0/)

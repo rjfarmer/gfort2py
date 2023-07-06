@@ -10,7 +10,7 @@ module pdt
 	integer, parameter :: sp = selected_real_kind(p=8)
 	integer, parameter :: dp = selected_real_kind(p=15)
 	integer, parameter :: qp = selected_real_kind(p=30)
-	integer, parameter :: lp = selected_int_kind(8)
+	integer, parameter :: lp = selected_int_kind(16)
 	
 	
 	type pdt_def(k,a)

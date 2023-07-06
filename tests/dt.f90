@@ -9,7 +9,7 @@ module dt
     ! Parameters
     integer, parameter :: dp = selected_real_kind(p=15)
     integer, parameter :: qp = selected_real_kind(p=30)
-    integer, parameter :: lp = selected_int_kind(8)
+    integer, parameter :: lp = selected_int_kind(16)
     
     
     TYPE s_struct_basic

@@ -9,7 +9,7 @@ module dummy_arrays
 	! Parameters
 	integer, parameter :: dp = selected_real_kind(p=15)
 	integer, parameter :: qp = selected_real_kind(p=30)
-	integer, parameter :: lp = selected_int_kind(8)
+	integer, parameter :: lp = selected_int_kind(16)
 	
 	integer, allocatable, dimension(:) :: c_int_alloc_1d
 	integer, allocatable, dimension(:,:) :: c_int_alloc_2d
