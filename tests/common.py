@@ -10,13 +10,16 @@ import gfort2py as gf
 
 import pytest
 
-SO = f"./tests/.{gf.lib_ext()}"
-MOD = "./tests/.mod"
+SO = f"./tests/common.{gf.lib_ext()}"
+MOD = "./tests/com.mod"
 
-# x=gf.fFort(SO,MOD)
+x = gf.fFort(SO, MOD)
 
 
 class TestCommonBlocks:
     def test_set_values(self):
         x.x_int = 1
         assert x.x_int == 1
+
+    def test_get_comm(self):
+        assert len(x._module.common)
