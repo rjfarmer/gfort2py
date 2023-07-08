@@ -301,3 +301,8 @@ class TestExplicitArrayMethods:
         assert np.array_equal(
             x.const_logical_arr, np.array([True, False, True, False, True], dtype=bool)
         )
+
+    @pytest.mark.skip
+    def test_func_return_1d_int_arr(self):
+        res = x.func_return_1d_int_arr()
+        assert np.array_equal(res.result, np.array([1, 2, 3, 4, 5]))

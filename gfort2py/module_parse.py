@@ -261,6 +261,9 @@ class utils:
     def is_allocatable(self):
         return "ALLOCATABLE" in self.sym.attr.attributes
 
+    def is_return(self):
+        return "RESULT" in self.sym.attr.attributes
+
     def needs_array_desc(self):
         return self.is_dummy() or self.is_allocatable() or self.is_always_explicit()
 

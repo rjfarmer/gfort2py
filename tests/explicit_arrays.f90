@@ -214,6 +214,32 @@ module explicit_arrays
 
 	end subroutine check_exp_2d_2m3_nt	
 	
-	
+
+
+	function func_return_1d_int_arr() result(x)
+		integer,dimension(5) :: x
+
+		x = (/1,2,3,4,5/)
+
+	end function func_return_1d_int_arr
+
+	function func_return_1d_int_arr_n(n) result(x)
+		integer, intent(in) :: n
+		integer,dimension(n) :: x
+		integer :: i
+
+		do i=1,n
+			x(i) = i
+		end do
+
+	end function func_return_1d_int_arr_n
+
+
+	function func_return_2d_int_arr() result(x)
+		integer,dimension(3,2) :: x
+
+		x = reshape((/1,2,3,4,5,6/), shape(x))
+
+	end function func_return_2d_int_arr
 
 end module explicit_arrays
