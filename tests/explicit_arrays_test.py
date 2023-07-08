@@ -25,18 +25,18 @@ class TestExplicitArrayMethods:
             x.const_int_arr = "abc"
 
     def test_const_int_arr(self):
-        np.testing.assert_array_equal(
+        assert np.array_equal(
             x.const_int_arr, np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 0], dtype="int32")
         )
 
     def test_const_real_arr(self):
-        np.testing.assert_array_equal(
+        assert np.array_equal(
             x.const_real_arr,
             np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 0.0], dtype="float"),
         )
 
     def test_const_dp_arr(self):
-        np.testing.assert_array_equal(
+        assert np.array_equal(
             x.const_real_dp_arr,
             np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 0.0], dtype="float"),
         )
@@ -44,27 +44,27 @@ class TestExplicitArrayMethods:
     def test_b_int_exp_1d(self):
         v = np.random.randint(0, 100, size=(5))
         x.b_int_exp_1d = v
-        np.testing.assert_array_equal(x.b_int_exp_1d, v)
+        assert np.array_equal(x.b_int_exp_1d, v)
 
     def test_b_int_exp_2d(self):
         v = np.asfortranarray(np.random.randint(0, 100, size=(5, 5)), dtype="int32")
         x.b_int_exp_2d = v
-        np.testing.assert_array_equal(x.b_int_exp_2d, v)
+        assert np.array_equal(x.b_int_exp_2d, v)
 
     def test_b_int_exp_3d(self):
         v = np.random.randint(0, 100, size=(5, 5, 5))
         x.b_int_exp_3d = v
-        np.testing.assert_array_equal(x.b_int_exp_3d, v)
+        assert np.array_equal(x.b_int_exp_3d, v)
 
     def test_b_int_exp_4d(self):
         v = np.random.randint(0, 100, size=(5, 5, 5, 5))
         x.b_int_exp_4d = v
-        np.testing.assert_array_equal(x.b_int_exp_4d, v)
+        assert np.array_equal(x.b_int_exp_4d, v)
 
     def test_b_int_exp_5d(self):
         v = np.random.randint(0, 100, size=(5, 5, 5, 5, 5))
         x.b_int_exp_5d = v
-        np.testing.assert_array_equal(x.b_int_exp_5d, v)
+        assert np.array_equal(x.b_int_exp_5d, v)
 
     def test_b_real_exp_1d(self):
         v = np.random.random(size=(5))
@@ -238,7 +238,7 @@ class TestExplicitArrayMethods:
         y = x.sub_exp_inout(v)
         out, err = capfd.readouterr()
 
-        np.testing.assert_array_equal(y.args["x"], 2 * v)
+        assert np.array_equal(y.args["x"], 2 * v)
 
     def test_sub_arr_exp_p(self, capfd):
         v = np.arange(0, 5)
@@ -260,25 +260,25 @@ class TestExplicitArrayMethods:
         # Github issue #13
         i = 5
         y = x.func_mesh_exp(i)
-        np.all(y.result == np.arrange(0, i + 1 + 1))
+        np.array_equal(y.result, np.arrange(0, i + 1 + 1))
 
     def test_mesh_exp2(self):
         i = 5
         z = np.zeros(i + 1)
         y = x.func_mesh_exp2(z, i)
-        assert np.all(y.args["x"] == np.arange(1, i + 1 + 1))
+        assert np.array_equal(y.args["x"], np.arange(1, i + 1 + 1))
 
     def test_mesh_exp3(self):
         i = 5
         z = np.zeros((i * 2) + 1)
         y = x.func_mesh_exp3(z, i)
-        assert np.all(y.args["x"] == np.arange(1, (i * 2) + 1 + 1))
+        assert np.array_equal(y.args["x"], np.arange(1, (i * 2) + 1 + 1))
 
     def test_mesh_exp4(self):
         i = 5
         z = np.zeros(((i + 3) * 2) + 1)
         y = x.func_mesh_exp4(z, i)
-        assert np.all(y.args["x"] == np.arange(1, ((i + 3) * 2) + 1 + 1))
+        assert np.array_equal(y.args["x"], np.arange(1, ((i + 3) * 2) + 1 + 1))
 
     def test_check_exp_2d_2m3(self):
         # Github issue #19
@@ -295,10 +295,9 @@ class TestExplicitArrayMethods:
 
         arr_test[0, 3] = 5
 
-        np.testing.assert_array_equal(y.args["arr"], arr_test)
+        assert np.array_equal(y.args["arr"], arr_test)
 
     def test_logical_param_array(self):
-        assert np.all(
-            x.const_logical_arr
-            == np.array([True, False, True, False, True], dtype=bool)
+        assert np.array_equal(
+            x.const_logical_arr, np.array([True, False, True, False, True], dtype=bool)
         )
