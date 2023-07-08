@@ -3,7 +3,7 @@
 
 FC = gfortran
 
-OPTIONS=-ggdb -fdump-tree-all -D_FORTIFY_SOURCE=2 -fstack-clash-protection -fstack-protector-all -fstack-protector
+OPTIONS=-ggdb -fdump-tree-original -D_FORTIFY_SOURCE=2 -fstack-clash-protection -fstack-protector-all -fstack-protector
 
 SRCS = $(wildcard *.f90)
 MODS =  $(wildcard *.mod)
