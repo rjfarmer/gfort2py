@@ -12,6 +12,7 @@ tests/*.f90.*
 tests/*.gz.*
 tests/*.gz
 *.smod
+tests/kinds
 
 # Distribution / packaging
 .Python
