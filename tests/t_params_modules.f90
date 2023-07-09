@@ -64,6 +64,12 @@ module params_modules
 
     integer(i8),parameter,dimension(5) :: int_i8_1d = reshape( (/ -10, -1, 0, 1, 10/), shape(int_i8_1d)) 
 
+    real(r4),parameter,dimension(3) :: real_r4_1d = reshape( (/ -3.140000104904175_r4, 0.0_r4, 3.140000104904175_r4/), shape(real_r4_1d)) 
+
+    real(r8),parameter,dimension(3) :: real_r8_1d = reshape( (/ -3.140000104904175_r8, 0.0_r8, 3.140000104904175_r8/), shape(real_r8_1d)) 
+
+    logical,parameter,dimension(4) :: logicals_0_1d = reshape( (/ .true., .false., .true., .false./), shape(logicals_0_1d)) 
+
     integer(i1),parameter,dimension(2,3) :: int_i1_2d = reshape( (/ -10, -1, 0, 1, 10, 50/), shape(int_i1_2d)) 
 
     integer(i2),parameter,dimension(2,3) :: int_i2_2d = reshape( (/ -10, -1, 0, 1, 10, 50/), shape(int_i2_2d)) 
@@ -72,13 +78,11 @@ module params_modules
 
     integer(i8),parameter,dimension(2,3) :: int_i8_2d = reshape( (/ -10, -1, 0, 1, 10, 50/), shape(int_i8_2d)) 
 
-    real(r4),parameter,dimension(3) :: real_r4_1d = reshape( (/ -3.140000104904175_r4, 0.0_r4, 3.140000104904175_r4/), shape(real_r4_1d)) 
-
-    real(r8),parameter,dimension(3) :: real_r8_1d = reshape( (/ -3.140000104904175_r8, 0.0_r8, 3.140000104904175_r8/), shape(real_r8_1d)) 
-
     real(r4),parameter,dimension(2,3) :: real_r4_2d = reshape( (/ -6.28000020980835_r4, -3.140000104904175_r4, 0.0_r4, 1.1111_r4, 3.140000104904175_r4, 6.28000020980835_r4/), shape(real_r4_2d)) 
 
     real(r8),parameter,dimension(2,3) :: real_r8_2d = reshape( (/ -6.28000020980835_r8, -3.140000104904175_r8, 0.0_r8, 1.1111_r8, 3.140000104904175_r8, 6.28000020980835_r8/), shape(real_r8_2d)) 
+
+    logical,parameter,dimension(2,3) :: logicals_0_2d = reshape( (/ .true., .false., .true., .false., .true., .false./), shape(logicals_0_2d)) 
 
 end module params_modules
  

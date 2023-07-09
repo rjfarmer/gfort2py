@@ -164,44 +164,66 @@ def create_logicals():
     return fort_strs, py_strs
 
 
+def create_logicals_1d():
+    fort_strs = []
+    py_strs = []
+    values = np.array([True, False, True, False])
+    v = f".true., .false., .true., .false."
+    vstr = f"np.array([{make_array_values(values)}])"
+
+    n = "logical"
+    name = f"logicals_0_1d"
+
+    fort_strs.append(
+        fort_bool_param_array_multi.substitute(var=name, shape="4", value=v)
+    )
+
+    py_strs.append(py_array_check.substitute(name=name, value=vstr))
+
+    return fort_strs, py_strs
+
+
+def create_logicals_2d():
+    fort_strs = []
+    py_strs = []
+    values = np.array([True, False, True, False, True, False]).reshape(2, 3)
+    v = f".true., .false., .true., .false., .true., .false."
+    vstr = f'np.array([{make_array_values(values)}]).reshape(2,3, order="F")'
+
+    n = "logical"
+    name = f"logicals_0_2d"
+
+    fort_strs.append(
+        fort_bool_param_array_multi.substitute(var=name, shape="2,3", value=v)
+    )
+
+    py_strs.append(py_array_check.substitute(name=name, value=vstr))
+
+    return fort_strs, py_strs
+
+
+def make_tests(file_f90, file_py, name, func):
+    f, py = func()
+    write_lines(file_f90, f, 1)
+    write_line(file_py, py_proc.substitute(function=name), 1)
+    write_lines(file_py, py, 2)
+
+
 with open(filename_f90, "w") as file_f90, open(filename_py, "w") as file_py:
     write_line(file_f90, fort_module_start.substitute(name=modname), 0)
     write_line(file_py, py_module_start.substitute(modname=modname, libname=libname), 0)
 
-    f, py = create_ints()
-    write_lines(file_f90, f, 1)
-    write_line(file_py, py_proc.substitute(function="check_ints"), 1)
-    write_lines(file_py, py, 2)
+    make_tests(file_f90, file_py, "check_ints", create_ints)
+    make_tests(file_f90, file_py, "check_reals", create_reals)
+    make_tests(file_f90, file_py, "check_logicals", create_logicals)
 
-    f, py = create_reals()
-    write_lines(file_f90, f, 1)
-    write_line(file_py, py_proc.substitute(function="check_reals"), 1)
-    write_lines(file_py, py, 2)
+    make_tests(file_f90, file_py, "check_ints_1d", create_ints_array_1d)
+    make_tests(file_f90, file_py, "check_reals_1d", create_reals_array_1d)
+    make_tests(file_f90, file_py, "check_logicals_1d", create_logicals_1d)
 
-    f, py = create_logicals()
-    write_lines(file_f90, f, 1)
-    write_line(file_py, py_proc.substitute(function="check_logicals"), 1)
-    write_lines(file_py, py, 2)
-
-    f, py = create_ints_array_1d()
-    write_lines(file_f90, f, 1)
-    write_line(file_py, py_proc.substitute(function="check_ints_1d"), 1)
-    write_lines(file_py, py, 2)
-
-    f, py = create_ints_array_2d()
-    write_lines(file_f90, f, 1)
-    write_line(file_py, py_proc.substitute(function="check_ints_2d"), 1)
-    write_lines(file_py, py, 2)
-
-    f, py = create_reals_array_1d()
-    write_lines(file_f90, f, 1)
-    write_line(file_py, py_proc.substitute(function="check_reals_1d"), 1)
-    write_lines(file_py, py, 2)
-
-    f, py = create_reals_array_2d()
-    write_lines(file_f90, f, 1)
-    write_line(file_py, py_proc.substitute(function="check_reals_2d"), 1)
-    write_lines(file_py, py, 2)
+    make_tests(file_f90, file_py, "check_ints_2d", create_ints_array_2d)
+    make_tests(file_f90, file_py, "check_reals_2d", create_reals_array_2d)
+    make_tests(file_f90, file_py, "check_logicals_2d", create_logicals_2d)
 
     # print(fort_module_mid.substitute(),file=file_f90)
     write_line(file_f90, fort_module_end.substitute(name=modname), 0)

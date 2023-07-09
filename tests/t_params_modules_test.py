@@ -142,6 +142,24 @@ class Test_params_modules:
         with pytest.raises(AttributeError) as cm:
             x.int_i8_1d = np.array([1, 2, 3])
 
+    def test_check_reals_1d(self):
+        assert np.allclose(
+            x.real_r4_1d, np.array([-3.140000104904175, 0.0, 3.140000104904175])
+        )
+
+        with pytest.raises(AttributeError) as cm:
+            x.real_r4_1d = np.array([1, 2, 3])
+
+        assert np.allclose(
+            x.real_r8_1d, np.array([-3.140000104904175, 0.0, 3.140000104904175])
+        )
+
+        with pytest.raises(AttributeError) as cm:
+            x.real_r8_1d = np.array([1, 2, 3])
+
+    def test_check_logicals_1d(self):
+        assert np.allclose(x.logicals_0_1d, np.array([True, False, True, False]))
+
     def test_check_ints_2d(self):
         assert np.allclose(
             x.int_i1_2d, np.array([-10, -1, 0, 1, 10, 50]).reshape(2, 3, order="F")
@@ -170,21 +188,6 @@ class Test_params_modules:
 
         with pytest.raises(AttributeError) as cm:
             x.int_i8_2d = np.array([1, 2, 3])
-
-    def test_check_reals_1d(self):
-        assert np.allclose(
-            x.real_r4_1d, np.array([-3.140000104904175, 0.0, 3.140000104904175])
-        )
-
-        with pytest.raises(AttributeError) as cm:
-            x.real_r4_1d = np.array([1, 2, 3])
-
-        assert np.allclose(
-            x.real_r8_1d, np.array([-3.140000104904175, 0.0, 3.140000104904175])
-        )
-
-        with pytest.raises(AttributeError) as cm:
-            x.real_r8_1d = np.array([1, 2, 3])
 
     def test_check_reals_2d(self):
         assert np.allclose(
@@ -220,3 +223,9 @@ class Test_params_modules:
 
         with pytest.raises(AttributeError) as cm:
             x.real_r8_2d = np.array([1, 2, 3])
+
+    def test_check_logicals_2d(self):
+        assert np.allclose(
+            x.logicals_0_2d,
+            np.array([True, False, True, False, True, False]).reshape(2, 3, order="F"),
+        )

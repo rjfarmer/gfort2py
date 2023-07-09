@@ -7,6 +7,18 @@ filename_f90 = "../t_vars_modules.f90"
 filename_py = "../t_vars_modules_test.py"
 
 
+def make_func(func_name, name, v, n):
+    f = []
+    f.append(fort_func_start.substitute(name=func_name, args="", result="x"))
+    f.append(INDENT + fort_bool_var.substitute(var="x"))
+    f.append(INDENT + fort_var_set.substitute(name="x", value=".false."))
+    f.append(INDENT + fort_var_comp.substitute(name=name, value=f"{v}_{n}"))
+    f.append(INDENT + fort_var_set.substitute(name="x", value=".true."))
+    f.append(INDENT + fort_func_end.substitute(name=func_name))
+
+    return "\n".join(f)
+
+
 def create_ints():
     fort_strs = []
     fort_funcs = []
@@ -33,15 +45,7 @@ def create_ints():
             py_strs.append(py_proc_call.substitute(proc=func_name, args=""))
             py_strs.append(py_proc_return.substitute())
 
-            f = []
-            f.append(fort_func_start.substitute(name=func_name, args="", result="x"))
-            f.append(INDENT + fort_bool_var.substitute(var="x"))
-            f.append(INDENT + fort_var_set.substitute(name="x", value=".false."))
-            f.append(INDENT + fort_var_comp.substitute(name=name, value=v))
-            f.append(INDENT + fort_var_set.substitute(name="x", value=".true."))
-            f.append(INDENT + fort_func_end.substitute(name=func_name))
-
-            fort_funcs.append("\n".join(f))
+            fort_funcs.append(make_func(func_name, name, v, n))
 
     return fort_strs, fort_funcs, py_strs
 
@@ -70,15 +74,7 @@ def create_reals():
             py_strs.append(py_proc_call.substitute(proc=func_name, args=""))
             py_strs.append(py_proc_return.substitute())
 
-            f = []
-            f.append(fort_func_start.substitute(name=func_name, args="", result="x"))
-            f.append(INDENT + fort_bool_var.substitute(var="x"))
-            f.append(INDENT + fort_var_set.substitute(name="x", value=".false."))
-            f.append(INDENT + fort_var_comp.substitute(name=name, value=f"{v}_{n}"))
-            f.append(INDENT + fort_var_set.substitute(name="x", value=".true."))
-            f.append(INDENT + fort_func_end.substitute(name=func_name))
-
-            fort_funcs.append("\n".join(f))
+            fort_funcs.append(make_func(func_name, name, v, n))
 
     return fort_strs, fort_funcs, py_strs
 

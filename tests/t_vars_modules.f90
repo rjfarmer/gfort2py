@@ -61,7 +61,7 @@ contains
     implicit none
     logical :: x
     x = .false.
-    if(int_i1_0/=-2) return
+    if(int_i1_0/=-2_i1) return
     x = .true.
     end function check_int_i1_0 
 
@@ -69,7 +69,7 @@ contains
     implicit none
     logical :: x
     x = .false.
-    if(int_i1_1/=0) return
+    if(int_i1_1/=0_i1) return
     x = .true.
     end function check_int_i1_1 
 
@@ -77,7 +77,7 @@ contains
     implicit none
     logical :: x
     x = .false.
-    if(int_i1_2/=2) return
+    if(int_i1_2/=2_i1) return
     x = .true.
     end function check_int_i1_2 
 
@@ -85,7 +85,7 @@ contains
     implicit none
     logical :: x
     x = .false.
-    if(int_i2_0/=-2) return
+    if(int_i2_0/=-2_i2) return
     x = .true.
     end function check_int_i2_0 
 
@@ -93,7 +93,7 @@ contains
     implicit none
     logical :: x
     x = .false.
-    if(int_i2_1/=0) return
+    if(int_i2_1/=0_i2) return
     x = .true.
     end function check_int_i2_1 
 
@@ -101,7 +101,7 @@ contains
     implicit none
     logical :: x
     x = .false.
-    if(int_i2_2/=2) return
+    if(int_i2_2/=2_i2) return
     x = .true.
     end function check_int_i2_2 
 
@@ -109,7 +109,7 @@ contains
     implicit none
     logical :: x
     x = .false.
-    if(int_i4_0/=-2) return
+    if(int_i4_0/=-2_i4) return
     x = .true.
     end function check_int_i4_0 
 
@@ -117,7 +117,7 @@ contains
     implicit none
     logical :: x
     x = .false.
-    if(int_i4_1/=0) return
+    if(int_i4_1/=0_i4) return
     x = .true.
     end function check_int_i4_1 
 
@@ -125,7 +125,7 @@ contains
     implicit none
     logical :: x
     x = .false.
-    if(int_i4_2/=2) return
+    if(int_i4_2/=2_i4) return
     x = .true.
     end function check_int_i4_2 
 
@@ -133,7 +133,7 @@ contains
     implicit none
     logical :: x
     x = .false.
-    if(int_i8_0/=-2) return
+    if(int_i8_0/=-2_i8) return
     x = .true.
     end function check_int_i8_0 
 
@@ -141,7 +141,7 @@ contains
     implicit none
     logical :: x
     x = .false.
-    if(int_i8_1/=0) return
+    if(int_i8_1/=0_i8) return
     x = .true.
     end function check_int_i8_1 
 
@@ -149,7 +149,7 @@ contains
     implicit none
     logical :: x
     x = .false.
-    if(int_i8_2/=2) return
+    if(int_i8_2/=2_i8) return
     x = .true.
     end function check_int_i8_2 
 

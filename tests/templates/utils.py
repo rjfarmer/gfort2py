@@ -163,6 +163,14 @@ fort_param_array_multi = string.Template(
     ).strip()
 )
 
+fort_bool_param_array_multi = string.Template(
+    textwrap.dedent(
+        """
+    logical,parameter,dimension(${shape}) :: ${var} = reshape( (/ ${value}/), shape(${var}))
+"""
+    ).strip()
+)
+
 
 fort_set_var = string.Template(
     textwrap.dedent(
@@ -187,6 +195,7 @@ fort_set_array_multi = string.Template(
 """
     ).strip()
 )
+
 
 fort_var = string.Template(
     textwrap.dedent(
