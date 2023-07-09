@@ -139,6 +139,14 @@ fort_bool_param = string.Template(
     ).strip()
 )
 
+fort_bool_var = string.Template(
+    textwrap.dedent(
+        """
+    logical :: ${var}
+"""
+    ).strip()
+)
+
 fort_param_array_sing = string.Template(
     textwrap.dedent(
         """
@@ -259,7 +267,7 @@ fort_array_target = string.Template(
 fort_func_start = string.Template(
     textwrap.dedent(
         """
-    function $(name}(${args}) result(${result}) 
+    function ${name}(${args}) result(${result}) 
         implicit none
 """
     ).strip()
@@ -268,7 +276,7 @@ fort_func_start = string.Template(
 fort_func_end = string.Template(
     textwrap.dedent(
         """
-    end function $(name}
+    end function ${name}
 """
     ).strip()
 )
@@ -277,7 +285,7 @@ fort_func_end = string.Template(
 fort_sub_start = string.Template(
     textwrap.dedent(
         """
-    subroutine $(name}(${args}) 
+    subroutine ${name}(${args}) 
         implicit none
 """
     ).strip()
@@ -286,7 +294,7 @@ fort_sub_start = string.Template(
 fort_sub_end = string.Template(
     textwrap.dedent(
         """
-    end subroutine $(name}
+    end subroutine ${name}
 """
     ).strip()
 )
@@ -418,12 +426,13 @@ def make_array_values(array, kind=None):
 
 def write_lines(file, lines, indent_level):
     for line in lines:
-        if line.startswith("\n"):
-            line = line[1:]
-        print(f"{indent_level*INDENT}{line} \n", file=file)
+        write_line(file, line, indent_level)
 
 
 def write_line(file, line, indent_level):
-    if line.startswith("\n"):
-        line = line[1:]
+    try:
+        if line.startswith("\n"):
+            line = line[1:]
+    except AttributeError:
+        pass
     print(f"{indent_level*INDENT}{line} \n", file=file)
