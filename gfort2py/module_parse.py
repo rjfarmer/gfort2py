@@ -179,7 +179,11 @@ class utils:
         k = int(self.kind())
 
         if t == "INTEGER" or t == "LOGICAL":
-            if k == 4:
+            if k == 1:
+                return "i1"
+            elif k == 2:
+                return "i2"
+            elif k == 4:
                 return "i4"
             elif k == 8:
                 return "i8"

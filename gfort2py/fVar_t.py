@@ -86,6 +86,10 @@ class fVar_t:
 
 def ctype_map(type, kind):
     if type == "INTEGER":
+        if kind == 1:
+            return ctypes.c_int8
+        elif kind == 2:
+            return ctypes.c_int16
         if kind == 4:
             return ctypes.c_int32
         elif kind == 8:
