@@ -102,7 +102,6 @@ class c_item:
     omp_device_type: bool = False
     is_bind_c: bool = False
     binding_label: str = ""
-    raw: t.Any
 
     def __init__(self, *args):
         self.name = string_clean(args[0])
@@ -124,7 +123,6 @@ class generics:
     name: str = ""
     module: str = ""
     id: t.List[int] = -1
-    raw: t.Any
 
     def __init__(self, *args):
         self.name = string_clean(args[0])
@@ -372,7 +370,6 @@ class attribute:
     ext_attr: int = -1
     extension: int = -1
     attributes: t.Set[str] = None
-    raw: t.Any
 
     def __init__(self, *args):
         self.flavor = string_clean(args[0])
@@ -418,7 +415,6 @@ class header:
 @dataclass(init=False)
 class formal_arglist:
     symbol: t.List[symbol_ref] = None
-    raw: t.Any
 
     def __init__(self, *args):
         self.symbol = []
@@ -445,8 +441,6 @@ class typebound_proc:
     pass_arg: str = ""
     pass_arg_num: symbol_ref = None
     proc_ref: symbol_ref = None
-    raw: t.Any
-    kwargs: t.Any
 
     def __init__(self, *args, **kwargs):
         self.name = string_clean(args[0][0])
@@ -469,8 +463,6 @@ class typebound_proc:
 class derived_ns:
     unknown1: str = None
     proc: t.List[typebound_proc] = None
-    raw: t.Any
-    kwargs: t.Any
 
     def __init__(self, *args, **kwargs):
         self.raw = args
@@ -486,9 +478,6 @@ class derived_ns:
 
 @dataclass(init=False)
 class actual_arglist:
-    raw: t.Any
-    kwargs: t.Any
-
     def __init__(self, *args, **kwargs):
         self.raw = args
         self.kwargs = kwargs
@@ -548,7 +537,6 @@ class expression:
     charlen: int = -1
     unary_op: str = ""
     unary_args: t.Any = None
-    raw: t.Any
 
     def __init__(self, *args):
         self.raw = args
@@ -625,7 +613,6 @@ class arrayspec:
     array_type: str = ""
     lower: t.List[expression] = None
     upper: t.List[expression] = None
-    raw: t.Any
 
     def __init__(self, *args):
         self.raw = args
@@ -679,7 +666,6 @@ class component(utils):
     access: str = ""
     initializer: expression = None
     proc_ptr: typebound_proc = None
-    raw: t.Any
 
     def __init__(self, *args):
         self.raw = args
@@ -711,7 +697,6 @@ class component(utils):
 @dataclass(init=False)
 class components:
     comp: t.List[component] = None
-    raw: t.Any
 
     def __init__(self, *args):
         self.comp = []
@@ -730,7 +715,6 @@ class components:
 @dataclass(init=False)
 class namelist:
     sym_ref: t.List[symbol_ref] = None
-    raw: t.Any
 
     def __init__(self, *args):
         self.raw = args
@@ -770,7 +754,6 @@ class data:
     intrinsic_symbol: int = -1
     hash: int = -1
     simd: simd_dec = None
-    raw: t.Any
 
     def __init__(self, *args):
         self.raw = args
@@ -814,7 +797,6 @@ class symbol(utils):
     head: header = None
     sym: data = None
     raw: str = ""
-    raw: t.Any
 
     def __init__(self, *args):
         self.head = header(*args[0:5])

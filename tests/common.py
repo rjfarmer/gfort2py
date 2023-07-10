@@ -2,6 +2,7 @@
 
 import os, sys
 import ctypes
+from pprint import pprint
 
 os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 

@@ -236,7 +236,7 @@ def create_cmplx_array_1d():
 
     for n, k in fort_real_kinds.items():
         name = f"complex_{n}_1d"
-        # Kind of a component is different to the kidn of the overall complex variable so skip setting the kind to make things easier
+        # Kind of a component is different to the kind of the overall complex variable so skip setting the kind to make things easier
         v = f"(-3.140000104904175,-3.140000104904175), (0,0), (3.140000104904175,3.140000104904175)"
         pyvalues = "complex(-3.140000104904175,-3.140000104904175), complex(0.0,0.0), complex(3.140000104904175,3.140000104904175)"
 
