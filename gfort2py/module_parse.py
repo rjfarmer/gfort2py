@@ -254,9 +254,6 @@ class utils:
     def is_array(self):
         return "DIMENSION" in self.sym.attr.attributes
 
-    def is_always_explicit(self):
-        return "ALWAYS_EXPLICIT" in self.sym.attr.attributes
-
     def is_dummy(self):
         return "DUMMY" in self.sym.attr.attributes
 
@@ -268,6 +265,9 @@ class utils:
 
     def needs_array_desc(self):
         return self.is_dummy() or self.is_allocatable() or self.is_always_explicit()
+
+    def is_always_explicit(self):
+        return "ALWAYS_EXPLICIT" in self.sym.attr.attributes
 
     def not_a_pointer(self):
         return (
@@ -288,6 +288,11 @@ class utils:
 
     def is_assumed_shape(self):
         return self.sym.array_spec.array_type == "ASSUMED_SHAPE"
+
+    def is_returned_as_arg(self):
+        return (self.is_always_explicit() and self.is_return() and self.is_array()) or (
+            self.is_char()
+        )
 
     def is_deferred_len(self):
         # Only needed for things that need an extra function argument for their length

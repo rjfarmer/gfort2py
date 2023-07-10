@@ -37,7 +37,12 @@ class fVar:
                 return fExplicitArr(obj, *args, **kwargs)
             elif obj.is_assumed_size():
                 return fAssumedSize(obj, *args, **kwargs)
-            elif obj.is_assumed_shape() or obj.is_allocatable() or obj.is_pointer():
+            elif (
+                obj.is_assumed_shape()
+                or obj.is_allocatable()
+                or obj.is_pointer()
+                or obj.is_always_explicit()
+            ):
                 return fAssumedShape(obj, *args, **kwargs)
             else:
                 raise TypeError("Unknown array type")

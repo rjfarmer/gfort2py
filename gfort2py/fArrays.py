@@ -223,6 +223,12 @@ class fAssumedShape(fArray_t):
             print(f"\t ubound {self.cvalue.dims[i].ubound}")
             print(f"\t stride {self.cvalue.dims[i].stride}")
 
+    def _make_empty(self):
+        dtype = self.obj.dtype()
+        shape = self.obj.shape()
+
+        return np.zeros(shape, dtype=dtype, order="F")
+
 
 class fAssumedSize(fArray_t):
     def ctype(self):

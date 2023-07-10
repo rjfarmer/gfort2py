@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 from .fVar import fVar
 from .fVar_t import fVar_t
+from .utils import resolve_other_args
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
@@ -72,8 +73,6 @@ class fProc:
         return self.obj.name
 
     def __call__(self, *args, **kwargs):
-        self._set_return()
-
         func_args = self._convert_args(*args, **kwargs)
 
         with _captureStdOut() as cs:
@@ -84,13 +83,13 @@ class fProc:
 
         return self._convert_result(res, func_args)
 
-    def _set_return(self):
+    def _set_return(self, other_args):
         if self.obj.is_subroutine():
             self._func.restype = None  # Subroutine
         else:
-            if (
-                self.return_var.obj.is_char()
-            ):  # Returning a character is done as a character + len at start of arg list
+            self.return_var.obj = resolve_other_args(self.return_var.obj, other_args)
+
+            if self.return_var.obj.is_returned_as_arg():
                 self._func.restype = None
             else:
                 self._func.restype = self.return_var.ctype()
@@ -102,6 +101,9 @@ class fProc:
                 l = self.return_var.len()
                 res.append(self.return_var.from_param(" " * l))
                 res.append(self.return_var.ctype_len())
+            elif self.return_var.obj.is_always_explicit() and self.obj.is_array():
+                empty_array = self.return_var._make_empty()
+                res.append(ctypes.pointer(self.return_var.from_param(empty_array)))
 
         return res
 
@@ -145,9 +147,12 @@ class fProc:
         return args, args_end
 
     def _convert_args(self, *args, **kwargs):
-        args_start = self.args_start()
-
         self.input_args = self.args_check(*args, **kwargs)
+
+        # Set this now after arsg_check as we need to be able to
+        # resolve runtime arguments
+        self._set_return(self.input_args)
+        args_start = self.args_start()
 
         args_mid, args_end = self.args_convert(self.input_args)
 
@@ -157,10 +162,14 @@ class fProc:
         res = {}
 
         if self.obj.is_function():
-            if self.return_var.obj.is_char():
-                result = args[0]
-                _ = args.pop(0)
-                _ = args.pop(0)  # Twice to pop first and second value
+            if self.return_var.obj.is_returned_as_arg():
+                if self.return_var.obj.is_char():
+                    result = args[0]
+                    _ = args.pop(0)
+                    _ = args.pop(0)  # Twice to pop first and second value
+                elif self.return_var.obj.is_always_explicit() and self.obj.is_array():
+                    result = self.return_var.value
+                    _ = args.pop(0)
 
         if len(self.obj.args()):
             for var in self.input_args:

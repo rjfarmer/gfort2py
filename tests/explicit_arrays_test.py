@@ -256,12 +256,11 @@ class TestExplicitArrayMethods:
         y = x.func_logical_multi(1.0, 2.0, xarr, 3.0, 4.0)
         self.assertEqual(y.result, True)
 
-    @pytest.mark.skip
     def test_mesh_exp(self):
         # Github issue #13
         i = 5
         y = x.func_mesh_exp(i)
-        np.array_equal(y.result, np.arrange(0, i + 1 + 1))
+        np.array_equal(y.result, np.arange(0, i + 1 + 1))
 
     def test_mesh_exp2(self):
         i = 5
@@ -303,7 +302,16 @@ class TestExplicitArrayMethods:
             x.const_logical_arr, np.array([True, False, True, False, True], dtype=bool)
         )
 
-    @pytest.mark.skip
     def test_func_return_1d_int_arr(self):
         res = x.func_return_1d_int_arr()
         assert np.array_equal(res.result, np.array([1, 2, 3, 4, 5]))
+
+    def test_func_return_1d_int_arr_n(self):
+        res = x.func_return_1d_int_arr_n(5)
+        assert np.array_equal(res.result, np.array([1, 2, 3, 4, 5]))
+
+    def test_func_return_2d_int_arr(self):
+        res = x.func_return_2d_int_arr()
+        assert np.array_equal(
+            res.result, np.array([1, 2, 3, 4, 5, 6]).reshape(3, 2, order="F")
+        )
