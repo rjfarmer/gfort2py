@@ -227,6 +227,7 @@ To run unit tests
 - [ ] Generic/Elemental functions
 - [ ] Functions as an argument
 - [x] Unary operations (arguments that involve an expression to evaluate like dimension(n+1) or dimension((2*n)+1))
+- [x] Functions returning an explicit array as their result 
 
 ### Accessing common block elements
 
