@@ -41,13 +41,13 @@ Your Fortran code must be inside a module and then compiled as a shared library.
 On linux: 
 ````bash
 gfortran -fPIC -shared -c file.f90
-gfortran -fPIC -shared -o libfile file.f90
+gfortran -fPIC -shared -o libfile.so file.f90
 ````
 
 On MacOS: 
 ````bash
 gfortran -dynamiclib -c file.f90
-gfortran -dynamiclib -o libfile file.f90
+gfortran -dynamiclib -o libfile.dylib file.f90
 ````
 
 On Windows:
@@ -60,8 +60,7 @@ If your code comes as program that does everything, then just turn the program i
 then create a new file with your program that uses the module and calls the function you just made.
 
 If the shared library needs other
-shared libraries you will need to set LD_LIBRARY_PATH environment variable, and it is also recommended is to run chrpath on the 
-shared libraries so you can access them from anywhere.
+shared libraries you will need to set LD_LIBRARY_PATH environment variable, and it is also recommended to run chrpath on the shared libraries so you can access them from anywhere.
 
 ### Python side
 ````python
@@ -84,7 +83,7 @@ y = x.func_name(a,b,c)
 
 Will call the Fortran function with variables ``a,b,c`` and returns the result in ``y``.
 
-``y`` will be  named tuple which contains (result, args). Where result is a python object for the return value (0 if a subroutine) and where args is a dict containing all arguments passed to the procedure (both those with intent (in) which will be unchanged and intent(inout/out) which may have changed).
+``y`` will be  named tuple which contains (result, args). Where ``result`` is a python object for the return value (0 if a subroutine) and where args is a dict containing all arguments passed to the procedure (both those with intent (in) which will be unchanged and intent(inout/out) which may have changed).
 
 
 ### Variables
@@ -346,7 +345,7 @@ Assuming that you loaded things as:
 x = gf.fFort(SO, MOD)
 ````
 
-You can find out a Fortran variables/procedures module information with:
+You can find out the available Fortran variables/procedures module information with:
 
 ````python
 var = x._module['variable_name']
