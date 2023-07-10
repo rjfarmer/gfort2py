@@ -229,3 +229,98 @@ class Test_params_modules:
             x.logicals_0_2d,
             np.array([True, False, True, False, True, False]).reshape(2, 3, order="F"),
         )
+
+    def test_check_cmplx(self):
+        assert x.complex_r4_0 == complex(-3.140000104904175, -3.140000104904175)
+
+        with pytest.raises(AttributeError) as cm:
+            x.complex_r4_0 = -99.9
+
+        assert x.complex_r4_1 == complex(0.0, 0.0)
+
+        with pytest.raises(AttributeError) as cm:
+            x.complex_r4_1 = -99.9
+
+        assert x.complex_r4_2 == complex(3.140000104904175, 3.140000104904175)
+
+        with pytest.raises(AttributeError) as cm:
+            x.complex_r4_2 = -99.9
+
+        assert x.complex_r8_0 == complex(-3.140000104904175, -3.140000104904175)
+
+        with pytest.raises(AttributeError) as cm:
+            x.complex_r8_0 = -99.9
+
+        assert x.complex_r8_1 == complex(0.0, 0.0)
+
+        with pytest.raises(AttributeError) as cm:
+            x.complex_r8_1 = -99.9
+
+        assert x.complex_r8_2 == complex(3.140000104904175, 3.140000104904175)
+
+        with pytest.raises(AttributeError) as cm:
+            x.complex_r8_2 = -99.9
+
+    def test_check_cmplx_1d(self):
+        assert np.allclose(
+            x.complex_r4_1d,
+            np.array(
+                [
+                    complex(-3.140000104904175, -3.140000104904175),
+                    complex(0.0, 0.0),
+                    complex(3.140000104904175, 3.140000104904175),
+                ]
+            ),
+        )
+
+        with pytest.raises(AttributeError) as cm:
+            x.complex_r4_1d = np.array([1, 2, 3])
+
+        assert np.allclose(
+            x.complex_r8_1d,
+            np.array(
+                [
+                    complex(-3.140000104904175, -3.140000104904175),
+                    complex(0.0, 0.0),
+                    complex(3.140000104904175, 3.140000104904175),
+                ]
+            ),
+        )
+
+        with pytest.raises(AttributeError) as cm:
+            x.complex_r8_1d = np.array([1, 2, 3])
+
+    def test_check_cmplx_2d(self):
+        assert np.allclose(
+            x.complex_r4_2d,
+            np.array(
+                [
+                    complex(-6.28000020980835, -6.28000020980835),
+                    complex(-3.140000104904175, -3.140000104904175),
+                    complex(0.0, 0.0),
+                    complex(0.0, -1.0),
+                    complex(3.140000104904175, 3.140000104904175),
+                    complex(-6.28000020980835, -6.28000020980835),
+                ]
+            ).reshape(2, 3, order="F"),
+        )
+
+        with pytest.raises(AttributeError) as cm:
+            x.complex_r4_2d = np.array([1, 2, 3])
+
+        assert np.allclose(
+            x.complex_r8_2d,
+            np.array(
+                [
+                    complex(-6.28000020980835, -6.28000020980835),
+                    complex(-3.140000104904175, -3.140000104904175),
+                    complex(0.0, 0.0),
+                    complex(0.0, -1.0),
+                    complex(3.140000104904175, 3.140000104904175),
+                    complex(-6.28000020980835, -6.28000020980835),
+                ]
+            ).reshape(2, 3, order="F"),
+        )
+
+        with pytest.raises(AttributeError) as cm:
+            x.complex_r8_2d = np.array([1, 2, 3])

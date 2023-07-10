@@ -194,9 +194,9 @@ class utils:
                 return "f8"
         elif t == "COMPLEX":
             if k == 4:
-                return "c4"
+                return np.csingle
             elif k == 8:
-                return "c8"
+                return np.cdouble
         elif t == "CHARACTER":
             return f"S{self.strlen.value}"
 

@@ -202,6 +202,85 @@ def create_logicals_2d():
     return fort_strs, py_strs
 
 
+def create_cmplx():
+    fort_strs = []
+    py_strs = []
+
+    for n, k in fort_real_kinds.items():
+        values = [
+            f"(-3.140000104904175_{n},-3.140000104904175_{n})",
+            f"(0_{n},0_{n})",
+            f"(3.140000104904175_{n},3.140000104904175_{n})",
+        ]
+        pyvalues = [
+            "complex(-3.140000104904175,-3.140000104904175)",
+            "complex(0.0,0.0)",
+            "complex(3.140000104904175,3.140000104904175)",
+        ]
+        for indv, v in enumerate(values):
+            name = f"complex_{n}_{indv}"
+
+            fort_strs.append(
+                fort_param.substitute(type="complex", kind=n, var=name, value=v)
+            )
+
+            py_strs.append(py_value_comp.substitute(name=name, value=pyvalues[indv]))
+            py_strs.append(py_fail.substitute(var=name, bad=-99.9))
+
+    return fort_strs, py_strs
+
+
+def create_cmplx_array_1d():
+    fort_strs = []
+    py_strs = []
+
+    for n, k in fort_real_kinds.items():
+        name = f"complex_{n}_1d"
+        # Kind of a component is different to the kidn of the overall complex variable so skip setting the kind to make things easier
+        v = f"(-3.140000104904175,-3.140000104904175), (0,0), (3.140000104904175,3.140000104904175)"
+        pyvalues = "complex(-3.140000104904175,-3.140000104904175), complex(0.0,0.0), complex(3.140000104904175,3.140000104904175)"
+
+        fort_strs.append(
+            fort_param_array_multi.substitute(
+                type="complex", kind=n, var=name, shape=3, value=v
+            )
+        )
+
+        py_strs.append(
+            py_array_check.substitute(name=name, value=f"np.array([{pyvalues}])")
+        )
+        py_strs.append(py_fail.substitute(var=name, bad="np.array([1,2,3])"))
+
+    return fort_strs, py_strs
+
+
+def create_cmplx_array_2d():
+    fort_strs = []
+    py_strs = []
+
+    for n, k in fort_real_kinds.items():
+        name = f"complex_{n}_2d"
+
+        v = f"(-6.28000020980835,-6.28000020980835), (-3.140000104904175,-3.140000104904175), (0,0),(0,-1), (3.140000104904175,3.140000104904175),(-6.28000020980835,-6.28000020980835)"
+
+        pyvalues = "complex(-6.28000020980835,-6.28000020980835), complex(-3.140000104904175,-3.140000104904175), complex(0.0,0.0),complex(0.0,-1.0), complex(3.140000104904175,3.140000104904175), complex(-6.28000020980835,-6.28000020980835)"
+
+        fort_strs.append(
+            fort_param_array_multi.substitute(
+                type="complex", kind=n, var=name, shape="2,3", value=v
+            )
+        )
+
+        py_strs.append(
+            py_array_check.substitute(
+                name=name, value=f'np.array([{pyvalues}]).reshape(2,3, order="F")'
+            )
+        )
+        py_strs.append(py_fail.substitute(var=name, bad="np.array([1,2,3])"))
+
+    return fort_strs, py_strs
+
+
 def make_tests(file_f90, file_py, name, func):
     f, py = func()
     write_lines(file_f90, f, 1)
@@ -224,6 +303,10 @@ with open(filename_f90, "w") as file_f90, open(filename_py, "w") as file_py:
     make_tests(file_f90, file_py, "check_ints_2d", create_ints_array_2d)
     make_tests(file_f90, file_py, "check_reals_2d", create_reals_array_2d)
     make_tests(file_f90, file_py, "check_logicals_2d", create_logicals_2d)
+
+    make_tests(file_f90, file_py, "check_cmplx", create_cmplx)
+    make_tests(file_f90, file_py, "check_cmplx_1d", create_cmplx_array_1d)
+    make_tests(file_f90, file_py, "check_cmplx_2d", create_cmplx_array_2d)
 
     # print(fort_module_mid.substitute(),file=file_f90)
     write_line(file_f90, fort_module_end.substitute(name=modname), 0)
