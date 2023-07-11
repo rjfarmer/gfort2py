@@ -56,8 +56,6 @@ class fVar_t:
         arg = None
         end = None
 
-        self.obj = resolve_other_args(self.obj, other_args)
-
         if self.obj.is_optional() and value is None:
             end = ctypes.c_byte(0)
             arg = None

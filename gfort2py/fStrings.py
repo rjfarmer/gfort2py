@@ -5,7 +5,7 @@ import numpy as np
 
 from .fVar_t import fVar_t
 from .fArrays import fAssumedShape
-from .utils import copy_array, resolve_other_args
+from .utils import copy_array
 
 
 class fStr(fVar_t):
@@ -147,8 +147,6 @@ class fAllocStr(fStr):
         return ctypes.sizeof(self.ctype)
 
     def to_proc(self, value, other_args):
-        self.obj = resolve_other_args(self.obj, other_args)
-
         if value is None:
             l = 0
         else:
@@ -271,7 +269,6 @@ class fStrExplicit(fStr):
         return ctypes.sizeof(self.ctype)
 
     def to_proc(self, value, other_args):
-        self.obj = resolve_other_args(self.obj, other_args)
         if value is None:
             l = 0
         else:
@@ -362,7 +359,6 @@ class fStrAssumedShape(fAssumedShape):
         return ctypes.sizeof(self.ctype)
 
     def to_proc(self, value, other_args):
-        self.obj = resolve_other_args(self.obj, other_args)
         if value is None:
             l = self.obj.strlen.value
         else:

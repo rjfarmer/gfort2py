@@ -65,12 +65,12 @@ class TestStringMethods:
         y = x.func_ret_str("abcde")
         self.assertEqual(y.result, "Abcde")
 
-    @pytest.mark.skip("Skipping")
     # We need to call a func on the argument before passing it to func_str_int_len
-    def test_func_str_int_len(self):
+    def test_func_str_int_len(self, capfd):
+        out, err = capfd.readouterr()
         y = x.func_str_int_len(10)
 
-        self.assertEqual(out, "10")
+        assert y.result == "10"
 
     def test_str_alloc(self):
         self.assertEqual(x.str_alloc, None)  # Empty at start

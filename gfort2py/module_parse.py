@@ -499,7 +499,6 @@ class typespec:
     type2: str = ""  # Repeat of type
     charlen: int = -1  # If character
     deferred_cl: bool = False  # if character and deferred length
-    args = None
 
     def __init__(self, *args):
         self.raw = args
@@ -542,6 +541,7 @@ class expression:
     charlen: int = -1
     unary_op: str = ""
     unary_args: t.Any = None
+    args: t.Any = None
 
     def __init__(self, *args):
         self.raw = args
@@ -558,6 +558,7 @@ class expression:
             self.unary_args = [expression(*args[4]), expression(*args[5])]
         elif self.exp_type == "FUNCTION":
             self._value = symbol_ref(args[3])
+            self.args = expression(*args[4][0][1])
         elif self.exp_type == "CONSTANT":
             if self.ts.type == "REAL":
                 self._value = hextofloat(string_clean(args[3]), self.ts.kind == 8)

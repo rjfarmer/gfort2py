@@ -87,7 +87,9 @@ class fProc:
         if self.obj.is_subroutine():
             self._func.restype = None  # Subroutine
         else:
-            self.return_var.obj = resolve_other_args(self.return_var.obj, other_args)
+            self.return_var.obj = resolve_other_args(
+                self.return_var.obj, other_args, self._allobjs, self._lib, fProc
+            )
 
             if self.return_var.obj.is_returned_as_arg():
                 self._func.restype = None
@@ -149,7 +151,12 @@ class fProc:
     def _convert_args(self, *args, **kwargs):
         self.input_args = self.args_check(*args, **kwargs)
 
-        # Set this now after arsg_check as we need to be able to
+        for var in self.input_args:
+            var.fvar.obj = resolve_other_args(
+                var.fvar.obj, self.input_args, self._allobjs, self._lib, fProc
+            )
+
+        # Set this now after args_check as we need to be able to
         # resolve runtime arguments
         self._set_return(self.input_args)
         args_start = self.args_start()
