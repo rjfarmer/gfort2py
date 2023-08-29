@@ -289,3 +289,10 @@ class TestStringMethods:
     def test_set_chr_star_star(self):
         res = x.set_chr_star_star("            ")
         assert res.args["x"] == "abcdefghijkl"
+
+    def test_check_assumed_shape_str(self, capfd):
+        y = np.array(["a/b/c/d/e/f/g"], dtype="S")
+
+        res = x.check_assumed_shape_str(y)
+        out, err = capfd.readouterr()
+        assert out.strip() == "a/b/c/d/e/f/g"

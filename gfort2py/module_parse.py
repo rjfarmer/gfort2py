@@ -196,7 +196,10 @@ class utils:
             elif k == 8:
                 return np.cdouble
         elif t == "CHARACTER":
-            return f"S{self.strlen.value}"
+            try:
+                return f"S{self.strlen.value}"
+            except AttributeError:
+                return "S"
 
         raise NotImplementedError(f"Object of type {t} and kind {k} not supported yet")
 

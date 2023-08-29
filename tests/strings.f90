@@ -357,4 +357,16 @@ module strings
 	end subroutine set_chr_star_star
 
 
+	subroutine check_assumed_shape_str(x)
+		character(len=*), dimension(:), intent(in) :: x
+		integer  :: i
+
+
+		do i=1,ubound(x,dim=1)
+			write(*,*) trim(x(i))
+		end do
+
+
+	end subroutine check_assumed_shape_str
+
 end module strings
