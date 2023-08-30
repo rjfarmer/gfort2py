@@ -161,6 +161,28 @@ between Python functions (``keys``, ``items`` etc) and any Fortran-derived type 
 You can pass a ``fDT`` as an argument to a procedure.
 
 
+### Quad precision variables
+
+Quad precision (REAL128) variables are not natively supported by Python thus we need a different way to handle them. For now that is the [pyQuadp library](https://github.com/rjfarmer/pyQuadp) which can be installed from PyPi with:
+
+````bash
+python -m pip install pyquadp
+````
+
+For more details see pyQuadp's documentation, but briefly you can create a 
+quad precision variable from an ``int``, ``float``, or ``string``. On return you will receive a ``qfloat`` type. This ``qfloat`` type acts like a Python Number, so you can do things like add, multiply, subtract etc this Number with other Numbers (including non-``qfloat`` types).
+
+We currently only support scalar Quad's and scalar complex Quad's. Arrays of
+quad precision values is planned but not yet supported. Quad values can also not be returned as a function result (this is a limitation in ``ctypes`` which we have no control over). Thus a quad precision value can only occur in:
+
+- Module variables
+- Parameters
+- Procedure arguments
+
+``pyQuadp`` is currently an optional requirement, you must manually install it, it does not get auto-installed when ``gfort2py`` is installed. If you try to access a quad precision variable without ``pyQuadp`` you should get a ``TypeError``.
+
+
+
 ## Testing
 
 ````bash
