@@ -137,6 +137,7 @@ module basic
 			    
 			    func_check_mod = .true.
 			end if
+
 		end function func_check_mod
       
       
@@ -238,5 +239,22 @@ module basic
 			end if
 
 		end function func_test_bool
+
+
+		subroutine sub_test_quad(y,x)
+			real(qp), intent(in) :: y
+			real(qp), intent(out) :: x
+		
+			x = y * 3
+		
+		end subroutine sub_test_quad
+
+
+		real(qp) function func_test_quad_ret()
+			
+			func_test_quad_ret = 3.14_qp
+
+		end function  func_test_quad_ret
+
 
 end module basic

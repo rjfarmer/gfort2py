@@ -94,6 +94,11 @@ class fProc:
             if self.return_var.obj.is_returned_as_arg():
                 self._func.restype = None
             else:
+                if self.return_var.kind == 16:
+                    raise TypeError(
+                        "Can not return a quad from a procedure, it must be an argument or module variable"
+                    )
+
                 self._func.restype = self.return_var.ctype()
 
     def args_start(self):

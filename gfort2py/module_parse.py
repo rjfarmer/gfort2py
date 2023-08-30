@@ -11,6 +11,13 @@ import pprint
 
 import typing as t
 
+try:
+    import pyquadp as pyq
+
+    PYQ_IMPORTED = True
+except ImportError:
+    PYQ_IMPORTED = False
+
 
 def string_clean(string):
     if string is None:
@@ -137,7 +144,7 @@ class generics:
 #################################
 
 
-def hextofloat(s, double=False):
+def hextofloat(s, kind=4):
     # Given hex like parameter '0.12decde@9' returns 5065465344.0
     man, exp = s.split("@")
     exp = int(exp)
@@ -149,7 +156,9 @@ def hextofloat(s, double=False):
     man = man + "P0"
     if negative:
         man = "-" + man
-    if double:
+    if PYQ_IMPORTED and kind == 16:
+        return pyq.qfloat.fromhex(man)
+    elif kind == 8:
         return np.double.fromhex(man)
     else:
         return float.fromhex(man)
@@ -564,7 +573,7 @@ class expression:
             self.args = expression(*args[4][0][1])
         elif self.exp_type == "CONSTANT":
             if self.ts.type == "REAL":
-                self._value = hextofloat(string_clean(args[3]), self.ts.kind == 8)
+                self._value = hextofloat(string_clean(args[3]), self.ts.kind)
             elif self.ts.type == "INTEGER":
                 self._value = int(string_clean(args[3]))
             elif self.ts.type == "CHARACTER":
@@ -572,8 +581,8 @@ class expression:
                 self._value = string_clean(args[4])
             elif self.ts.type == "COMPLEX":
                 self._value = complex(
-                    hextofloat(string_clean(args[3]), self.ts.kind == 8),
-                    hextofloat(string_clean(args[4]), self.ts.kind == 8),
+                    hextofloat(string_clean(args[3]), self.ts.kind),
+                    hextofloat(string_clean(args[4]), self.ts.kind),
                 )
             elif self.ts.type == "LOGICAL":
                 self._value = int(args[3]) == 1

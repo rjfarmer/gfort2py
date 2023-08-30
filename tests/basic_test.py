@@ -11,6 +11,14 @@ import gfort2py as gf
 
 import pytest
 
+try:
+    import pyquadp as pyq
+
+    PYQ_IMPORTED = True
+except ImportError:
+    PYQ_IMPORTED = False
+
+
 SO = f"./tests/basic.{gf.lib_ext()}"
 MOD = "./tests/basic.mod"
 
@@ -99,10 +107,16 @@ class TestBasicMethods:
         assert x.a_int_lp == 5
         assert x.a_int_lp_set == 6
 
-    @pytest.mark.skip("Skipping due to quad support")
+    @pytest.mark.skipif(not PYQ_IMPORTED, reason="pyquadp not available")
     def test_sub_alter_mod_qp(self):
         y = x.sub_alter_mod()
         self.assertEqual(x.a_real_qp, 99.0)
+
+    @pytest.mark.skipif(PYQ_IMPORTED, reason="Only fails if pyquadp is not available")
+    def test_sub_alter_mod_no_qp(self):
+        y = x.sub_alter_mod()
+        with pytest.raises(TypeError) as cm:
+            x.a_real_qp == 99.0
 
     def test_func_int_in(self):
         v = 5
@@ -247,3 +261,18 @@ class TestBasicMethods:
     def test_logical_parammeters(self):
         assert x.const_logical_true
         assert not x.const_logical_false
+
+    @pytest.mark.skipif(not PYQ_IMPORTED, reason="pyquadp not available")
+    def test_func_check_mod(self):
+        x.a_int = 5
+        x.a_int_lp = 5
+        x.a_real = 5.0
+        x.a_real_dp = 5.0
+        x.a_real_qp = 5.0
+
+        assert x.func_check_mod().result
+
+    @pytest.mark.skipif(not PYQ_IMPORTED, reason="pyquadp not available")
+    def test_sub_test_quad(self):
+        y = x.sub_test_quad(2, 0)
+        assert y.args["x"] == 6

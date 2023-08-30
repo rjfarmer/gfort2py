@@ -5,6 +5,13 @@ import collections
 
 from .utils import resolve_other_args
 
+try:
+    import pyquadp as pyq
+
+    PYQ_IMPORTED = True
+except ImportError:
+    PYQ_IMPORTED = False
+
 
 class fVar_t:
     Args = collections.namedtuple("arg", ["prepend", "arg", "append"])
@@ -92,6 +99,11 @@ def ctype_map(type, kind):
             return ctypes.c_int32
         elif kind == 8:
             return ctypes.c_int64
+        elif kind == 16:
+            if PYQ_IMPORTED:
+                return ctypes.c_byte * 16
+            else:
+                (f"Quad precision ints requires pyQuadp to be installed")
         else:
             raise TypeError("Integer type of kind={kind} not supported")
     elif type == "REAL":
@@ -100,8 +112,12 @@ def ctype_map(type, kind):
         elif kind == 8:
             return ctypes.c_double
         elif kind == 16:
-            # Although we dont support quad yet we can keep things aligned
-            return ctypes.c_ubyte * 16
+            if PYQ_IMPORTED:
+                return ctypes.c_byte * 16
+            else:
+                raise TypeError(
+                    f"Quad precision floats requires pyQuadp to be installed"
+                )
         else:
             raise TypeError("Float type of kind={kind} not supported")
     elif type == "LOGICAL":
@@ -114,7 +130,12 @@ def ctype_map(type, kind):
         elif kind == 8:
             ct = ctypes.c_double
         elif kind == 16:
-            ct = ctypes.c_ubyte * 16
+            if PYQ_IMPORTED:
+                return ctypes.c_byte * 32
+            else:
+                raise TypeError(
+                    f"Quad precision complex requires pyQuadp to be installed"
+                )
         else:
             raise TypeError("Complex type of kind={kind} not supported")
 
