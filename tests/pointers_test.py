@@ -11,6 +11,14 @@ import gfort2py as gf
 
 import pytest
 
+try:
+    import pyquadp as pyq
+
+    PYQ_IMPORTED = True
+except ImportError:
+    PYQ_IMPORTED = False
+
+
 SO = f"./tests/pointers.{gf.lib_ext()}"
 MOD = "./tests/ptrs.mod"
 
@@ -41,9 +49,10 @@ class TestPtrsMethods:
         x.a_real_dp_point = v
         self.assertEqual(x.a_real_dp_point, v)
 
-    def test_a_real_qp_point(self):
+    @pytest.mark.skipif(PYQ_IMPORTED, reason="only tested when pyquadp not installed")
+    def test_a_real_qp_point_no_pyq(self):
         v = 1.0
-        with pytest.raises(NotImplementedError) as cm:
+        with pytest.raises(TypeError) as cm:
             x.a_real_qp_point = v
             self.assertEqual(x.a_real_qp_point, v)
 
@@ -72,9 +81,10 @@ class TestPtrsMethods:
         x.a_real_dp_target = v
         self.assertEqual(x.a_real_dp_target, v)
 
-    def test_a_real_qp_target(self):
+    @pytest.mark.skipif(PYQ_IMPORTED, reason="only tested when pyquadp not installed")
+    def test_a_real_qp_target_no_pyq(self):
         v = 1.0
-        with pytest.raises(NotImplementedError) as cm:
+        with pytest.raises(TypeError) as cm:
             x.a_real_qp_target = v
             self.assertEqual(x.a_real_qp_target, v)
 
