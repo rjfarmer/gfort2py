@@ -27,7 +27,7 @@ class fScalar(fVar_t):
                 )
 
             if self.cvalue is None:
-                self.cvalue = self.ctype()
+                self.cvalue = self.ctype()()
 
             for i in range(16):
                 self.cvalue[i] = p[i]
@@ -49,7 +49,7 @@ class fScalar(fVar_t):
                 if PYQ_IMPORTED:
                     return pyq.qfloat.from_bytes(bytes(self.cvalue))
                 else:
-                    raise NotImplementedError(
+                    raise TypeError(
                         f"Quad precision floats requires pyQuadp to be installed"
                     )
             elif self.kind == 8:
