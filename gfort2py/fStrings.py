@@ -60,6 +60,7 @@ class fStr(fVar_t):
     def ctype_len(self, *args):
         return ctypes.c_int64(self.len())
 
+    @property
     def __doc__(self):
         try:
             return f"{self.type}(LEN={self.obj.strlen}) :: {self.name}"
@@ -140,6 +141,7 @@ class fAllocStr(fStr):
         self.cvalue = self.ctype().in_dll(lib, self.mangled_name)
         return self.cvalue
 
+    @property
     def __doc__(self):
         return f"character(LEN=(:)), allocatable :: {self.name}"
 
@@ -260,6 +262,7 @@ class fStrExplicit(fStr):
         self.cvalue = self.ctype().in_dll(lib, self.mangled_name)
         return self.cvalue
 
+    @property
     def __doc__(self):
         return (
             f"character(LEN=({self.len()})),dimension({self.obj.shape}) :: {self.name}"

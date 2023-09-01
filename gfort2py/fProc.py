@@ -212,11 +212,11 @@ class fProc:
         if self.obj.is_subroutine():
             ftype = f"subroutine {self.name}"
         else:
-            ftype = f"{self.return_var.__doc__()} function {self.name}"
+            ftype = f"{self.return_var.__doc__} function {self.name}"
 
         args = []
         for fval in self.obj.args():
-            args.append(fVar(fval.ref, allobjs=self._allobjs).__doc__)
+            args.append(fVar(self._allobjs[fval.ref], allobjs=self._allobjs).__doc__)
 
         args = ", ".join(args)
         return f"{ftype} ({args})"

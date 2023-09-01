@@ -66,6 +66,7 @@ class fScalar(fVar_t):
     def sizeof(self):
         return ctypes.sizeof(self.ctype)
 
+    @property
     def __doc__(self):
         return f"{self.type}(KIND={self.kind}) :: {self.name}"
 
@@ -119,5 +120,6 @@ class fCmplx(fVar_t):
     def sizeof(self):
         return ctypes.sizeof(self.ctype)
 
+    @property
     def __doc__(self):
         return f"{self.type}(KIND={self.kind}) :: {self.name}"

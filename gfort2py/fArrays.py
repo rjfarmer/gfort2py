@@ -88,6 +88,7 @@ class fExplicitArr(fArray_t):
     def value(self, value):
         self.from_param(value)
 
+    @property
     def __doc__(self):
         return f"{self.type}(KIND={self.kind})({self.obj.shape()}) :: {self.name}"
 
@@ -181,6 +182,7 @@ class fAssumedShape(fArray_t):
     def value(self, value):
         self.from_param(value)
 
+    @property
     def __doc__(self):
         return f"{self.type}(KIND={self.kind})(:) :: {self.name}"
 
@@ -257,6 +259,7 @@ class fAssumedSize(fArray_t):
     def value(self, value):
         self.from_param(value)
 
+    @property
     def __doc__(self):
         return f"{self.type}(KIND={self.kind})(*) :: {self.name}"
 
