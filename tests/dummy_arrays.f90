@@ -330,4 +330,20 @@ module dummy_arrays
 
 	end subroutine func2
 
+
+    !GH:39
+    subroutine multi_array_pass(y, xp, yp)
+        use iso_fortran_env, only: dp => real64
+  
+        real(dp), intent(inout) :: y
+        real(dp), intent(inout) :: xp(:)
+        real(dp), intent(inout) :: yp(:)
+  
+        y = -1000.0_dp
+        xp = [13.0_dp, -2.0_dp]
+        yp = [1.0_dp, -42.014_dp]
+     end subroutine multi_array_pass
+
+
+
 end module dummy_arrays

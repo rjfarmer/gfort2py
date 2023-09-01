@@ -53,7 +53,9 @@ class fFort:
                     self._saved[key] = fVar(self._module[key], allobjs=self._module)
                 return self._saved[key]
             elif self._module[key].is_procedure():
-                return fProc(self._lib, self._module[key], self._module)
+                if key not in self._saved:
+                    self._saved[key] = fProc(self._lib, self._module[key], self._module)
+                return self._saved[key]
             elif self._module[key].is_parameter():
                 return fParam(self._module[key]).value
             else:

@@ -73,15 +73,15 @@ class fProc:
         return self.obj.name
 
     def __call__(self, *args, **kwargs):
-        func_args = self._convert_args(*args, **kwargs)
+        self._func_args = self._convert_args(*args, **kwargs)
 
         with _captureStdOut() as cs:
-            if func_args is not None:
-                res = self._func(*func_args)
+            if self._func_args is not None:
+                res = self._func(*self._func_args)
             else:
                 res = self._func()
 
-        return self._convert_result(res, func_args)
+        return self._convert_result(res, self._func_args)
 
     def _set_return(self, other_args):
         if self.obj.is_subroutine():
