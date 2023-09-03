@@ -6,6 +6,11 @@ from dataclasses import dataclass
 import numpy as np
 import gzip
 import sys
+import hashlib
+import appdirs
+import pathlib
+import pickle
+import os
 
 import pprint
 
@@ -848,7 +853,20 @@ class module(object):
 
         data = x[x.index("\n") + 1 :].replace("\n", " ")
 
-        self.parsed_data = OneOrMore(nestedExpr()).parseString(data)
+        # See if we can use cached version as parsing can be slow for large data
+        hashed_data = hashlib.sha256(data.encode()).hexdigest()
+        cache_folder = appdirs.user_cache_dir("gfort2py")
+        os.makedirs(cache_folder, exist_ok=True)
+
+        cache_filename = pathlib.PurePath(cache_folder, hashed_data)
+
+        try:
+            with open(cache_filename, "rb") as f:
+                self.parsed_data = pickle.load(f)
+        except FileNotFoundError:
+            self.parsed_data = OneOrMore(nestedExpr()).parseString(data)
+            with open(cache_filename, "wb") as f:
+                pickle.dump(self.parsed_data, f)
 
         if not load_only:
             self.interface = self.parsed_data[0]
