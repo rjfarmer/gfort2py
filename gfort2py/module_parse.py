@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 # https://github.com/gcc-mirror/gcc/blob/master/gcc/fortran/module.cc
-from pyparsing import OneOrMore, nestedExpr
+from cPyparsing import OneOrMore, nestedExpr
 from dataclasses import dataclass
 import numpy as np
 import gzip
