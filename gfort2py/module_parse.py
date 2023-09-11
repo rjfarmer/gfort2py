@@ -838,7 +838,7 @@ class symbol(utils):
 class module(object):
     version = 15
 
-    def __init__(self, filename, load_only=False):
+    def __init__(self, filename, load_only=False, cache_folder=None):
         self.filename = filename
 
         with gzip.open(self.filename) as f:
@@ -853,18 +853,26 @@ class module(object):
 
         data = x[x.index("\n") + 1 :].replace("\n", " ")
 
-        # See if we can use cached version as parsing can be slow for large data
-        hashed_data = hashlib.sha256(data.encode()).hexdigest()
-        cache_folder = appdirs.user_cache_dir("gfort2py")
-        os.makedirs(cache_folder, exist_ok=True)
+        self.parsed_data = None
 
-        cache_filename = pathlib.PurePath(cache_folder, hashed_data)
+        if cache_folder or cache_folder is None:
+            # See if we can use cached version as parsing can be slow for large data
+            hashed_data = hashlib.sha256(data.encode()).hexdigest()
 
-        try:
-            with open(cache_filename, "rb") as f:
-                self.parsed_data = pickle.load(f)
-        except FileNotFoundError:
+            if cache_folder is None:
+                cache_folder = appdirs.user_cache_dir("gfort2py")
+            os.makedirs(cache_folder, exist_ok=True)
+
+            cache_filename = pathlib.PurePath(cache_folder, hashed_data)
+
+            if os.path.exists(cache_filename):
+                with open(cache_filename, "rb") as f:
+                    self.parsed_data = pickle.load(f)
+
+        if self.parsed_data is None:
             self.parsed_data = OneOrMore(nestedExpr()).parseString(data)
+
+        if cache_folder:
             with open(cache_filename, "wb") as f:
                 pickle.dump(self.parsed_data, f)
 
