@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 import ctypes
 import numpy as np
+import weakref
 
 from .fVar_t import fVar_t
 from .utils import copy_array
@@ -176,7 +177,18 @@ class fAssumedShape(fArray_t):
         PTR = ctypes.POINTER(self._ctype_base)
         x_ptr = ctypes.cast(self.cvalue.base_addr, PTR)
 
-        return np.ctypeslib.as_array(x_ptr, shape=size).reshape(shape, order="F")
+        array = self._make_empty(shape)
+
+        copy_array(
+            self.cvalue.base_addr,
+            array.ctypes.data,
+            ctypes.sizeof(self._ctype_base()),
+            size[0],
+        )
+
+        # self._array = np.ctypeslib.as_array(x_ptr, shape=size).reshape(shape, order="F")
+
+        return array
 
     @value.setter
     def value(self, value):
@@ -225,9 +237,10 @@ class fAssumedShape(fArray_t):
             print(f"\t ubound {self.cvalue.dims[i].ubound}")
             print(f"\t stride {self.cvalue.dims[i].stride}")
 
-    def _make_empty(self):
+    def _make_empty(self, shape=None):
         dtype = self.obj.dtype()
-        shape = self.obj.shape()
+        if shape is None:
+            shape = self.obj.shape()
 
         return np.zeros(shape, dtype=dtype, order="F")
 
