@@ -103,7 +103,7 @@ def ctype_map(type, kind):
             if PYQ_IMPORTED:
                 return ctypes.c_byte * 16
             else:
-                (f"Quad precision ints requires pyQuadp to be installed")
+                raise TypeError(f"Quad precision ints requires pyQuadp to be installed")
         else:
             raise TypeError("Integer type of kind={kind} not supported")
     elif type == "REAL":
