@@ -12,3 +12,50 @@ addopts = "-s"
 [tool.setuptools_scm]
 
 
+
+
+[project]
+name = "gfort2py"
+authors = [
+    {name="Robert Farmer", email="robert.j.farmer37@gmail.com"}
+]
+description = "Python bindings for Fortran"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "GPLv2+"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Code Generators",
+]
+
+dependencies = [
+    "numpy",
+    "cpyparsing",
+    "appdirs",
+]
+
+dynamic = ["version"]
+
+
+# url = https://github.com/rjfarmer/gfort2py
+# platforms = unix, linux, osx
+
+# [options]
+# python_requires = >=3.7
+# zip_safe = False
+# packages=find:
+# include_package_data = true
+
+# [options.extras_require]
+# testing =
+#     pytest>=7.0
+#     tox>=3.24
+# dev = 
+#     pytest>=7.0
+#     black>=22.3.0

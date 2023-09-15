@@ -10,12 +10,12 @@
 Library to allow calling Fortran code from Python. Requires gfortran>=8.0, Works with python >= 3.7
 
 ## Build
+Installing locally:
 ````bash
-pip3 install -r requirements.txt
-python3 setup.py install --user
+python -m pip install .
 ````
 
-or install via pip
+or install via pypi
 ````bash
 python -m pip install --upgrade --user gfort2py
 ````
