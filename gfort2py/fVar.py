@@ -13,6 +13,11 @@ from .fProcPtr import fProcPointer
 
 class fVar:
     def __new__(cls, obj, *args, **kwargs):
+        """
+        Factory class for determing the type of Fortran object
+        we are currently dealing with.
+
+        """
         if obj.is_derived():
             if obj.is_array():
                 if obj.is_explicit():

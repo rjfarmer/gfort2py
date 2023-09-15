@@ -16,10 +16,22 @@ _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 class fFort:
     _initialized = False
 
-    def __init__(self, libname, mod_file):
+    def __init__(self, libname, mod_file, cache_folder=None):
+        """
+        Loads a gfortran module given by mod_file and saved in a
+        shared library libname.
+
+        cache_folder: If not None, sets the folder location to saved
+        the cached module data to. If None uses appdirs ``user_cache_dir``
+        location.
+
+        Set to False to disable caching.
+
+        """
+
         self._lib = ctypes.CDLL(libname)
         self._mod_file = mod_file
-        self._module = module(self._mod_file)
+        self._module = module(self._mod_file, cache_folder=cache_folder)
 
         self._saved = {}
         self._initialized = True
@@ -99,10 +111,18 @@ class fFort:
 
 
 def mod_info(mod_file):
+    """
+    Returns a parsed data structure that describes the module
+
+    pprint is recommened to help understand the nested structure.
+    """
     return module(mod_file)
 
 
 def lib_ext():
+    """
+    Determine shared library extension for a current OS
+    """
     os = platform.system()
     if os == "Darwin":
         return "dylib"

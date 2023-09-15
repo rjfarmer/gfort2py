@@ -14,6 +14,12 @@ except ImportError:
 
 
 class fVar_t:
+    """
+    Base class for all objects, everything should inheriet from this
+    or another class that evntauly inherits from this.
+
+    """
+
     Args = collections.namedtuple("arg", ["prepend", "arg", "append"])
 
     def __init__(self, obj, allobjs=None, cvalue=None):
