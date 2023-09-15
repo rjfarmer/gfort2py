@@ -22,7 +22,6 @@ jobs:
         sudo apt-get install gfortran-12
         python -m pip install --upgrade pip
         python3 -m pip install build wheel pytest
-        pip install -r requirements.txt
     - name: Build a binary wheel and a source tarball
       run: >-
         python3 -m
@@ -33,7 +32,7 @@ jobs:
         .
     - name: Test
       run: |
-        pip install dist/gfort2py*.tar.gz
+        python -m pip install dist/gfort2py*.tar.gz
         pytest
 
     - name: Publish package distributions to PyPI
