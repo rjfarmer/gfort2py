@@ -33,7 +33,7 @@ jobs:
     - name: Test
       run: |
         python -m pip install dist/gfort2py*.tar.gz
-        pytest
+        python -m pytest
 
     - name: Publish package distributions to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
