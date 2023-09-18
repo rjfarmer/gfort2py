@@ -9,6 +9,8 @@ from .utils import copy_array
 
 
 class fStr(fVar_t):
+    """ """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._len = None
@@ -82,15 +84,20 @@ class fAllocStr(fStr):
 
     @property
     def _ctype_base(self):
-        return ctypes.c_char_p * self.len()
+        len = self.len()
+        if len is None:
+            return ctypes.c_char_p
+        else:
+            return ctypes.c_char_p * len
 
     @_ctype_base.setter
     def _ctype_base(self, value):
-        return ctypes.c_char_p * self.len()
+        return self._ctype_base
 
     def from_param(self, value):
         if value is None:
-            return (ctypes.c_char_p * 1)()
+            self.cvalue = ctypes.c_char_p(None)
+            return self.cvalue
 
         self._len = len(value)
 
@@ -101,8 +108,8 @@ class fAllocStr(fStr):
 
         if self.cvalue is None:
             self.cvalue = self.ctype()()
-        elif len(value) != len(self.cvalue):
-            self.cvalue = self.ctype().from_address(ctypes.addressof(self.cvalue))
+
+        self.cvalue = self.ctype().from_address(ctypes.addressof(self.cvalue))
 
         if len(self._value) > self.len():
             self._value = self._value[: self.len()]
@@ -123,7 +130,10 @@ class fAllocStr(fStr):
         if x is None:
             return None
         else:
-            return x.decode()
+            if self.len() is None:
+                return b""
+            else:
+                return x[: self.len()].decode()
 
     @value.setter
     def value(self, value):
@@ -133,8 +143,6 @@ class fAllocStr(fStr):
         if self._len_ctype is not None:
             self._len = self._len_ctype.contents.value
 
-        if self._len is None:
-            self._len = 1
         return self._len
 
     def in_dll(self, lib):
@@ -150,13 +158,13 @@ class fAllocStr(fStr):
 
     def to_proc(self, value, other_args):
         if value is None:
-            l = 0
+            self._len = None
+            self.cvalue = ctypes.pointer(ctypes.c_char_p(None))
+            self._len_ctype = ctypes.pointer(ctypes.c_int64(0))
         else:
-            l = len(value)
-
-        self._len_ctype = ctypes.pointer(ctypes.c_int64(l))
-
-        self.cvalue = self.from_param(value)
+            self._len = len(value)
+            self.cvalue = self.from_param(value)
+            self._len_ctype = ctypes.pointer(ctypes.c_int64(self._len))
 
         return self.Args(None, self.cvalue, self._len_ctype)
 
@@ -293,7 +301,7 @@ class fStrAssumedShape(fAssumedShape):
         self._len_ctype = None
         self._len = None
         super().__init__(*args, **kwargs)
-        self.unpack = True
+        self.unpack = False
         self.is_array = True
 
     @property
