@@ -32,5 +32,5 @@ jobs:
         python -m pip install tox tox-gh-actions build wheel pytest
 
     - name: Test with tox
-      run: tox -e py
+      run: tox --recreate -e py
 
