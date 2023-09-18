@@ -133,6 +133,14 @@ class fAllocStr(fStr):
             if self.len() is None:
                 return b""
             else:
+                # We can get warnings from vlgrind around here (Invalid read of size 1) and (Address 0x.... is 0 bytes after a block of size 6 alloc'd).
+                # The problem is various string handling routines
+                # assume a c-ctyle string with a null pointer
+                # at the end. But Fortran strings dont have that,
+                # so Python tries to read beyond the end of the string
+                # as long as we use the self.len() for lengths we should be
+                # okay as thats set by Fortran and is the correct
+                # length.
                 return x[: self.len()].decode()
 
     @value.setter
