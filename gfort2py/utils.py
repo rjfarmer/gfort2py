@@ -50,8 +50,8 @@ def _resolve_arg(arg, other_args, module, lib, fProc):
     elif arg.exp_type == "VARIABLE":
         # Sometimes we try re-resolving already resolved arguments
         # so skip if value is not a symbol_ref
-        if hasattr(arg.value, "ref"):
-            ref = arg.value.ref
+        if hasattr(arg._saved_value, "ref"):
+            ref = arg._saved_value.ref
             for j in other_args:
                 if ref == j.symbol_ref:
                     arg.value = j.value

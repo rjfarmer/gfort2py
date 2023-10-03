@@ -27,6 +27,9 @@ class fStr(fVar_t):
 
         self._value = value
 
+        if self._value is None:
+            return None
+
         if hasattr(self._value, "encode"):
             self._value = self._value.encode()
 

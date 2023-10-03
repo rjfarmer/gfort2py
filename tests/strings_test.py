@@ -296,3 +296,16 @@ class TestStringMethods:
         res = x.check_assumed_shape_str(y)
         out, err = capfd.readouterr()
         assert out.strip() == "a/b/c/d/e/f/g"
+
+    def test_check_str_opt(self):
+        res = x.check_str_opt(None, 0)
+        assert res.result == 3
+
+        res = x.check_str_opt("123456", 6)
+        assert res.result == 1
+
+        res = x.check_str_opt("abcedfg", 7)
+        assert res.result == 2
+
+        res = x.check_str_opt("abcd", 4)
+        assert res.result == 4

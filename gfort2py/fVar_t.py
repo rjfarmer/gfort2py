@@ -45,7 +45,7 @@ class fVar_t:
     def module(self):
         return self.obj.module
 
-    def ctype_len(self):
+    def ctype_len(self, *args):
         return None
 
     def from_ctype(self, ct):
@@ -69,13 +69,19 @@ class fVar_t:
         arg = None
         end = None
 
-        if self.obj.is_optional() and value is None:
+        if self.obj.is_optional() and value is None and not self.obj.is_char():
             end = ctypes.c_byte(0)
             arg = None
             return self.Args(start, arg, end)
 
+        # optional characters dont have a byte at the end just a NULL pointer to the char
+        if self.obj.is_optional() and value is None and self.obj.is_char():
+            end = ctypes.c_int64(0)
+            arg = None
+            return self.Args(start, arg, end)
+
         raw_arg = self.from_param(value)
-        if self.obj.is_optional():
+        if self.obj.is_optional() and not self.obj.is_char():
             end = ctypes.c_byte(1)
 
         if self.obj.is_value():
@@ -89,8 +95,8 @@ class fVar_t:
             else:
                 arg = ctypes.pointer(raw_arg)
 
-            if self.obj.is_deferred_len():
-                end = self.ctype_len(value)
+        if self.obj.is_deferred_len() or self.obj.is_char():
+            end = self.ctype_len(value)
 
         return self.Args(start, arg, end)
 

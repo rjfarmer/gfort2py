@@ -552,6 +552,7 @@ class expression:
     exp_type: str = ""
     ts: typespec = None
     rank: int = -1
+    _saved_value: t.Any = None
     _value: t.Any = None
     _resolved_value: t.Any = None  # value may by a symbol_ref, so this is the value after resolving the reference
     arglist: actual_arglist = None  # PDT's?
@@ -616,6 +617,8 @@ class expression:
             self.arglist = actual_arglist(*args[6])
         except IndexError:
             self.arglist = []
+
+        self._saved_value = self._value
 
     @property
     def value(self):

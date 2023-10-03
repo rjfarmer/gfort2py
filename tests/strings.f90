@@ -369,4 +369,26 @@ module strings
 
 	end subroutine check_assumed_shape_str
 
+
+	integer function check_str_opt(x, n)
+		integer, intent(in) :: n
+		character*(N), optional, intent(inout) :: x
+
+		if(present(x)) then
+			write(*,*) '"',x,'"'
+			if(x(1:6) == '123456') then
+				check_str_opt = 1
+			else
+				check_str_opt = 2
+			end if
+		else
+			check_str_opt = 3
+		end if
+
+		if(n==4) check_str_opt = 4
+
+	end function check_str_opt
+
+
+
 end module strings
