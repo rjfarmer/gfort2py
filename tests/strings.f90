@@ -375,7 +375,6 @@ module strings
 		character*(N), optional, intent(inout) :: x
 
 		if(present(x)) then
-			write(*,*) '"',x,'"'
 			if(x(1:6) == '123456') then
 				check_str_opt = 1
 			else
