@@ -65,7 +65,7 @@ class fStr(fVar_t):
     @property
     def __doc__(self):
         try:
-            return f"{self.type}(LEN={self.obj.strlen}) :: {self.name}"
+            return f"{self.type}(LEN={self.obj.len}) :: {self.name}"
         except AttributeError:
             return f"{self.type}(LEN=:) :: {self.name}"
 
