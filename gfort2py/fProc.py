@@ -75,6 +75,8 @@ class fProc:
     def __call__(self, *args, **kwargs):
         self._func_args = self._convert_args(*args, **kwargs)
 
+        # print(self._func_args)
+
         with _captureStdOut() as cs:
             if self._func_args is not None:
                 res = self._func(*self._func_args)
