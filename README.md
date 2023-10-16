@@ -77,6 +77,11 @@ x=gf.fFort(SHARED_LIB_NAME,MOD_FILE_NAME)
 
 ``x`` now contains all variables, parameters and procedures from the module (tab completable). 
 
+> **_NOTE:_** The mod data is cached to speed up re-reading the data. To control this pass cache_folder to fFort.
+A value of False disables caching, a string sets the folder location, while leaving the argument as None defaults to appdirs ``user_cache_dir``.
+
+
+
 ### Functions
 ````python
 y = x.func_name(a,b,c)

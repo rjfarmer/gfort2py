@@ -1,6 +1,6 @@
 # How many tests do we actually?
 
-The main difficulty in writing gfort2py is handling ths head number of combinations of options that are available in Fortran code. 
+The main difficulty in writing gfort2py is handling the huge number of combinations of options that are available in Fortran. 
 If we consider a simple integer: How many different ways can we declare an integer?
 
 First we must consider where the integer is declared:
@@ -24,7 +24,8 @@ Is it an array? If so:
 - Explicit but runtime sized (dimension(n) where n is another integer)
 - Assumed size (dimension(*))
 - Assumed shape (dimension(:))
-- Allocatable
+- allocatable
+- pointer/target
 
 Then of course there are the combinations of the previous options. As well, for arrays its helpful to test multiple dimensions to ensure the
 ordering is correct.
@@ -154,7 +155,7 @@ test similar things should have similar names, i.e all thing testing explicit ar
 
 # Skipping tests
 
-For things that don't work yet you can use the python decorator ``@pytest.mark.skip`` to skip the test. NOthing needs to be done on the Fortran side for tests that don't work yet.
+For things that don't work yet you can use the python decorator ``@pytest.mark.skip`` to skip the test. Nothing needs to be done on the Fortran side for tests that don't work yet.
 
 # Bug reports
 
