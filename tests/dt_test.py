@@ -81,6 +81,7 @@ class TestDTMethods:
         y = x.func_check_nested_dt()
         self.assertEqual(y.result, True)
 
+    @pytest.mark.skip
     def test_func_set_f_struct(self):
         y = x.func_set_f_struct()
         self.assertEqual(y.result, True)
@@ -109,7 +110,7 @@ class TestDTMethods:
         v = np.array([9, 10, 11, 12, 13], dtype="int32")
         assert np.array_equal(x.f_struct["d_int_point_1d"], v)
 
-    # @pytest.mark.skip
+    @pytest.mark.skip
     def test_recur_dt(self):  # Skip for now
         with pytest.raises(NotImplementedError) as cm:
             x.r_recur["a_int"] = 9

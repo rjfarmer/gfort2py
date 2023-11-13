@@ -3,6 +3,7 @@
 # https://github.com/gcc-mirror/gcc/blob/master/gcc/fortran/module.cc
 from cPyparsing import OneOrMore, nestedExpr
 from dataclasses import dataclass
+from enum import Enum
 import numpy as np
 import gzip
 import sys
@@ -22,6 +23,33 @@ try:
     PYQ_IMPORTED = True
 except ImportError:
     PYQ_IMPORTED = False
+
+
+class fTypeEnum(Enum):
+    # Don't change the ordering,
+    # the exact ordering is needed
+    # for assumed shape arrays
+    UNKNOWN = 0
+    INTEGER = 1
+    LOGICAL = 2
+    REAL = 3
+    COMPLEX = 4
+    DERIVED = 5
+    CHARACTER = 6
+    CLASS = 7
+    PROCEDURE = 8
+    HOLLERITH = 9
+    VOID = 10
+    ASSUMED = 11
+
+
+class ArrayEnum(Enum):
+    SCALAR = 1
+    EXPLICIT = 2
+    ASSUMED_SIZE = 2
+    ASSUMED_SHAPE = 3
+    ALLOCATABLE = 3
+    POINTER = 3
 
 
 def string_clean(string):
@@ -180,6 +208,7 @@ def print_args(x):
 
 
 class utils:
+    @property
     def shape(self):
         if self.is_array():
             return self.sym.array_spec.pyshape
@@ -348,7 +377,7 @@ class utils:
     @property
     def size(self):
         if self.is_array():
-            return np.prod(self.shape())
+            return np.prod(self.shape)
         else:
             raise NotAnArrayError("Not an array")
 
@@ -358,12 +387,32 @@ class utils:
             if not self.is_array():
                 return v
             else:
-                return np.array(v, dtype=self.dtype()).reshape(self.shape(), order="F")
+                return np.array(v, dtype=self.dtype()).reshape(self.shape, order="F")
         else:
             raise AttributeError("Not a parameter")
 
     def type_kind(self):
         return self.type(), self.kind()
+
+    def type_kind_array(self):
+        return fTypeEnum[self.type()], self.kind(), self.array_type()
+
+    def array_type(self):
+        if not self.is_array():
+            return ArrayEnum.SCALAR
+        else:
+            if self.is_explicit():
+                return ArrayEnum.EXPLICIT
+            elif self.is_assumed_size():
+                return ArrayEnum.ASSUMED_SIZE
+            elif self.is_assumed_shape():
+                return ArrayEnum.ASSUMED_SHAPE
+            elif self.is_allocatable():
+                return ArrayEnum.ALLOCATABLE
+            elif self.is_pointer():
+                return ArrayEnum.POINTER
+
+        raise ValueError("Don't understand array type")
 
     def return_arg(self):
         if self.is_procedure():
@@ -863,7 +912,7 @@ class module(object):
         self.parsed_data = None
 
         if cache_folder or cache_folder is None:
-            # See if we can use cached version as parsing can be slow for large data
+            # See if we can use cached version as parsing can be slow for large datasets
             hashed_data = hashlib.sha256(data.encode()).hexdigest()
 
             if cache_folder is None:

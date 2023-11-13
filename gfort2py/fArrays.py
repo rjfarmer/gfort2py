@@ -41,7 +41,7 @@ def _make_fAlloc15(ndims):
 class fArray_t(fVar_t):
     def _array_check(self, value, know_shape=True):
         value = value.astype(self.obj.dtype())
-        shape = self.obj.shape()
+        shape = self.obj.shape
         ndim = self.obj.ndim
 
         if not value.flags["F_CONTIGUOUS"]:
@@ -83,7 +83,7 @@ class fExplicitArr(fArray_t):
 
     @property
     def value(self):
-        return np.ctypeslib.as_array(self.cvalue).reshape(self.obj.shape(), order="F")
+        return np.ctypeslib.as_array(self.cvalue).reshape(self.obj.shape, order="F")
 
     @value.setter
     def value(self, value):
@@ -91,7 +91,7 @@ class fExplicitArr(fArray_t):
 
     @property
     def __doc__(self):
-        return f"{self.type}(KIND={self.kind})({self.obj.shape()}) :: {self.name}"
+        return f"{self.type}(KIND={self.kind})({self.obj.shape}) :: {self.name}"
 
     def sizeof(self):
         return ctypes.sizeof(self.ctype)
@@ -240,7 +240,7 @@ class fAssumedShape(fArray_t):
     def _make_empty(self, shape=None):
         dtype = self.obj.dtype()
         if shape is None:
-            shape = self.obj.shape()
+            shape = self.obj.shape
 
         return np.zeros(shape, dtype=dtype, order="F")
 

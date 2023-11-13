@@ -12,6 +12,8 @@ from .fParameters import fParam
 from .fCompile import compile_and_load
 from .utils import library_ext
 
+import gfort2py.TKR as TKR
+
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
 
@@ -58,9 +60,13 @@ class fFort:
 
             if self._module[key].is_variable():
                 if key not in self._saved:
-                    self._saved[key] = fVar(self._module[key], allobjs=self._module)
-                self._saved[key].in_dll(self._lib)
-                return self._saved[key].value
+                    self._saved[key] = TKR.lookup(self._module, self._module[key])
+                ctype = self._saved[key].in_dll(
+                    self._lib, self._module[key].mangled_name
+                )
+
+                return self._saved[key].from_ctype(ctype)
+
             elif self._module[key].is_proc_pointer():
                 # Must come before fProc
                 if key not in self._saved:
@@ -86,9 +92,11 @@ class fFort:
             if self._initialized:
                 if self._module[key].is_variable():
                     if key not in self._saved:
-                        self._saved[key] = fVar(self._module[key], allobjs=self._module)
-                    self._saved[key].in_dll(self._lib)
-                    self._saved[key].value = value
+                        self._saved[key] = TKR.lookup(self._module, self._module[key])
+                    ctype = self._saved[key].in_dll(
+                        self._lib, self._module[key].mangled_name
+                    )
+                    self._saved[key].set_ctype(ctype, value)
                     return
                 elif self._module[key].is_parameter():
                     raise AttributeError("Can not alter a parameter")
