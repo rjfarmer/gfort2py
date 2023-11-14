@@ -902,6 +902,7 @@ class module(object):
 
     def __init__(self, filename, load_only=False, cache_folder=None):
         self.filename = filename
+        self.load_only = load_only
 
         with gzip.open(self.filename) as f:
             x = f.read().decode()
@@ -938,7 +939,9 @@ class module(object):
             with open(cache_filename, "wb") as f:
                 pickle.dump(self.parsed_data, f)
 
-        if not load_only:
+        self.cache_folder = cache_folder
+
+        if not self.load_only:
             self.interface = self.parsed_data[0]
 
             self.operators = self.parsed_data[1]
@@ -977,6 +980,19 @@ class module(object):
     def keys(self):
         return self.summary.names()
 
+    def values(self):
+        return [self.__getitem__(k) for k in self.keys()]
+
+    def items(self):
+        return [(k, self.__getitem__(k)) for k in self.keys()]
+
+    def __iter__(self):
+        for k in self.keys():
+            yield self.__getitem__(k)
+
+    def __dir__(self):
+        return self.keys()
+
     def __contains__(self, key):
         return key in self.keys()
 
@@ -986,6 +1002,12 @@ class module(object):
         except KeyError:
             # Not a global variable maybe a function argument?
             return self.symbols[key]
+
+    def __repr__(self):
+        return f"module('{self.filename}',{self.load_only},'{self.cache_folder}')"
+
+    def __str__(self):
+        return f"{self.filename}"
 
 
 if __name__ == "__main__":
