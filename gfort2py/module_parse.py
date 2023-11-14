@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 # https://github.com/gcc-mirror/gcc/blob/master/gcc/fortran/module.cc
+# https://github.com/gcc-mirror/gcc/blob/master/gcc/fortran/gfortran.h
 from cPyparsing import OneOrMore, nestedExpr
 from dataclasses import dataclass
 from enum import Enum
@@ -353,7 +354,12 @@ class utils:
         return False
 
     def is_derived(self):
+        # Varaible is a derived type
         return self.sym.ts.type == "DERIVED"
+
+    def is_derived_def(self):
+        # The definition of the derived type
+        return self.sym.attr.flavor == "DERIVED"
 
     def is_pdt_def(self):
         return "PDT_TEMPLATE" in self.sym.attr.attributes
