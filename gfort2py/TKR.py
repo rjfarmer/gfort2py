@@ -914,6 +914,9 @@ class f_character_array_assumed_shape(f_array_assumed_shape):
 #######################
 
 
+_all_dts = {}
+
+
 class f_derived_type(fObject):
     def __init__(self, dt, *args, **kwargs):
         super().__init__()
@@ -921,17 +924,34 @@ class f_derived_type(fObject):
         self.allobjs = kwargs["allobjs"]
 
         self._fields = {}
+        _ = self.ctype
 
-    @functools.cached_property
+    @property
     def ctype(self):
+        if self.dt.name in _all_dts:
+            return _all_dts[self.dt.name]
+
         fields = []
         for var in self.dt.dt_components():
             self._fields[var.name] = lookup(self.allobjs, var)
 
-            fields.append((var.name, self._fields[var.name].ctype))
+            if var.is_derived():
+                print("*", var.dt_type(), self.allobjs[var.dt_type()].name)
+                if self.allobjs[var.dt_type()].name in _all_dts:
+                    ct = _all_dts[self.allobjs[var.dt_type()].name]
+                else:
+                    ct = f_derived_type(
+                        self.allobjs[var.dt_type()], allobjs=self.allobjs
+                    ).ctype
+            else:
+                ct = self._fields[var.name].ctype
+
+            fields.append((var.name, ct))
 
         class _fDerivedType(ctypes.Structure):
             _fields_ = fields
+
+        _all_dts[self.dt.name] = _fDerivedType
 
         return _fDerivedType
 
@@ -986,18 +1006,22 @@ class fDT:
         if key not in self:
             raise KeyError(f"Derived type does not have element {key}")
 
+        print(self._fields)
         cvalue = self._fields[key].from_param(value)
         setattr(self._ctype, key, cvalue)
 
 
 class f_derived_type_explicit_array(f_derived_type):
     def __init__(self, dt, shape, *args, **kwargs):
-        super().__init__(dt, *args, **kwargs)
+        # These must before super().__init__ as that calls self.ctype()
+        # and then calls the local ctype which needs self.size
         self.shape = shape
         self.ndim = len(shape)
         self.size = np.product(self.shape)
 
-    @functools.cached_property
+        super().__init__(dt, *args, **kwargs)
+
+    @property
     def ctype(self):
         return super().ctype * self.size
 
