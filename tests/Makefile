@@ -29,7 +29,7 @@ $(error Unknown OS)
 endif
 
 
-all: $(LIBS) $(GZ) kinds
+all: $(LIBS) $(GZ)
 
 
 %.$(LIB_SUFFIX): %.f90
@@ -40,16 +40,8 @@ all: $(LIBS) $(GZ) kinds
 	@gunzip -f $@ -c > $@.extract
 	@rm $@
 
-%.o : %.mod
-
-%.mod : %.o
-	@true
-
-%.o : %.f90
+%.o %.mod %.smod: %.f90
 	$(FC) $(OPTIONS) $(LIB_FLAGS) -o  $@ $<
-
-kinds: kinds_check.o
-	$(FC) -o kinds kinds_check.f90
 
 clean:
 	-rm -f *.o *.mod *.gz *.pyc *.f90.*.* *.$(LIB_SUFFIX) *.original *.extract *.smod *.fpy
