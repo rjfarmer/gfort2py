@@ -36,7 +36,14 @@ By using the ``mod`` file we can determine the call signature of all procedures,
 The downside to this approach is that we are tightly tied to gfortran's ABI, which means we can not support other non-gfortran compilers and we do not support all versions of gfortran. When gfortran next breaks its ABI (which happens rarely, the last break was gfortran 8) we will re-evaluate our supported gfortran versions.
 
 ## Using
-### Fortran side
+
+There are two ways to load Fortran code into Python.
+Either ``fFort`` or ``compile``. The recommended way
+is via ``fFort`` for interfacing with existing code,
+while ``compile`` is more suitable for wrapping short snippets of Fortran code
+
+### fFort
+
 Your Fortran code must be inside a module and then compiled as a shared library.
 
 On linux: 
@@ -57,29 +64,73 @@ gfortran -shared -c file.f90
 gfortran -shared -o libfile.dll file.f90
 ````
 
-If your code comes as program that does everything, then just turn the program into a function call inside a module,
-then create a new file with your program that uses the module and calls the function you just made.
-
 If the shared library needs other
-shared libraries you will need to set LD_LIBRARY_PATH environment variable, and it is also recommended to run chrpath on the shared libraries so you can access them from anywhere.
+shared libraries you may need to set the ``LD_LIBRARY_PATH`` environment variable, and it is also recommended to run chrpath on the shared 
+libraries so you can access them from anywhere.
 
-### Python side
+#### Python side
 ````python
 
 import gfort2py as gf
 
-SHARED_LIB_NAME=f'./test_mod.{gf.lib_ext()}' # Handle whether on Linux or Mac
+SHARED_LIB_NAME=f'./test_mod.{gf.lib_ext()}' # Handle whether on Linux, Mac, or Windows
 MOD_FILE_NAME='tester.mod'
 
-x=gf.fFort(SHARED_LIB_NAME,MOD_FILE_NAME)
+x=gf.fFort(SHARED_LIB_NAME,MOD_FILE_NAME) 
 
 ````
 
-``x`` now contains all variables, parameters and procedures from the module (tab completable). 
+> **_NOTE:_** The mod data is cached to speed up re-reading the data. To control this pass cache_folder to ``fFort``.
+A value of False disables caching, a string sets the folder location, while leaving the argument as None defaults to appdirs ``user_cache_dir``
 
-> **_NOTE:_** The mod data is cached to speed up re-reading the data. To control this pass cache_folder to fFort.
-A value of False disables caching, a string sets the folder location, while leaving the argument as None defaults to appdirs ``user_cache_dir``.
 
+
+### compile
+
+````python
+
+import gfort2py as gf
+
+
+fstr = """
+            integer function myfunc(x,y)
+                integer :: x,y
+                myfunc = x+y
+            end function myfunc
+"""
+
+x  = gf.compile(string=fstr)
+
+````
+
+The Fortran code can also be in a file in which case:
+
+
+````python
+
+import gfort2py as gf
+
+x  = gf.compile(file='my_fortran_file.f90')
+
+````
+
+In either casee the code will be compilied into a
+Fortran module and then into a shared library. Any Fortran code is valid as long as it can be inserted into a Fortran Module (Its optional whether you need to wrap things in ``module``/``end module``, if you do not then that is done automatically for you).
+
+Additional options available for ``compile``:
+
+- FC: str Path to gfortran compilier
+- FFLAGS: str Additional Fortran compile options. This defaults to -O2.
+- LDLIBS: str Any additional libraries needed to be linked in (-l)
+- LDFLAGS: str Locations of addtional libraries (-L)
+- ouput: str Location to save intermediate files to. Defaults to ``None`` which saves files in a temporary location. Otherwise save to the location specified.
+
+> **_NOTE:_** The interface to compile is currently considered unstable and may change.
+
+### Interface
+
+
+``x`` now contains all variables, parameters and procedures from the module (tab completable), and is independant on how the Fortran code was loaded.
 
 
 ### Functions

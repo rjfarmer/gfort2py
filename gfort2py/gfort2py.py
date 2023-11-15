@@ -9,6 +9,8 @@ from .module_parse import module
 from .fVar import fVar
 from .fProc import fProc
 from .fParameters import fParam
+from .fCompile import compile_and_load
+from .utils import library_ext
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
@@ -121,12 +123,56 @@ def mod_info(mod_file):
 
 def lib_ext():
     """
-    Determine shared library extension for a current OS
+    Determine shared library extension for the current OS
     """
-    os = platform.system()
-    if os == "Darwin":
-        return "dylib"
-    elif os == "Windows":
-        return "dll"
-    else:
-        return "so"
+    return library_ext()
+
+
+def compile(
+    string=None,
+    file=None,
+    FC="/usr/bin/gfortran",
+    FFLAGS="-O2",
+    LDLIBS="",
+    LDFLAGS="",
+    output=None,
+):
+    """
+    Compiles and loads a snippet of Fortran code.
+
+    Either provide the code as a string in the ``string``
+    argument of a filename in the ``file`` argument.
+
+    This code will then be converted into a Fortran module and
+    compiled.
+
+    FC specifies the Fortran compilier to be used. This
+    must be some version of gfortran
+
+    FFLAGS specifies Fortran compile options. This defaults
+    to -O2. We will additionaly insert flags for buidling
+    shared libraries on the current platform.
+
+    LDLIBS specifies any libraries to link agaisnt
+
+    LDFLAGS specifies extra argument to pass to the linker
+    (usally this is specifing the directory of where libraies are
+    stored and passed with the -L option)
+
+    output Path to store intermediate files. Defaults to None
+    where files are stored in a temp folder. Otherwise
+    stored in ``output`` folder.
+
+    """
+
+    library, mod_file = compile_and_load(
+        string=string,
+        file=file,
+        FC=FC,
+        FFLAGS=FFLAGS,
+        LDLIBS=LDLIBS,
+        LDFLAGS=LDFLAGS,
+        output=output,
+    )
+
+    return fFort(library, mod_file)

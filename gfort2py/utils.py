@@ -3,6 +3,7 @@
 import ctypes
 import itertools
 from pprint import pprint
+import platform
 
 from .fUnary import run_unary
 
@@ -78,3 +79,16 @@ def _resolve_arg(arg, other_args, module, lib, fProc):
         arg.value = func(func_arg).result
 
     return arg
+
+
+def library_ext():
+    """
+    Determine shared library extension for a current OS
+    """
+    os = platform.system()
+    if os == "Darwin":
+        return "dylib"
+    elif os == "Windows":
+        return "dll"
+    else:
+        return "so"
