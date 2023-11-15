@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 jobs:
   CI:
-    runs-on: macos-11
+    runs-on: macos-latest
     strategy:
       matrix:
         fortran-compiler:  ['8','9','10','11','12','13']
