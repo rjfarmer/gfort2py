@@ -6,7 +6,9 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        fortran-compiler:  ['8','9','10','11','12','13']
+        # Skip gcc10 as for some reason arm64 gets added to the compile flags
+        # for cpyparsing and gcc-10 doesn't support arm64
+        fortran-compiler:  ['8','9','11','12','13']
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
       fail-fast: false
     env:
