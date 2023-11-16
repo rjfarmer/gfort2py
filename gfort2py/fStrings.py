@@ -202,7 +202,7 @@ class fStrExplicit(fStr):
             pass  # Dont allways now size when loading class
 
     def _array_check(self, value, know_shape=True):
-        shape = self.obj.shape()
+        shape = self.obj.shape
         ndim = self.obj.ndim
 
         if not np.issubdtype(value.dtype, np.bytes_):
@@ -250,7 +250,7 @@ class fStrExplicit(fStr):
 
     @property
     def value(self):
-        z = np.zeros(self.obj.shape(), dtype=f"S{self.len()}")
+        z = np.zeros(self.obj.shape, dtype=f"S{self.len()}")
 
         copy_array(
             ctypes.addressof(self.cvalue),

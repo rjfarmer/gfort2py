@@ -194,7 +194,7 @@ class fExplicitDT(fVar_t):
             self.cvalue = self.ctype()()
 
         if isinstance(index, tuple):
-            ind = np.ravel_multi_index(index, self.obj.shape(), order="F")
+            ind = np.ravel_multi_index(index, self.obj.shape, order="F")
         else:
             ind = index
 
@@ -213,7 +213,7 @@ class fExplicitDT(fVar_t):
             self.cvalue = self.ctype()()
 
         if isinstance(index, tuple):
-            ind = np.ravel_multi_index(index, self.obj.shape(), order="F")
+            ind = np.ravel_multi_index(index, self.obj.shape, order="F")
         else:
             ind = index
 
