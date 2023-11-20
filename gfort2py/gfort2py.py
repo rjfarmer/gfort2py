@@ -112,13 +112,13 @@ class fFort:
         return f"{self._module.filename}"
 
 
-def mod_info(mod_file):
+def mod_info(mod_file, load_only=False):
     """
     Returns a parsed data structure that describes the module
 
     pprint is recommened to help understand the nested structure.
     """
-    return module(mod_file)
+    return module(mod_file, load_only=load_only)
 
 
 def lib_ext():

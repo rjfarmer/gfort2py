@@ -426,12 +426,14 @@ class header:
         self.parent_id = int(self.parent_id)
         self.name = string_clean(self.name)
         self.module = string_clean(self.module)
-        self.bindc = len(string_clean(self.bindc)) > 0
+        self.bindc = string_clean(self.bindc)
 
     @property
     def mn_name(self):
-        if self.module:
-            return f"__{self.module}_MOD_{self.name}"
+        if len(self.bindc):
+            return self.bindc
+
+        return f"__{self.module}_MOD_{self.name}"
 
 
 @dataclass(init=False)
@@ -598,7 +600,7 @@ class expression:
             self._value = symbol_ref(args[3])
         elif self.exp_type == "SUBSTRING":
             raise NotImplementedError(args)
-        elif self.exp_type == "ARRAY":
+        elif self.exp_type == "ARRAY" or self.exp_type == "STRUCTURE":
             self._value = []
             for i in args[3]:
                 self._value.append(
@@ -609,6 +611,8 @@ class expression:
         elif self.exp_type == "COMPCALL":
             raise NotImplementedError(args)
         elif self.exp_type == "PPC":
+            raise NotImplementedError(args)
+        elif self.exp_type == "UNKNOWN":
             raise NotImplementedError(args)
         else:
             raise AttributeError(f"Can't match {self.exp_type}")
