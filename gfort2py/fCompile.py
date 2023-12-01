@@ -5,6 +5,7 @@ import platform
 import random
 import string
 import shutil
+import hashlib
 from pathlib import Path
 
 from .utils import library_ext
@@ -110,7 +111,12 @@ def moduleize(string):
     if count != 0:
         raise ValueError("Malformed module")
 
-    return [f"module {random_string(6)}\n", "contains\n", *string, "end module\n"]
+    # Module names must start with a letter
+    # hashing the contents means the name is static so
+    # module_parse caching should speed things up
+    name = "a" + hashlib.md5(b"".join([i.encode() for i in string])).hexdigest()
+
+    return [f"module {name}\n", "contains\n", *string, "end module\n"]
 
 
 def mod_name(file):
