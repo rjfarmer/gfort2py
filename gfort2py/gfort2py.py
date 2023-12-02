@@ -31,12 +31,27 @@ class fFort:
 
         """
 
-        self._lib = ctypes.CDLL(libname)
+        self._libname = libname
+        self._load_lib()
         self._mod_file = mod_file
         self._module = module(self._mod_file, cache_folder=cache_folder)
 
         self._saved = {}
         self._initialized = True
+
+    def _load_lib(self):
+        """
+        Handle differences between windows and linux
+        """
+        if platform.system() == "Windows":
+            old_folder = os.getcwd()
+            folder = os.path.dirname(os.path.realpath(self._libname))
+            os.chdir(folder)
+        else:
+            old_folder = os.getcwd()
+
+        self._lib = ctypes.CDLL(self._libname)
+        os.chdir(old_folder)
 
     def keys(self):
         return self._module.keys()
