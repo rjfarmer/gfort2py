@@ -1,36 +1,41 @@
-name: Continuous Integration
+name: CI 
 on: [push, pull_request]
 
 jobs:
   CI:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
-      matrix:
-        fortran-compiler:  [gfortran-9, gfortran-10, gfortran-11, gfortran-12, gfortran-13]
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
       fail-fast: false
-    env:
-      FC: ${{ matrix.fortran-compiler }}
-      CC: gcc
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]    
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']    
+        toolchain:
+          - {compiler: gcc, version: 8}
+          - {compiler: gcc, version: 9}
+          - {compiler: gcc, version: 10}
+          - {compiler: gcc, version: 11}
+          - {compiler: gcc, version: 12}
+          - {compiler: gcc, version: 13}
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
 
-    - name: Setup compiler ${{ matrix.fortran-compiler }}
-      run: |
-        sudo apt-get update
-        sudo apt-get install ${{ matrix.fortran-compiler }}
+      - uses: fortran-lang/setup-fortran@v1
+        id: setup-fortran
+        with:
+          compiler: ${{ matrix.toolchain.compiler }}
+          version: ${{ matrix.toolchain.version }}
+    
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install tox tox-gh-actions build wheel pytest
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install tox tox-gh-actions build wheel pytest
-
-    - name: Test with tox
-      run: tox -e py
+      - name: Test with tox
+        run: tox -e py
 
