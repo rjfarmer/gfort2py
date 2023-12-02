@@ -16,6 +16,10 @@ else
     uname_S := $(shell uname -s)
 endif
 
+ifneq (,$(findstring _NT,$(uname_S)))
+   uname_S := Windows
+endif
+
 ifeq ($(uname_S), Windows)
    LIB_FLAGS = -shared
    LIB_SUFFIX = dll
