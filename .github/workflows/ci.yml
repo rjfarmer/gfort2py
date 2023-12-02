@@ -7,7 +7,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]    
+        os: [ubuntu-20.04, ubuntu-22.04, macos-latest, windows-latest]    
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']    
         toolchain:
           - {compiler: gcc, version: 8}
@@ -16,6 +16,16 @@ jobs:
           - {compiler: gcc, version: 11}
           - {compiler: gcc, version: 12}
           - {compiler: gcc, version: 13}
+          exclude:
+            - os: ubuntu-20.04
+              toolchain: {compiler: gcc, version: 9}
+              toolchain: {compiler: gcc, version: 10}
+              toolchain: {compiler: gcc, version: 11}
+              toolchain: {compiler: gcc, version: 12}
+              toolchain: {compiler: gcc, version: 13}
+            - os: ubuntu-22.04
+              toolchain: {compiler: gcc, version: 8}
+
 
     steps:
       - uses: actions/checkout@v4
