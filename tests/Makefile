@@ -10,22 +10,26 @@ MODS =  $(wildcard *.mod)
 
 GZ = $(patsubst %.mod,%.gz,$(MODS))
 
-UNAME_S := $(shell uname -s)
-
 ifeq ($(OS),Windows_NT)
+    uname_S := Windows
+else
+    uname_S := $(shell uname -s)
+endif
+
+ifeq ($(uname_S), Windows)
    LIB_FLAGS = -shared
    LIB_SUFFIX = dll
    LIBS = $(patsubst %.f90,%.dll,$(SRCS))
-else ifeq ($(UNAME_S),Linux)
+else ifeq ($(uname_S),Linux)
    LIB_FLAGS = -fPIC -shared
    LIB_SUFFIX = so
    LIBS = $(patsubst %.f90,%.so,$(SRCS))
-else ifeq ($(UNAME_S),Darwin)
+else ifeq ($(uname_S),Darwin)
    LIB_FLAGS = -dynamiclib
    LIB_SUFFIX = dylib
    LIBS = $(patsubst %.f90,%.dylib,$(SRCS))
 else
-$(error Unknown OS)
+$(error Unknown OS $(OS) $(uname_S))
 endif
 
 
