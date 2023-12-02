@@ -15,6 +15,9 @@ try:
 except KeyError:
     FC = "/usr/bin/gfortran"
 
+print(FC)
+print(os.environ["FC"])
+
 
 class TestCompileMethods:
     def test_compile_nomod_str(self):
