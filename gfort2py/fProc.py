@@ -55,7 +55,7 @@ class fProc:
         self._lib = lib
         self._return_value = None
 
-        self._func = getattr(lib, self.mangled_name)
+        self._func = getattr(self._lib, self.mangled_name)
 
     @property
     def mangled_name(self):
@@ -64,9 +64,16 @@ class fProc:
     def in_dll(self, lib):
         return self._func
 
+    def from_param(self, *args):
+        return self._func
+
     @property
     def module(self):
         return self.obj.head.module
+
+    @property
+    def value(self):
+        return self._func
 
     @property
     def name(self):
@@ -121,11 +128,16 @@ class fProc:
         arguments = []
         # Build list of inputs
         for fval in self.obj.args():
-            var = fVar(self._allobjs[fval.ref], allobjs=self._allobjs)
+            if self._allobjs[fval.ref].is_procedure():
+                var = None
+                name = self._allobjs[fval.ref].name
+            else:
+                var = fVar(self._allobjs[fval.ref], allobjs=self._allobjs)
+                name = var.name
 
             try:
-                x = kwargs[var.name]
-            except KeyError:
+                x = kwargs[name]
+            except (KeyError, AttributeError):
                 if count <= len(args):
                     x = args[count]
                     count = count + 1
@@ -139,6 +151,9 @@ class fProc:
                 var = x
                 x = var.value
 
+            if isinstance(x, fProc):
+                var = x
+
             arguments.append(variable(x, var, fval.ref))
 
         return arguments
@@ -148,7 +163,12 @@ class fProc:
         args_end = []
         # Convert to ctypes
         for var in input_args:
-            _, a, e = var.fvar.to_proc(var.value, input_args)
+            if var.fvar.obj.is_procedure():
+                a = var.value.value
+                e = None
+                # print(a.value)
+            else:
+                _, a, e = var.fvar.to_proc(var.value, input_args)
             args.append(a)
             if e is not None:
                 args_end.append(e)
@@ -187,13 +207,16 @@ class fProc:
 
         if len(self.obj.args()):
             for var in self.input_args:
-                if var.fvar.unpack:
-                    try:
-                        x = ptr_unpack(var.fvar.value)
-                    except AttributeError:  # unset optional arguments
-                        x = None
+                if var.fvar.obj.is_procedure():
+                    x = var.value
                 else:
-                    x = var.fvar.cvalue
+                    if var.fvar.unpack:
+                        try:
+                            x = ptr_unpack(var.fvar.value)
+                        except AttributeError:  # unset optional arguments
+                            x = None
+                    else:
+                        x = var.fvar.cvalue
 
                 name = self._allobjs[var.symbol_ref].name
                 if hasattr(x, "_type_"):

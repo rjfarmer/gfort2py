@@ -238,6 +238,21 @@ quad precision values is planned but not yet supported. Quad values can also not
 ``pyQuadp`` is currently an optional requirement, you must manually install it, it does not get auto-installed when ``gfort2py`` is installed. If you try to access a quad precision variable without ``pyQuadp`` you should get a ``TypeError``.
 
 
+### Callback arguments
+
+To pass a Fortran function as a callback argument to another function then pass the function directly:
+
+````python
+
+y = x.callback_function(1)
+
+y = x.another_function(x.callback_function)
+
+````
+
+Currently only Fortran functions can be passed. No checking is done to ensure that the callback function has the 
+correct signature to be a callback to the second function.
+
 
 ## Testing
 

@@ -17,11 +17,11 @@ MOD = "./tests/proc_ptrs.mod"
 x = gf.fFort(SO, MOD)
 
 
-@pytest.mark.skip
 class TestProcPtrsMethods:
     def assertEqual(self, x, y):
         assert x == y
 
+    @pytest.mark.skip
     def test_proc_ptr_ffunc(self):
         x.sub_null_proc_ptr()
         with pytest.raises(AttributeError) as cm:
@@ -37,6 +37,7 @@ class TestProcPtrsMethods:
         y2 = x.p_func_func_run_ptr(5)
         self.assertEqual(y.result, y2.result)
 
+    @pytest.mark.skip
     def test_proc_ptr_ffunc2(self):
         x.sub_null_proc_ptr()
         with pytest.raises(AttributeError) as cm:
@@ -46,6 +47,7 @@ class TestProcPtrsMethods:
         y = x.p_func_func_run_ptr2(10)
         self.assertEqual(y.result, 100)
 
+    @pytest.mark.skip
     def test_proc_update(self):
         x.sub_null_proc_ptr()
         x.p_func_func_run_ptr = x.func_func_run
@@ -63,6 +65,10 @@ class TestProcPtrsMethods:
         y = x.func_func_arg(x.func_func_run)
         self.assertEqual(y.result, 10)
 
+        y = x.func_func_arg(func=x.func_func_run)
+        self.assertEqual(y.result, 10)
+
+    @pytest.mark.skip
     def test_proc_proc_func_arg(self):
         x.sub_null_proc_ptr()
         x.p_func_func_run_ptr = x.func_func_run
