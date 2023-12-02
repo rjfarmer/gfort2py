@@ -38,4 +38,6 @@ jobs:
 
       - name: Test with tox
         run: tox -e py
+        env:
+          _GFORT2PY_TEST_FLAG: 1
 
