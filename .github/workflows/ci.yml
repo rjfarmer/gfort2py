@@ -54,4 +54,5 @@ jobs:
         run: tox -e py
         env:
           _GFORT2PY_TEST_FLAG: 1
+          FC: ${{ matrix.os == 'macos-latest' && '/usr/local/bin/gfortran' || '/usr/bin/gfortran' }}
 
