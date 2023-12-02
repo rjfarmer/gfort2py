@@ -54,7 +54,7 @@ jobs:
         shell: bash    
         run: |
           # macos-13/gfortran 7-9 compatibility workaround
-          export FC = /usr/bin/gfortran
+          export FC=/usr/bin/gfortran
           args=""
           if [ "$RUNNER_OS" == "macOS" ]; then
             if [[ $(sw_vers -productVersion) == 13* ]] && \
@@ -63,7 +63,7 @@ jobs:
             then
               args="-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib"
             fi
-            export FC = "/usr/local/bin/gfortran $args"
+            export FC="/usr/local/bin/gfortran $args"
           fi
           tox -e py
         env:
