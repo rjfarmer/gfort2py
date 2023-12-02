@@ -9,13 +9,13 @@ import hashlib
 import appdirs
 from pathlib import Path
 
-from .utils import library_ext
+from .utils import library_ext, fc_path
 
 
 def compile_and_load(
     string=None,
     file=None,
-    FC="/usr/bin/gfortran",
+    FC=None,
     FFLAGS="-O2",
     LDLIBS="",
     LDFLAGS="",
@@ -23,6 +23,9 @@ def compile_and_load(
 ):
     if string is None and file is None:
         raise AttributeError("Must set either string or file")
+
+    if FC is None:
+        FC = fc_path()
 
     output_dir = output_folder(output)
     output_file = output_filename(file, output_dir)

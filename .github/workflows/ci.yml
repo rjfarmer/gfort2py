@@ -50,22 +50,8 @@ jobs:
           compiler: ${{ matrix.toolchain.compiler }}
           version: ${{ matrix.toolchain.version }}
     
-      - name: run
-        shell: bash    
-        run: |
-          # macos-13/gfortran 7-9 compatibility workaround
-          export FC=/usr/bin/gfortran
-          args=""
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            if [[ $(sw_vers -productVersion) == 13* ]] && \
-                [[ ${{ matrix.toolchain.compiler }} == "gcc" ]] && \
-                [[ ${{ matrix.toolchain.version }} =~ ^(7|8|9)$ ]]
-            then
-              args="-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib"
-            fi
-            export FC="/usr/local/bin/gfortran $args"
-          fi
-          tox -e py
+      - name: Run tox
+        run: tox -e py
         env:
           _GFORT2PY_TEST_FLAG: 1
 

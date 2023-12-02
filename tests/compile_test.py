@@ -10,14 +10,6 @@ import gfort2py as gf
 
 import pytest
 
-try:
-    FC = os.environ["FC"]
-except KeyError:
-    FC = "/usr/bin/gfortran"
-
-print(FC)
-print(os.environ["FC"])
-
 
 class TestCompileMethods:
     def test_compile_nomod_str(self):
@@ -28,7 +20,7 @@ class TestCompileMethods:
             end function myfunc
             """
 
-        x = gf.compile(string=fstr, FC=FC)
+        x = gf.compile(string=fstr)
 
         result = x.myfunc(1, 2)
 
@@ -45,21 +37,21 @@ class TestCompileMethods:
             end module
             """
 
-        x = gf.compile(string=fstr, FC=FC)
+        x = gf.compile(string=fstr)
 
         result = x.myfunc(1, 2)
 
         assert result.result == 3
 
     def test_compile_nomod_file(self):
-        x = gf.compile(file="tests/compile_nomod_test.f90", FC=FC)
+        x = gf.compile(file="tests/compile_nomod_test.f90")
 
         result = x.myfunc(1, 2)
 
         assert result.result == 3
 
     def test_compile_mod_file(self):
-        x = gf.compile(file="tests/compile_mod_test.f90", FC=FC)
+        x = gf.compile(file="tests/compile_mod_test.f90")
 
         result = x.myfunc(1, 2)
 

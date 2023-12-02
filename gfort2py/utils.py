@@ -4,6 +4,8 @@ import ctypes
 import itertools
 from pprint import pprint
 import platform
+import os
+import subprocess
 
 from .fUnary import run_unary
 
@@ -92,3 +94,11 @@ def library_ext():
         return "dll"
     else:
         return "so"
+
+
+def fc_path():
+    """
+    Guess location of gfortran compiler
+    """
+    cmd = "where" if platform.system() == "Windows" else "which"
+    return subprocess.run([cmd, "gfortran"], capture_output=True).stdout.decode()
