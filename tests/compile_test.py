@@ -10,9 +10,9 @@ import gfort2py as gf
 
 import pytest
 
-if platform.system() == "Darwin":
-    FC = "/usr/local/bin/gfortran"
-else:
+try:
+    FC = os.environ["FC"]
+except KeyError:
     FC = "/usr/bin/gfortran"
 
 

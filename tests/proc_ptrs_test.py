@@ -16,6 +16,11 @@ MOD = "./tests/proc_ptrs.mod"
 
 x = gf.fFort(SO, MOD)
 
+try:
+    FC = os.environ["FC"]
+except KeyError:
+    FC = "/usr/bin/gfortran"
+
 
 class TestProcPtrsMethods:
     def assertEqual(self, x, y):
@@ -78,7 +83,7 @@ class TestProcPtrsMethods:
 
                 """
 
-        f = gf.compile(fstr)
+        f = gf.compile(fstr, FC=FC)
 
         y = x.func_func_arg(f.test)
         self.assertEqual(y.result, 3)
