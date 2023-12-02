@@ -16,15 +16,19 @@ jobs:
           - {compiler: gcc, version: 11}
           - {compiler: gcc, version: 12}
           - {compiler: gcc, version: 13}
-          exclude:
-            - os: ubuntu-20.04
-              toolchain: {compiler: gcc, version: 9}
-              toolchain: {compiler: gcc, version: 10}
-              toolchain: {compiler: gcc, version: 11}
-              toolchain: {compiler: gcc, version: 12}
-              toolchain: {compiler: gcc, version: 13}
-            - os: ubuntu-22.04
-              toolchain: {compiler: gcc, version: 8}
+        exclude:
+          - os: ubuntu-20.04
+            toolchain: {compiler: gcc, version: 9}
+          - os: ubuntu-20.04
+            toolchain: {compiler: gcc, version: 10}
+          - os: ubuntu-20.04
+            toolchain: {compiler: gcc, version: 11}
+          - os: ubuntu-20.04
+            toolchain: {compiler: gcc, version: 12}
+          - os: ubuntu-20.04
+            toolchain: {compiler: gcc, version: 13}
+          - os: ubuntu-22.04
+            toolchain: {compiler: gcc, version: 8}
 
 
     steps:
