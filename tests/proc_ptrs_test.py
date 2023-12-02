@@ -68,6 +68,21 @@ class TestProcPtrsMethods:
         y = x.func_func_arg(func=x.func_func_run)
         self.assertEqual(y.result, 10)
 
+    def test_proc_func_arg_compile(self):
+        fstr = """
+                integer function test(x)
+                    integer :: x
+
+                    test = 3*x
+                end function test
+
+                """
+
+        f = gf.compile(fstr)
+
+        y = x.func_func_arg(f.test)
+        self.assertEqual(y.result, 3)
+
     @pytest.mark.skip
     def test_proc_proc_func_arg(self):
         x.sub_null_proc_ptr()

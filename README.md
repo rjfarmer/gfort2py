@@ -253,6 +253,27 @@ y = x.another_function(x.callback_function)
 Currently only Fortran functions can be passed. No checking is done to ensure that the callback function has the 
 correct signature to be a callback to the second function.
 
+The callback and also be created in Python at runtime (but must be valid Fortran):
+
+````python
+
+fstr = """
+        integer function callback(x)
+            integer :: x
+            write(*,*) x
+            callback = 3*x
+        end function callback
+
+        """
+
+f = gf.compile(fstr)
+
+
+y = x.another_function(f.callback)
+
+````
+
+
 
 ## Testing
 
