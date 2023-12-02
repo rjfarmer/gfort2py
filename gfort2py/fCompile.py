@@ -6,6 +6,7 @@ import random
 import string
 import shutil
 import hashlib
+import appdirs
 from pathlib import Path
 
 from .utils import library_ext
@@ -136,7 +137,7 @@ def mod_name(file):
 
 def output_folder(output):
     if output is None:
-        return tempfile.mkdtemp()
+        return appdirs.user_cache_dir("gfort2py")
     else:
         return os.path.realpath(output)
 
