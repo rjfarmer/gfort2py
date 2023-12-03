@@ -100,5 +100,10 @@ def fc_path():
     """
     Guess location of gfortran compiler
     """
-    cmd = "where" if platform.system() == "Windows" else "which"
+    os = platform.system()
+    if os == "Darwin":
+        if os.path.exists("/usr/local/bin/gfortran"):
+            return "/usr/local/bin/gfortran"
+
+    cmd = "where" if os == "Windows" else "which"
     return subprocess.run([cmd, "gfortran"], capture_output=True).stdout.decode()
