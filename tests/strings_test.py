@@ -111,7 +111,7 @@ class TestStringMethods:
         res = x.str_array_inout(z)
         out, err = capfd.readouterr()
 
-        assert out.strip() == " aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
+        assert out.strip() == "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
 
         z2 = np.array(
             ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
@@ -170,7 +170,7 @@ class TestStringMethods:
         res = x.str_array_inout2(z, 5)
         out, err = capfd.readouterr()
 
-        assert out.strip() == " aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
+        assert out.strip() == "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
 
         z2 = np.array(
             ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
@@ -188,7 +188,7 @@ class TestStringMethods:
         res = x.str_array_inout3(z)
         out, err = capfd.readouterr()
 
-        assert out.strip() == " aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
+        assert out.strip() == "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
 
         z2 = np.array(
             ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
@@ -219,7 +219,7 @@ class TestStringMethods:
         res = x.str_array_inout4(z)
         out, err = capfd.readouterr()
 
-        assert out.strip() == " aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
+        assert out.strip() == "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
 
         z2 = np.array(
             ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
@@ -240,7 +240,7 @@ class TestStringMethods:
         res = x.check_a_str_exp_1d()
         out, err = capfd.readouterr()
 
-        assert out.strip() == " aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
+        assert out.strip() == "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
 
         z2 = np.array(
             ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
