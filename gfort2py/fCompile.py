@@ -62,8 +62,8 @@ def shared_lib_flags():
 def library(lib, file, output, FC, FFLAGS, LDLIBS, LDFLAGS):
     line = " ".join([FC, FFLAGS, *shared_lib_flags(), LDFLAGS, LDLIBS, "-o", lib, file])
 
-    print(line)
-    print(output)
+    print("*", line)
+    print("**", output)
     res = subprocess.check_output(
         line, stderr=subprocess.STDOUT, cwd=output, shell=True
     )
