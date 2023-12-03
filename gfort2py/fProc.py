@@ -5,8 +5,6 @@ import select
 import collections
 import functools
 from dataclasses import dataclass
-import fcntl
-import errno
 
 from .fVar import fVar
 from .fVar_t import fVar_t
@@ -23,39 +21,26 @@ class variable:
 
 
 class _captureStdOut:
-    def __init__(self):
-        self.pipe_out = None
-        self.pipe_in = None
-        self.stdout = None
+    def read_pipe(self, pipe_out):
+        def more_data():
+            r, _, _ = select.select([pipe_out], [], [], 0)
+            return bool(r)
+
+        out = b""
+        while more_data():
+            out += os.read(pipe_out, 1024)
+        return out.decode()
 
     def __enter__(self):
         if _TEST_FLAG:
             self.pipe_out, self.pipe_in = os.pipe()
             self.stdout = os.dup(1)
             os.dup2(self.pipe_in, 1)
-            # Set pipe_out to non-blocking mode
-            flags = fcntl.fcntl(self.pipe_out, fcntl.F_GETFL)
-            fcntl.fcntl(self.pipe_out, fcntl.F_SETFL, flags | os.O_NONBLOCK)
-
-    def read_pipe(self):
-        out = b""
-        while True:
-            try:
-                data = os.read(self.pipe_out, 1024)
-                if not data:
-                    break
-                out += data
-            except OSError as e:
-                if e.errno == errno.EAGAIN or e.errno == errno.EWOULDBLOCK:
-                    break
-                else:
-                    raise
-        return out.decode()
 
     def __exit__(self, *args, **kwargs):
         if _TEST_FLAG:
             os.dup2(self.stdout, 1)
-            print(self.read_pipe())
+            print(self.read_pipe(self.pipe_out))
             os.close(self.pipe_in)
             os.close(self.pipe_out)
             os.close(self.stdout)
