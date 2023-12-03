@@ -44,7 +44,7 @@ class fFort:
         Handle differences between windows and linux
         """
         if platform.system() == "Windows":
-            os.add_dll_directory(os.path.dirname(self._libname))
+            os.add_dll_directory(os.path.dirname(os.path.realpath(self._libname)))
 
         if not os.path.exists(self._libname):
             raise FileNotFoundError(f"Can't find {self._libname}")
