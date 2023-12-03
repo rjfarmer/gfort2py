@@ -44,20 +44,12 @@ class fFort:
         Handle differences between windows and linux
         """
         if platform.system() == "Windows":
-            # dll's may depend on other dll's so switch to the local folder to
-            # make resolving things easier
-            old_folder = os.getcwd()
-            self._libname = os.path.realpath(self._libname)
-            folder = os.path.dirname(self._libname)
-            os.chdir(folder)
-        else:
-            old_folder = os.getcwd()
+            os.add_dll_directory(os.path.dirname(self._libname))
 
         if not os.path.exists(self._libname):
             raise FileNotFoundError(f"Can't find {self._libname}")
 
         self._lib = ctypes.CDLL(self._libname)
-        os.chdir(old_folder)
 
     def keys(self):
         return self._module.keys()
