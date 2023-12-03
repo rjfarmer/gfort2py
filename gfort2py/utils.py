@@ -100,6 +100,9 @@ def fc_path():
     """
     Guess location of gfortran compiler
     """
+    if "FC" in os.environ:
+        return os.environ["FC"]
+
     os_platform = platform.system()
     if os_platform == "Darwin":
         # Homebrew location
@@ -107,6 +110,9 @@ def fc_path():
             return "/usr/local/bin/gfortran"
 
     cmd = "where" if os_platform == "Windows" else "which"
-    return os.path.normpath(
+    x = os.path.normpath(
         subprocess.run([cmd, "gfortran"], capture_output=True).stdout.decode().strip()
     )
+
+    # Windows may return several possible paths
+    return x.split()[0].strip()
