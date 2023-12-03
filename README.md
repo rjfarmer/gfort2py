@@ -81,7 +81,7 @@ x=gf.fFort(SHARED_LIB_NAME,MOD_FILE_NAME)
 ````
 
 > **_NOTE:_** The mod data is cached to speed up re-reading the data. To control this pass cache_folder to ``fFort``.
-A value of False disables caching, a string sets the folder location, while leaving the argument as None defaults to appdirs ``user_cache_dir``
+A value of False disables caching, a string sets the folder location, while leaving the argument as None defaults to platformdirs ``user_cache_dir``
 
 
 

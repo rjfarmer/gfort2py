@@ -7,7 +7,7 @@ import numpy as np
 import gzip
 import sys
 import hashlib
-import appdirs
+import platformdirs
 import pathlib
 import pickle
 import os
@@ -867,7 +867,7 @@ class module(object):
             hashed_data = hashlib.sha256(data.encode()).hexdigest()
 
             if cache_folder is None:
-                cache_folder = appdirs.user_cache_dir("gfort2py")
+                cache_folder = platformdirs.user_cache_dir("gfort2py")
             os.makedirs(cache_folder, exist_ok=True)
 
             cache_filename = pathlib.PurePath(cache_folder, hashed_data)
