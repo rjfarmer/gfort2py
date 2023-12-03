@@ -107,4 +107,6 @@ def fc_path():
             return "/usr/local/bin/gfortran"
 
     cmd = "where" if os == "Windows" else "which"
-    return subprocess.run([cmd, "gfortran"], capture_output=True).stdout.decode()
+    return (
+        subprocess.run([cmd, "gfortran"], capture_output=True).stdout.decode().strip()
+    )
