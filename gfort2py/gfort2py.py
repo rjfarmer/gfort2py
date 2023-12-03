@@ -146,7 +146,7 @@ def lib_ext():
 def compile(
     string=None,
     file=None,
-    FC="/usr/bin/gfortran",
+    FC=None,
     FFLAGS="-O2",
     LDLIBS="",
     LDFLAGS="",

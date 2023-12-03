@@ -102,6 +102,7 @@ def fc_path():
     """
     os = platform.system()
     if os == "Darwin":
+        # Homebrew location
         if os.path.exists("/usr/local/bin/gfortran"):
             return "/usr/local/bin/gfortran"
 
