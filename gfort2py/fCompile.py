@@ -38,8 +38,6 @@ def compile_and_load(
 
     mname = mod_name(output_file)
 
-    compile(output_file, output_dir, FC, FFLAGS, LDLIBS, LDFLAGS)
-
     lib_name = library_name(mname)
 
     library(lib_name, output_file, output_dir, FC, FFLAGS, LDLIBS, LDFLAGS)
@@ -61,36 +59,16 @@ def shared_lib_flags():
         return ["-fPIC", "-shared"]
 
 
-def compile(file, output, FC, FFLAGS, LDLIBS, LDFLAGS):
-    local_file = os.path.basename(file)
-
-    line = " ".join(
-        [FC, FFLAGS, *shared_lib_flags(), LDFLAGS, LDLIBS, "-c", local_file]
-    )
-    res = subprocess.run(line, capture_output=True, cwd=output, shell=True)
-
-    if res.returncode != 0:
-        for i in res.stderr:
-            print(i)
-        print(line)
-        print(file, os.path.exists(file))
-        raise CompileError(f"Can't compile {file}")
-
-
 def library(lib, file, output, FC, FFLAGS, LDLIBS, LDFLAGS):
     local_file = os.path.basename(file)
 
     line = " ".join(
         [FC, FFLAGS, *shared_lib_flags(), LDFLAGS, LDLIBS, "-o", lib, local_file]
     )
-    res = subprocess.run(line, capture_output=True, cwd=output, shell=True)
 
-    if res.returncode != 0:
-        for i in res.stderr:
-            print(i)
-        print(line)
-        print(file, os.path.exists(file))
-        raise CompileError(f"Can't create shared library {lib} from {file}")
+    res = subprocess.check_output(
+        line, stderr=subprocess.STDOUT, cwd=output, shell=True
+    )
 
 
 def moduleize_file(file, output):
