@@ -60,7 +60,10 @@ def shared_lib_flags():
 
 
 def library(lib, file, output, FC, FFLAGS, LDLIBS, LDFLAGS):
-    line = " ".join([FC, FFLAGS, *shared_lib_flags(), LDFLAGS, LDLIBS, "-o", lib, file])
+    local_file = os.path.basename(file)
+    line = " ".join(
+        [FC, FFLAGS, *shared_lib_flags(), LDFLAGS, LDLIBS, "-o", lib, local_file]
+    )
 
     print("*", line)
     print("**", output)
