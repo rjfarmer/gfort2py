@@ -2,6 +2,7 @@
 import ctypes
 import numpy as np
 import os
+import sys
 import platform
 
 from .module_parse import module
@@ -43,13 +44,19 @@ class fFort:
         """
         Handle differences between windows and linux
         """
+        kwargs = {}
+
         if platform.system() == "Windows":
-            os.add_dll_directory(os.path.dirname(os.path.realpath(self._libname)))
+            self._libname = os.path.realpath(self._libname)
+            if sys.version_info.major >= 3:
+                if sys.version_info.minor >= 8:
+                    os.add_dll_directory(os.path.dirname(self._libname))
+                    kwargs["winmode"] = 0
 
         if not os.path.exists(self._libname):
             raise FileNotFoundError(f"Can't find {self._libname}")
 
-        self._lib = ctypes.CDLL(self._libname)
+        self._lib = ctypes.CDLL(self._libname, **kwargs)
 
     def keys(self):
         return self._module.keys()
