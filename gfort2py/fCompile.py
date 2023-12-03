@@ -66,7 +66,10 @@ def compile(file, output, FC, FFLAGS, LDLIBS, LDFLAGS):
     res = subprocess.run(line, capture_output=True, cwd=output, shell=True)
 
     if res.returncode != 0:
-        print(res.stderr.split(b"\n"))
+        for i in res.stderr:
+            print(i.decode())
+        print(line)
+        print(file, os.path.exists(file))
         raise CompileError(f"Can't compile {file}")
 
 
@@ -75,7 +78,10 @@ def library(lib, file, output, FC, FFLAGS, LDLIBS, LDFLAGS):
     res = subprocess.run(line, capture_output=True, cwd=output, shell=True)
 
     if res.returncode != 0:
-        print(res.stderr.split(b"\n"))
+        for i in res.stderr:
+            print(i.decode())
+        print(line)
+        print(file, os.path.exists(file))
         raise CompileError(f"Can't create shared library {lib} from {file}")
 
 
