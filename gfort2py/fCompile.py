@@ -61,12 +61,19 @@ def shared_lib_flags():
 
 def library(lib, file, output, FC, FFLAGS, LDLIBS, LDFLAGS):
     local_file = os.path.basename(file)
+
+    line = " ".join(
+        [FC, FFLAGS, *shared_lib_flags(), LDFLAGS, LDLIBS, "-c", local_file]
+    )
+
+    res = subprocess.check_output(
+        line, stderr=subprocess.STDOUT, cwd=output, shell=True
+    )
+
     line = " ".join(
         [FC, FFLAGS, *shared_lib_flags(), LDFLAGS, LDLIBS, "-o", lib, local_file]
     )
 
-    print("*", line)
-    print("**", output)
     res = subprocess.check_output(
         line, stderr=subprocess.STDOUT, cwd=output, shell=True
     )
