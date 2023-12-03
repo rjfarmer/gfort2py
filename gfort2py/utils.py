@@ -115,4 +115,4 @@ def fc_path():
     )
 
     # Windows may return several possible paths
-    return x.split()[0].strip()
+    return x.split()[-1].strip()
