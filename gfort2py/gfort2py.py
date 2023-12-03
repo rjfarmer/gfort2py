@@ -44,8 +44,11 @@ class fFort:
         Handle differences between windows and linux
         """
         if platform.system() == "Windows":
+            # dll's may depend on other dll's so switch to the local folder to
+            # make resolving things easier
             old_folder = os.getcwd()
-            folder = os.path.dirname(os.path.realpath(self._libname))
+            self._libname = os.path.realpath(self._libname)
+            folder = os.path.dirname(self._libname)
             os.chdir(folder)
         else:
             old_folder = os.getcwd()
