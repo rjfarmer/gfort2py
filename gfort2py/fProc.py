@@ -1,9 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 import ctypes
 import os
-import select
 import collections
-import functools
 from dataclasses import dataclass
 
 from .fVar import fVar
@@ -18,32 +16,6 @@ class variable:
     value: "typing.Any"
     fvar: "typing.Any"
     symbol_ref: int
-
-
-class _captureStdOut:
-    def read_pipe(self, pipe_out):
-        def more_data():
-            r, _, _ = select.select([pipe_out], [], [], 0)
-            return bool(r)
-
-        out = b""
-        while more_data():
-            out += os.read(pipe_out, 1024)
-        return out.decode()
-
-    def __enter__(self):
-        if _TEST_FLAG:
-            self.pipe_out, self.pipe_in = os.pipe()
-            self.stdout = os.dup(1)
-            os.dup2(self.pipe_in, 1)
-
-    def __exit__(self, *args, **kwargs):
-        if _TEST_FLAG:
-            os.dup2(self.stdout, 1)
-            print(self.read_pipe(self.pipe_out))
-            os.close(self.pipe_in)
-            os.close(self.pipe_out)
-            os.close(self.stdout)
 
 
 class fProc:
@@ -84,11 +56,10 @@ class fProc:
 
         # print(self._func_args)
 
-        with _captureStdOut() as cs:
-            if self._func_args is not None:
-                res = self._func(*self._func_args)
-            else:
-                res = self._func()
+        if self._func_args is not None:
+            res = self._func(*self._func_args)
+        else:
+            res = self._func()
 
         return self._convert_result(res, self._func_args)
 
