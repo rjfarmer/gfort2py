@@ -85,12 +85,12 @@ def _resolve_arg(arg, other_args, module, lib, fProc):
 
 def library_ext():
     """
-    Determine shared library extension for a current OS
+    Determine shared library extension for a current os_platform
     """
-    os = platform.system()
-    if os == "Darwin":
+    os_platform = platform.system()
+    if os_platform == "Darwin":
         return "dylib"
-    elif os == "Windows":
+    elif os_platform == "Windows":
         return "dll"
     else:
         return "so"
@@ -100,13 +100,13 @@ def fc_path():
     """
     Guess location of gfortran compiler
     """
-    os = platform.system()
-    if os == "Darwin":
+    os_platform = platform.system()
+    if os_platform == "Darwin":
         # Homebrew location
         if os.path.exists("/usr/local/bin/gfortran"):
             return "/usr/local/bin/gfortran"
 
-    cmd = "where" if os == "Windows" else "which"
+    cmd = "where" if os_platform == "Windows" else "which"
     return (
         subprocess.run([cmd, "gfortran"], capture_output=True).stdout.decode().strip()
     )

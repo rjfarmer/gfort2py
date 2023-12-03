@@ -52,10 +52,10 @@ class CompileError(Exception):
 
 
 def shared_lib_flags():
-    os = platform.system()
-    if os == "Darwin":
+    os_platform = platform.system()
+    if os_platform == "Darwin":
         return ["-dynamiclib"]
-    elif os == "Windows":
+    elif os_platform == "Windows":
         return ["-shared"]
     else:
         return ["-fPIC", "-shared"]
