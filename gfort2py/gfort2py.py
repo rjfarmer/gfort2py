@@ -50,6 +50,9 @@ class fFort:
         else:
             old_folder = os.getcwd()
 
+        if not os.path.exists(self._libname):
+            raise FileNotFoundError(f"Can't find {self._libname}")
+
         self._lib = ctypes.CDLL(self._libname)
         os.chdir(old_folder)
 
