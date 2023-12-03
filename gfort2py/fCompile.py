@@ -67,7 +67,7 @@ def compile(file, output, FC, FFLAGS, LDLIBS, LDFLAGS):
 
     if res.returncode != 0:
         for i in res.stderr:
-            print(i.decode())
+            print(i)
         print(line)
         print(file, os.path.exists(file))
         raise CompileError(f"Can't compile {file}")
@@ -79,7 +79,7 @@ def library(lib, file, output, FC, FFLAGS, LDLIBS, LDFLAGS):
 
     if res.returncode != 0:
         for i in res.stderr:
-            print(i.decode())
+            print(i)
         print(line)
         print(file, os.path.exists(file))
         raise CompileError(f"Can't create shared library {lib} from {file}")
