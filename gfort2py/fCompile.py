@@ -62,9 +62,6 @@ def shared_lib_flags():
 def library(lib, file, output, FC, FFLAGS, LDLIBS, LDFLAGS):
     local_file = os.path.basename(file)
 
-    if os.path.exists(os.path.join(output, lib)):
-        os.remove(os.path.join(output, lib))
-
     line = " ".join(
         [FC, FFLAGS, *shared_lib_flags(), LDFLAGS, LDLIBS, "-o", lib, local_file]
     )
@@ -138,7 +135,8 @@ def mod_name(file):
 
 def output_folder(output):
     if output is None:
-        return platformdirs.user_cache_dir("gfort2py")
+        # return platformdirs.user_cache_dir("gfort2py")
+        return tempfile.mkdtemp(prefix="gfort2py")
     else:
         return os.path.realpath(output)
 
