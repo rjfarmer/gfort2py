@@ -53,5 +53,6 @@ jobs:
       - name: Run tox
         run: tox -e py
         env:
+          FC: ${{ env.FC }}
           _GFORT2PY_TEST_FLAG: 1
 

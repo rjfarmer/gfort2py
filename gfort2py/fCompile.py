@@ -30,7 +30,7 @@ def compile_and_load(
         FC = fc_path()
 
     if _TEST_FLAG is True:
-        print(f"Found {FC=}")
+        print(f"Found FC={FC}")
         r = subprocess.run([FC, "-v"], capture_output=True)
         print(r.stdout)
         print(r.stderr)
