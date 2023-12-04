@@ -34,6 +34,7 @@ def compile_and_load(
         r = subprocess.run([FC, "-v"], capture_output=True)
         print(r.stdout)
         print(r.stderr)
+        print(f"Environ = {os.environ.get('FC')}")
 
     output_dir = output_folder(output)
     output_file = output_filename(file, output_dir)
