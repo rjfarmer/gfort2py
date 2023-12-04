@@ -11,6 +11,8 @@ from pathlib import Path
 
 from .utils import library_ext, fc_path
 
+_TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
+
 
 def compile_and_load(
     string=None,
@@ -26,6 +28,12 @@ def compile_and_load(
 
     if FC is None:
         FC = fc_path()
+
+    if _TEST_FLAG is True:
+        print(f"Found {FC=}")
+        r = subprocess.run([FC, "-v"], capture_output=True)
+        print(r.stdout)
+        print(r.stderr)
 
     output_dir = output_folder(output)
     output_file = output_filename(file, output_dir)
