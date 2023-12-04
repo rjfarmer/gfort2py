@@ -9,6 +9,8 @@ import subprocess
 
 from .fUnary import run_unary
 
+_TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
+
 
 def copy_array(src, dst, length, size):
     ctypes.memmove(
@@ -113,6 +115,9 @@ def fc_path():
     x = os.path.normpath(
         subprocess.run([cmd, "gfortran"], capture_output=True).stdout.decode().strip()
     )
+
+    if _TEST_FLAG:
+        print(x)
 
     # Windows may return several possible paths
     return x.split()[-1].strip()
