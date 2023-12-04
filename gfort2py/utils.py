@@ -123,7 +123,7 @@ def fc_path():
         for i in x:
             if "Chocolatey" in i:
                 # Hardcode the choice for testing
-                fc = x.strip()
+                fc = i.strip()
                 break
     else:
         fc = x[0].strip()
