@@ -150,6 +150,7 @@ def lib_ext():
 
 def compile(
     string=None,
+    *,
     file=None,
     FC=None,
     FFLAGS="-O2",
