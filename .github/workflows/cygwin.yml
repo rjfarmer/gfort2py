@@ -42,7 +42,7 @@ jobs:
           run: |
             echo "/usr/bin:/usrlocal/bin" >> $GITHUB_PATH
             dash -c "/usr/bin/python3.9 -m pip install ."
-            dash -c "cd tests; make; cd ../"
+            dash -c "cd tests; /usr/bin/make; cd ../"
         - name: Run tests
           run: |
               dash -c "/usr/bin/python3.9 -m pytest -v"
