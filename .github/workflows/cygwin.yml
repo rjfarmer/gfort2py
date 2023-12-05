@@ -30,6 +30,10 @@ jobs:
         - name: Tell Cygwin's git about this repository.
           run: |
             dash -c "which git; /usr/bin/git config --system --add safe.directory /cygdrive/d/a/gfort2py/gfort2py"
+        - uses: actions/setup-python@v2
+          with:
+            cache: 'pip'
+        
         - name: Verify python version
           # Make sure it's the Cygwin one, not a Windows one
           run: |
@@ -40,6 +44,7 @@ jobs:
             dash -c "/usr/bin/python3.9 -m pip install build wheel pytest"
         - name: Install 
           run: |
+            echo "/usr/bin:/usrlocal/bin" >> $GITHUB_PATH
             dash -c "/usr/bin/python3.9 -m pip install ."
         - name: Run tests
           run: |
