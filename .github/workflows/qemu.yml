@@ -95,7 +95,7 @@ jobs:
       run: |
         docker run --rm -e "TERM=xterm-256color" -v $(pwd):/gfort2py -v /:/host the_container \
         /bin/script -e -q -c "/bin/bash --noprofile --norc -eo pipefail -c '
-          cd /gfort2py && python -m build && python -m python -m install dist/gfort2py*.whl
+          cd /gfort2py && python -m build && python -m install dist/gfort2py*.whl
         '"
     - name: Run Tests
       run: |
