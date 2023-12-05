@@ -97,7 +97,7 @@ jobs:
           rm -f /usr/bin/ld && ln -s /host/usr/bin/${TOOLCHAIN_NAME}-ld /usr/bin/ld &&
           rm -f /usr/bin/ld.bfd && ln -s /host/usr/bin/${TOOLCHAIN_NAME}-ld.bfd /usr/bin/ld.bfd &&
           rm -f /usr/bin/ninja && ln -s /host/usr/bin/ninja /usr/bin/ninja &&
-          rm -rf /usr/include && ln -s /host/usr/${TOOLCHAIN_NAME}/include /usr/include &&
+          for i in /host/usr/${TOOLCHAIN_NAME}/include/*;do ln -sf $i /usr/include/$(basename $i) &&
           git config --global --add safe.directory /gfort2py &&
           python -m pip install build wheel pytest cpyparsing platformdirs &&
           rm -f /usr/local/bin/ninja && mkdir -p /usr/local/bin && ln -s /host/usr/bin/ninja /usr/local/bin/ninja
