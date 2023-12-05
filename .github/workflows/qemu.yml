@@ -18,36 +18,42 @@ jobs:
               "armhf",
               "arm-linux-gnueabihf",
               "arm32v7/ubuntu:22.04",
+              "armhf-cross",
           ]
           - [
               "ppc64le",
               "powerpc64le-linux-gnu",
               "ppc64le/ubuntu:22.04",
+              "ppc64el-cross"
           ]
           - [
               "ppc64le - baseline(Power9)",
               "powerpc64le-linux-gnu",
               "ppc64le/ubuntu:22.04",
+              "ppc64el-cross",
           ]
           - [
               "s390x",
               "s390x-linux-gnu",
               "s390x/ubuntu:22.04",
+              "s390x-cross",
           ]
           - [
               "s390x - baseline(Z13)",
               "s390x-linux-gnu",
               "s390x/ubuntu:22.04",
+              "s390x-cross",
           ]
           - [
               "riscv64",
               "riscv64-linux-gnu",
               "riscv64/ubuntu:22.04",
+              "riscv64-cross",
           ]
     env:
       TOOLCHAIN_NAME: ${{ matrix.BUILD_PROP[1] }}
       DOCKER_CONTAINER: ${{ matrix.BUILD_PROP[2] }}
-      MESON_OPTIONS: ${{ matrix.BUILD_PROP[3] }}
+      LIBC_NAME: ${{ matrix.BUILD_PROP[3] }}
       TERM: xterm-256color
 
     name: "${{ matrix.BUILD_PROP[0] }}"
@@ -64,7 +70,7 @@ jobs:
     - name: Install GCC cross-compilers
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build gcc-${TOOLCHAIN_NAME} g++-${TOOLCHAIN_NAME} gfortran-${TOOLCHAIN_NAME} libc6-dev-${TOOLCHAIN_NAME}-cross
+        sudo apt-get install -y ninja-build gcc-${TOOLCHAIN_NAME} g++-${TOOLCHAIN_NAME} gfortran-${TOOLCHAIN_NAME} libc6-dev-${LIBC_NAME}
 
     - name: Cache docker container
       uses: actions/cache@v3
