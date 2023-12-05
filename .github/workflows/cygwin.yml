@@ -29,11 +29,7 @@ jobs:
             bash -c "uname -svrmo"
         - name: Tell Cygwin's git about this repository.
           run: |
-            dash -c "which git; /usr/bin/git config --system --add safe.directory /cygdrive/d/a/gfort2py/gfort2py"
-        - uses: actions/setup-python@v2
-          with:
-            cache: 'pip'
-        
+            dash -c "which git; /usr/bin/git config --system --add safe.directory /cygdrive/d/a/gfort2py/gfort2py"        
         - name: Verify python version
           # Make sure it's the Cygwin one, not a Windows one
           run: |
