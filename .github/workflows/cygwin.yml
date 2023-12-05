@@ -40,9 +40,9 @@ jobs:
             dash -c "/usr/bin/python3.9 -m pip install build wheel pytest"
         - name: Install 
           run: |
-            echo "/usr/bin:/usrlocal/bin" >> $GITHUB_PATH
+            echo "/bin:/usr/bin:/usr/local/bin" >> $GITHUB_PATH
             dash -c "/usr/bin/python3.9 -m pip install ."
-            dash -c "cd tests; /usr/bin/make; cd ../"
+            dash -c "cd tests; /bin/make; cd ../"
         - name: Run tests
           run: |
               dash -c "/usr/bin/python3.9 -m pytest -v"
