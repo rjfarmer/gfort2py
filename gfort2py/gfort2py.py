@@ -157,6 +157,7 @@ def compile(
     LDLIBS="",
     LDFLAGS="",
     output=None,
+    cache_folder=None,
 ):
     """
     Compiles and loads a snippet of Fortran code.
@@ -184,6 +185,9 @@ def compile(
     where files are stored in a temp folder. Otherwise
     stored in ``output`` folder.
 
+    cahce_folder same as for fFort, specifies location to save cached
+    mod data to.
+
     """
 
     library, mod_file = compile_and_load(
@@ -196,4 +200,4 @@ def compile(
         output=output,
     )
 
-    return fFort(library, mod_file)
+    return fFort(library, mod_file, cache_folder=cache_folder)
