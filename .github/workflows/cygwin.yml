@@ -8,7 +8,7 @@ jobs:
     steps:
         - run: git config --global core.autocrlf input
 
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v4
 
         - name: Install Cygwin
           uses: cygwin/cygwin-install-action@v4
@@ -35,15 +35,16 @@ jobs:
           run: |
             dash -c "which python3.9; /usr/bin/python3.9 --version -V"    
         - name: Install dependencies
+          shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
           run: |
-            dash -c "/usr/bin/python3.9 -m pip install --upgrade pip"
-            dash -c "/usr/bin/python3.9 -m pip install build wheel pytest"
+            /usr/bin/python3.9 -m pip install --upgrade pip
+            /usr/bin/python3.9 -m pip install build wheel pytest
         - name: Install 
+          shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
           run: |
-            echo "/bin:/usr/bin:/usr/local/bin" >> $GITHUB_PATH
-            dash -c "/usr/bin/python3.9 -m pip install ."
-            dash -c "cd tests; /bin/make; cd ../"
+            /usr/bin/python3.9 -m pip install .
         - name: Run tests
+          shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
           run: |
-              dash -c "/usr/bin/python3.9 -m pytest -v"
+              /usr/bin/python3.9 -m pytest -v
 
