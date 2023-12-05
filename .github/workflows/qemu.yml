@@ -65,12 +65,12 @@ jobs:
 
     - name: Initialize binfmt_misc for qemu-user-static
       run: |
-        docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+        docker run --rm --privileged multiarch/qemu-user-static --reset -p yes 
 
     - name: Install GCC cross-compilers
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build gcc-${TOOLCHAIN_NAME} g++-${TOOLCHAIN_NAME} gfortran-${TOOLCHAIN_NAME} libc6-dev-${LIBC_NAME}
+        sudo apt-get install -y ninja-build gcc-${TOOLCHAIN_NAME} g++-${TOOLCHAIN_NAME} gfortran-${TOOLCHAIN_NAME} libc6-dev-${LIBC_NAME} linux-libc-dev-${LIBC_NAME}
 
     - name: Cache docker container
       uses: actions/cache@v3
