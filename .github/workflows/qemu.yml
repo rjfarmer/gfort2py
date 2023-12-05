@@ -97,8 +97,8 @@ jobs:
           rm -f /usr/bin/ld && ln -s /host/usr/bin/${TOOLCHAIN_NAME}-ld /usr/bin/ld &&
           rm -f /usr/bin/ld.bfd && ln -s /host/usr/bin/${TOOLCHAIN_NAME}-ld.bfd /usr/bin/ld.bfd &&
           rm -f /usr/bin/ninja && ln -s /host/usr/bin/ninja /usr/bin/ninja &&
-          rm -f /use/include/stddef.h && ln -s /host/usr/include/${TOOLCHAIN_NAME}/include/stddef.h /use/include/stddef.h &&
-          rm -f /use/include/limits.h && ln -s /host/usr/include/${TOOLCHAIN_NAME}/include/limits.h /use/include/limits.h &&
+          rm -f /usr/include/stddef.h && ln -s /host/usr/include/${TOOLCHAIN_NAME}/include/stddef.h /usr/include/stddef.h &&
+          rm -f /usr/include/limits.h && ln -s /host/usr/include/${TOOLCHAIN_NAME}/include/limits.h /usr/include/limits.h &&
           git config --global --add safe.directory /gfort2py &&
           python -m pip install build wheel pytest &&
           rm -f /usr/local/bin/ninja && mkdir -p /usr/local/bin && ln -s /host/usr/bin/ninja /usr/local/bin/ninja
