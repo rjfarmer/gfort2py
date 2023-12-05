@@ -17,7 +17,7 @@ jobs:
             install-dir: 'C:\tools\cygwin'
             packages: >-
               python39-devel python39-pip python-pip-wheel python-setuptools-wheel
-              liblapack-devel liblapack0 gcc-fortran gcc-g++ git dash cmake ninja
+              liblapack-devel liblapack0 gcc-fortran git dash python39-numpy
 
         - name: Set Windows PATH
           uses: egor-tensin/cleanup-path@v3
