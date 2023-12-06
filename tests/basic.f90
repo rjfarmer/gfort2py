@@ -33,7 +33,6 @@ module basic
 		real, parameter     :: const_real=1.0
 		real(dp), parameter :: const_real_dp=1.0_dp
 		real(dp), parameter :: const_real_pi_dp=3.14_dp
-		real(qp), parameter :: const_real_qp=1.0_qp
 
 		integer, parameter :: const_neg_int = -1.0
 		real(dp),parameter :: const_neg_real = -3.14_dp
@@ -43,14 +42,12 @@ module basic
 		integer(lp)       :: a_int_lp
 		real              :: a_real
 		real(dp)          :: a_real_dp
-		real(qp)          :: a_real_qp
 		
 		! Set variables
 		integer           :: a_int_set=5
 		integer(lp)       :: a_int_lp_set=6
 		real              :: a_real_set=7.0
 		real(dp)          :: a_real_dp_set=8.0_dp
-		real(qp)          :: a_real_qp_set=9.0_qp
 
 		
 	contains
@@ -123,7 +120,6 @@ module basic
 			a_int_lp=99_lp
 			a_real=99.0
 			a_real_dp=99.0_dp
-			a_real_qp=99.0_qp
 		end subroutine sub_alter_mod
       
 		logical function func_check_mod()
@@ -132,8 +128,7 @@ module basic
 			if( a_int==5 .and. &
 				a_int_lp==5_lp .and. &
 				a_real==5.0 .and. &
-			    a_real_dp==5.0_dp .and. &
-			    a_real_qp==5.0_qp) then
+			    a_real_dp==5.0_dp) then
 			    
 			    func_check_mod = .true.
 			end if
@@ -239,22 +234,5 @@ module basic
 			end if
 
 		end function func_test_bool
-
-
-		subroutine sub_test_quad(y,x)
-			real(qp), intent(in) :: y
-			real(qp), intent(out) :: x
-		
-			x = y * 3
-		
-		end subroutine sub_test_quad
-
-
-		real(qp) function func_test_quad_ret()
-			
-			func_test_quad_ret = 3.14_qp
-
-		end function  func_test_quad_ret
-
 
 end module basic

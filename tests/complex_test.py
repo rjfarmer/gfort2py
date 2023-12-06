@@ -34,10 +34,6 @@ class TestComplexMethods:
     def test_a_const_cmplx_dp(self):
         self.assertEqual(x.const_cmplx_dp, complex(1.0, 1.0))
 
-    @pytest.mark.skipif(not PYQ_IMPORTED, reason="pyquadp not available")
-    def test_a_const_cmplx_qp(self):
-        self.assertEqual(x.const_cmplx_qp, complex(1.0, 1.0))
-
     def test_a_cmplx(self):
         v = complex(1.0, 1.0)
         x.a_cmplx = v
@@ -47,19 +43,6 @@ class TestComplexMethods:
         v = complex(1.0, 1.0)
         x.a_cmplx_dp = v
         self.assertEqual(x.a_cmplx_dp, v)
-
-    @pytest.mark.skipif(not PYQ_IMPORTED, reason="pyquadp not available")
-    def test_a_cmplx_qp(self):
-        v = complex(1.0, 1.0)
-        x.a_cmplx_qp = v
-        self.assertEqual(x.a_cmplx_qp, v)
-
-    @pytest.mark.skipif(PYQ_IMPORTED, reason="tests when no pyqudp available")
-    def test_a_cmplx_qp(self):
-        v = complex(1.0, 1.0)
-        with pytest.raises(TypeError) as cm:
-            x.a_cmplx_qp = v
-            self.assertEqual(x.a_cmplx_qp, v)
 
     def test_sub_cmplx_inout(self):
         v = complex(1.0, 1.0)

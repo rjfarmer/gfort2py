@@ -49,13 +49,6 @@ class TestPtrsMethods:
         x.a_real_dp_point = v
         self.assertEqual(x.a_real_dp_point, v)
 
-    @pytest.mark.skipif(PYQ_IMPORTED, reason="only tested when pyquadp not installed")
-    def test_a_real_qp_point_no_pyq(self):
-        v = 1.0
-        with pytest.raises(TypeError) as cm:
-            x.a_real_qp_point = v
-            self.assertEqual(x.a_real_qp_point, v)
-
     def test_a_str_point(self):
         v = "abcdefghij"
         x.a_str_point = v
@@ -80,13 +73,6 @@ class TestPtrsMethods:
         v = 1.0
         x.a_real_dp_target = v
         self.assertEqual(x.a_real_dp_target, v)
-
-    @pytest.mark.skipif(PYQ_IMPORTED, reason="only tested when pyquadp not installed")
-    def test_a_real_qp_target_no_pyq(self):
-        v = 1.0
-        with pytest.raises(TypeError) as cm:
-            x.a_real_qp_target = v
-            self.assertEqual(x.a_real_qp_target, v)
 
     def test_a_str_target(self):
         v = "abcdefghij"
