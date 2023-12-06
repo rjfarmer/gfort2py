@@ -1,4 +1,4 @@
-# How many tests do we actually?
+# How many tests do we actually need?
 
 The main difficulty in writing gfort2py is handling the huge number of combinations of options that are available in Fortran. 
 If we consider a simple integer: How many different ways can we declare an integer?
