@@ -27,19 +27,7 @@ jobs:
               "ppc64el-cross"
           ]
           - [
-              "ppc64le - baseline(Power9)",
-              "powerpc64le-linux-gnu",
-              "ppc64le/ubuntu:22.04",
-              "ppc64el-cross",
-          ]
-          - [
               "s390x",
-              "s390x-linux-gnu",
-              "s390x/ubuntu:22.04",
-              "s390x-cross",
-          ]
-          - [
-              "s390x - baseline(Z13)",
               "s390x-linux-gnu",
               "s390x/ubuntu:22.04",
               "s390x-cross",
