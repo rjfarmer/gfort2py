@@ -59,7 +59,7 @@ jobs:
       uses: actions/cache@v3
       id: container-cache
       with:
-        path: ~/docker_${{ matrix.BUILD_PROP[1] }}
+        path: ~/docker_${{ matrix.BUILD_PROP[1] }}.tar
         key: container-${{ runner.os }}-${{ matrix.BUILD_PROP[1] }}-${{ matrix.BUILD_PROP[2] }}
 
     - name: Creates new container
@@ -72,12 +72,11 @@ jobs:
           python -m pip install build wheel pytest cpyparsing platformdirs 
         "
         docker commit the_container the_container
-        mkdir -p "~/docker_${TOOLCHAIN_NAME}"
-        docker save -o "~/docker_${TOOLCHAIN_NAME}/the_container.tar" the_container
+        docker save -o "~/docker_${TOOLCHAIN_NAME}.tar" the_container
 
     - name: Load container from cache
       if: steps.container-cache.outputs.cache-hit == 'true'
-      run: docker load -i "~/docker_${TOOLCHAIN_NAME}/the_container.tar"
+      run: docker load -i "~/docker_${TOOLCHAIN_NAME}.tar"
 
     - name: Build
       run: |
