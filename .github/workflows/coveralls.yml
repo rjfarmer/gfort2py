@@ -2,7 +2,7 @@ name: Coveralls
 on: [push, pull_request]
 
 jobs:
-  CI:
+  coveralls:
     runs-on: ubuntu-latest
     strategy:
       matrix:

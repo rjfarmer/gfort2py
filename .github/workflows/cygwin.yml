@@ -3,7 +3,7 @@ name: Test on Cygwin
 on: [push, pull_request]
 
 jobs:
-  CI:
+  cygwin:
     runs-on: windows-latest
     steps:
         - run: git config --global core.autocrlf input
