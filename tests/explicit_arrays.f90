@@ -242,4 +242,14 @@ module explicit_arrays
 
 	end function func_return_2d_int_arr
 
+
+	subroutine func_exp_array_in(n,x)
+		integer, intent(in) :: n
+		integer, dimension(2*n,2**n) :: x
+
+		x = 5
+
+	end subroutine func_exp_array_in
+
+
 end module explicit_arrays
