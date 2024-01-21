@@ -19,6 +19,12 @@ jobs:
               python39-devel python39-pip python-pip-wheel python-setuptools-wheel
               liblapack-devel liblapack0 gcc-fortran git dash python39-numpy automake
 
+        - name: pip cache
+          uses: actions/cache@v4
+          with:
+            path: 'C:\cygwin\home\runneradmin\.cache\pip'
+            key: ${{ runner.os }}-${{ hashFiles('pyproject.toml') }} 
+                
         - name: Set Windows PATH
           uses: egor-tensin/cleanup-path@v3
           with:

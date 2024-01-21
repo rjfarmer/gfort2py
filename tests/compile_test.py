@@ -28,13 +28,13 @@ class TestCompileMethods:
 
     def test_compile_mod_str(self):
         fstr = """
-            module a
+            module abc
             contains
             integer function myfunc(x,y)
                 integer :: x,y
                 myfunc = x+y
             end function myfunc
-            end module
+            end module abc
             """
 
         x = gf.compile(string=fstr)
