@@ -39,6 +39,7 @@ dependencies = [
     "numpy",
     "cpyparsing",
     "platformdirs",
+    "dataclasses_json",
 ]
 
 dynamic = ["version"]
