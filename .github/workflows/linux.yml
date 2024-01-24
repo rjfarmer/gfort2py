@@ -1,13 +1,13 @@
-name: CI 
+name: Linux CI
 on: [push, pull_request]
 
 jobs:
-  CI:
+  linux_ci:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-latest, windows-latest]    
+        os: [ubuntu-20.04, ubuntu-22.04]    
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']    
         toolchain:
           - {compiler: gcc, version: 8}

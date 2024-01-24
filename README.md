@@ -1,4 +1,4 @@
-[![Continuous Integration](https://github.com/rjfarmer/gfort2py/actions/workflows/ci.yml/badge.svg)](https://github.com/rjfarmer/gfort2py/actions/workflows/ci.yml)
+[![Continuous Integration](https://github.com/rjfarmer/gfort2py/actions/workflows/linux.yml/badge.svg)](https://github.com/rjfarmer/gfort2py/actions/workflows/linux.yml)
 [![Coverage Status](https://coveralls.io/repos/github/rjfarmer/gfort2py/badge.svg?branch=main)](https://coveralls.io/github/rjfarmer/gfort2py?branch=main)
 [![PyPI version](https://badge.fury.io/py/gfort2py.svg)](https://badge.fury.io/py/gfort2py)
 [![DOI](https://zenodo.org/badge/72889348.svg)](https://zenodo.org/badge/latestdoi/72889348)
@@ -278,13 +278,7 @@ y = x.another_function(f.callback)
 ## Testing
 
 ````bash
-pytest
-````
-
-or 
-
-````bash
-tox
+pytest -v
 ````
 
 To run unit tests
@@ -364,62 +358,6 @@ x.a
 x.b
 x.c
 ````
-
-<!-- ### Procedure pointers:
-
-#### Procedures as arguments
-
-Consider:
-
-````fortran
-integer function my_func(func_arg)
-    integer func_arg
-    
-    my_func = func_arg(5)
-end function my_func
-    
-````
-
-Assuming that func_arg is another fortran function then we can call my_func as:
-
-
-````python
-x.my_func(x.func_arg) # With the function itself
-````
-
-It is left the the user to make sure that the function func_arg takes the correct inputs and returns the correct output -->
-
-
-<!-- Needs readding once fixed
-#### Procedure pointers
-
-Consider a procedure like:
-
-````fortran
-procedure(my_func), pointer:: func_ptr => NULL()
-````
-
-This can be set similar to how we handle functions as arguments:
-
-
-````python
-x.func_ptr = x.func_arg # With the function itself
-````
-
-Its left the the user to make sure that the function func_arg takes the correct inputs and returns the correct output. If you have a function
-that accepts a function pointer then its the same as if the it just accepted a function argument
-
-If func_ptr already points a a function at compile time:
-
-````fortran
-procedure(my_func), pointer:: func_ptr => my_func
-````
-
-You must still first set it to something
-
-````python
-x.func_ptr = x.func_arg # With the function itself
-```` -->
 
 ## Accessing module file data
 
