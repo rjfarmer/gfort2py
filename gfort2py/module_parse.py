@@ -46,6 +46,7 @@ class NotAnArrayError(Exception):
 
 #################################
 
+
 @dataclass_json
 @dataclass
 class s_item:
@@ -94,6 +95,7 @@ class Summary:
 
 #################################
 
+
 @dataclass_json
 @dataclass
 class symbol_ref:
@@ -104,6 +106,7 @@ class symbol_ref:
 
 
 #################################
+
 
 @dataclass_json
 @dataclass(init=False)
@@ -129,6 +132,7 @@ class c_item:
 
 
 #################################
+
 
 @dataclass_json
 @dataclass(init=False)
@@ -382,6 +386,7 @@ class utils:
     def dt_components(self):
         return self.sym.comp
 
+
 @dataclass_json
 @dataclass(init=False)
 class attribute:
@@ -405,6 +410,7 @@ class attribute:
         self.attributes = set([string_clean(i) for i in args[7:]])
         self.raw = args
 
+
 @dataclass_json
 @dataclass
 class namespace:
@@ -412,6 +418,7 @@ class namespace:
 
     def __post_init__(self):
         self.ref = symbol_ref(self.ref)
+
 
 @dataclass_json
 @dataclass
@@ -436,6 +443,7 @@ class header:
 
         return f"__{self.module}_MOD_{self.name}"
 
+
 @dataclass_json
 @dataclass(init=False)
 class formal_arglist:
@@ -453,6 +461,7 @@ class formal_arglist:
 
     def __iter__(self):
         return iter(self.symbol)
+
 
 @dataclass_json
 @dataclass(init=False)
@@ -483,6 +492,7 @@ class typebound_proc:
         self.raw = args
         self.kwargs = kwargs
 
+
 @dataclass_json
 @dataclass(init=False)
 class derived_ns:
@@ -500,12 +510,14 @@ class derived_ns:
         for i in args[1]:
             self.proc.append(typebound_proc(i))
 
+
 @dataclass_json
 @dataclass(init=False)
 class actual_arglist:
     def __init__(self, *args, **kwargs):
         self.raw = args
         self.kwargs = kwargs
+
 
 @dataclass_json
 @dataclass(init=False)
@@ -548,6 +560,7 @@ class typespec:
             self.deferred_cl = args[7] == "DEFERRED_CL"
         except (TypeError, IndexError):
             self.deferred_cl = False
+
 
 @dataclass_json
 @dataclass(init=False)
@@ -636,6 +649,7 @@ class expression:
     def value(self, value):
         self._resolved_value = value
 
+
 @dataclass_json
 @dataclass(init=False)
 class arrayspec:
@@ -684,6 +698,7 @@ class arrayspec:
     def size(self):
         return np.prod(self.pyshape)
 
+
 @dataclass_json
 @dataclass(init=False)
 class component(utils):
@@ -724,6 +739,7 @@ class component(utils):
         # inside the parent utils class
         self.sym = self
 
+
 @dataclass_json
 @dataclass(init=False)
 class components:
@@ -742,6 +758,7 @@ class components:
     def __iter__(self):
         return iter(self.comp)
 
+
 @dataclass_json
 @dataclass(init=False)
 class namelist:
@@ -754,6 +771,7 @@ class namelist:
             for i in args:
                 self.sym_ref.append(symbol_ref(i))
 
+
 @dataclass_json
 @dataclass(init=False)
 class simd_dec:
@@ -763,6 +781,7 @@ class simd_dec:
     def __init__(self, *args, **kwargs):
         self.raw = args
         self.kwargs = kwargs
+
 
 @dataclass_json
 @dataclass(init=False)
@@ -822,6 +841,7 @@ class data:
             if args[15] is not None:
                 self.simd = simd_dec(*args[14])
 
+
 @dataclass_json
 @dataclass(init=False)
 class symbol(utils):
@@ -846,10 +866,9 @@ class symbol(utils):
 class module(object):
     version = 15
 
-    def __init__(self, filename, load_only=False, 
-                 cache_folder=None, json=False):
+    def __init__(self, filename, load_only=False, cache_folder=None, json=False):
         self.filename = filename
-        self._json=json
+        self._json = json
 
         with gzip.open(self.filename) as f:
             x = f.read().decode()
@@ -939,6 +958,7 @@ class module(object):
             return x.to_json()
         else:
             return x
+
 
 if __name__ == "__main__":
     m = module(filename=sys.argv[1])
