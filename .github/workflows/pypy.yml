@@ -30,7 +30,7 @@ jobs:
           version: ${{ matrix.toolchain.version }}
     
       - name: Build
-        run: pypy3 -m build .
+        run: pypy3 -m pip install .
 
       - name: Test
         run: pypy3 -m pytest -v
