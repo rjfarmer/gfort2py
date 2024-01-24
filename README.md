@@ -386,6 +386,15 @@ pprint(module['a_variable'])
 
 Accessing the list of all available components can be had via ``module.keys()``.
 
+You can also do:
+````python
+module = gf.mod_info('file.mod',json=True)
+module['a_variable']
+````
+
+Then when you access each component the return value will be JSON-formatted. Note you can currently only access each component as JSON not the whole module file as JSON at the moment.
+
+
 ## Contributing
 
 Bug reports are of course welcome and PR's should target the main branch.

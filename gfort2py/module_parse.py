@@ -3,6 +3,7 @@
 # https://github.com/gcc-mirror/gcc/blob/master/gcc/fortran/module.cc
 from cPyparsing import OneOrMore, nestedExpr
 from dataclasses import dataclass
+from dataclasses_json import dataclass_json
 import numpy as np
 import gzip
 import sys
@@ -45,7 +46,7 @@ class NotAnArrayError(Exception):
 
 #################################
 
-
+@dataclass_json
 @dataclass
 class s_item:
     name: str
@@ -93,7 +94,7 @@ class Summary:
 
 #################################
 
-
+@dataclass_json
 @dataclass
 class symbol_ref:
     ref: int = -1
@@ -104,7 +105,7 @@ class symbol_ref:
 
 #################################
 
-
+@dataclass_json
 @dataclass(init=False)
 class c_item:
     name: str = ""
@@ -129,7 +130,7 @@ class c_item:
 
 #################################
 
-
+@dataclass_json
 @dataclass(init=False)
 class generics:
     name: str = ""
@@ -381,7 +382,7 @@ class utils:
     def dt_components(self):
         return self.sym.comp
 
-
+@dataclass_json
 @dataclass(init=False)
 class attribute:
     flavor: str = ""
@@ -404,7 +405,7 @@ class attribute:
         self.attributes = set([string_clean(i) for i in args[7:]])
         self.raw = args
 
-
+@dataclass_json
 @dataclass
 class namespace:
     ref: int = -1
@@ -412,7 +413,7 @@ class namespace:
     def __post_init__(self):
         self.ref = symbol_ref(self.ref)
 
-
+@dataclass_json
 @dataclass
 class header:
     id: int
@@ -435,7 +436,7 @@ class header:
 
         return f"__{self.module}_MOD_{self.name}"
 
-
+@dataclass_json
 @dataclass(init=False)
 class formal_arglist:
     symbol: t.List[symbol_ref] = None
@@ -453,7 +454,7 @@ class formal_arglist:
     def __iter__(self):
         return iter(self.symbol)
 
-
+@dataclass_json
 @dataclass(init=False)
 class typebound_proc:
     name: str = ""
@@ -482,7 +483,7 @@ class typebound_proc:
         self.raw = args
         self.kwargs = kwargs
 
-
+@dataclass_json
 @dataclass(init=False)
 class derived_ns:
     unknown1: str = None
@@ -499,14 +500,14 @@ class derived_ns:
         for i in args[1]:
             self.proc.append(typebound_proc(i))
 
-
+@dataclass_json
 @dataclass(init=False)
 class actual_arglist:
     def __init__(self, *args, **kwargs):
         self.raw = args
         self.kwargs = kwargs
 
-
+@dataclass_json
 @dataclass(init=False)
 class typespec:
     type: str = ""
@@ -548,7 +549,7 @@ class typespec:
         except (TypeError, IndexError):
             self.deferred_cl = False
 
-
+@dataclass_json
 @dataclass(init=False)
 class expression:
     exp_type: str = ""
@@ -635,7 +636,7 @@ class expression:
     def value(self, value):
         self._resolved_value = value
 
-
+@dataclass_json
 @dataclass(init=False)
 class arrayspec:
     rank: int = -1
@@ -683,7 +684,7 @@ class arrayspec:
     def size(self):
         return np.prod(self.pyshape)
 
-
+@dataclass_json
 @dataclass(init=False)
 class component(utils):
     id: int = -1
@@ -723,7 +724,7 @@ class component(utils):
         # inside the parent utils class
         self.sym = self
 
-
+@dataclass_json
 @dataclass(init=False)
 class components:
     comp: t.List[component] = None
@@ -741,7 +742,7 @@ class components:
     def __iter__(self):
         return iter(self.comp)
 
-
+@dataclass_json
 @dataclass(init=False)
 class namelist:
     sym_ref: t.List[symbol_ref] = None
@@ -753,7 +754,7 @@ class namelist:
             for i in args:
                 self.sym_ref.append(symbol_ref(i))
 
-
+@dataclass_json
 @dataclass(init=False)
 class simd_dec:
     args: None
@@ -763,7 +764,7 @@ class simd_dec:
         self.raw = args
         self.kwargs = kwargs
 
-
+@dataclass_json
 @dataclass(init=False)
 class data:
     attr: attribute
@@ -821,7 +822,7 @@ class data:
             if args[15] is not None:
                 self.simd = simd_dec(*args[14])
 
-
+@dataclass_json
 @dataclass(init=False)
 class symbol(utils):
     head: header = None
@@ -845,8 +846,10 @@ class symbol(utils):
 class module(object):
     version = 15
 
-    def __init__(self, filename, load_only=False, cache_folder=None):
+    def __init__(self, filename, load_only=False, 
+                 cache_folder=None, json=False):
         self.filename = filename
+        self._json=json
 
         with gzip.open(self.filename) as f:
             x = f.read().decode()
@@ -927,11 +930,15 @@ class module(object):
 
     def __getitem__(self, key):
         try:
-            return self.symbols[self.summary[key].id]
+            x = self.symbols[self.summary[key].id]
         except KeyError:
             # Not a global variable maybe a function argument?
-            return self.symbols[key]
+            x = self.symbols[key]
 
+        if self._json:
+            return x.to_json()
+        else:
+            return x
 
 if __name__ == "__main__":
     m = module(filename=sys.argv[1])
