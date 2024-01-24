@@ -225,6 +225,12 @@ Quad precision (REAL128) variables are not natively supported by Python thus we 
 python -m pip install pyquadp
 ````
 
+or from a git checkout:
+
+````bash
+python -m pip install .[qaud]
+````
+
 For more details see pyQuadp's documentation, but briefly you can create a 
 quad precision variable from an ``int``, ``float``, or ``string``. On return you will receive a ``qfloat`` type. This ``qfloat`` type acts like a Python Number, so you can do things like add, multiply, subtract etc this Number with other Numbers (including non-``qfloat`` types).
 
@@ -278,6 +284,7 @@ y = x.another_function(f.callback)
 ## Testing
 
 ````bash
+python -m pip install .[test]
 pytest -v
 ````
 
