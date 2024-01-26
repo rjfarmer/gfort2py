@@ -570,7 +570,9 @@ class expression:
     rank: int = -1
     _saved_value: t.Any = None
     _value: t.Any = None
-    _resolved_value: t.Any = None  # value may by a symbol_ref, so this is the value after resolving the reference
+    _resolved_value: t.Any = (
+        None  # value may by a symbol_ref, so this is the value after resolving the reference
+    )
     arglist: actual_arglist = None  # PDT's?
     charlen: int = -1
     unary_op: str = ""
