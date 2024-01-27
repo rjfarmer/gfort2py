@@ -8,6 +8,7 @@ import shutil
 import hashlib
 import platformdirs
 from pathlib import Path
+import logging
 
 from .utils import library_ext, fc_path
 
@@ -30,11 +31,11 @@ def compile_and_load(
         FC = fc_path()
 
     if _TEST_FLAG is True:
-        print(f"Found FC={FC}")
+        logging.debug(f"Found FC={FC}")
         r = subprocess.run([FC, "-v"], capture_output=True)
-        print(r.stdout)
-        print(r.stderr)
-        print(f"Environ = {os.environ.get('FC')}")
+        logging.debug(r.stdout)
+        logging.debug(r.stderr)
+        logging.debug(f"Environ = {os.environ.get('FC')}")
 
     output_dir = output_folder(output)
     output_file = output_filename(file, output_dir)
