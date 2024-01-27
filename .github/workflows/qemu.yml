@@ -82,7 +82,7 @@ jobs:
     - name: Build and test
       run: |
         docker run -v $(pwd):/gfort2py --platform ${PLATFORM_NAME} ${TOOLCHAIN_NAME} /bin/bash -c "
-        cd /gfort2py && python -m build && python -m pip install dist/gfort2py*.whl && python -m pytest -v
+        cd /gfort2py && python -m pip install .
         "
 
 
