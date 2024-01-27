@@ -17,8 +17,14 @@ jobs:
             install-dir: 'C:\tools\cygwin'
             packages: >-
               python39-devel python39-pip python-pip-wheel python-setuptools-wheel
-              gcc-fortran git dash python39-numpy automake make python39
+              liblapack-devel liblapack0 gcc-fortran git dash python39-numpy automake make
 
+        - name: pip cache
+          uses: actions/cache@v4
+          with:
+            path: 'C:\cygwin\home\runneradmin\.cache\pip'
+            key: ${{ runner.os }}-${{ hashFiles('pyproject.toml') }} 
+                
         - name: Set Windows PATH
           uses: egor-tensin/cleanup-path@v3
           with:

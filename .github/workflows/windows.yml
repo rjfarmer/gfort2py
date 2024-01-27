@@ -1,0 +1,45 @@
+name: windows CI
+on: [push, pull_request]
+
+jobs:
+  windows_ci:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]    
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']    
+        toolchain:
+          - {compiler: gcc, version: 8}
+          - {compiler: gcc, version: 9}
+          - {compiler: gcc, version: 10}
+          - {compiler: gcc, version: 11}
+          - {compiler: gcc, version: 12}
+          - {compiler: gcc, version: 13}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build wheel pytest
+
+      - uses: fortran-lang/setup-fortran@v1
+        id: setup-fortran
+        with:
+          compiler: ${{ matrix.toolchain.compiler }}
+          version: ${{ matrix.toolchain.version }}
+    
+      - name: Build
+        run: python -m pip install .
+
+  
+      - name: Test
+        run: python -m pytest -v
+
