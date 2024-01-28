@@ -1,9 +1,9 @@
 #!/bin/bash
 
-export NAME="armhf"
-export TOOLCHAIN_NAME="arm-linux-gnueabihf"
-export DOCKER_CONTAINER="arm32v7/ubuntu:22.04"
-export PLATFORM_NAME="linux/arm/v7"
+export NAME="s390x"
+export TOOLCHAIN_NAME="s390x-linux-gnu"
+export DOCKER_CONTAINER="s390x/ubuntu:22.04"
+export PLATFORM_NAME="linux/s390x"
 
 cd ~/src/gfort2py/tests
 make clean
