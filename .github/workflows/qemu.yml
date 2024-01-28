@@ -60,9 +60,9 @@ jobs:
       uses: actions/cache@v4
       id: container-cache
       with:
-        path: docker_${TOOLCHAIN_NAME}.tar
-        key: container-${TOOLCHAIN_NAME}
-
+        path: docker_${{ matrix.BUILD_PROP[1] }}.tar
+        key: container-${{ matrix.BUILD_PROP[1] }}
+        
     - name: Creates new container
       if: steps.container-cache.outputs.cache-hit != 'true'
       run: |
@@ -81,7 +81,7 @@ jobs:
 
     - name: Build and test
       run: |
-        docker run -v $(pwd):/gfort2py --platform ${PLATFORM_NAME} ${TOOLCHAIN_NAME} /bin/bash -c "
+        docker run -v $(pwd):/gfort2py --platform ${PLATFORM_NAME} --ulimit core=0 ${TOOLCHAIN_NAME} /bin/bash -c "
         cd /gfort2py && python -m build && python -m pip install --upgrade --user . && python -m pytest -v"
 
 

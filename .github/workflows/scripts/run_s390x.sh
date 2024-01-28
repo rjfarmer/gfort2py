@@ -14,4 +14,4 @@ docker load -i docker_${TOOLCHAIN_NAME}.tar
 
 docker start ${TOOLCHAIN_NAME}
 
-docker run -v $(pwd):/gfort2py --platform ${PLATFORM_NAME} ${TOOLCHAIN_NAME} /bin/bash -c "cd /gfort2py && python -m pip install . && python -m pytest -v"
+docker run -v $(pwd):/gfort2py  --ulimit core=0  --platform ${PLATFORM_NAME} ${TOOLCHAIN_NAME}  /bin/bash -c "cd /gfort2py && python -m pip install . && python -m pytest -v"
