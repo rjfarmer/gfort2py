@@ -133,3 +133,7 @@ def fc_path():
 
     # Windows may return several possible paths
     return fc
+
+
+def is_64bit():
+    return platform.architecture()[0] == "64bit"

@@ -13,6 +13,7 @@ tests/*.gz.*
 tests/*.gz
 *.smod
 tests/kinds
+*.core
 
 # Distribution / packaging
 .Python
