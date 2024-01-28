@@ -37,7 +37,7 @@ jobs:
               "riscv64-linux-gnu",
               "riscv64/ubuntu:22.04",
               "linux/riscv64",
-          ],
+          ]
 
     env:
       NAME: ${{ matrix.BUILD_PROP[0] }}
