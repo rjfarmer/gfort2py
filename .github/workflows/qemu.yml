@@ -61,7 +61,7 @@ jobs:
       id: container-cache
       with:
         path: docker_${TOOLCHAIN_NAME}.tar
-        key: container-${{ runner.os }}-${{ matrix.BUILD_PROP[1] }}-${{ matrix.BUILD_PROP[2] }}
+        key: container-${TOOLCHAIN_NAME}
 
     - name: Creates new container
       if: steps.container-cache.outputs.cache-hit != 'true'
