@@ -26,7 +26,7 @@ jobs:
             key: ${{ runner.os }}-${{ hashFiles('pyproject.toml') }} 
                 
         - name: Set Windows PATH
-          uses: egor-tensin/cleanup-path@v3
+          uses: egor-tensin/cleanup-path@v4
           with:
             dirs: 'C:\tools\cygwin\bin;C:\tools\cygwin\lib\lapack'
         - name: Verify that bash is Cygwin bash
