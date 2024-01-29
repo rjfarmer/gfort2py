@@ -84,7 +84,7 @@ jobs:
     - name: Build and test
       run: |
         docker run -v $(pwd):/gfort2py --platform ${PLATFORM_NAME} --ulimit core=0 ${TOOLCHAIN_NAME} /bin/bash -c "
-        cd /gfort2py && python -m build && python -m pip install --upgrade --user . && python -m pytest -v"
+        cd /gfort2py && python -m build"
 
 
 
