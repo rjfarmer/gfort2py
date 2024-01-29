@@ -21,7 +21,7 @@ jobs:
       run: |
         sudo apt-get install gfortran-12
         python -m pip install --upgrade pip
-        python3 -m pip install build wheel pytest
+        python -m pip install build wheel pytest
     - name: Build a binary wheel and a source tarball
       run: >-
         python3 -m
