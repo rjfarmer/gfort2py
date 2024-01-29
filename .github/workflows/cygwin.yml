@@ -44,7 +44,7 @@ jobs:
           shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
           run: |
             /usr/bin/python3.9 -m pip install --upgrade pip
-            /usr/bin/python3.9 -m pip install build wheel pytest
+            /usr/bin/python3.9 -m pip install build wheel pytest dataclasses_json cpyparsing platformdirs importlib_metadata
         - name: Install 
           shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
           run: |
