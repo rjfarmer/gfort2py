@@ -79,7 +79,7 @@ jobs:
 
     - name: Load container from cache
       if: steps.container-cache.outputs.cache-hit == 'true'
-      run: docker load -i /docker_${TOOLCHAIN_NAME}.tar
+      run: docker load -i ~/docker_${TOOLCHAIN_NAME}.tar
 
     - name: Build and test
       run: |
