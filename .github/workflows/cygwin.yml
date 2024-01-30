@@ -22,7 +22,7 @@ jobs:
         - name: pip cache
           uses: actions/cache@v4
           with:
-            path: 'C:\cygwin\runneradmin\.local\lib\python3.9'
+            path: 'C:\tools\cygwin\home\runneradmin\.local'
             key: ${{ runner.os }}-${{ hashFiles('pyproject.toml') }} 
                 
         - name: Set Windows PATH
