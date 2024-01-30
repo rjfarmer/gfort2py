@@ -47,13 +47,13 @@ jobs:
             /usr/bin/python3.9 -m pip install --upgrade --user build wheel 
             /usr/bin/python3.9 -m pip install --upgrade --user pytest dataclasses_json platformdirs importlib_metadata
             cygpath -w $(/usr/bin/python3.9 -c 'import dataclasses_json;print(dataclasses_json.__file__)')
-        #     /usr/bin/python3.9 -m pip install cpyparsing
-        # - name: Install 
-        #   shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
-        #   run: |
-        #     /usr/bin/python3.9 -m pip install .
-        # - name: Run tests
-        #   shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
-        #   run: |
-        #       /usr/bin/python3.9 -m pytest -v
+            /usr/bin/python3.9 -m pip install cpyparsing
+        - name: Install 
+          shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
+          run: |
+            /usr/bin/python3.9 -m pip install .
+        - name: Run tests
+          shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
+          run: |
+              /usr/bin/python3.9 -m pytest -v
 
