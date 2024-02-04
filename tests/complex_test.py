@@ -50,6 +50,7 @@ class TestComplexMethods:
         y = x.sub_cmplx_inout(v)
         self.assertEqual(y.args["c"], v * 5)
 
+    @pytest.mark.skipif(gf.utils.is_ppc64le(), reason="Skip on ppc64le systems")
     @pytest.mark.skipif(gf.utils.is_big_endian(), reason="Skip on big endian systems")
     def test_func_cmplx_value(self):
         v = complex(1.0, 1.0)

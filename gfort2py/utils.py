@@ -142,3 +142,7 @@ def is_64bit():
 
 def is_big_endian():
     return sys.byteorder == "big"
+
+
+def is_ppc64le():
+    return platform.machine() == "ppc64le"
