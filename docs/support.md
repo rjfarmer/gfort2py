@@ -7,17 +7,17 @@ Here we describe the support available for different platforms, where platform m
 
 These platforms are fully supported and all features should work. We test for all combinations of supported Python and gfortran versions.
 
-- x86/Linux/CPython
-- x86/MacOS/CPython
-- x86/Windows/CPython (via Choco)
+- x86_64/Linux/CPython
+- x86_64/MacOS/CPython
+- x86_64/Windows/CPython (via Choco)
 
 
 ## Level 2 Support
 
 These platforms are fully supported and all features should work. However we only test a single supported Python and gfortran version.
 
-- x86/Linux/PyPy
-- x86/Windows/CPython (via Cygwin)
+- x86_64/Linux/PyPy
+- x86_64/Windows/CPython (via Cygwin)
 - arm32v7/Linux/CPython
 - riscv64/Linux/CPython
 
@@ -28,12 +28,12 @@ These platforms are partially supported and not all features work. We only test 
 - s390x/Linux/CPython ('Skip on big endian systems')
 - ppc64le/Linux/CPython ('Skip on ppc64le systems')
 
-# Unsuporrted platforms
+# Unsupported platforms
 
-No platforms are currently unsupoorted.
+No platforms are currently unsupported.
 
 # Planned platforms
 
-These paaltforms may work but we have not yet gotten the test suite running on these platforms. But support is planned for the future.
+These platforms may work but we have not yet gotten the test suite running on these platforms. Support is planned for the future.
 
 - M*-chips/MacOS/CPython
