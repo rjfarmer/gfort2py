@@ -58,6 +58,7 @@ class TestProcPtrsMethods:
         y = x.p_func_func_run_ptr(1)
         self.assertEqual(y.result, 2)
 
+    @pytest.mark.skipif(gf.utils.is_big_endian(), reason="Skip on big endian systems")
     def test_proc_func_arg(self):
         y = x.func_func_arg_dp(5, x.func_real)
         self.assertEqual(y.result, 500)

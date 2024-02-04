@@ -6,6 +6,7 @@ from pprint import pprint
 import platform
 import os
 import subprocess
+import sys
 
 from .fUnary import run_unary
 
@@ -137,3 +138,7 @@ def fc_path():
 
 def is_64bit():
     return platform.architecture()[0] == "64bit"
+
+
+def is_big_endian():
+    return sys.byteorder == "big"
