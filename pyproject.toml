@@ -1,5 +1,6 @@
 [build-system]
-requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+requires = ["setuptools>=64", "wheel", "setuptools_scm[toml]>=7.1.0"]
+# Python 3.7 doesnt go above 7.1.0
 
 build-backend = "setuptools.build_meta"
 
@@ -40,6 +41,7 @@ dependencies = [
     "cpyparsing >=2.4.7, <=2.5",
     "platformdirs >=3, <=5",
     "dataclasses_json >=0.6, <=1.0",
+    "importlib_metadata" # Needed for python <3.8
 ]
 
 dynamic = ["version"]

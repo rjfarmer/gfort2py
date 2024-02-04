@@ -3,7 +3,7 @@ name: Test on Cygwin
 on: [push, pull_request]
 
 jobs:
-  CI:
+  cygwin:
     runs-on: windows-latest
     steps:
         - run: git config --global core.autocrlf input
@@ -22,7 +22,7 @@ jobs:
         - name: pip cache
           uses: actions/cache@v4
           with:
-            path: 'C:\cygwin\home\runneradmin\.cache\pip'
+            path: 'C:\tools\cygwin\home\runneradmin\.local'
             key: ${{ runner.os }}-${{ hashFiles('pyproject.toml') }} 
                 
         - name: Set Windows PATH
@@ -44,7 +44,10 @@ jobs:
           shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
           run: |
             /usr/bin/python3.9 -m pip install --upgrade pip
-            /usr/bin/python3.9 -m pip install build wheel pytest
+            /usr/bin/python3.9 -m pip install --upgrade --user build wheel 
+            /usr/bin/python3.9 -m pip install --upgrade --user pytest dataclasses_json platformdirs importlib_metadata
+            cygpath -w $(/usr/bin/python3.9 -c 'import dataclasses_json;print(dataclasses_json.__file__)')
+            /usr/bin/python3.9 -m pip install cpyparsing
         - name: Install 
           shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
           run: |

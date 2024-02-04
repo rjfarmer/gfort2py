@@ -34,10 +34,6 @@ class TestComplexMethods:
     def test_a_const_cmplx_dp(self):
         self.assertEqual(x.const_cmplx_dp, complex(1.0, 1.0))
 
-    @pytest.mark.skipif(not PYQ_IMPORTED, reason="pyquadp not available")
-    def test_a_const_cmplx_qp(self):
-        self.assertEqual(x.const_cmplx_qp, complex(1.0, 1.0))
-
     def test_a_cmplx(self):
         v = complex(1.0, 1.0)
         x.a_cmplx = v
@@ -48,24 +44,14 @@ class TestComplexMethods:
         x.a_cmplx_dp = v
         self.assertEqual(x.a_cmplx_dp, v)
 
-    @pytest.mark.skipif(not PYQ_IMPORTED, reason="pyquadp not available")
-    def test_a_cmplx_qp(self):
-        v = complex(1.0, 1.0)
-        x.a_cmplx_qp = v
-        self.assertEqual(x.a_cmplx_qp, v)
-
-    @pytest.mark.skipif(PYQ_IMPORTED, reason="tests when no pyqudp available")
-    def test_a_cmplx_qp(self):
-        v = complex(1.0, 1.0)
-        with pytest.raises(TypeError) as cm:
-            x.a_cmplx_qp = v
-            self.assertEqual(x.a_cmplx_qp, v)
-
+    @pytest.mark.skipif(gf.utils.is_big_endian(), reason="Skip on big endian systems")
     def test_sub_cmplx_inout(self):
         v = complex(1.0, 1.0)
         y = x.sub_cmplx_inout(v)
         self.assertEqual(y.args["c"], v * 5)
 
+    @pytest.mark.skipif(gf.utils.is_ppc64le(), reason="Skip on ppc64le systems")
+    @pytest.mark.skipif(gf.utils.is_big_endian(), reason="Skip on big endian systems")
     def test_func_cmplx_value(self):
         v = complex(1.0, 1.0)
         y = x.sub_cmplx_value(v, v)

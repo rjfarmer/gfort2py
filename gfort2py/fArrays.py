@@ -1,14 +1,20 @@
 # SPDX-License-Identifier: GPL-2.0+
 import ctypes
 import numpy as np
+import platform
 import weakref
 
+
 from .fVar_t import fVar_t
-from .utils import copy_array
+from .utils import copy_array, is_64bit
 
 
-_index_t = ctypes.c_int64
-_size_t = ctypes.c_int64
+if is_64bit():
+    _index_t = ctypes.c_int64
+    _size_t = ctypes.c_int64
+else:
+    _index_t = ctypes.c_int32
+    _size_t = ctypes.c_int32
 
 
 class _bounds14(ctypes.Structure):

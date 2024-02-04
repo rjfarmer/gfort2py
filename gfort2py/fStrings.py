@@ -5,7 +5,7 @@ import numpy as np
 
 from .fVar_t import fVar_t
 from .fArrays import fAssumedShape
-from .utils import copy_array
+from .utils import copy_array, is_64bit
 
 
 class fStr(fVar_t):
@@ -63,7 +63,10 @@ class fStr(fVar_t):
         return self._len
 
     def ctype_len(self, *args):
-        return ctypes.c_int64(self.len())
+        if is_64bit():
+            return ctypes.c_int64(self.len())
+        else:
+            return ctypes.c_int32(self.len())
 
     @property
     def __doc__(self):
@@ -168,14 +171,20 @@ class fAllocStr(fStr):
         return ctypes.sizeof(self.ctype)
 
     def to_proc(self, value, other_args):
+        if is_64bit():
+            lsize = ctypes.c_int64
+        else:
+            lsize = ctypes.c_int32
+
         if value is None:
             self._len = None
             self.cvalue = ctypes.pointer(ctypes.c_char_p(None))
-            self._len_ctype = ctypes.pointer(ctypes.c_int64(0))
+            self._len_ctype = ctypes.pointer(lsize(0))
+
         else:
             self._len = len(value)
             self.cvalue = self.from_param(value)
-            self._len_ctype = ctypes.pointer(ctypes.c_int64(self._len))
+            self._len_ctype = ctypes.pointer(lsize(self._len))
 
         return self.Args(None, self.cvalue, self._len_ctype)
 
@@ -296,7 +305,10 @@ class fStrExplicit(fStr):
         else:
             l = value.dtype.itemsize
 
-        self._len_ctype = ctypes.c_int64(l)
+        if is_64bit():
+            self._len_ctype = ctypes.c_int64(l)
+        else:
+            self._len_ctype = ctypes.c_int32(l)
 
         self.cvalue = self.from_param(value)
 
@@ -386,7 +398,10 @@ class fStrAssumedShape(fAssumedShape):
         else:
             l = value.dtype.itemsize
 
-        self._len_ctype = ctypes.c_int64(l)
+        if is_64bit():
+            self._len_ctype = ctypes.c_int64(l)
+        else:
+            self._len_ctype = ctypes.c_int32(l)
 
         self.cvalue = ctypes.pointer(self.from_param(value))
 

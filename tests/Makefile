@@ -39,9 +39,8 @@ endif
 
 all: $(LIBS) $(GZ)
 
-
 %.$(LIB_SUFFIX): %.f90
-	$(FC) $(OPTIONS) $(LIB_FLAGS) -o  $@ $<
+	$(FC) $(OPTIONS) $(LIB_FLAGS) -cpp -o  $@ $<
 
 %.gz: %.mod
 	@cp $< $@
@@ -49,7 +48,7 @@ all: $(LIBS) $(GZ)
 	@rm $@
 
 %.o %.mod %.smod: %.f90
-	$(FC) $(OPTIONS) $(LIB_FLAGS) -o  $@ $<
+	$(FC) $(OPTIONS) $(LIB_FLAGS) -cpp -o  $@ $<
 
 clean:
 	-rm -f *.o *.mod *.gz *.pyc *.f90.*.* *.$(LIB_SUFFIX) *.original *.extract *.smod *.fpy

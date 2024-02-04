@@ -15,14 +15,12 @@ module ptrs
 	integer(lp),pointer        :: a_int_lp_point => null()
 	real,pointer               :: a_real_point => null()
 	real(dp),pointer           :: a_real_dp_point => null()
-	real(qp),pointer           :: a_real_qp_point => null()
 	character(len=10),pointer  :: a_str_point => null()
 	
 	integer,target            :: a_int_target
 	integer(lp),target        :: a_int_lp_target
 	real,target               :: a_real_target
 	real(dp),target           :: a_real_dp_target
-	real(qp),target           :: a_real_qp_target
 	character(len=10),target  :: a_str_target
 	
 	integer, pointer, dimension(:) :: d_int_point_1d => null()

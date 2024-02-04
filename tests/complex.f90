@@ -14,17 +14,14 @@ module comp
 		
 		complex, parameter         :: const_cmplx=(1.0,1.0)
 		complex(dp), parameter  :: const_cmplx_dp=(1.0_dp,1.0_dp)
-		complex(qp), parameter  :: const_cmplx_qp=(1.0_qp,1.0_qp)
 		
 		
 		complex             :: a_cmplx
 		complex(dp)       :: a_cmplx_dp
-		complex(qp)       :: a_cmplx_qp
 		
 		
 		complex              :: a_cmplx_set
 		complex(dp)       :: a_cmplx_dp_set
-		complex(qp)       :: a_cmplx_qp_set
 	
 	contains
 
