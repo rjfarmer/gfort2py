@@ -20,6 +20,8 @@ or install via pypi
 python -m pip install --upgrade --user gfort2py
 ````
 
+For a full list of supportetd platforms [see the support documentation](docs/support.md).
+
 ## Why use this over other Fortran to Python translators?
 
 gfort2py has three main aims:
