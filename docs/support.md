@@ -23,7 +23,7 @@ These platforms are fully supported and all features should work. However we onl
 
 ## Level 3 Support
 
-These platforms are partially supported and not all features work. We only test a single supported Python and gfortran version. To find unsupported features search the test for the given error message.
+These platforms are partially supported and not all features work. We only test a single supported Python and gfortran version. To find unsupported features search the test suite for the given error message.
 
 - s390x/Linux/CPython ('Skip on big endian systems')
 - ppc64le/Linux/CPython ('Skip on ppc64le systems')
