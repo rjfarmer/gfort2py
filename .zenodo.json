@@ -11,9 +11,8 @@
         "Fortran",
         "Code Generators"
     ],
-    "license": {
-        "id": "GPL-2.0+"
-    },
+    "license":"GPL-2.0+",
+    
     "title" : "gfort2py"
 }
 
