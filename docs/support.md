@@ -9,7 +9,7 @@ These platforms are fully supported and all features should work. We test for al
 
 - x86_64/Linux/CPython
 - x86_64/MacOS/CPython
-- x86_64/Windows/CPython (via Choco)
+- x64/Windows/CPython (via Choco)
 
 
 ## Level 2 Support
@@ -17,7 +17,7 @@ These platforms are fully supported and all features should work. We test for al
 These platforms are fully supported and all features should work. However we only test a single supported Python and gfortran version.
 
 - x86_64/Linux/PyPy
-- x86_64/Windows/CPython (via Cygwin)
+- x64/Windows/CPython (via Cygwin)
 - arm32v7/Linux/CPython
 - riscv64/Linux/CPython
 
