@@ -97,6 +97,12 @@ class fProc:
     def args_check(self, *args, **kwargs):
         count = 0
         arguments = []
+
+        if len(args) + len(kwargs) < len(self.obj.args()):
+            raise TypeError("Not enough arguments passed")
+        elif len(args) + len(kwargs) > len(self.obj.args()):
+            raise TypeError("too many arguments passed")
+
         # Build list of inputs
         for fval in self.obj.args():
             if self._allobjs[fval.ref].is_procedure():
