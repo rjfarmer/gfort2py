@@ -68,13 +68,16 @@ class fFort:
         return self.keys()
 
     def __getattr__(self, key):
+        k = key
+        key = key.lower()
+
         if key in self.__dict__:
             return self.__dict__[key]
 
         if "_initialized" in self.__dict__:
             if self._initialized:
                 if key not in self.keys():
-                    raise AttributeError(f"{self._mod_file}  has no attribute {key}")
+                    raise AttributeError(f"{self._mod_file}  has no attribute {k}")
 
             if self._module[key].is_variable():
                 if key not in self._saved:
@@ -98,6 +101,9 @@ class fFort:
                 )
 
     def __setattr__(self, key, value):
+        k = key
+        key = key.lower()
+
         if key in self.__dict__:
             self.__dict__[key] = value
             return

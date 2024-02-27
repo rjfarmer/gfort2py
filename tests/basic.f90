@@ -49,6 +49,10 @@ module basic
 		real              :: a_real_set=7.0
 		real(dp)          :: a_real_dp_set=8.0_dp
 
+		! Test Mixed Case variables
+		integer :: a_int_MIXED
+		integer :: const_int_MIXED = 1
+
 		
 	contains
 
@@ -234,5 +238,11 @@ module basic
 			end if
 
 		end function func_test_bool
+
+
+		integer function func_TEST_CASE()
+			func_TEST_CASE = 1
+		end function func_TEST_CASE
+
 
 end module basic

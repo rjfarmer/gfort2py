@@ -255,3 +255,21 @@ class TestBasicMethods:
         x.a_real_dp = 5.0
 
         assert x.func_check_mod().result
+
+    def test_mixed_case(self):
+
+        assert x.const_int_MIXED == 1
+        assert x.const_int_mixed == 1
+        assert x.CONST_INT_MIXED == 1
+
+        x.a_int_MIXED = 5
+        assert x.a_int_MIXED == 5
+
+        assert x.a_int_mixed == 5
+
+        x.a_int_mixed = 6
+        assert x.A_INT_MIXED == 6
+
+        assert x.func_TEST_CASE().result
+        assert x.func_test_case().result
+        assert x.FUNC_test_case().result
