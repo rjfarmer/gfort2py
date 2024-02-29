@@ -309,29 +309,3 @@ class TestStringMethods:
 
         res = x.check_str_opt("abcd", 4)
         assert res.result == 4
-
-    @pytest.mark.skip("Currently under development")
-    def test_func_str_return_array(self):
-        fstr = """
-
-        recursive function return_char(x) result(str)
-        implicit none
-        integer, intent(in) :: x
-        character(len=10), dimension((2 ** x - 1) ) :: str
-
-        str = ''
-        str(2**x-1) = 'abcdefghil'
-        
-        end function return_char
-
-        """
-
-        size = 2
-        z = gf.compile(fstr)
-
-        res = z.return_char(size)
-
-        return_str = res.result
-
-        assert np.size(np.shape(return_str)) == ((2**size) - 1)
-        assert return_str[-1] == "abcdefghij"

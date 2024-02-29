@@ -23,7 +23,7 @@ import pytest
 SO = f"./tests/{name}.{{gf.lib_ext()}}"
 MOD = "./tests/{name}.mod"
 
-x=gf.fFort(SO,MOD)
+x = gf.fFort(SO,MOD)
 
 
 class Test{name}Methods:
