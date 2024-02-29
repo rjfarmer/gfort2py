@@ -52,6 +52,9 @@ class fProc:
         return self.obj.name
 
     def __call__(self, *args, **kwargs):
+        # Reset return value
+        self._return_value = None
+
         self._func_args = self._convert_args(*args, **kwargs)
 
         # print(self._func_args)
