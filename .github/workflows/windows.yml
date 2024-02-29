@@ -27,6 +27,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          choco install make
           python -m pip install --upgrade pip
           python -m pip install build wheel pytest
 
