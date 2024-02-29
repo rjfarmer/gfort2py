@@ -136,12 +136,18 @@ class fDT(fVar_t):
         return key in self.keys()
 
     def __getitem__(self, key):
+        if isinstance(key, slice):
+            raise AttributeError("Scalar derived type can't be sliced")
+
         if key in self._dt_args:
             return self._dt_args[key].from_ctype(getattr(self.cvalue, key))
         else:
             raise KeyError(f"{key} not present in {self._dt_obj.name}")
 
     def __setitem__(self, key, value):
+        if isinstance(key, slice):
+            raise AttributeError("Scalar derived type can't be sliced")
+
         if key in self._dt_args:
             self.from_param({key: value})
         else:
