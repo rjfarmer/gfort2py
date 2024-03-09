@@ -5,10 +5,11 @@ Here we describe the support available for different platforms, where platform m
 
 ## Level 1 Support
 
-These platforms are fully supported and all features should work. We test for all combinations of supported Python and gfortran versions.
+These platforms are fully supported and all features should work. We test for all combinations of supported Python (>=3.7) and gfortran (>=8) versions when available on the platform.
 
 - x86_64/Linux/CPython
 - x86_64/MacOS/CPython
+- arm/MacOS/CPython (M-Chips)
 - x64/Windows/CPython (via Choco)
 
 
@@ -36,4 +37,4 @@ No platforms are currently unsupported.
 
 These platforms may work but we have not yet gotten the test suite running on these platforms. Support is planned for the future.
 
-- M*-chips/MacOS/CPython
+No additional platforms are currently planned.
