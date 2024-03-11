@@ -10,7 +10,7 @@ from .module_parse import module
 from .fVar import fVar
 from .fProc import fProc
 from .fParameters import fParam
-from .fCompile import compile_and_load
+from .fCompile import compile_and_load, common_compile
 from .utils import library_ext
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
@@ -174,17 +174,17 @@ def compile(
     This code will then be converted into a Fortran module and
     compiled.
 
-    FC specifies the Fortran compilier to be used. This
+    FC specifies the Fortran compiler to be used. This
     must be some version of gfortran
 
     FFLAGS specifies Fortran compile options. This defaults
-    to -O2. We will additionaly insert flags for buidling
+    to -O2. We will additionally insert flags for building
     shared libraries on the current platform.
 
-    LDLIBS specifies any libraries to link agaisnt
+    LDLIBS specifies any libraries to link against
 
     LDFLAGS specifies extra argument to pass to the linker
-    (usally this is specifing the directory of where libraies are
+    (usually this is specifying the directory of where libraries are
     stored and passed with the -L option)
 
     output Path to store intermediate files. Defaults to None
@@ -207,3 +207,67 @@ def compile(
     )
 
     return fFort(library, mod_file, cache_folder=cache_folder)
+
+
+# Does not work needs https://gcc.gnu.org/bugzilla/show_bug.cgi?id=47030 applied
+
+# def common(
+#     string=None,
+#     gfort=None,
+#     *,
+#     FC=None,
+#     FFLAGS="-O2",
+#     LDLIBS="",
+#     LDFLAGS="",
+#     output=None,
+#     cache_folder=None,
+# ):
+#     """
+#     Compiles and loads a snippet of Fortran code for accessing common blocks.
+
+#     Code must be provided as a valid bit of Fortran that declares the variables
+#     and declares the common block, eg:
+
+#     fstr = "
+# 		integer ::  a_int,b_int,c_int
+# 		common  /common_name/ a_int,b_int,c_int
+#          "
+
+#     This code will then be converted into a Fortran module and
+#     compiled.
+
+#     gfort specifies an already loaded instance of fFort contains the common block
+
+#     FC specifies the Fortran compiler to be used. This
+#     must be some version of gfortran
+
+#     FFLAGS specifies Fortran compile options. This defaults
+#     to -O2. We will additionally insert flags for building
+#     shared libraries on the current platform.
+
+#     LDLIBS specifies any libraries to link against
+
+#     LDFLAGS specifies extra argument to pass to the linker
+#     (usually this is specifying the directory of where libraries are
+#     stored and passed with the -L option)
+
+#     output Path to store intermediate files. Defaults to None
+#     where files are stored in a temp folder. Otherwise
+#     stored in ``output`` folder.
+
+#     cache_folder same as for fFort, specifies location to save cached
+#     mod data to.
+
+#     """
+
+#     library, mod_file = common_compile(
+#         string=string,
+#         gfort=gfort,
+#         FC=FC,
+#         FFLAGS=FFLAGS,
+#         LDLIBS=LDLIBS,
+#         LDFLAGS=LDFLAGS,
+#         output=output,
+#     )
+
+#     return fFort(library, mod_file, cache_folder=cache_folder)

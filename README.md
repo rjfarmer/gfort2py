@@ -316,7 +316,7 @@ To run unit tests
 - [x] Allocatable arrays of strings
 - [ ] Classes
 - [ ] Abstract interfaces
-- [x] Common blocks (partial)
+- [ ] Common blocks
 - [ ] Equivalences 
 - [ ] Namelists
 - [ ] Quad precision variables
@@ -347,27 +347,10 @@ To run unit tests
 - [x] Unary operations (arguments that involve an expression to evaluate like dimension(n+1) or dimension((2*n)+1))
 - [x] Functions returning an explicit array as their result 
 
-### Accessing common block elements
+### Common block elements
 
-There's no direct way to access the common block elements, but if you declare the common block as a module variable you may access the elements by their name:
+There is no way currently to access components of a common block.
 
-
-````fortran
-module my_mod
-    implicit none
-    
-    integer :: a,b,c
-    common /comm1/ a,b,c
-    
-````
-
-Elements in the common block can thus be accessed as:
-
-````python
-x.a
-x.b
-x.c
-````
 
 ## Accessing module file data
 

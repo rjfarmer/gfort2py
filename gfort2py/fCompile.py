@@ -55,6 +55,41 @@ def compile_and_load(
     return os.path.join(output_dir, lib_name), module_filename(mname, output_dir)
 
 
+def common_compile(
+    string=None,
+    gfort=None,
+    FC=None,
+    FFLAGS="-O2",
+    LDLIBS="",
+    LDFLAGS="",
+    output=None,
+):
+    if "\n" in string:
+        string = string.split("\n")
+
+    name = "c" + hashlib.md5(b"".join([i.encode() for i in string])).hexdigest()
+
+    string = "\n".join([f"module {name}", *string, "contains", "end module"])
+
+    lib_path = Path(os.path.realpath(gfort._lib._name))
+
+    LDLIBS = (
+        LDLIBS + f"-l:{lib_path.name}"
+    )  # colon is needed to search for exact name not lib{name}
+    LDFLAGS = LDFLAGS + f"-L{lib_path.parent}"
+
+    FFLAGS += f" -Wl,-rpath='.',-rpath='{lib_path.parent}' -Wl,--no-undefined"
+
+    return compile_and_load(
+        string=string,
+        FC=FC,
+        FFLAGS=FFLAGS,
+        LDLIBS=LDLIBS,
+        LDFLAGS=LDFLAGS,
+        output=output,
+    )
+
+
 class CompileError(Exception):
     pass
 

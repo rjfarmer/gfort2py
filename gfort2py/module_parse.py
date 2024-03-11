@@ -335,7 +335,7 @@ class utils:
         return "PDT_TEMPLATE" in self.sym.attr.attributes
 
     def in_common_block(self):
-        return "IN_CMMMON" in self.sym.attr.attributes
+        return "IN_COMMON" in self.sym.attr.attributes
 
     @property
     def strlen(self):

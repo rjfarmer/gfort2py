@@ -18,6 +18,9 @@ class fVar:
         we are currently dealing with.
 
         """
+        if obj.in_common_block():
+            raise AttributeError("Can not access variables defined in common blocks")
+
         if obj.is_derived():
             if obj.is_array():
                 if obj.is_explicit():
