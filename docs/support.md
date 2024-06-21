@@ -9,7 +9,7 @@ These platforms are fully supported and all features should work. We test for al
 
 - x86_64/Linux/CPython
 - x86_64/MacOS/CPython
-- arm/MacOS/CPython (M-Chips)
+- arm/MacOS/CPython (M-Chips) (Only gfortan >=9)
 - x64/Windows/CPython (via Choco)
 
 

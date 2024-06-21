@@ -10,15 +10,12 @@ jobs:
         os: [macos-12,macos-14]    
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']    
         toolchain:
-          - {compiler: gcc, version: 8}
           - {compiler: gcc, version: 9}
           - {compiler: gcc, version: 10}
           - {compiler: gcc, version: 11}
           - {compiler: gcc, version: 12}
           - {compiler: gcc, version: 13}
         exclude:
-          - os: macos-14
-            toolchain: {compiler: gcc, version: 8}
           - os: macos-14
             toolchain: {compiler: gcc, version: 9}
           - os: macos-14
