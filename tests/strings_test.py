@@ -100,7 +100,7 @@ class TestStringMethods:
 
     def test_str_array_type_chceck(self):
         with pytest.raises(TypeError) as cm:
-            x.a_str_exp_1d = np.zeros(5, dtype=np.unicode_)
+            x.a_str_exp_1d = np.zeros(5, dtype=np.str_)
 
     def test_str_func_inout_str(self, capfd):
         z = np.array(
