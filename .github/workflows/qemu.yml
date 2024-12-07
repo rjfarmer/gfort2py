@@ -52,6 +52,7 @@ jobs:
       with:
         submodules: recursive
         fetch-depth: 0
+        persist-credentials: false
 
     - name: Initialize binfmt_misc for qemu-user-static
       run: |
