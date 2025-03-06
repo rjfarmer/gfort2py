@@ -78,6 +78,10 @@ class fStr(fVar_t):
     def sizeof(self):
         return ctypes.sizeof(self.ctype)
 
+    @property
+    def as_bytes(self):
+        return self._value
+
 
 class fAllocStr(fStr):
     def __init__(self, *args, **kwargs):
@@ -195,6 +199,7 @@ class fStrExplicit(fStr):
         self._len = None
         super().__init__(*args, **kwargs)
         self.unpack = False
+        self.is_array = True
 
     def ctype(self):
         return self._ctype_base

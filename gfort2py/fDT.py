@@ -3,6 +3,7 @@ import ctypes
 import numpy as np
 
 from .fVar_t import fVar_t
+from .fStrings import fStr
 
 from .utils import copy_array
 
@@ -103,7 +104,14 @@ class fDT(fVar_t):
 
                 v = self._dt_args[key].cvalue
 
-                if self._dt_args[key].is_array:
+                if isinstance(self._dt_args[key], fStr):
+                    # DTs want bytes
+                    # unless they are arrays
+                    if self._dt_args[key].is_array:
+                        setattr(self.cvalue, key, v)
+                    else:
+                        setattr(self.cvalue, key, self._dt_args[key].as_bytes)
+                elif self._dt_args[key].is_array:
                     copy_array(
                         ctypes.addressof(v),
                         ctypes.addressof(getattr(self.cvalue, key)),

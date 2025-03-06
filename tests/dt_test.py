@@ -97,6 +97,18 @@ class TestDTMethods:
         v = np.array([9, 10, 11, 12, 13], dtype="int32")
         assert np.array_equal(x.e_int_target_1d, v)
 
+    def test_func_set_f_struct2(self):
+        y = x.func_set_f_struct()
+        self.assertEqual(y.result, True)
+
+        x.f_struct["a_str"] = "a"
+
+        self.assertEqual(x.f_struct["a_str"], "a         ")
+
+        x.f_struct["a_str"] = "         a"
+
+        self.assertEqual(x.f_struct["a_str"], "         a")
+
     def test_func_set_f_struct_array_alloc(self):
         y = x.func_set_f_struct()
 
