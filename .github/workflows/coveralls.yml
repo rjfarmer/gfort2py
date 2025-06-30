@@ -1,5 +1,6 @@
 name: Coveralls
 on: [push, pull_request]
+permissions: {}
 
 jobs:
   coveralls:

@@ -1,5 +1,6 @@
 name:  PyPy
 on: [push, pull_request]
+permissions: {}
 
 jobs:
   pypy:

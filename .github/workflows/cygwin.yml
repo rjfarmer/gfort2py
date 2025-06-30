@@ -1,6 +1,7 @@
 
 name: Test on Cygwin 
 on: [push, pull_request]
+permissions: {}
 
 jobs:
   cygwin:

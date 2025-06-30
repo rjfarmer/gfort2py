@@ -1,5 +1,6 @@
 name: Linux CI
 on: [push, pull_request]
+permissions: {}
 
 jobs:
   linux_ci:
@@ -7,29 +8,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04]    
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']    
+        os: [ubuntu-22.04]    
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']    
         toolchain:
-          - {compiler: gcc, version: 8}
           - {compiler: gcc, version: 9}
           - {compiler: gcc, version: 10}
           - {compiler: gcc, version: 11}
           - {compiler: gcc, version: 12}
           - {compiler: gcc, version: 13}
-        exclude:
-          - os: ubuntu-20.04
-            toolchain: {compiler: gcc, version: 9}
-          - os: ubuntu-20.04
-            toolchain: {compiler: gcc, version: 10}
-          - os: ubuntu-20.04
-            toolchain: {compiler: gcc, version: 11}
-          - os: ubuntu-20.04
-            toolchain: {compiler: gcc, version: 12}
-          - os: ubuntu-20.04
-            toolchain: {compiler: gcc, version: 13}
-          - os: ubuntu-22.04
-            toolchain: {compiler: gcc, version: 8}
-
 
     steps:
       - uses: actions/checkout@v4

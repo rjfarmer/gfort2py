@@ -1,5 +1,6 @@
 name: Zenodo validator
 on: [push, pull_request]
+permissions: {}
 
 jobs:
   zenodo:

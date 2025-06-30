@@ -1,5 +1,6 @@
 name: Publish to pypi
 on: [push]
+permissions: {}
 
 jobs:
   pypi-publish:

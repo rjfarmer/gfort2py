@@ -1,5 +1,6 @@
 name: windows CI
 on: [push, pull_request]
+permissions: {}
 
 jobs:
   windows_ci:
@@ -8,9 +9,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest]    
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']    
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']    
         toolchain:
-          - {compiler: gcc, version: 8}
           - {compiler: gcc, version: 9}
           - {compiler: gcc, version: 10}
           - {compiler: gcc, version: 11}

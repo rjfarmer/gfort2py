@@ -2,6 +2,7 @@
 name: Linux Qemu tests
 
 on: [push, pull_request]
+permissions: {}
 
 defaults:
   run:
