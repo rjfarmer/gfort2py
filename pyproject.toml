@@ -22,17 +22,15 @@ authors = [
 ]
 description = "Python bindings for Fortran"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 license = {text = "GPLv2+"}
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Code Generators",
 ]
 
@@ -41,7 +39,8 @@ dependencies = [
     "cpyparsing >=2.4.7, <=2.5",
     "platformdirs >=3, <=5",
     "dataclasses_json >=0.6, <=1.0",
-    "importlib_metadata" # Needed for python <3.8
+    "importlib_metadata", # Needed for python <3.8
+    "gfModParser >=1.0"
 ]
 
 dynamic = ["version"]
