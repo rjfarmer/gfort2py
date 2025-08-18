@@ -6,6 +6,6 @@ repos:
       - id: black
         language_version: python3 # Should be a command that runs python3.6+
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.11.0
+    rev: v1.12.1
     hooks:
       - id: zizmor
