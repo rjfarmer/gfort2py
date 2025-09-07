@@ -1,7 +1,7 @@
 
 .PHONY = all clean
 
-FC = gfortran
+FC ?= gfortran
 
 OPTIONS=-ggdb -fdump-tree-original -D_FORTIFY_SOURCE=2 -ffree-line-length-none  -ffree-form -fstack-clash-protection -fstack-protector-all -fstack-protector
 
