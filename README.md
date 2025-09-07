@@ -8,7 +8,7 @@
 
 
 # gfort2py
-Library to allow calling Fortran code from Python. Requires gfortran>=8.0, Works with python >= 3.7
+Library to allow calling Fortran code from Python. Requires gfortran>=8.0, Works with python >= 3.8
 
 ## Build
 Installing locally:
