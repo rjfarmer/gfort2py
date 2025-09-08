@@ -11,7 +11,7 @@ from .fVar import fVar
 from .fProc import fProc
 from .fParameters import fParam
 from .fCompile import compile_and_load, common_compile
-from .utils import library_ext
+from .utils import library_ext, load_lib
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
@@ -33,30 +33,12 @@ class fFort:
         """
 
         self._libname = libname
-        self._load_lib()
+        self._lib = load_lib(self._libname)
         self._mod_file = mod_file
         self._module = module(self._mod_file, cache_folder=cache_folder)
 
         self._saved = {}
         self._initialized = True
-
-    def _load_lib(self):
-        """
-        Handle differences between windows and linux
-        """
-        kwargs = {}
-
-        if platform.system() == "Windows":
-            self._libname = os.path.realpath(self._libname)
-            if sys.version_info.major >= 3:
-                if sys.version_info.minor >= 8:
-                    os.add_dll_directory(os.path.dirname(self._libname))
-                    kwargs["winmode"] = 0
-
-        if not os.path.exists(self._libname):
-            raise FileNotFoundError(f"Can't find {self._libname}")
-
-        self._lib = ctypes.CDLL(self._libname, **kwargs)
 
     def keys(self):
         return self._module.keys()

@@ -7,6 +7,7 @@ import weakref
 
 from .fVar_t import fVar_t
 from .utils import copy_array, is_64bit
+from .allocate import allocate_var, allocate_char
 
 
 if is_64bit():
@@ -134,37 +135,36 @@ class fAssumedShape(fArray_t):
         if value is not None:
             self._value = self._array_check(value, False)
 
-            # copy_array(
-            #     self._value.ctypes.data,
-            #     self.cvalue.base_addr,
-            #     ctypes.sizeof(self._ctype_base()),
-            #     np.size(value)
-            # )
-            self.cvalue.base_addr = self._value.ctypes.data
-
-            self.cvalue.span = ctypes.sizeof(self._ctype_base())
-
-            strides = []
             shape = np.shape(value)
-            for i in range(self.ndim):
-                self.cvalue.dims[i].lbound = _index_t(1)
-                self.cvalue.dims[i].ubound = _index_t(shape[i])
-                strides.append(
-                    self.cvalue.dims[i].ubound - self.cvalue.dims[i].lbound + 1
+            default = 0
+            if self.obj.type() == "LOGICAL":
+                default = ".false."
+            elif self.obj.type() == "CHARACTER":
+                default = '""'
+
+            if self.obj.type() == "CHARACTER":
+                allocate_char(
+                    self.cvalue,
+                    kind=self.kind,
+                    length=self.len(),
+                    shape=shape,
+                    default=default,
+                )
+            else:
+                allocate_var(
+                    self.cvalue,
+                    kind=self.kind,
+                    type=self.obj.type(),
+                    shape=shape,
+                    default=default,
                 )
 
-            spans = []
-            for i in range(self.ndim):
-                spans.append(int(np.prod(strides[:i])))
-                self.cvalue.dims[i].stride = _index_t(spans[-1])
-
-            self.cvalue.offset = -np.sum(spans)
-
-        self.cvalue.dtype.elem_len = self.cvalue.span
-        self.cvalue.dtype.version = 0
-        self.cvalue.dtype.rank = self.ndim
-        self.cvalue.dtype.type = self.ftype()
-        self.cvalue.dtype.attribute = 0
+            copy_array(
+                self._value.ctypes.data,
+                self.cvalue.base_addr,
+                ctypes.sizeof(self._ctype_base()),
+                np.size(value),
+            )
 
         return self.cvalue
 

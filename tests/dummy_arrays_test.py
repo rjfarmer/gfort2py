@@ -103,7 +103,6 @@ class TestDummyArrayMethods:
         x.c_int_alloc_4d = v
         assert np.array_equal(x.c_int_alloc_4d, v)
 
-    @pytest.mark.skip
     def test_c_int_alloc_5d_set(self):
         y = x.sub_alloc_int_1d_cleanup()
         y = x.sub_alloc_int_1d_arrs()
@@ -112,7 +111,6 @@ class TestDummyArrayMethods:
         x.c_int_alloc_5d = v
         assert np.array_equal(x.c_int_alloc_5d, v)
 
-    @pytest.mark.skip
     def test_c_int_alloc_1d_large(self):
         # Can have issues exiting when using large (>255) arrays
         y = x.sub_alloc_int_1d_cleanup()
@@ -189,7 +187,6 @@ class TestDummyArrayMethods:
         x.c_real_dp_alloc_4d = v
         assert np.array_equal(x.c_real_dp_alloc_4d, v)
 
-    @pytest.mark.skip
     def test_c_real_dp_alloc_5d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
         y = x.sub_alloc_real_dp_1d_arrs()
@@ -257,7 +254,6 @@ class TestDummyArrayMethods:
         x.c_real_dp_alloc_3d = v
         assert np.array_equal(x.c_real_dp_alloc_3d, v)
 
-    @pytest.mark.skip
     def test_c_real_dp_alloc_4d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
         y = x.sub_alloc_real_dp_1d_arrs()
@@ -266,7 +262,6 @@ class TestDummyArrayMethods:
         x.c_real_dp_alloc_4d = v
         assert np.array_equal(x.c_real_dp_alloc_4d, v)
 
-    @pytest.mark.skip
     def test_c_real_dp_alloc_5d_set(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
         y = x.sub_alloc_real_dp_1d_arrs()
@@ -365,7 +360,6 @@ class TestDummyArrayMethods:
         out, err = capfd.readouterr()
         assert np.array_equal(y.args["zzz"], np.array([100.0] * 5))
 
-    @pytest.mark.skip
     def test_sub_check_alloc_int_2d(self):
         arr_test = np.zeros((3, 4), dtype=np.int32, order="F")
         y = x.sub_check_alloc_int_2d(None)
@@ -376,7 +370,6 @@ class TestDummyArrayMethods:
 
         assert np.array_equal(y.args["x"], z)
 
-    @pytest.mark.skip
     def test_sub_check_alloc_int_3d(self):
         arr_test = np.zeros((3, 4, 5), dtype=np.int32, order="F")
         y = x.sub_check_alloc_int_3d(None)

@@ -7,6 +7,7 @@ import string
 import shutil
 import hashlib
 import platformdirs
+import functools
 from pathlib import Path
 import logging
 
@@ -178,10 +179,14 @@ def mod_name(file):
     raise ValueError(f"Could not determine module name for {file}")
 
 
-def output_folder(output):
+def output_folder(output=None):
     if output is None:
-        # return platformdirs.user_cache_dir("gfort2py")
-        return tempfile.mkdtemp(prefix="gfort2py")
+        sys_temp = tempfile.gettempdir()
+        temp_folder = os.path.join(sys_temp, "gfort2py")
+
+        os.makedirs(temp_folder, exist_ok=True)
+
+        return tempfile.mkdtemp(dir=temp_folder)
     else:
         return os.path.realpath(output)
 
@@ -206,3 +211,110 @@ def module_filename(module_name, output_folder):
 
 def random_string(N):
     return "".join(random.choices(string.ascii_lowercase, k=N))
+
+
+@functools.lru_cache()
+def program_run_compile(code):
+    """
+    Given code snippet compile it as a program and run the code
+
+    Returns stdout or None
+    """
+
+    code = f"""
+           program main
+            {code}
+           end program main
+           """
+
+    with tempfile.NamedTemporaryFile(delete_on_close=False) as fexec:
+
+        # Compile code, reading from stdin
+        if not compile(code, fexec.name):
+            return None
+
+        # Force file sync
+        fexec.close()
+
+        # Run code
+        try:
+            res = subprocess.run(
+                [fexec.name],
+                capture_output=True,
+            )
+        except (subprocess.CalledProcessError, FileNotFoundError, PermissionError):
+            return None
+
+    return res.stdout.strip().decode()
+
+
+def compile(code, filename):
+    # Compile code, reading from stdin
+    try:
+        p = subprocess.run(
+            [
+                fc_path(),
+                "-o",
+                filename,
+                "-x",
+                "f95",
+                "-ffree-form",
+                "-fimplicit-none",
+                "-",
+            ],
+            input=code.encode(),
+            capture_output=True,
+        )
+    except subprocess.CalledProcessError:
+        return False
+
+    return True
+
+
+def compile_shared_lib(code, filename):
+    # Compile code, reading from stdin
+    try:
+        p = subprocess.run(
+            [
+                fc_path(),
+                "-o",
+                filename,
+                *shared_lib_flags(),
+                "-x",
+                "f95",
+                "-ffree-form",
+                "-fimplicit-none",
+                "-fno-underscoring",
+                "-",
+            ],
+            input=code.encode(),
+            # capture_output = True,
+        )
+    except subprocess.CalledProcessError:
+        return False
+
+    return True
+
+
+def subroutine_run_compile(code, args, runner):
+    """
+    Given code snippet compile it as a subroutine and return shared library to call it
+
+    """
+
+    subname = "a" + hashlib.md5(b"".join([i.encode() for i in code])).hexdigest()[:8]
+
+    code = f"""
+           subroutine {subname}({args})
+            {code}
+           end subroutine
+           """
+
+    name = "c" + hashlib.md5(b"".join([i.encode() for i in code])).hexdigest()[0:8]
+    filename = os.path.join(output_folder(), f"{name}.{library_ext()}")
+
+    if not os.path.exists(filename):
+        if not compile_shared_lib(code, filename):
+            return None
+
+    return runner(subname, filename)
