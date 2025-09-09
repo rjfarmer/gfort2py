@@ -58,5 +58,6 @@ jobs:
         - name: Run tests
           shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
           run: |
+              export FC=$(which gfortran)
               /usr/bin/python3.9 -m pytest -v
 
