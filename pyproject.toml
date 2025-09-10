@@ -36,11 +36,10 @@ classifiers = [
 ]
 
 dependencies = [
-    "numpy >=1.13.0, <2.3",
-    "cpyparsing >=2.4.7, <=2.5",
-    "platformdirs >=3, <=5",
-    "dataclasses_json >=0.6, <=1.0",
-    "importlib_metadata" # Needed for python <3.8
+    "numpy >=1.13.0",
+    "cpyparsing >=2.4.7",
+    "platformdirs >=3",
+    "dataclasses_json >=0.6",
 ]
 
 dynamic = ["version"]
