@@ -5,7 +5,7 @@ Here we describe the support available for different platforms, where platform m
 
 ## Level 1 Support
 
-These platforms are fully supported and all features should work. We test for all combinations of supported Python (>=3.7) and gfortran (>=8) versions when available on the platform.
+These platforms are fully supported and all features should work. We test for all combinations of supported Python (>=3.9) and gfortran (>=8) versions when available on the platform.
 
 - x86_64/Linux/CPython
 - x86_64/MacOS/CPython
@@ -17,7 +17,6 @@ These platforms are fully supported and all features should work. We test for al
 
 These platforms are fully supported and all features should work. However we only test a single supported Python and gfortran version.
 
-- x86_64/Linux/PyPy
 - x64/Windows/CPython (via Cygwin)
 - arm32v7/Linux/CPython
 - riscv64/Linux/CPython
@@ -31,7 +30,9 @@ These platforms are partially supported and not all features work. We only test 
 
 # Unsupported platforms
 
-No platforms are currently unsupported.
+These platforms are not supported, it may work and I am happy to accept patches to fix issues but I will not be developing on them.
+
+- x86_64/Linux/PyPy
 
 # Planned platforms
 
