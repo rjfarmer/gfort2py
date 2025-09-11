@@ -186,7 +186,7 @@ def output_folder(output=None):
 
         os.makedirs(temp_folder, exist_ok=True)
 
-        return tempfile.mkdtemp(dir=temp_folder)
+        return temp_folder
     else:
         return os.path.realpath(output)
 

@@ -6,6 +6,10 @@ from . import utils
 from . import fCompile
 
 
+class AllocationError(Exception):
+    pass
+
+
 def sizeof_allocatable(dims):
     shape = ",".join([":"] * dims)
 
@@ -35,7 +39,12 @@ def allocate_var(var, kind, type, shape, default=0):
     args = "x"
 
     def runner(name, library):
-        lib = utils.load_lib(library)
+        try:
+            lib = utils.load_lib(library)
+        except Exception:
+            raise AllocationError(
+                "Allocation failed, please open bug report for gfort2py."
+            )
         sub = getattr(lib, name)
         sub(ctypes.byref(var))
 
@@ -57,7 +66,12 @@ def allocate_char(var, shape, length, default='""', kind=None):
     args = "x"
 
     def runner(name, library):
-        lib = utils.load_lib(library)
+        try:
+            lib = utils.load_lib(library)
+        except Exception:
+            raise AllocationError(
+                "Allocation failed, please open bug report for gfort2py."
+            )
         sub = getattr(lib, name)
         sub(ctypes.byref(var))
 
