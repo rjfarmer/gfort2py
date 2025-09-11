@@ -86,7 +86,7 @@ jobs:
     - name: Build and test
       run: |
         docker run -v $(pwd):/gfort2py --platform ${PLATFORM_NAME} --ulimit core=0 ${TOOLCHAIN_NAME} /bin/bash -c "
-        cd /gfort2py && export FC=$(which gfortran) && python -m build && python -m pip install --break-system-packages dist/gfort2py-*.whl && python -m pytest -v"
+        cd /gfort2py && export FC=$(which gfortran) && python -m build && python -m pip install --user --break-system-packages --upgrade dist/gfort2py-*.whl && python -m pytest -v"
 
 
 
