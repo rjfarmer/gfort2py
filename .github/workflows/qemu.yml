@@ -10,7 +10,7 @@ defaults:
 
 jobs:
   qemu:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     continue-on-error: true
     strategy:
       matrix:
@@ -18,25 +18,25 @@ jobs:
           - [
               "armhf",
               "arm-linux-gnueabihf",
-              "arm32v7/ubuntu:22.04",
+              "arm32v7/ubuntu:24.04",
               "linux/arm/v7",
           ]
           - [
               "ppc64le",
               "powerpc64le-linux-gnu",
-              "ppc64le/ubuntu:22.04",
+              "ppc64le/ubuntu:24.04",
               "linux/ppc64le",
           ]
           - [
               "s390x",
               "s390x-linux-gnu",
-              "s390x/ubuntu:22.04",
+              "s390x/ubuntu:24.04",
               "linux/s390x",
           ]
           - [
               "riscv64",
               "riscv64-linux-gnu",
-              "riscv64/ubuntu:22.04",
+              "riscv64/ubuntu:24.04",
               "linux/riscv64",
           ]
 
