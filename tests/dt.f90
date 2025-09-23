@@ -155,7 +155,7 @@ module dt
             g_struct%f_struct%a_int==8) then
             res10=.True.
         else
-            write(*,*) g_struct%a_int, g_struct%f_struct%a_int
+            write(output_unit,*) g_struct%a_int, g_struct%f_struct%a_int
             res10=.false.
         end if
     
@@ -164,7 +164,7 @@ module dt
     
     subroutine sub_f_struct_simple()
     
-        write(*,*) f_struct_simple%x,f_struct_simple%y
+        write(output_unit,*) f_struct_simple%x,f_struct_simple%y
         f_struct_simple%x =22
         f_struct_simple%y =55
     
@@ -202,19 +202,19 @@ module dt
     
     logical function func_check_f_struct()
     
-        write(*,*)         f_struct%a_int,loc(f_struct%a_int)
-        write(*,*)         f_struct%a_int_lp  ,loc(f_struct%a_int_lp)      
-        write(*,*)         f_struct%a_real,loc(f_struct%a_real)
-        write(*,*)         f_struct%a_real_dp,loc(f_struct%a_real_dp)
-        write(*,*)         f_struct%b_int_exp_1d,loc(f_struct%b_int_exp_1d)
+        write(output_unit,*)         f_struct%a_int,loc(f_struct%a_int)
+        write(output_unit,*)         f_struct%a_int_lp  ,loc(f_struct%a_int_lp)      
+        write(output_unit,*)         f_struct%a_real,loc(f_struct%a_real)
+        write(output_unit,*)         f_struct%a_real_dp,loc(f_struct%a_real_dp)
+        write(output_unit,*)         f_struct%b_int_exp_1d,loc(f_struct%b_int_exp_1d)
         
         if (allocated(f_struct%c_int_alloc_1d))then
-            write(*,*)      f_struct%c_int_alloc_1d,loc(f_struct%c_int_alloc_1d)
+            write(output_unit,*)      f_struct%c_int_alloc_1d,loc(f_struct%c_int_alloc_1d)
         end if
         
         if(associated(f_struct%d_int_point_1d))then
-            write(*,*)      f_struct%d_int_point_1d,loc(f_struct%d_int_point_1d)
-            write(*,*)      e_int_target_1d,loc(e_int_target_1d)
+            write(output_unit,*)      f_struct%d_int_point_1d,loc(f_struct%d_int_point_1d)
+            write(output_unit,*)      e_int_target_1d,loc(e_int_target_1d)
         end if        
     
     end function func_check_f_struct
@@ -257,7 +257,7 @@ module dt
             g_struct_exp_2d(2,2)%a_int == 4 ) then
             check_g_struct_exp_2d = .true.
         else
-            write(*,*) g_struct_exp_2d(1,1)%a_int, g_struct_exp_2d(2,1)%a_int,g_struct_exp_2d(1,2)%a_int,g_struct_exp_2d(2,2)%a_int 
+            write(output_unit,*) g_struct_exp_2d(1,1)%a_int, g_struct_exp_2d(2,1)%a_int,g_struct_exp_2d(1,2)%a_int,g_struct_exp_2d(2,2)%a_int 
         end if
     
     
@@ -273,9 +273,9 @@ module dt
             r_recur%s_recur%s_recur%a_int == 9) then
             check_recur = .true.
         else
-            write(*,*) r_recur%a_int
-            if(associated(r_recur%s_recur)) write(*,*) r_recur%s_recur%a_int
-            if(associated(r_recur%s_recur%s_recur)) write(*,*) r_recur%s_recur%s_recur%a_int
+            write(output_unit,*) r_recur%a_int
+            if(associated(r_recur%s_recur)) write(output_unit,*) r_recur%s_recur%a_int
+            if(associated(r_recur%s_recur%s_recur)) write(output_unit,*) r_recur%s_recur%s_recur%a_int
         end if
 
 
@@ -294,7 +294,7 @@ module dt
         ! GH: #32
         type(point), intent(out) :: p
         p = point([10,20,30,40])
-        write(*,'(4(I2,1X))') p
+        write(output_unit,'(4(I2,1X))') p
     end subroutine derived_structure
 
 

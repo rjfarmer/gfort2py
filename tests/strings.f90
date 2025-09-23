@@ -98,8 +98,8 @@ module strings
 		check_str_alloc = .false.
 		
 		if(allocated(str_alloc)) then
-		    !write(*,*) allocated(str_alloc)
-			!write(*,*) str_alloc
+		    !write(output_unit,*) allocated(str_alloc)
+			!write(output_unit,*) str_alloc
 			if(ver==1) then
 				if(str_alloc(1:16)=='abcdefghijklmnop')  check_str_alloc = .true.
 			else if (ver==2) then 
@@ -126,11 +126,11 @@ module strings
 		end if
 
 		if(allocated(x)) then
-			write(*,*) "*",x,"*",len_trim(x)
+			write(output_unit,*) "*",x,"*",len_trim(x)
 			if(x == 'qwerty') then
-				write(*,*) "Set 1"
+				write(output_unit,*) "Set 1"
 				x = 'asdfghjkl'
-				! write(*,*) "Set 2"
+				! write(output_unit,*) "Set 2"
 			end if
 		end if
 	
@@ -162,7 +162,7 @@ module strings
 
 		integer :: i
 
-		write(*,*) x(1:5)
+		write(output_unit,*) x(1:5)
 
 
 		x(1) = 'zzzzzzzzzz'
@@ -181,7 +181,7 @@ module strings
 
 		integer :: i
 
-		write(*,*) x(1:5)
+		write(output_unit,*) x(1:5)
 
 
 		x(1) = 'zzzzzzzzzz'
@@ -199,7 +199,7 @@ module strings
 
 		integer :: i
 
-		write(*,*) x(1:5)
+		write(output_unit,*) x(1:5)
 
 
 		x(1) = 'zzzzzzzzzz'
@@ -217,7 +217,7 @@ module strings
 
 		integer :: i
 
-		write(*,*) x(1:5)
+		write(output_unit,*) x(1:5)
 
 
 		x(1) = 'zzzzzzzzzz'
@@ -273,7 +273,7 @@ module strings
 		func_str_array_dt_alloc = .false.
 
 		if(x%start_guard/=123456789 .or. x% end_guard/=123456789) then
-			write(*,*) x%start_guard, x%end_guard
+			write(output_unit,*) x%start_guard, x%end_guard
 			return
 		end if
 
@@ -295,7 +295,7 @@ module strings
 	subroutine check_a_str_exp_1d()
 
 
-		write(*,*) a_str_exp_1d(1:5)
+		write(output_unit,*) a_str_exp_1d(1:5)
 
 
 		a_str_exp_1d(1) = 'zzzzzzzzzz'
@@ -363,7 +363,7 @@ module strings
 
 
 		do i=1,ubound(x,dim=1)
-			write(*,*) trim(x(i))
+			write(output_unit,*) trim(x(i))
 		end do
 
 

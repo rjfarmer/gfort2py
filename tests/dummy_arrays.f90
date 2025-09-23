@@ -94,7 +94,7 @@ module dummy_arrays
 	end subroutine sub_alloc_int_1d_arrs
 
 	subroutine print_c_int_alloc_1d()
-		write(*,*) c_int_alloc_1d
+		write(output_unit,*) c_int_alloc_1d
 	end subroutine print_c_int_alloc_1d
 	
 	
@@ -111,9 +111,9 @@ module dummy_arrays
 	
 	subroutine sub_alter_int_1d()
 	
-		write(*,*) c_int_alloc_1d
+		write(output_unit,*) c_int_alloc_1d
 		c_int_alloc_1d = 5
-		write(*,*) c_int_alloc_1d
+		write(output_unit,*) c_int_alloc_1d
 	
 	end subroutine sub_alter_int_1d  
 	
@@ -177,14 +177,14 @@ module dummy_arrays
 		logical, dimension(:), intent(in) :: x
 		res2 =.false.
 		if(all(x.eqv..true.)) res2 = .true.
-		!         write(*,*) "1",x,"*",res2
+		!         write(output_unit,*) "1",x,"*",res2
 		end function func_alltrue_arr_1d
 	
 	logical function func_allfalse_arr_1d(x) result(res2)
 		logical, dimension(:), intent(in) :: x
 		res2 =.false.
 		if(all(x.eqv..false.)) res2 = .true.
-		!         write(*,*) "2",x,"*",res2
+		!         write(output_unit,*) "2",x,"*",res2
 	end function func_allfalse_arr_1d
 	
 	logical function func_allfalse_arr_1d_inout(x) result(res2)
@@ -259,21 +259,21 @@ module dummy_arrays
 	subroutine sub_arr_assumed_rank_int_1d(zzz)
 		integer,dimension(:),pointer, intent(inout) :: zzz
 		
-		write(*,*) zzz(1:5)
+		write(output_unit,*) zzz(1:5)
 		zzz(1:5) = 100
 	end subroutine sub_arr_assumed_rank_int_1d
 	
 	subroutine sub_arr_assumed_rank_real_1d(zzz)
 		real,dimension(:),pointer, intent(inout) :: zzz
 		
-		write(*,*) zzz(1:5)
+		write(output_unit,*) zzz(1:5)
 		zzz(1:5) = 100.0
 	end subroutine sub_arr_assumed_rank_real_1d
 	
 	subroutine sub_arr_assumed_rank_dp_1d(zzz)
 		real(dp),dimension(:),pointer, intent(inout) :: zzz
 		
-		write(*,*) zzz(1:5),lbound(zzz),ubound(zzz),size(zzz)
+		write(output_unit,*) zzz(1:5),lbound(zzz),ubound(zzz),size(zzz)
 		zzz(1:4) = 100.0_dp
 		zzz(5) = 100_dp
 	end subroutine sub_arr_assumed_rank_dp_1d

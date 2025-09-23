@@ -103,8 +103,8 @@ module face
 		integer, allocatable,dimension(:) :: xarr,yarr
 	
 	
-		write(*,*) func_elem_int(1)
-		write(*,*) func_elem_int((/1,2,3,4,5/))
+		write(output_unit,*) func_elem_int(1)
+		write(output_unit,*) func_elem_int((/1,2,3,4,5/))
 	
 		allocate(xarr(x),yarr(x))
 		

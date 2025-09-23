@@ -41,14 +41,14 @@ module proc_ptrs
     
     integer function func_func_run(x)
         integer :: x
-        !write(*,*) "x is",x,LOC(x)
+        !write(output_unit,*) "x is",x,LOC(x)
         func_func_run = 10*x
         
     end function func_func_run   
 
     real(dp) function func_func_run_dp(x)
         real(dp) :: x
-        !write(*,*) "x is",x,LOC(x)
+        !write(output_unit,*) "x is",x,LOC(x)
         func_func_run_dp = 10*x
         
     end function func_func_run_dp

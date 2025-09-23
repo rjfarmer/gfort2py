@@ -64,7 +64,7 @@ module ptrs
 	
 	subroutine sub_set_ptrs()
 	
-		if(associated(d_int_point_1d)) write(*,*) d_int_point_1d
+		if(associated(d_int_point_1d)) write(output_unit,*) d_int_point_1d
 		d_int_point_1d => e_int_target_1d
 		
 		d_int_point_1d = 9

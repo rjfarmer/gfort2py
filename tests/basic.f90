@@ -172,9 +172,9 @@ module basic
 			integer, optional, intent(in) :: x
 		
 			if(present(x)) then
-				write(*,*) 100
+				write(output_unit,*) 100
 			else
-				write(*,*) 200
+				write(output_unit,*) 200
 			end if  
 		end subroutine sub_int_opt
     
@@ -183,9 +183,9 @@ module basic
 			integer, optional, intent(in),value :: x
 		
 			if(present(x)) then
-				write(*,*) 100
+				write(output_unit,*) 100
 			else
-				write(*,*) 200
+				write(output_unit,*) 200
 			end if  
 		end subroutine sub_int_opt_val
       
@@ -217,7 +217,7 @@ module basic
 			logical :: e,f,g
 			character(len=*) :: h,i,j,k,l
 			
-			!write(*,*) a,b,c,d,e,f,g,h,i,j,k,l
+			!write(output_unit,*) a,b,c,d,e,f,g,h,i,j,k,l
 		end subroutine sub_many_args
 		
 		

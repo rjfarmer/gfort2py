@@ -30,7 +30,7 @@ module pdt
 
 	subroutine sub_write_pdt()
 	
-		write(*,*) pdt_dp_3%array
+		write(output_unit,*) pdt_dp_3%array
 	
 	end subroutine sub_write_pdt
 	
