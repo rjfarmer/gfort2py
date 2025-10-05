@@ -76,3 +76,30 @@ def allocate_char(var, shape, length, default='""', kind=None):
         sub(ctypes.byref(var))
 
     return fCompile.subroutine_run_compile(code, args, runner)
+
+
+def allocate_dt(var, shape, type, module, library):
+
+    dims = ",".join([":"] * len(shape))
+
+    shape = ",".join([str(i) for i in shape])
+
+    code = f"""
+        use {module}
+        type({name}), allocatable, dimension({dims}) , intent(out) :: x
+        if(allocated(x)) deallocate(x)
+        allocate(x({shape}))
+        """
+    args = "x"
+
+    def runner(name, library):
+        try:
+            lib = utils.load_lib(library)
+        except Exception:
+            raise AllocationError(
+                "Allocation failed, please open bug report for gfort2py."
+            )
+        sub = getattr(lib, name)
+        sub(ctypes.byref(var))
+
+    return fCompile.subroutine_run_compile(code, args, runner)

@@ -21,4 +21,4 @@ class fParam:
 
     @property
     def module(self):
-        return self._value.module
+        return self.obj.module
