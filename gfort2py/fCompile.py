@@ -11,7 +11,7 @@ import functools
 from pathlib import Path
 import logging
 
-from .utils import library_ext, fc_path
+from .utils import lib_ext, fc_path
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
@@ -202,7 +202,7 @@ def output_filename(file, folder):
 
 
 def library_name(file):
-    return f"lib{file}.{library_ext()}"
+    return f"lib{file}.{lib_ext()}"
 
 
 def module_filename(module_name, output_folder):
@@ -311,7 +311,7 @@ def subroutine_run_compile(code, args, runner):
            """
 
     name = "c" + hashlib.md5(b"".join([i.encode() for i in code])).hexdigest()[0:8]
-    filename = os.path.join(output_folder(), f"{name}.{library_ext()}")
+    filename = os.path.join(output_folder(), f"{name}.{lib_ext()}")
 
     if not os.path.exists(filename):
         if not compile_shared_lib(code, filename):

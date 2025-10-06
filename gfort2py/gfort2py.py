@@ -4,191 +4,209 @@ import numpy as np
 import os
 import sys
 import platform
+import typing
 
-from .module_parse import module
+import gfModParser as gf
 
-from .fVar import fVar
-from .fProc import fProc
+# from .fVar import fVar
+# from .fProc import fProc
 from .fParameters import fParam
-from .fCompile import compile_and_load, common_compile
-from .utils import library_ext, load_lib
+from .types import factory
 
-_TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
+# from .fCompile import compile_and_load, common_compile
+from .utils import load_lib
+
+__all__ = ["fFort"]
 
 
 class fFort:
     _initialized = False
 
-    def __init__(self, libname, mod_file, cache_folder=None):
+    def __init__(self, libname: str, mod_file: str):
         """
         Loads a gfortran module given by mod_file and saved in a
         shared library libname.
-
-        cache_folder: If not None, sets the folder location to saved
-        the cached module data to. If None uses appdirs ``user_cache_dir``
-        location.
-
-        Set to False to disable caching.
-
         """
 
         self._libname = libname
         self._lib = load_lib(self._libname)
         self._mod_file = mod_file
-        self._module = module(self._mod_file, cache_folder=cache_folder)
+        self._module = gf.Module(self._mod_file)
 
-        self._saved = {}
+        self._saved_parameters = gf.Parameters(self._module)
+        self._saved_variables = gf.Variables(self._module)
+        self._saved_procedures = gf.Procedures(self._module)
+
         self._initialized = True
 
     def keys(self):
         return self._module.keys()
 
-    def __contains__(self, key):
+    def __contains__(self, key) -> bool:
         return key in self._module.keys()
 
     def __dir__(self):
         return self.keys()
 
-    def __getattr__(self, key):
-        k = key
+    def __getattr__(self, key: str):
         key = key.lower()
-
-        if key in self.__dict__:
-            return self.__dict__[key]
 
         if "_initialized" in self.__dict__:
             if self._initialized:
-                if key not in self.keys():
-                    raise AttributeError(f"{self._mod_file}  has no attribute {k}")
+                if key in self._saved_parameters:
+                    return fParam(self._module[key]).value
 
-            if self._module[key].is_variable():
-                if key not in self._saved:
-                    self._saved[key] = fVar(self._module[key], allobjs=self._module)
-                self._saved[key].in_dll(self._lib)
-                return self._saved[key].value
-            elif self._module[key].is_proc_pointer():
-                # Must come before fProc
-                if key not in self._saved:
-                    self._saved[key] = fVar(self._module[key], allobjs=self._module)
-                return self._saved[key]
-            elif self._module[key].is_procedure():
-                if key not in self._saved:
-                    self._saved[key] = fProc(self._lib, self._module[key], self._module)
-                return self._saved[key]
-            elif self._module[key].is_parameter():
-                return fParam(self._module[key]).value
-            else:
-                raise NotImplementedError(
-                    f"Object type {self._module[key].flavor()} not implemented yet"
-                )
-
-    def __setattr__(self, key, value):
-        k = key
-        key = key.lower()
-
-        if key in self.__dict__:
-            self.__dict__[key] = value
-            return
-
-        if "_initialized" in self.__dict__:
-            if self._initialized:
-                if self._module[key].is_variable():
-                    if key not in self._saved:
-                        self._saved[key] = fVar(self._module[key], allobjs=self._module)
-                    self._saved[key].in_dll(self._lib)
-                    self._saved[key].value = value
-                    return
-                elif self._module[key].is_parameter():
-                    raise AttributeError("Can not alter a parameter")
-                elif self._module[key].is_proc_pointer():
-                    if key not in self._saved:
-                        self._saved[key] = fVar(self._module[key], allobjs=self._module)
-                    self._saved[key].value = value
-                    return
-                else:
-                    raise NotImplementedError(
-                        f"Object type {self._module[key].flavor()} not implemented yet"
+                if key in self._saved_variables:
+                    return (
+                        factory(self._module[key])
+                        .in_dll(self._lib, self._module[key].mangled_name)
+                        .value
                     )
+
+                if key in self._saved_procedures:
+                    pass
+
+    def __setattr__(self, key: str, value: typing.Any):
+        key = key.lower()
+
+        if "_initialized" in self.__dict__:
+            if self._initialized:
+                if key in self._saved_parameters:
+                    raise ValueError("Can not set a parameter")
+
+                if key in self._saved_variables:
+                    factory(self._module[key]).in_dll(
+                        self._lib, self._module[key].mangled_name
+                    ).value = value
+
+                    return
 
         self.__dict__[key] = value
 
+    # def __getattr__(self, key):
+    #     k = key
+    #     key = key.lower()
+
+    #     if key in self.__dict__:
+    #         return self.__dict__[key]
+
+    #     if "_initialized" in self.__dict__:
+    #         if self._initialized:
+    #             if key not in self.keys():
+    #                 raise AttributeError(f"{self._mod_file}  has no attribute {k}")
+
+    #         if self._module[key].is_variable():
+    #             if key not in self._saved:
+    #                 self._saved[key] = fVar(self._module[key], allobjs=self._module)
+    #             self._saved[key].in_dll(self._lib)
+    #             return self._saved[key].value
+    #         elif self._module[key].is_proc_pointer():
+    #             # Must come before fProc
+    #             if key not in self._saved:
+    #                 self._saved[key] = fVar(self._module[key], allobjs=self._module)
+    #             return self._saved[key]
+    #         elif self._module[key].is_procedure():
+    #             if key not in self._saved:
+    #                 self._saved[key] = fProc(self._lib, self._module[key], self._module)
+    #             return self._saved[key]
+    #         elif self._module[key].is_parameter():
+    #             return fParam(self._module[key]).value
+    #         else:
+    #             raise NotImplementedError(
+    #                 f"Object type {self._module[key].flavor()} not implemented yet"
+    #             )
+
+    # def __setattr__(self, key, value):
+    #     k = key
+    #     key = key.lower()
+
+    #     if key in self.__dict__:
+    #         self.__dict__[key] = value
+    #         return
+
+    #     if "_initialized" in self.__dict__:
+    #         if self._initialized:
+    #             if self._module[key].is_variable():
+    #                 if key not in self._saved:
+    #                     self._saved[key] = fVar(self._module[key], allobjs=self._module)
+    #                 self._saved[key].in_dll(self._lib)
+    #                 self._saved[key].value = value
+    #                 return
+    #             elif self._module[key].is_parameter():
+    #                 raise AttributeError("Can not alter a parameter")
+    #             elif self._module[key].is_proc_pointer():
+    #                 if key not in self._saved:
+    #                     self._saved[key] = fVar(self._module[key], allobjs=self._module)
+    #                 self._saved[key].value = value
+    #                 return
+    #             else:
+    #                 raise NotImplementedError(
+    #                     f"Object type {self._module[key].flavor()} not implemented yet"
+    #                 )
+
+    #     self.__dict__[key] = value
+
     @property
     def __doc__(self):
-        return f"MODULE={self._module.filename}"
+        return f"MODULE={self._module.filename} LIBRARY={self._libname}"
 
     def __str__(self):
         return f"{self._module.filename}"
 
 
-def mod_info(mod_file, *, load_only=False, json=False):
-    """
-    Returns a parsed data structure that describes the module
+# def compile(
+#     string=None,
+#     *,
+#     file=None,
+#     FC=None,
+#     FFLAGS="-O2",
+#     LDLIBS="",
+#     LDFLAGS="",
+#     output=None,
+#     cache_folder=None,
+# ):
+#     """
+#     Compiles and loads a snippet of Fortran code.
 
-    pprint is recommened to help understand the nested structure.
-    """
-    return module(mod_file, load_only=load_only, json=json)
+#     Either provide the code as a string in the ``string``
+#     argument of a filename in the ``file`` argument.
 
+#     This code will then be converted into a Fortran module and
+#     compiled.
 
-def lib_ext():
-    """
-    Determine shared library extension for the current OS
-    """
-    return library_ext()
+#     FC specifies the Fortran compiler to be used. This
+#     must be some version of gfortran
 
+#     FFLAGS specifies Fortran compile options. This defaults
+#     to -O2. We will additionally insert flags for building
+#     shared libraries on the current platform.
 
-def compile(
-    string=None,
-    *,
-    file=None,
-    FC=None,
-    FFLAGS="-O2",
-    LDLIBS="",
-    LDFLAGS="",
-    output=None,
-    cache_folder=None,
-):
-    """
-    Compiles and loads a snippet of Fortran code.
+#     LDLIBS specifies any libraries to link against
 
-    Either provide the code as a string in the ``string``
-    argument of a filename in the ``file`` argument.
+#     LDFLAGS specifies extra argument to pass to the linker
+#     (usually this is specifying the directory of where libraries are
+#     stored and passed with the -L option)
 
-    This code will then be converted into a Fortran module and
-    compiled.
+#     output Path to store intermediate files. Defaults to None
+#     where files are stored in a temp folder. Otherwise
+#     stored in ``output`` folder.
 
-    FC specifies the Fortran compiler to be used. This
-    must be some version of gfortran
+#     cahce_folder same as for fFort, specifies location to save cached
+#     mod data to.
 
-    FFLAGS specifies Fortran compile options. This defaults
-    to -O2. We will additionally insert flags for building
-    shared libraries on the current platform.
+#     """
 
-    LDLIBS specifies any libraries to link against
+#     library, mod_file = compile_and_load(
+#         string=string,
+#         file=file,
+#         FC=FC,
+#         FFLAGS=FFLAGS,
+#         LDLIBS=LDLIBS,
+#         LDFLAGS=LDFLAGS,
+#         output=output,
+#     )
 
-    LDFLAGS specifies extra argument to pass to the linker
-    (usually this is specifying the directory of where libraries are
-    stored and passed with the -L option)
-
-    output Path to store intermediate files. Defaults to None
-    where files are stored in a temp folder. Otherwise
-    stored in ``output`` folder.
-
-    cahce_folder same as for fFort, specifies location to save cached
-    mod data to.
-
-    """
-
-    library, mod_file = compile_and_load(
-        string=string,
-        file=file,
-        FC=FC,
-        FFLAGS=FFLAGS,
-        LDLIBS=LDLIBS,
-        LDFLAGS=LDFLAGS,
-        output=output,
-    )
-
-    return fFort(library, mod_file, cache_folder=cache_folder)
+#     return fFort(library, mod_file, cache_folder=cache_folder)
 
 
 # Does not work needs https://gcc.gnu.org/bugzilla/show_bug.cgi?id=47030 applied

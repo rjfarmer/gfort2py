@@ -41,7 +41,7 @@ for p in platforms:
           apt-get update &&
           apt-get install -y cmake git python3 python-is-python3 python3-dev python3-venv python3-pip python3-numpy automake libc6-dev linux-libc-dev gcc gfortran &&
           git config --global --add safe.directory /gfort2py &&
-          python -m pip install build wheel pytest dataclasses_json cpyparsing platformdirs "
+          python -m pip install build wheel pytest dataclasses_json platformdirs "
           """,
         shell=True,
     )

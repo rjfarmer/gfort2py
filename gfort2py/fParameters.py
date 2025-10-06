@@ -7,7 +7,7 @@ class fParam:
 
     @property
     def value(self):
-        return self.obj.value()
+        return self.obj.properties.parameter.value
 
     @value.setter
     def value(self, value):

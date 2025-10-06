@@ -48,19 +48,19 @@ class f_complex(f_type, metaclass=ABCMeta):
 class f_complex_4(f_complex):
     base_ctype = ctypes.c_float
     kind = 4
-    dtype = np.dtype("c4")
+    dtype = np.dtype(np.csingle)
 
 
 class f_complex_8(f_complex):
     base_ctype = ctypes.c_double
     kind = 8
-    dtype = np.dtype("c8")
+    dtype = np.dtype(np.cdouble)
 
 
 class f_complex_16(f_complex):
     ctype = pq.c_qcmplx
     kind = 16
-    dtype = np.dtype("B32")
+    dtype = np.dtype("S32")
 
     @property
     def value(self):

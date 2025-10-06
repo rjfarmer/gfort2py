@@ -3,7 +3,7 @@
 import sys
 from typing import Type
 
-import gfModparser as gf
+import gfModParser as gf
 
 from .arrays import *
 from .character import *
@@ -29,7 +29,7 @@ def factory(obj: Type[gf.Symbol]):
         f_type: A wrapper object for converting a Python type into/out of a ctype compatible with Fortran.
     """
 
-    ftype = obj.type.lowercase()
+    ftype = obj.type.lower()
     kind = obj.kind
     is_array = obj.is_array
     is_dt = obj.is_dt
@@ -54,6 +54,7 @@ def factory(obj: Type[gf.Symbol]):
 
     else:
         name = f"f_{ftype}_{kind}"
-        if name in dir():
-            return sys.modules[__name__][name]
-        raise TypeError("Can't match object")
+        try:
+            return getattr(sys.modules[__name__], name)
+        except Exception:
+            raise TypeError("Can't match object")

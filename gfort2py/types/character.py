@@ -72,7 +72,7 @@ class f_char(f_type, metaclass=ABCMeta):
 class f_character_1(f_char):
     kind = 1
     _base_ctype = ctypes.c_char_p
-    dtype = np.dtype("B1")
+    dtype = np.dtype(np.bytes_)
     encoding = "ascii"
 
 

@@ -1,6 +1,5 @@
 [build-system]
 requires = ["setuptools>=64", "wheel", "setuptools_scm[toml]>=7.1.0"]
-# Python 3.7 doesnt go above 7.1.0
 
 build-backend = "setuptools.build_meta"
 
@@ -22,12 +21,11 @@ authors = [
 ]
 description = "Python bindings for Fortran"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = "GPL-2.0-or-later"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -37,9 +35,9 @@ classifiers = [
 
 dependencies = [
     "numpy >=1.13.0",
-    "cpyparsing >=2.4.7",
     "platformdirs >=3",
     "dataclasses_json >=0.6",
+    "gfModParser >= 1.0.1"
 ]
 
 dynamic = ["version"]

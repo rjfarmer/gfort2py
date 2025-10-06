@@ -33,7 +33,7 @@ class f_real_8(f_real):
 class f_real_16(f_real):
     kind = 16
     ctype = pq.c_qfloat
-    dtype = np.dtype("B16")
+    dtype = np.dtype("S16")
 
     @property
     def value(self):
