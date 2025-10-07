@@ -9,7 +9,7 @@ import typing
 import gfModParser as gf
 
 # from .fVar import fVar
-# from .fProc import fProc
+from .fProc import fProc
 from .fParameters import fParam
 from .types import factory
 
@@ -64,7 +64,9 @@ class fFort:
                     )
 
                 if key in self._saved_procedures:
-                    pass
+                    return fProc(self._lib, self._module[key], self._module)
+
+        raise AttributeError(f"Can't find symbol {key}")
 
     def __setattr__(self, key: str, value: typing.Any):
         key = key.lower()

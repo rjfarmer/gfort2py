@@ -33,7 +33,3 @@ class f_integer_8(f_integer):
     kind = 8
     ctype = ctypes.c_int64
     dtype = np.dtype(">i8")
-
-
-class f_optional(f_type):
-    ctype = ctypes.c_byte

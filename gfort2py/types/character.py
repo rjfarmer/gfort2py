@@ -4,17 +4,17 @@ import ctypes
 import numpy as np
 from abc import ABCMeta, abstractmethod
 
-from ..utils import is_64bit
 from .base import f_type
-from .integer import f_integer
 
 
 class f_char(f_type, metaclass=ABCMeta):
     default = ""
+    ftype = "character"
 
     def __init__(self, value=None, strlen=None):
         self._value = value
 
+        self.strlen = None
         if strlen is None and value is not None:
             self.strlen = len(self.value)
 
@@ -42,6 +42,15 @@ class f_char(f_type, metaclass=ABCMeta):
 
     @property
     def value(self):
+        print(self._ctype)
+        try:
+            x = self._ctype[0]
+        except Exception:
+            return None
+
+        if x is None:
+            return None
+
         try:
             self._value = self._ctype.value.decode(self.encoding)
         except AttributeError:
@@ -57,7 +66,7 @@ class f_char(f_type, metaclass=ABCMeta):
             return None
 
         if hasattr(value, "encode"):
-            value = value.encode(self.encoding)
+            value = value.encode()
 
         if self.strlen is not None:
             if len(value) > self.strlen:
@@ -81,12 +90,3 @@ class f_character_4(f_char):
     _base_ctype = ctypes.c_wchar_p
     dtype = np.dtype(np.str_)
     encoding = "utf_32"
-
-
-class f_strstrlen(f_integer):
-    @property
-    def ctype(self):
-        if is_64bit():
-            return ctypes.c_int64
-        else:
-            return ctypes.c_int32

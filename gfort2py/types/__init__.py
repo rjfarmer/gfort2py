@@ -14,7 +14,7 @@ from .logical import *
 from .real import *
 from .unsigned import *
 
-__all__ = ["factory"]
+__all__ = ["factory", "f_strlen", "f_optional"]
 
 
 def factory(obj: Type[gf.Symbol]):
@@ -58,3 +58,21 @@ def factory(obj: Type[gf.Symbol]):
             return getattr(sys.modules[__name__], name)
         except Exception:
             raise TypeError("Can't match object")
+
+
+class f_strlen(f_integer):
+    @property
+    def ctype(self):
+        if is_64bit():
+            return ctypes.c_int64
+        else:
+            return ctypes.c_int32
+
+
+class f_optional(f_type):
+    ctype = ctypes.c_byte
+
+
+def factory_init(ctype, obj, module):
+    """Initializes ctype, taking into account extra args needed"""
+    pass
