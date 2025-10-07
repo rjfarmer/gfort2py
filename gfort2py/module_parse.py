@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 # https://github.com/gcc-mirror/gcc/blob/master/gcc/fortran/module.cc
-from cPyparsing import OneOrMore, nestedExpr
 from dataclasses import dataclass
 from dataclasses_json import dataclass_json
 import numpy as np
@@ -23,6 +22,8 @@ try:
     PYQ_IMPORTED = True
 except ImportError:
     PYQ_IMPORTED = False
+
+from .utils import bracket_split
 
 
 def string_clean(string):
@@ -893,7 +894,7 @@ class module(object):
                     self.parsed_data = pickle.load(f)
 
         if self.parsed_data is None:
-            self.parsed_data = OneOrMore(nestedExpr()).parseString(data)
+            self.parsed_data = bracket_split(data)
 
         if cache_folder:
             with open(cache_filename, "wb") as f:

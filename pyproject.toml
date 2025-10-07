@@ -37,7 +37,6 @@ classifiers = [
 
 dependencies = [
     "numpy >=1.13.0",
-    "cpyparsing >=2.4.7",
     "platformdirs >=3",
     "dataclasses_json >=0.6",
 ]

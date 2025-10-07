@@ -7,6 +7,7 @@ import platform
 import os
 import subprocess
 import sys
+from typing import List
 
 from .fUnary import run_unary
 
@@ -161,3 +162,31 @@ def load_lib(libname):
         raise FileNotFoundError(f"Can't find {libname}")
 
     return ctypes.CDLL(libname, **kwargs)
+
+
+def bracket_split(string) -> List[str]:
+    def _helper(substring):
+        items = []
+        tmp = []
+        for item in substring:
+            if item == "(":
+                result, closeparen = _helper(substring)
+                if not closeparen:
+                    raise ValueError("Unbalanced parentheses")
+                items.append(result)
+            elif item == ")":
+                t = "".join(tmp).strip()
+                if len(t):
+                    items.append(t)
+                return items, True
+            else:
+                if item != " ":
+                    tmp.append(item)
+                else:
+                    t = "".join(tmp).strip()
+                    if len(t):
+                        items.append(t)
+                        tmp = []
+        return items, False
+
+    return _helper(iter(string))[0]
