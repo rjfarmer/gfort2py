@@ -865,6 +865,11 @@ class module(object):
         self.filename = filename
         self._json = json
 
+        if cache_folder is not None:
+            raise NotImplementedError(
+                "Caching is no longer needed leave cache_folder as None"
+            )
+
         with gzip.open(self.filename) as f:
             x = f.read().decode()
 
@@ -877,28 +882,12 @@ class module(object):
 
         data = x[x.index("\n") + 1 :].replace("\n", " ")
 
+        # Strip out '( and )' from intrinsic procedures
+        data = data.replace("'(intrinsic)'", "'intrinsic'")
+
         self.parsed_data = None
 
-        if cache_folder or cache_folder is None:
-            # See if we can use cached version as parsing can be slow for large data
-            hashed_data = hashlib.sha256(data.encode()).hexdigest()
-
-            if cache_folder is None:
-                cache_folder = platformdirs.user_cache_dir("gfort2py")
-            os.makedirs(cache_folder, exist_ok=True)
-
-            cache_filename = pathlib.PurePath(cache_folder, hashed_data)
-
-            if os.path.exists(cache_filename):
-                with open(cache_filename, "rb") as f:
-                    self.parsed_data = pickle.load(f)
-
-        if self.parsed_data is None:
-            self.parsed_data = bracket_split(data)
-
-        if cache_folder:
-            with open(cache_filename, "wb") as f:
-                pickle.dump(self.parsed_data, f)
+        self.parsed_data = bracket_split(data)
 
         if not load_only:
             self.interface = self.parsed_data[0]

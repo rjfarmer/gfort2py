@@ -24,11 +24,7 @@ class fFort:
         Loads a gfortran module given by mod_file and saved in a
         shared library libname.
 
-        cache_folder: If not None, sets the folder location to saved
-        the cached module data to. If None uses appdirs ``user_cache_dir``
-        location.
-
-        Set to False to disable caching.
+        cache_folder: No longer needed or used, left for backwards compatibility
 
         """
 
