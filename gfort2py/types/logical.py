@@ -6,7 +6,7 @@ import numpy as np
 from .base import f_type
 
 
-class f_logical(f_type):
+class ftype_logical(f_type):
     ftype = "logical"
     default = ".false."
 
@@ -24,25 +24,25 @@ class f_logical(f_type):
             self._ctype.value = 0
 
 
-class f_logical_1(f_logical):
+class ftype_logical_1(ftype_logical):
     kind = 1
     ctype = ctypes.c_int8
     dtype = np.dtype(np.byte)
 
 
-class f_logical_2(f_logical):
+class ftype_logical_2(ftype_logical):
     kind = 2
     ctype = ctypes.c_int16
     dtype = np.dtype(np.short)
 
 
-class f_logical_4(f_logical):
+class ftype_logical_4(ftype_logical):
     kind = 4
     ctype = ctypes.c_int32
     dtype = np.dtype("int32")
 
 
-class f_logical_8(f_logical):
+class ftype_logical_8(ftype_logical):
     kind = 8
     ctype = ctypes.c_int64
     dtype = np.dtype("int64")

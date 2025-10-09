@@ -7,6 +7,7 @@ import platform
 import os
 import subprocess
 import sys
+from typing import Type
 
 # from .fUnary import run_unary
 
@@ -86,7 +87,7 @@ def copy_array(src, dst, length, size):
 #     return arg
 
 
-def lib_ext():
+def lib_ext() -> str:
     """
     Determine shared library extension for a current os_platform
     """
@@ -99,7 +100,7 @@ def lib_ext():
         return "so"
 
 
-def fc_path():
+def fc_path() -> str:
     """
     Guess location of gfortran compiler
     """
@@ -136,19 +137,19 @@ def fc_path():
     return fc
 
 
-def is_64bit():
+def is_64bit() -> bool:
     return platform.architecture()[0] == "64bit"
 
 
-def is_big_endian():
+def is_big_endian() -> bool:
     return sys.byteorder == "big"
 
 
-def is_ppc64le():
+def is_ppc64le() -> bool:
     return platform.machine() == "ppc64le"
 
 
-def load_lib(libname):
+def load_lib(libname: str) -> Type[ctypes.CDLL]:
     kwargs = {}
     if platform.system() == "Windows":
         libname = os.path.realpath(libname)

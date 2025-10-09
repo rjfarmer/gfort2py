@@ -14,7 +14,7 @@ except ImportError:
 from .base import f_type
 
 
-class f_complex(f_type, metaclass=ABCMeta):
+class ftype_complex(f_type, metaclass=ABCMeta):
     ftype = "complex"
     default = 0
 
@@ -45,19 +45,19 @@ class f_complex(f_type, metaclass=ABCMeta):
         self._ctype.imag.value = self._value.imag
 
 
-class f_complex_4(f_complex):
+class ftype_complex_4(ftype_complex):
     base_ctype = ctypes.c_float
     kind = 4
     dtype = np.dtype(np.csingle)
 
 
-class f_complex_8(f_complex):
+class ftype_complex_8(ftype_complex):
     base_ctype = ctypes.c_double
     kind = 8
     dtype = np.dtype(np.cdouble)
 
 
-class f_complex_16(f_complex):
+class ftype_complex_16(ftype_complex):
     ctype = pq.c_qcmplx
     kind = 16
     dtype = np.dtype("S32")

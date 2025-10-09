@@ -39,28 +39,31 @@ def factory(obj: Type[gf.Symbol]):
     if is_dt:
         if is_array:
             if is_explicit:
-                return f_dt_explicit
+                return ftype_dt_explicit
             elif is_assumed_shape:
-                return f_dt_assumed_shape
+                return ftype_dt_assumed_shape
             raise TypeError("Can't match object")
         else:
-            return f_dt
+            return ftype_dt
     elif is_array:
         if is_explicit:
-            return f_explicit_array
+            return ftype_explicit_array
         elif is_assumed_shape:
-            return f_assumed_shape
+            return ftype_assumed_shape
         raise TypeError("Can't match object")
 
     else:
-        name = f"f_{ftype}_{kind}"
-        try:
-            return getattr(sys.modules[__name__], name)
-        except Exception:
-            raise TypeError("Can't match object")
+        if ftype == "character":
+            return init_char(obj)
+        else:
+            name = f"ftype_{ftype}_{kind}"
+            try:
+                return getattr(sys.modules[__name__], name)
+            except Exception:
+                raise TypeError("Can't match object")
 
 
-class f_strlen(f_integer):
+class ftype_strlen(ftype_integer):
     @property
     def ctype(self):
         if is_64bit():
@@ -69,7 +72,7 @@ class f_strlen(f_integer):
             return ctypes.c_int32
 
 
-class f_optional(f_type):
+class ftype_optional(f_type):
     ctype = ctypes.c_byte
 
 

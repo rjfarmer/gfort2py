@@ -13,24 +13,24 @@ except ImportError:
 from .base import f_type
 
 
-class f_real(f_type):
+class ftype_real(f_type):
     ftype = "real"
     default = 0.0
 
 
-class f_real_4(f_real):
+class ftype_real_4(ftype_real):
     kind = 4
     ctype = ctypes.c_float
     dtype = np.dtype("float32")
 
 
-class f_real_8(f_real):
+class ftype_real_8(ftype_real):
     kind = 8
     ctype = ctypes.c_double
     dtype = np.dtype("float64")
 
 
-class f_real_16(f_real):
+class ftype_real_16(ftype_real):
     kind = 16
     ctype = pq.c_qfloat
     dtype = np.dtype("S16")

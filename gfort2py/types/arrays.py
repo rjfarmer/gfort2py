@@ -3,6 +3,9 @@
 import ctypes
 import numpy as np
 from abc import ABCMeta, abstractmethod
+from typing import Type
+
+import gfModParser as gf
 
 from .base import f_type
 
@@ -10,7 +13,7 @@ from ..utils import copy_array, is_64bit
 from ..allocate import allocate_var, allocate_char
 
 
-class f_explicit_array(f_type, metaclass=ABCMeta):
+class ftype_explicit_array(f_type, metaclass=ABCMeta):
     dtype = None
 
     @property
@@ -28,7 +31,7 @@ class f_explicit_array(f_type, metaclass=ABCMeta):
 
     @property
     def ctype(self):
-        return self._base.ctype * np.product(self.shape)
+        return self._base.ctype * np.prod(self.shape)
 
     def __repr__(self):
         s = ",".join([i for i in self.shape])
@@ -39,7 +42,7 @@ class f_explicit_array(f_type, metaclass=ABCMeta):
         self._value = (
             np.ctypeslib.as_array(self._ctype)
             .reshape(self.shape, order="F")
-            .as_dtype(self._base.dtype)
+            .astype(self._base.dtype)
         )
         return self._value
 
@@ -50,12 +53,14 @@ class f_explicit_array(f_type, metaclass=ABCMeta):
             self._value.ctypes.data,
             ctypes.addressof(self._ctype),
             ctypes.sizeof(self._base.ctype),
-            np.product(self.shape),
+            np.prod(self.shape),
         )
 
 
-class f_assumed_shape(f_type, metaclass=ABCMeta):
+class ftype_assumed_shape(f_type, metaclass=ABCMeta):
     dtype = None
+    ftype = None
+    kind = None
 
     def _init__(self, base: f_type, value=None, ndims=None):
         self._base = base
@@ -127,7 +132,7 @@ class f_assumed_shape(f_type, metaclass=ABCMeta):
             self.ctype.base_addr,
             array.ctypes.data,
             ctypes.sizeof(self._base.ctype),
-            np.product(shape),
+            np.prod(shape),
         )
         self._value = array
         return array
@@ -143,7 +148,7 @@ class f_assumed_shape(f_type, metaclass=ABCMeta):
             self._value.ctypes.data,
             ctypes.addressof(self.ctype),
             ctypes.sizeof(self._base.ctype),
-            np.product(shape),
+            np.prod(shape),
         )
 
     @abstractmethod
@@ -151,7 +156,7 @@ class f_assumed_shape(f_type, metaclass=ABCMeta):
         raise NotImplementedError
 
 
-class f_character_assumed_shape(f_assumed_shape):
+class ftype_character_assumed_shape(ftype_assumed_shape):
     def _allocate(self, shape):
         allocate_char(
             self.ctype,
@@ -162,7 +167,7 @@ class f_character_assumed_shape(f_assumed_shape):
         )
 
 
-class f_number_assumed_shape(f_assumed_shape):
+class ftype_number_assumed_shape(ftype_assumed_shape):
     def _allocate(self, shape):
         allocate_var(
             self.ctype,
@@ -171,3 +176,12 @@ class f_number_assumed_shape(f_assumed_shape):
             shape=shape,
             default=self._base.default,
         )
+
+
+# def init_assumed_array(obj Type[gf.Symbol]):
+#     if obj.type == 'character':
+#         c = ftype_character_assumed_shape
+#     elif obj.type in ['integer', 'complex', 'real']:
+#         c = ftype_number_assumed_shape
+
+#     return c(ndims=obj.properties.array_spec.ndims)

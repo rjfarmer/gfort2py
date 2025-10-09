@@ -6,15 +6,15 @@ import numpy as np
 from ..allocate import allocate_dt
 
 from .base import f_type
-from .arrays import f_assumed_shape, f_explicit_array
+from .arrays import ftype_assumed_shape, ftype_explicit_array
 
-__all__ = ["f_dt", "f_dt_explicit", "f_dt_assumed_shape"]
+__all__ = ["ftype_dt", "ftype_dt_explicit", "ftype_dt_assumed_shape"]
 
 
 _all_dts = {}
 
 
-class f_dt(f_type):
+class ftype_dt(f_type):
     dtype = None
     kind = -1
 
@@ -75,7 +75,7 @@ class f_dt(f_type):
         return f"type({self.ftype})"
 
 
-class f_dt_array(f_type):
+class ftype_dt_array(f_type):
     def __init__(self, ftype, fields, shape, array_cls):
         self.ftype = ftype
         self.fields = fields
@@ -122,7 +122,7 @@ class f_dt_array(f_type):
         return list(self.keys())
 
 
-class f_dt_explicit(f_dt_array):
+class ftype_dt_explicit(ftype_dt_array):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, array_cls=f_explicit_array)
 
@@ -130,7 +130,7 @@ class f_dt_explicit(f_dt_array):
         return f"type({self.ftype})({self.shape})"
 
 
-class f_dt_assumed_shape(f_dt_array):
+class ftype_dt_assumed_shape(ftype_dt_array):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs, array_cls=_f_dt_assumed_shape)
 
@@ -139,7 +139,7 @@ class f_dt_assumed_shape(f_dt_array):
         return f"type({self.ftype})({s})"
 
 
-class _f_dt_assumed_shape(f_assumed_shape):
+class _f_dt_assumed_shape(ftype_assumed_shape):
     def _allocate(self, shape):
         allocate_dt(
             self.ctype, type=self._base.ftype, shape=shape, module="", library=""

@@ -3,20 +3,18 @@
 import ctypes
 import numpy as np
 from abc import ABCMeta, abstractmethod
+from typing import Type
 
+import gfModParser as gf
 from .base import f_type
 
 
-class f_char(f_type, metaclass=ABCMeta):
+class ftype_char(f_type, metaclass=ABCMeta):
     default = ""
     ftype = "character"
 
-    def __init__(self, value=None, strlen=None):
+    def __init__(self, value=None):
         self._value = value
-
-        self.strlen = None
-        if strlen is None and value is not None:
-            self.strlen = len(self.value)
 
         super().__init__()
 
@@ -42,15 +40,6 @@ class f_char(f_type, metaclass=ABCMeta):
 
     @property
     def value(self):
-        print(self._ctype)
-        try:
-            x = self._ctype[0]
-        except Exception:
-            return None
-
-        if x is None:
-            return None
-
         try:
             self._value = self._ctype.value.decode(self.encoding)
         except AttributeError:
@@ -77,16 +66,39 @@ class f_char(f_type, metaclass=ABCMeta):
         self._value = value
         self._ctype.value = value
 
+    @property
+    def strlen(self) -> int | None:
+        return self._strlen
 
-class f_character_1(f_char):
+    @strlen.setter
+    def strlen(self, value) -> int | None:
+        self._strlen = value
+        return self._strlen
+
+
+class ftype_character_1(ftype_char):
     kind = 1
     _base_ctype = ctypes.c_char_p
     dtype = np.dtype(np.bytes_)
     encoding = "ascii"
 
 
-class f_character_4(f_char):
+class ftype_character_4(ftype_char):
     kind = 4
     _base_ctype = ctypes.c_wchar_p
     dtype = np.dtype(np.str_)
     encoding = "utf_32"
+
+
+def init_char(obj: Type[gf.Symbol]) -> ftype_char:
+    if obj.kind == 1:
+        c = ftype_character_1
+    else:
+        c = ftype_character_4
+
+    class f_character(c):
+        @property
+        def strlen(self):
+            return obj.properties.parameter.len
+
+    return f_character
