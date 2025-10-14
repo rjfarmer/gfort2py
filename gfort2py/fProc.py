@@ -215,7 +215,7 @@ class fProc:
         args = []
         for key in self.object.properties.formal_argument:
             arg = factory(self._module[key])()
-            args.append(str(arg))
+            args.append(f"{str(arg)} :: {self._module[key].name}")
 
         args = ", ".join(args)
         return f"{ftype} ({args})"
