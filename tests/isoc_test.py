@@ -21,7 +21,7 @@ class TestISOC:
     def test_c_name(self):
         # This should fail as we access via the
         # Fortran not c name
-        with pytest.raises(KeyError) as e:
+        with pytest.raises(AttributeError) as e:
             x.a_int_binc_c = 1
 
     def test_f_name(self):

@@ -66,7 +66,7 @@ class fFort:
                 if key in self._saved_procedures:
                     return fProc(self._lib, self._module[key], self._module)
 
-        raise AttributeError(f"Can't find symbol {key}")
+            raise AttributeError(f"Can't find symbol {key}")
 
     def __setattr__(self, key: str, value: typing.Any):
         key = key.lower()
@@ -82,6 +82,7 @@ class fFort:
                     ).value = value
 
                     return
+            raise AttributeError(f"Can't find symbol {key}")
 
         self.__dict__[key] = value
 
