@@ -31,18 +31,18 @@ class ftype_complex(f_type, metaclass=ABCMeta):
                 ("imag", self.base_ctype),
             ]
 
-        return cmplx()
+        return cmplx
 
     @property
     def value(self):
-        self._value = complex(self._ctype.value.real, self._ctype.value.imag)
+        self._value = complex(self._ctype.real, self._ctype.imag)
         return self._value
 
     @value.setter
     def value(self, value):
         self._value = value
-        self._ctype.real.value = self._value.real
-        self._ctype.imag.value = self._value.imag
+        self._ctype.real = self._value.real
+        self._ctype.imag = self._value.imag
 
 
 class ftype_complex_4(ftype_complex):
