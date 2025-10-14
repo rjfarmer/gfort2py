@@ -161,30 +161,22 @@ class Test_params_modules:
         assert np.allclose(x.logicals_0_1d, np.array([True, False, True, False]))
 
     def test_check_ints_2d(self):
-        assert np.allclose(
-            x.int_i1_2d, np.array([-10, -1, 0, 1, 10, 50]).reshape(2, 3, order="F")
-        )
+        assert np.allclose(x.int_i1_2d, np.array([-10, -1, 0, 1, 10, 50]).reshape(2, 3))
 
         with pytest.raises(AttributeError) as cm:
             x.int_i1_2d = np.array([1, 2, 3])
 
-        assert np.allclose(
-            x.int_i2_2d, np.array([-10, -1, 0, 1, 10, 50]).reshape(2, 3, order="F")
-        )
+        assert np.allclose(x.int_i2_2d, np.array([-10, -1, 0, 1, 10, 50]).reshape(2, 3))
 
         with pytest.raises(AttributeError) as cm:
             x.int_i2_2d = np.array([1, 2, 3])
 
-        assert np.allclose(
-            x.int_i4_2d, np.array([-10, -1, 0, 1, 10, 50]).reshape(2, 3, order="F")
-        )
+        assert np.allclose(x.int_i4_2d, np.array([-10, -1, 0, 1, 10, 50]).reshape(2, 3))
 
         with pytest.raises(AttributeError) as cm:
             x.int_i4_2d = np.array([1, 2, 3])
 
-        assert np.allclose(
-            x.int_i8_2d, np.array([-10, -1, 0, 1, 10, 50]).reshape(2, 3, order="F")
-        )
+        assert np.allclose(x.int_i8_2d, np.array([-10, -1, 0, 1, 10, 50]).reshape(2, 3))
 
         with pytest.raises(AttributeError) as cm:
             x.int_i8_2d = np.array([1, 2, 3])
@@ -201,7 +193,7 @@ class Test_params_modules:
                     3.140000104904175,
                     6.28000020980835,
                 ]
-            ).reshape(2, 3, order="F"),
+            ).reshape(2, 3),
         )
 
         with pytest.raises(AttributeError) as cm:
@@ -218,7 +210,7 @@ class Test_params_modules:
                     3.140000104904175,
                     6.28000020980835,
                 ]
-            ).reshape(2, 3, order="F"),
+            ).reshape(2, 3),
         )
 
         with pytest.raises(AttributeError) as cm:
@@ -227,7 +219,7 @@ class Test_params_modules:
     def test_check_logicals_2d(self):
         assert np.allclose(
             x.logicals_0_2d,
-            np.array([True, False, True, False, True, False]).reshape(2, 3, order="F"),
+            np.array([True, False, True, False, True, False]).reshape(2, 3),
         )
 
     def test_check_cmplx(self):
@@ -302,7 +294,7 @@ class Test_params_modules:
                     complex(3.140000104904175, 3.140000104904175),
                     complex(-6.28000020980835, -6.28000020980835),
                 ]
-            ).reshape(2, 3, order="F"),
+            ).reshape(2, 3),
         )
 
         with pytest.raises(AttributeError) as cm:
@@ -319,7 +311,7 @@ class Test_params_modules:
                     complex(3.140000104904175, 3.140000104904175),
                     complex(-6.28000020980835, -6.28000020980835),
                 ]
-            ).reshape(2, 3, order="F"),
+            ).reshape(2, 3),
         )
 
         with pytest.raises(AttributeError) as cm:
