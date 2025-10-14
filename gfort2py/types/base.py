@@ -31,8 +31,8 @@ class f_type(ABC):
     """
 
     def __init__(self, value=None):
-        self._value = value
         self._ctype = self.ctype()
+        self.value = value
         self._p1 = None
         self._p2 = None
 
@@ -109,7 +109,8 @@ class f_type(ABC):
             value (Any): Python value compatible with the base ctype
         """
         self._value = value
-        self._ctype.value = self._value
+        if self._value is not None:
+            self._ctype.value = self._value
 
     @property
     def _as_parameter_(self):
@@ -133,6 +134,12 @@ class f_type(ABC):
         c._ctype = c.ctype.from_address(address)
         return c
 
+    @classmethod
+    def from_ctype(cls, ctype):
+        c = cls()
+        c._ctype = ctype
+        return c
+
     def byref(self):
         return ctypes.byref(self._ctype)
 
@@ -145,3 +152,14 @@ class f_type(ABC):
             _ = self.pointer()
         self._p2 = ctypes.pointer(self._p1)
         return self._p2
+
+    # def get_from_pointer(self):
+    #     if self._p2 is not None:
+    #         p = self._p2.contents.contents
+    #     elif self._p1 is not None:
+    #         p = self._p1.contents
+    #     else:
+    #         raise AttributeError("Not a pointer")
+
+    #     self.value = p
+    #     return self.value

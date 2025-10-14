@@ -85,6 +85,16 @@ def factory(obj: Type[gf.Symbol]) -> f_type:
     return res
 
 
+def find_ftype(ftype, kind):
+    name = f"ftype_{ftype}_{kind}"
+    try:
+        res = getattr(sys.modules[__name__], name)
+    except Exception:
+        raise TypeError("Can't match object")
+
+    return res
+
+
 class ftype_strlen(ftype_integer):
     @property
     def ctype(self):
@@ -96,13 +106,3 @@ class ftype_strlen(ftype_integer):
 
 class ftype_optional(f_type):
     ctype = ctypes.c_byte
-
-
-def find_ftype(ftype, kind):
-    name = f"ftype_{ftype}_{kind}"
-    try:
-        res = getattr(sys.modules[__name__], name)
-    except Exception:
-        raise TypeError("Can't match object")
-
-    return res
