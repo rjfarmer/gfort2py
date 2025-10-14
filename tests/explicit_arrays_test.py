@@ -18,9 +18,6 @@ x = gf.fFort(SO, MOD)
 
 
 class TestExplicitArrayMethods:
-    def assertEqual(self, x, y):
-        assert x == y
-
     def test_const_int_arr_error(self):
         with pytest.raises(AttributeError) as cm:
             x.const_int_arr = "abc"
@@ -129,7 +126,7 @@ class TestExplicitArrayMethods:
 
         y = x.sub_array_n_int_1d(np.size(v), v)
         out, err = capfd.readouterr()
-        self.assertEqual(out.strip(), o.strip())
+        assert out.stip() == o.strip()
 
     @pytest.mark.skip
     def test_sub_array_n_int_2d(self, capfd):
@@ -139,7 +136,7 @@ class TestExplicitArrayMethods:
 
         y = x.sub_array_n_int_2d(5, 5, v)
         out, err = capfd.readouterr()
-        self.assertEqual(out.strip(), o.strip())
+        assert out.stip() == o.strip()
 
     def test_sub_exp_array_int_1d(self, capfd):
         v = np.arange(0, 5)
@@ -147,7 +144,7 @@ class TestExplicitArrayMethods:
 
         y = x.sub_exp_array_int_1d(v)
         out, err = capfd.readouterr()
-        self.assertEqual(out.strip(), o.strip())
+        assert out.stip() == o.strip()
 
     def test_sub_exp_array_int_2d(self, capfd):
         v = np.arange(0, 5 * 5).reshape((5, 5))
@@ -156,7 +153,7 @@ class TestExplicitArrayMethods:
         )
         y = x.sub_exp_array_int_2d(v)
         out, err = capfd.readouterr()
-        self.assertEqual(out.strip(), o.strip())
+        assert out.stip() == o.strip()
 
     def test_sub_exp_array_int_3d(self, capfd):
         v = np.arange(0, 5 * 5 * 5).reshape((5, 5, 5))
@@ -165,7 +162,7 @@ class TestExplicitArrayMethods:
         )
         y = x.sub_exp_array_int_3d(v)
         out, err = capfd.readouterr()
-        self.assertEqual(out.strip(), o.strip())
+        assert out.stip() == o.strip()
 
     def test_sub_exp_array_real_1d(self, capfd):
         v = np.arange(0, 5.0).reshape((5))
@@ -174,7 +171,7 @@ class TestExplicitArrayMethods:
         )
         y = x.sub_exp_array_real_1d(v)
         out, err = capfd.readouterr()
-        self.assertEqual(out.strip(), o.strip())
+        assert out.stip() == o.strip()
 
     def test_sub_exp_array_real_2d(self, capfd):
         v = np.arange(0, 5.0 * 5.0).reshape((5, 5))
@@ -183,7 +180,7 @@ class TestExplicitArrayMethods:
         )
         y = x.sub_exp_array_real_2d(v)
         out, err = capfd.readouterr()
-        self.assertEqual(out.strip(), o.strip())
+        assert out.stip() == o.strip()
 
     def test_sub_exp_array_real_3d(self, capfd):
         v = np.arange(0, 5.0 * 5.0 * 5.0).reshape((5, 5, 5))
@@ -192,7 +189,7 @@ class TestExplicitArrayMethods:
         )
         y = x.sub_exp_array_real_3d(v)
         out, err = capfd.readouterr()
-        self.assertEqual(out.strip(), o.strip())
+        assert out.stip() == o.strip()
 
     def test_sub_exp_array_int_1d_multi(self, capfd):
         u = 19
@@ -211,7 +208,7 @@ class TestExplicitArrayMethods:
 
         y = x.sub_exp_array_real_dp_1d(v)
         out, err = capfd.readouterr()
-        self.assertEqual(out.strip(), o.strip())
+        assert out.stip() == o.strip()
 
     def test_sub_exp_array_real_dp_2d(self, capfd):
         v = np.arange(0, 5.0 * 5.0).reshape((5, 5))
@@ -221,7 +218,7 @@ class TestExplicitArrayMethods:
 
         y = x.sub_exp_array_real_dp_2d(v)
         out, err = capfd.readouterr()
-        self.assertEqual(out.strip(), o.strip())
+        assert out.stip() == o.strip()
 
     def test_sub_exp_array_real_dp_3d(self, capfd):
         v = np.arange(0, 5.0 * 5.0 * 5.0).reshape((5, 5, 5))
@@ -231,7 +228,7 @@ class TestExplicitArrayMethods:
 
         y = x.sub_exp_array_real_dp_3d(v)
         out, err = capfd.readouterr()
-        self.assertEqual(out.strip(), o.strip())
+        assert out.stip() == o.strip()
 
     def test_sub_exp_inout(self, capfd):
         v = np.array([1, 2, 3, 4, 5])
@@ -247,7 +244,7 @@ class TestExplicitArrayMethods:
 
         y = x.sub_exp_array_int_1d(v)
         out, err = capfd.readouterr()
-        self.assertEqual(out.strip(), o.strip())
+        assert out.stip() == o.strip()
 
     def test_logical_arr_multi(self):
         xarr = np.zeros(5)

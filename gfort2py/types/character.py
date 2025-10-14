@@ -39,15 +39,11 @@ class ftype_char(f_type, metaclass=ABCMeta):
             return self._base_ctype * self.strlen
 
     @property
-    def value(self):
+    def value(self) -> str | None:
         try:
-            self._value = self._ctype.value.decode(self.encoding)
+            return self._ctype.value.decode(self.encoding)
         except AttributeError:
-            self._value = str(
-                self._ctype.value
-            )  # Functions returning str's give us str not bytes
-        self.strlen = len(self._value)
-        return self._value
+            return str(self._ctype)  # Functions returning str's give us str not bytes
 
     @value.setter
     def value(self, value):
@@ -55,7 +51,7 @@ class ftype_char(f_type, metaclass=ABCMeta):
             return None
 
         if hasattr(value, "encode"):
-            value = value.encode()
+            value = value.encode(self.encoding)
 
         if self.strlen is not None:
             if len(value) > self.strlen:
@@ -68,17 +64,24 @@ class ftype_char(f_type, metaclass=ABCMeta):
 
     @property
     def strlen(self) -> int | None:
-        return self._strlen
+        # Is this a fixed sized string?
+        l = None
+        try:
+            l = self.object().properties.typespec.charlen.value
+        except AttributeError:
+            raise AttributeError(f"{self.object().name} is not a character")
+        # else have we already got a length from self._value?
+        if l is None and self._value is not None:
+            l = len(self._value)
+        # else None
+        self._strlen = l
 
-    @strlen.setter
-    def strlen(self, value) -> int | None:
-        self._strlen = value
         return self._strlen
 
 
 class ftype_character_1(ftype_char):
     kind = 1
-    _base_ctype = ctypes.c_char_p
+    _base_ctype = ctypes.c_char
     dtype = np.dtype(np.bytes_)
     encoding = "ascii"
 
@@ -88,17 +91,3 @@ class ftype_character_4(ftype_char):
     _base_ctype = ctypes.c_wchar_p
     dtype = np.dtype(np.str_)
     encoding = "utf_32"
-
-
-def init_char(obj: Type[gf.Symbol]) -> ftype_char:
-    if obj.kind == 1:
-        c = ftype_character_1
-    else:
-        c = ftype_character_4
-
-    class f_character(c):
-        @property
-        def strlen(self):
-            return obj.properties.parameter.len
-
-    return f_character

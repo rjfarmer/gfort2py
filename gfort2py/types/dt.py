@@ -81,7 +81,7 @@ class ftype_dt_array(f_type):
         self.fields = fields
         self.shape = shape
         self._array_cls = array_cls
-        self._dt = f_dt(ftype=self.ftype, fields=self.fields)
+        self._dt = ftype_dt(ftype=self.ftype, fields=self.fields)
         super().__init__()
 
     @property
@@ -101,7 +101,7 @@ class ftype_dt_array(f_type):
 
     def __getitem__(self, key):
         ind = self._index(key)
-        new_dt = f_dt(ftype=self.ftype, fields=self.fields)
+        new_dt = ftype_dt(ftype=self.ftype, fields=self.fields)
         new_dt._ctype = self._ctype[ind]
         return new_dt
 
@@ -124,7 +124,7 @@ class ftype_dt_array(f_type):
 
 class ftype_dt_explicit(ftype_dt_array):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs, array_cls=f_explicit_array)
+        super().__init__(*args, **kwargs, array_cls=ftype_explicit_array)
 
     def __repr__(self):
         return f"type({self.ftype})({self.shape})"

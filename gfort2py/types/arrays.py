@@ -3,7 +3,7 @@
 import ctypes
 import numpy as np
 from abc import ABCMeta, abstractmethod
-from typing import Type
+from typing import Type, Tuple
 
 import gfModParser as gf
 
@@ -15,46 +15,69 @@ from ..allocate import allocate_var, allocate_char
 
 class ftype_explicit_array(f_type, metaclass=ABCMeta):
     dtype = None
+    ftype = None
+    kind = None
 
-    @property
+    def __init__(self, value=None):
+        self.base = self._base()
+        self._value = value
+        super().__init__()
+
     @abstractmethod
     def _base(self):
         raise NotImplementedError
 
-    def _init__(self, base: f_type, shape=None, value=None):
-        self._base = base
-        self._value = value
-        if shape is None:
-            shape = self._value.shape()
-        self.shape = shape
-        super().__init__()
-
     @property
     def ctype(self):
-        return self._base.ctype * np.prod(self.shape)
+        return self.base.ctype * self.size
 
     def __repr__(self):
-        s = ",".join([i for i in self.shape])
-        return f"{self.ftype}(kind={self.kind})({s})"
+        s = ",".join([str(i) for i in self.shape])
+        return f"{self.base.ftype}(kind={self.base.kind})({s})"
 
     @property
     def value(self):
         self._value = (
             np.ctypeslib.as_array(self._ctype)
             .reshape(self.shape, order="F")
-            .astype(self._base.dtype)
+            .astype(self.base.dtype)
         )
         return self._value
 
     @value.setter
     def value(self, value):
-        self._value = np.asfortranarray(value).ravel("F")
+        self._value = self._array_check(value)
         copy_array(
             self._value.ctypes.data,
             ctypes.addressof(self._ctype),
-            ctypes.sizeof(self._base.ctype),
-            np.prod(self.shape),
+            ctypes.sizeof(self.base.ctype),
+            self.size,
         )
+
+    def _array_check(self, value):
+        value = np.asfortranarray(value)
+
+        value = value.astype(self.base.dtype, copy=False)
+
+        if value.ndim != self.ndims:
+            raise ValueError(
+                f"Wrong number of dimensions, got {value.ndim} expected {self.ndims}"
+            )
+
+        value = value.ravel(order="F")
+        return value
+
+    @property
+    def shape(self) -> Tuple[int]:
+        return self.object().properties.array_spec.pyshape
+
+    @property
+    def ndims(self) -> int:
+        return self.object().properties.array_spec.rank
+
+    @property
+    def size(self) -> int:
+        return np.prod(self.shape)
 
 
 class ftype_assumed_shape(f_type, metaclass=ABCMeta):
@@ -62,15 +85,11 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
     ftype = None
     kind = None
 
-    def _init__(self, base: f_type, value=None, ndims=None):
-        self._base = base
+    def _init__(self, value=None):
+        self.base = self._base()
         self._value = value
-        if ndims is None:
-            ndims = value.ndim
-        self.ndims = ndims
         super().__init__()
 
-    @property
     @abstractmethod
     def _base(self):
         raise NotImplementedError
@@ -126,12 +145,12 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
 
         shape = tuple(shape)
 
-        array = np.zeros(shape, dtype=self._base.dtype, order="F")
+        array = np.zeros(shape, dtype=self.base.dtype, order="F")
 
         copy_array(
             self.ctype.base_addr,
             array.ctypes.data,
-            ctypes.sizeof(self._base.ctype),
+            ctypes.sizeof(self.base.ctype),
             np.prod(shape),
         )
         self._value = array
@@ -147,7 +166,7 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
         copy_array(
             self._value.ctypes.data,
             ctypes.addressof(self.ctype),
-            ctypes.sizeof(self._base.ctype),
+            ctypes.sizeof(self.base.ctype),
             np.prod(shape),
         )
 
@@ -155,15 +174,23 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
     def _allocate(self, shape):
         raise NotImplementedError
 
+    @property
+    def shape(self):
+        return self.object().properties.array_spec.pyshape
+
+    @property
+    def ndims(self):
+        return self.object().properties.array_spec.rank
+
 
 class ftype_character_assumed_shape(ftype_assumed_shape):
     def _allocate(self, shape):
         allocate_char(
             self.ctype,
             kind=self.kind,
-            length=self._base.len(),
+            length=self.base.len(),
             shape=shape,
-            default=self._base.default,
+            default=self.base.default,
         )
 
 
@@ -172,16 +199,7 @@ class ftype_number_assumed_shape(ftype_assumed_shape):
         allocate_var(
             self.ctype,
             kind=self.kind,
-            type=self._base.ftype,
+            type=self.base.ftype,
             shape=shape,
-            default=self._base.default,
+            default=self.base.default,
         )
-
-
-# def init_assumed_array(obj Type[gf.Symbol]):
-#     if obj.type == 'character':
-#         c = ftype_character_assumed_shape
-#     elif obj.type in ['integer', 'complex', 'real']:
-#         c = ftype_number_assumed_shape
-
-#     return c(ndims=obj.properties.array_spec.ndims)

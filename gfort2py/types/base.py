@@ -1,7 +1,14 @@
 # SPDX-License-Identifier: GPL-2.0+
 
+from typing import Type
+
+import gfModParser as gf
+
 import ctypes
 from abc import ABC, abstractmethod
+
+
+__all__ = ["f_type"]
 
 
 class f_type(ABC):
@@ -66,6 +73,18 @@ class f_type(ABC):
 
         Returns:
             np.dtype
+        """
+        raise NotImplementedError
+
+    @classmethod
+    @abstractmethod
+    def object(self) -> Type[gf.Symbol]:
+        """Stores the module data
+
+        Should be injected into the class before creation
+
+        Returns:
+            Module data
         """
         raise NotImplementedError
 

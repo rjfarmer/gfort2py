@@ -26,10 +26,10 @@ class ftype_integer_2(ftype_integer):
 class ftype_integer_4(ftype_integer):
     kind = 4
     ctype = ctypes.c_int32
-    dtype = np.dtype(">i4")
+    dtype = np.dtype("i4")
 
 
 class ftype_integer_8(ftype_integer):
     kind = 8
     ctype = ctypes.c_int64
-    dtype = np.dtype(">i8")
+    dtype = np.dtype("i8")

@@ -2,6 +2,7 @@
 
 import sys
 from typing import Type
+import abc
 
 import gfModParser as gf
 
@@ -13,11 +14,12 @@ from .integer import *
 from .logical import *
 from .real import *
 from .unsigned import *
+from .module import *
 
-__all__ = ["factory", "f_strlen", "f_optional"]
+__all__ = ["factory", "f_strlen", "f_optional", "get_module"]
 
 
-def factory(obj: Type[gf.Symbol]):
+def factory(obj: Type[gf.Symbol]) -> f_type:
     """Factory class to convert a (ftype,kind) into a wrapper object
 
     Args:
@@ -39,28 +41,48 @@ def factory(obj: Type[gf.Symbol]):
     if is_dt:
         if is_array:
             if is_explicit:
-                return ftype_dt_explicit
+                res = ftype_dt_explicit
             elif is_assumed_shape:
-                return ftype_dt_assumed_shape
-            raise TypeError("Can't match object")
+                res = ftype_dt_assumed_shape
+            else:
+                raise TypeError("Can't match object")
         else:
-            return ftype_dt
+            res = ftype_dt
     elif is_array:
         if is_explicit:
-            return ftype_explicit_array
+            res = ftype_explicit_array
         elif is_assumed_shape:
-            return ftype_assumed_shape
-        raise TypeError("Can't match object")
-
-    else:
-        if ftype == "character":
-            return init_char(obj)
+            res = ftype_assumed_shape
         else:
-            name = f"ftype_{ftype}_{kind}"
-            try:
-                return getattr(sys.modules[__name__], name)
-            except Exception:
-                raise TypeError("Can't match object")
+            raise TypeError("Can't match object")
+
+        # Inject in the base type
+        def _base(self):
+            cls = find_ftype(ftype, kind)
+
+            def object(self):
+                return None
+
+            # Inject into Fortran object all the other module data
+            cls.object = classmethod(object)
+
+            abc.update_abstractmethods(cls)
+            return cls()
+
+        res._base = classmethod(_base)
+    else:
+        res = find_ftype(ftype, kind)
+
+    def object(self):
+        self._obj = obj
+        return self._obj
+
+    # Inject into Fortran object all the other module data
+    res.object = classmethod(object)
+
+    abc.update_abstractmethods(res)
+
+    return res
 
 
 class ftype_strlen(ftype_integer):
@@ -76,6 +98,11 @@ class ftype_optional(f_type):
     ctype = ctypes.c_byte
 
 
-def factory_init(ctype, obj, module):
-    """Initializes ctype, taking into account extra args needed"""
-    pass
+def find_ftype(ftype, kind):
+    name = f"ftype_{ftype}_{kind}"
+    try:
+        res = getattr(sys.modules[__name__], name)
+    except Exception:
+        raise TypeError("Can't match object")
+
+    return res

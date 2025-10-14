@@ -11,7 +11,7 @@ import gfModParser as gf
 # from .fVar import fVar
 from .fProc import fProc
 from .fParameters import fParam
-from .types import factory
+from .types import factory, get_module
 
 # from .fCompile import compile_and_load, common_compile
 from .utils import load_lib
@@ -31,7 +31,7 @@ class fFort:
         self._libname = libname
         self._lib = load_lib(self._libname)
         self._mod_file = mod_file
-        self._module = gf.Module(self._mod_file)
+        self._module = get_module(self._mod_file)
 
         self._saved_parameters = gf.Parameters(self._module)
         self._saved_variables = gf.Variables(self._module)
@@ -74,7 +74,7 @@ class fFort:
         if "_initialized" in self.__dict__:
             if self._initialized:
                 if key in self._saved_parameters:
-                    raise ValueError("Can not set a parameter")
+                    raise AttributeError("Can not set a parameter")
 
                 if key in self._saved_variables:
                     factory(self._module[key]).in_dll(
