@@ -60,11 +60,11 @@ def factory(obj: Type[gf.Symbol]) -> f_type:
         def _base(self):
             cls = find_ftype(ftype, kind)
 
-            def object(self):
+            def definition(self):
                 return None
 
-            # Inject into Fortran object all the other module data
-            cls.object = classmethod(object)
+            # Inject into Fortran definition all the other module data
+            cls.definition = classmethod(definition)
 
             abc.update_abstractmethods(cls)
             return cls()
@@ -73,12 +73,12 @@ def factory(obj: Type[gf.Symbol]) -> f_type:
     else:
         res = find_ftype(ftype, kind)
 
-    def object(self):
+    def definition(self):
         self._obj = obj
         return self._obj
 
-    # Inject into Fortran object all the other module data
-    res.object = classmethod(object)
+    # Inject into Fortran definition all the other module data
+    res.definition = classmethod(definition)
 
     abc.update_abstractmethods(res)
 

@@ -16,12 +16,14 @@ class Result(NamedTuple):
 
 class fProc:
 
-    def __init__(self, lib, object, module, **kwargs):
+    def __init__(
+        self, lib: ctypes.CDLL, definition: gf.Symbol, module: gf.Module, **kwargs
+    ):
         self._module = module
-        self.object = object
+        self.definition = definition
         self._lib = lib
 
-        self._proc = getattr(self._lib, self.object.mangled_name)
+        self._proc = getattr(self._lib, self.definition.mangled_name)
 
         # Set return type
         self._set_return()
@@ -59,7 +61,7 @@ class fProc:
 
         # Procedures need values accessing via their number not name
 
-        if self.object.is_function:
+        if self.definition.is_function:
             ftype = self.return_type.type
             kind = self.return_type.kind
             # If we are returning a character or array that gets added to the arguments
@@ -95,7 +97,7 @@ class fProc:
 
         res = []
 
-        if self.object.is_function:
+        if self.definition.is_function:
             if self.return_type.type == "character":
                 # Add a character and a strlen for functions returning characters
                 res.append(self.return_var)
@@ -111,7 +113,7 @@ class fProc:
 
         res = []
 
-        for key in self.object.properties.formal_argument:
+        for key in self.definition.properties.formal_argument:
             res.append(factory(self._module[key]))
 
         return res
@@ -120,7 +122,7 @@ class fProc:
         """Arguments that get added to the end of the argument list"""
         res = []
 
-        for key in self.object.properties.formal_argument:
+        for key in self.definition.properties.formal_argument:
             arg = self._module[key]
             if arg.type == "character":
                 res.append(ftype_strlen)
@@ -137,7 +139,7 @@ class fProc:
         """
 
         arg_values = {}
-        for key in self.object.properties.formal_argument:
+        for key in self.definition.properties.formal_argument:
             arg_values[key] = None
 
         for value, key in zip(self._args, arg_values.keys()):
@@ -169,7 +171,7 @@ class fProc:
                 middle.append(self._middle_args_types[index](value).pointer())
 
         index = 0
-        for key in self.object.properties.formal_argument:
+        for key in self.definition.properties.formal_argument:
             arg = self._module[key]
             if arg.type == "character":
                 post.append(
@@ -207,13 +209,13 @@ class fProc:
 
     @property
     def __doc__(self):
-        if self.object.is_subroutine:
-            ftype = f"subroutine {self.object.name}"
+        if self.definition.is_subroutine:
+            ftype = f"subroutine {self.definition.name}"
         else:
-            ftype = f"{str(self.return_var)} function {self.object.name}"
+            ftype = f"{str(self.return_var)} function {self.definition.name}"
 
         args = []
-        for key in self.object.properties.formal_argument:
+        for key in self.definition.properties.formal_argument:
             arg = factory(self._module[key])()
             args.append(f"{str(arg)} :: {self._module[key].name}")
 
@@ -226,7 +228,7 @@ class fProc:
     @property
     @cache
     def return_type(self) -> gf.Symbol:
-        key = self.object.properties.symbol_reference
+        key = self.definition.properties.symbol_reference
         return self._module[key]
 
     @property

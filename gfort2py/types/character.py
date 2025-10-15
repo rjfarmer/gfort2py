@@ -67,9 +67,9 @@ class ftype_char(f_type, metaclass=ABCMeta):
         # Is this a fixed sized string?
         l = None
         try:
-            l = self.object().properties.typespec.charlen.value
+            l = self.definition().properties.typespec.charlen.value
         except AttributeError:
-            raise AttributeError(f"{self.object().name} is not a character")
+            raise AttributeError(f"{self.definition().name} is not a character")
         # else have we already got a length from self._value?
         if l is None and self._value is not None:
             l = len(self._value)

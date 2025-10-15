@@ -15,7 +15,7 @@ except ImportError:
 
 class fVar_t:
     """
-    Base class for all objects, everything should inheriet from this
+    Base class for all objects, everything should inherit from this
     or another class that evntauly inherits from this.
 
     """

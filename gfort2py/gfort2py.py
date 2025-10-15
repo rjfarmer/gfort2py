@@ -116,7 +116,7 @@ class fFort:
     #             return fParam(self._module[key]).value
     #         else:
     #             raise NotImplementedError(
-    #                 f"Object type {self._module[key].flavor()} not implemented yet"
+    #                 f"definition type {self._module[key].flavor()} not implemented yet"
     #             )
 
     # def __setattr__(self, key, value):
@@ -144,7 +144,7 @@ class fFort:
     #                 return
     #             else:
     #                 raise NotImplementedError(
-    #                     f"Object type {self._module[key].flavor()} not implemented yet"
+    #                     f"definition type {self._module[key].flavor()} not implemented yet"
     #                 )
 
     #     self.__dict__[key] = value

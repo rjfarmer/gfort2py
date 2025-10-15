@@ -14,7 +14,7 @@ __all__ = ["f_type"]
 
 class f_type(ABC):
     """
-    Base class for interfacing with Fortran objects
+    Base class for interfacing with Fortran object
 
     Most class will want to override value getter/setter
     and may need to provide a ctypes() property if it can't be easily
@@ -79,7 +79,7 @@ class f_type(ABC):
 
     @classmethod
     @abstractmethod
-    def object(self) -> gf.Symbol:
+    def definition(self) -> gf.Symbol:
         """Stores the module data
 
         Should be injected into the class before creation
