@@ -14,7 +14,7 @@ from typing import Type
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
 
-def copy_array(src, dst, length, size):
+def copy_array(src: int, dst: int, length: int, size: int):
     ctypes.memmove(
         dst,
         src,
@@ -149,7 +149,7 @@ def is_ppc64le() -> bool:
     return platform.machine() == "ppc64le"
 
 
-def load_lib(libname: str) -> Type[ctypes.CDLL]:
+def load_lib(libname: str) -> ctypes.CDLL:
     kwargs = {}
     if platform.system() == "Windows":
         libname = os.path.realpath(libname)

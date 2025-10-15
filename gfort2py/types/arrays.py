@@ -36,7 +36,7 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
         return f"{self.base.ftype}(kind={self.base.kind})({s})"
 
     @property
-    def value(self):
+    def value(self) -> np.ndarray:
         self._value = (
             np.ctypeslib.as_array(self._ctype)
             .reshape(self.shape, order="F")
@@ -45,7 +45,7 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
         return self._value
 
     @value.setter
-    def value(self, value):
+    def value(self, value: np.ndarray):
         self._value = self._array_check(value)
         copy_array(
             self._value.ctypes.data,
@@ -68,7 +68,7 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
         return value
 
     @property
-    def shape(self) -> Tuple[int]:
+    def shape(self) -> tuple[int, ...]:
         return self.object().properties.array_spec.pyshape
 
     @property
@@ -135,7 +135,7 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
         return f"{self.ftype}(kind={self.kind})({s})"
 
     @property
-    def value(self):
+    def value(self) -> np.ndarray:
         if self.ctype.base_addr is None:
             return None
 
@@ -157,7 +157,7 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
         return array
 
     @value.setter
-    def value(self, value):
+    def value(self, value: np.ndarray):
         shape = np.shape(value)
 
         self._allocate(shape)
@@ -175,11 +175,11 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
         raise NotImplementedError
 
     @property
-    def shape(self):
+    def shape(self) -> tuple[int, ...]:
         return self.object().properties.array_spec.pyshape
 
     @property
-    def ndims(self):
+    def ndims(self) -> int:
         return self.object().properties.array_spec.rank
 
 

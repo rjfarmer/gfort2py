@@ -36,11 +36,11 @@ class ftype_real_16(ftype_real):
     dtype = np.dtype("S16")
 
     @property
-    def value(self):
+    def value(self) -> pq.c_qfloat:
         return self._ctype.from_bytes(bytes(self._ctype.value))
 
     @value.setter
-    def value(self, value):
+    def value(self, value: pq.c_qfloat):
         self._value = value
         self._ctype.value = self._ctype(value).to_bytes()
 

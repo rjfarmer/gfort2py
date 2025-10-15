@@ -20,5 +20,5 @@ class fParam:
         return str(self.value)
 
     @property
-    def module(self):
+    def module(self) -> str:
         return self.obj.module

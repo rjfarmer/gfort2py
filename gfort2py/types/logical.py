@@ -11,12 +11,12 @@ class ftype_logical(f_type):
     default = ".false."
 
     @property
-    def value(self):
+    def value(self) -> bool:
         self._value = bool(self._ctype.value)
         return self._value
 
     @value.setter
-    def value(self, value):
+    def value(self, value: bool):
         self._value = bool(value)
         if self._value:
             self._ctype.value = 1

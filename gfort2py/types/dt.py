@@ -56,7 +56,7 @@ class ftype_dt(f_type):
         for key, value in value.items():
             self[key] = value
 
-    def keys(self):
+    def keys(self) -> list[str]:
         return self.fields.keys()
 
     def values(self):
@@ -109,7 +109,7 @@ class ftype_dt_array(f_type):
         ind = self._index(key)
         self._ctype[ind][key] = value
 
-    def keys(self):
+    def keys(self) -> list[str]:
         return self.fields.keys()
 
     def items(self):

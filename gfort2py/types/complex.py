@@ -34,12 +34,12 @@ class ftype_complex(f_type, metaclass=ABCMeta):
         return cmplx
 
     @property
-    def value(self):
+    def value(self) -> complex:
         self._value = complex(self._ctype.real, self._ctype.imag)
         return self._value
 
     @value.setter
-    def value(self, value):
+    def value(self, value: complex):
         self._value = value
         self._ctype.real = self._value.real
         self._ctype.imag = self._value.imag
@@ -63,11 +63,11 @@ class ftype_complex_16(ftype_complex):
     dtype = np.dtype("S32")
 
     @property
-    def value(self):
+    def value(self) -> pq.c_qcmplx:
         return self._ctype.from_bytes(bytes(self._ctype.value))
 
     @value.setter
-    def value(self, value):
+    def value(self, value: pq.c_qcmplx):
         self._value = value
         self._ctype.value = self._ctype(value).to_bytes()
 

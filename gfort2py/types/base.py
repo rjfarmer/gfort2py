@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 from typing import Type
+import numpy as np
 
 import gfModParser as gf
 
@@ -68,7 +69,7 @@ class f_type(ABC):
 
     @property
     @abstractmethod
-    def dtype(self):
+    def dtype(self) -> np.dtype:
         """Stores the numpy dtype
 
         Returns:
@@ -78,7 +79,7 @@ class f_type(ABC):
 
     @classmethod
     @abstractmethod
-    def object(self) -> Type[gf.Symbol]:
+    def object(self) -> gf.Symbol:
         """Stores the module data
 
         Should be injected into the class before creation
@@ -118,24 +119,24 @@ class f_type(ABC):
         return self._ctype
 
     @classmethod
-    def in_dll(cls, lib, name):
+    def in_dll(cls, lib: ctypes.CDLL, name: str):
         c = cls()
         c._ctype = c.ctype.in_dll(lib, name)
         return c
 
     @classmethod
-    def from_param(cls, obj):
+    def from_param(cls, obj) -> "f_type":
         c = cls(obj)
         return c.ctype
 
     @classmethod
-    def from_address(cls, address):
+    def from_address(cls, address: int) -> "f_type":
         c = cls()
         c._ctype = c.ctype.from_address(address)
         return c
 
     @classmethod
-    def from_ctype(cls, ctype):
+    def from_ctype(cls, ctype) -> "f_type":
         c = cls()
         c._ctype = ctype
         return c

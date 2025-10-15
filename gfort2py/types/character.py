@@ -46,7 +46,7 @@ class ftype_char(f_type, metaclass=ABCMeta):
             return str(self._ctype)  # Functions returning str's give us str not bytes
 
     @value.setter
-    def value(self, value):
+    def value(self, value: str | bytes):
         if value is None:
             return None
 

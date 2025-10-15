@@ -2,7 +2,7 @@
 import ctypes
 import os
 import collections
-from typing import List, Any, NamedTuple
+from typing import List, Any, NamedTuple, Type
 from functools import cache
 
 import gfModParser as gf
@@ -235,5 +235,17 @@ class fProc:
         return factory(self.return_type)()
 
 
-# class fArguments:
-#     def __init__(self, )
+class fArguments:
+    def __init__(
+        self,
+        func: gf.Symbol,
+        module: Type[gf.Module],
+        values: list[tuple, dict[str, Any]],
+    ):
+        self.func = func
+        self.module = module
+        self._values = values
+
+
+class fArg:
+    pass

@@ -85,7 +85,7 @@ def factory(obj: Type[gf.Symbol]) -> f_type:
     return res
 
 
-def find_ftype(ftype, kind):
+def find_ftype(ftype, kind) -> f_type:
     name = f"ftype_{ftype}_{kind}"
     try:
         res = getattr(sys.modules[__name__], name)

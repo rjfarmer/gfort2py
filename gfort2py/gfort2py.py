@@ -39,7 +39,7 @@ class fFort:
 
         self._initialized = True
 
-    def keys(self):
+    def keys(self) -> list[str]:
         return self._module.keys()
 
     def __contains__(self, key) -> bool:
