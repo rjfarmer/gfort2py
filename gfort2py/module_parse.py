@@ -866,8 +866,8 @@ class module(object):
         self._json = json
 
         if cache_folder is not None:
-            raise NotImplementedError(
-                "Caching is no longer needed leave cache_folder as None"
+            raise DeprecationWarning(
+                "Caching is no longer implemented, leave cache_folder as None. This option will be removed in the next major release"
             )
 
         with gzip.open(self.filename) as f:
