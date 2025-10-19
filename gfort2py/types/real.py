@@ -3,13 +3,7 @@
 import ctypes
 import numpy as np
 
-try:
-    import pyquadp as pq
-
-    PYQ_IMPORTED = True
-except ImportError:
-    PYQ_IMPORTED = False
-
+import pyquadp as pq
 from .base import f_type
 
 

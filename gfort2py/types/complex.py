@@ -4,12 +4,8 @@ import ctypes
 import numpy as np
 from abc import ABCMeta, abstractmethod
 
-try:
-    import pyquadp as pq
+import pyquadp as pq
 
-    PYQ_IMPORTED = True
-except ImportError:
-    PYQ_IMPORTED = False
 
 from .base import f_type
 
