@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0+
+from functools import cache
 
 
 class fParam:
@@ -6,6 +7,7 @@ class fParam:
         self.obj = obj
 
     @property
+    @cache
     def value(self):
         return self.obj.properties.exp_type.value
 

@@ -58,7 +58,9 @@ class fArg(ABC):
     @ctype.setter
     def ctype(self, value):
         self.base.value = value
-        if self.is_pointer:
+        if self.is_value:
+            self._ctype = self.base.ctype(value)
+        elif self.is_pointer:
             self._ctype = self.base.pointer2()
         else:
             self._ctype = self.base.pointer()
@@ -67,7 +69,9 @@ class fArg(ABC):
         if self._ctype is None:
             return None
 
-        if self.is_pointer:
+        if self.is_value:
+            c = self._ctype
+        elif self.is_pointer:
             c = self._ctype.contents.contents
         else:
             c = self._ctype.contents
