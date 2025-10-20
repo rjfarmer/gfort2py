@@ -57,6 +57,7 @@ class fFort:
                     return fParam(self._module[key]).value
 
                 if key in self._saved_variables:
+                    # return type_factory(self._module[key]).in_dll(self._lib, self._module[key].mangled_name)
                     return (
                         type_factory(self._module[key])
                         .in_dll(self._lib, self._module[key].mangled_name)

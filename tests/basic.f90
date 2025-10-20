@@ -165,7 +165,6 @@ module basic
 			integer :: z
 		
 			z = x*2
-		
 		end function func_int_value
 
 		subroutine sub_int_opt(x)

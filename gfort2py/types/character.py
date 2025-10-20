@@ -88,6 +88,27 @@ class ftype_character_1(ftype_char):
 
 class ftype_character_4(ftype_char):
     kind = 4
-    _base_ctype = ctypes.c_wchar_p
+    _base_ctype = ctypes.c_char * 4
     dtype = np.dtype(np.str_)
-    encoding = "utf_32"
+    encoding = "utf16"
+
+    @property
+    def value(self) -> bytes:
+        return b"".join([self._ctype[i].value for i in range(self.strlen)]).decode()
+
+    @value.setter
+    def value(self, value: str | bytes):
+        if value is None:
+            return None
+
+        if hasattr(value, "encode"):
+            value = value.encode(self.encoding)
+
+        if self.strlen is not None:
+            if len(value) > self.strlen:
+                value = value[: self.strlen]
+            else:
+                value = value + b" " * (self.strlen - len(value))
+
+        self._value = value
+        self._ctype.value = value
