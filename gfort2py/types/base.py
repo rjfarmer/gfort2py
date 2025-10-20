@@ -99,7 +99,11 @@ class f_type(ABC):
         Returns:
             value
         """
-        self._value = self._ctype.value
+
+        try:
+            self._value = self._ctype.value
+        except AttributeError:
+            self._value = self._ctype
         return self._value
 
     @value.setter

@@ -12,7 +12,10 @@ class ftype_logical(f_type):
 
     @property
     def value(self) -> bool:
-        self._value = bool(self._ctype.value)
+        try:
+            self._value = self._ctype.value == 1
+        except AttributeError:
+            self._value = self._ctype == 1
         return self._value
 
     @value.setter

@@ -9,7 +9,7 @@ import gfModParser as gf
 
 from ..types import factory
 
-from .base import fArg
+from .argument import fArg
 
 # Handle converting procedure agurements into correct type to pass to ctypes
 
@@ -20,6 +20,7 @@ class Arg:
     argument: fArg
     value: Any = None
     set: bool = False
+    actual: bool = True
 
 
 class ArgumentError(Exception):
@@ -89,6 +90,7 @@ class fArguments:
 
     def convert_args_back(self):
         res = {}
-        for key in self.args:
-            res[key] = self.args[key].argument.value()
+        for key, arg in self.args.items():
+            if arg.actual:
+                res[key] = arg.argument.value()
         return res

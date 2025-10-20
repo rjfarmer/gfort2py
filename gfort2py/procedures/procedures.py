@@ -1,14 +1,15 @@
 # SPDX-License-Identifier: GPL-2.0+
 import ctypes
 import os
+import abc
 import collections
 from typing import List, Any, NamedTuple, Type
 from functools import cache
 
 import gfModParser as gf
-from .types import factory, f_type, ftype_strlen, ftype_optional
+from ..types import factory as type_factory
 
-from .args import fArguments
+from .arguments import fArguments
 
 
 class Result(NamedTuple):
@@ -16,7 +17,7 @@ class Result(NamedTuple):
     args: dict[str, Any]
 
 
-class fProc:
+class fProcedure(abc.ABC):
 
     def __init__(
         self, lib: ctypes.CDLL, definition: gf.Symbol, module: gf.Module, **kwargs
@@ -24,9 +25,10 @@ class fProc:
         self._module = module
         self.definition = definition
         self._lib = lib
+        self._result = None
 
         self._proc = getattr(self._lib, self.definition.mangled_name)
-        self._proc.restype = None
+        self._set_return()
 
     def __call__(self, *args, **kwargs) -> Result:
 
@@ -35,44 +37,41 @@ class fProc:
         )
 
         if len(self.args):
-            res = self._proc(*self.args.arg_list())
+            self.result = self._proc(*self.args.arg_list())
         else:
-            res = self._proc()
+            self.result = self._proc()
 
-        return Result(res, self.args.convert_args_back())
+        return Result(self.result, self.args.convert_args_back())
 
     @property
     def ctype(self):
         return self._proc
 
-    @property
-    def __doc__(self):
-        if self.definition.is_subroutine:
-            ftype = f"subroutine {self.definition.name}"
-        else:
-            ftype = f"{str(self.return_var)} function {self.definition.name}"
-
-        args = []
-        for key in self.definition.properties.formal_argument:
-            arg = factory(self._module[key])()
-            args.append(f"{str(arg)} :: {self._module[key].name}")
-
-        args = ", ".join(args)
-        return f"{ftype} ({args})"
-
     def __repr__(self):
         return self.__doc__
 
-    @property
-    @cache
-    def return_type(self) -> gf.Symbol:
-        key = self.definition.properties.symbol_reference
-        return self._module[key]
+    @abc.abstractmethod
+    def _set_return(self):
+        raise NotImplementedError
+
+    def _doc_args(self):
+        args = []
+        for key in self.definition.properties.formal_argument:
+            arg = type_factory(self._module[key])()
+            args.append(f"{str(arg)} :: {self._module[key].name}")
+
+        args = ", ".join(args)
+        return args
 
     @property
-    @cache
-    def return_var(self) -> f_type:
-        return factory(self.return_type)()
+    @abc.abstractmethod
+    def result(self):
+        raise NotImplementedError
+
+    @result.setter
+    @abc.abstractmethod
+    def result(self, value):
+        raise NotImplementedError
 
     # def __call__(self, *args, **kwargs) -> Result:
     #     self._args = args
@@ -96,35 +95,6 @@ class fProc:
     #     args = self._convert_args_out()
 
     #     return Result(ret, args)
-
-    # def _set_return(self):
-
-    #     # Assume return is None, subroutines return as none
-    #     self._proc.argtypes = None
-
-    #     # Procedures need values accessing via their number not name
-
-    #     if self.definition.is_function:
-    #         ftype = self.return_type.type
-    #         kind = self.return_type.kind
-    #         # If we are returning a character or array that gets added to the arguments
-    #         # not the return value.
-    #         if (
-    #             ftype == "character"
-    #             or self.return_type.is_array
-    #             or self.return_type.is_dt
-    #         ):
-    #             return
-
-    #         # Quad's cant currently be returned
-    #         if ftype == "real" and kind == 16:
-    #             raise TypeError(
-    #                 "Can not return a quad from a procedure, it must be an argument or module variable"
-    #             )
-
-    #         self._proc.restype = self.return_var.ctype
-    #     else:
-    #         self._proc.restype = None
 
     # def _set_argument_types(self):
     #     """Sets the procedures argument types

@@ -9,9 +9,9 @@ import typing
 import gfModParser as gf
 
 # from .fVar import fVar
-from .fProc import fProc
+from .procedures import factory as proc_factory
 from .fParameters import fParam
-from .types import factory, get_module
+from .types import factory as type_factory, get_module
 
 # from .fCompile import compile_and_load, common_compile
 from .utils import load_lib
@@ -58,13 +58,15 @@ class fFort:
 
                 if key in self._saved_variables:
                     return (
-                        factory(self._module[key])
+                        type_factory(self._module[key])
                         .in_dll(self._lib, self._module[key].mangled_name)
                         .value
                     )
 
                 if key in self._saved_procedures:
-                    return fProc(self._lib, self._module[key], self._module)
+                    return proc_factory(self._module[key])(
+                        self._lib, self._module[key], self._module
+                    )
 
             raise AttributeError(f"Can't find symbol {key}")
 
@@ -77,7 +79,7 @@ class fFort:
                     raise AttributeError("Can not set a parameter")
 
                 if key in self._saved_variables:
-                    factory(self._module[key]).in_dll(
+                    type_factory(self._module[key]).in_dll(
                         self._lib, self._module[key].mangled_name
                     ).value = value
 
