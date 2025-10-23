@@ -68,7 +68,12 @@ def common_compile(
     if "\n" in string:
         string = string.split("\n")
 
-    name = "c" + hashlib.md5(b"".join([i.encode() for i in string])).hexdigest()
+    name = (
+        "c"
+        + hashlib.md5(
+            b"".join([i.encode() for i in string]), usedforsecurity=False
+        ).hexdigest()
+    )
 
     string = "\n".join([f"module {name}", *string, "contains", "end module"])
 
@@ -159,7 +164,12 @@ def moduleize(string):
     # Module names must start with a letter
     # hashing the contents means the name is static so
     # module_parse caching should speed things up
-    name = "a" + hashlib.md5(b"".join([i.encode() for i in string])).hexdigest()
+    name = (
+        "a"
+        + hashlib.md5(
+            b"".join([i.encode() for i in string]), usedforsecurity=False
+        ).hexdigest()
+    )
 
     return [f"module {name}\n", "contains\n", *string, "end module\n"]
 
@@ -302,7 +312,12 @@ def subroutine_run_compile(code, args, runner):
 
     """
 
-    subname = "a" + hashlib.md5(b"".join([i.encode() for i in code])).hexdigest()[:8]
+    subname = (
+        "a"
+        + hashlib.md5(
+            b"".join([i.encode() for i in code]), usedforsecurity=False
+        ).hexdigest()[:8]
+    )
 
     code = f"""
            subroutine {subname}({args})
@@ -310,7 +325,12 @@ def subroutine_run_compile(code, args, runner):
            end subroutine
            """
 
-    name = "c" + hashlib.md5(b"".join([i.encode() for i in code])).hexdigest()[0:8]
+    name = (
+        "c"
+        + hashlib.md5(
+            b"".join([i.encode() for i in code]), usedforsecurity=False
+        ).hexdigest()[0:8]
+    )
     filename = os.path.join(output_folder(), f"{name}.{lib_ext()}")
 
     if not os.path.exists(filename):
