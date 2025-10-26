@@ -36,12 +36,14 @@ class fProcedure(abc.ABC):
             procedure=self.definition, module=self._module, values=[args, kwargs]
         )
 
+        self.args.set_values()
+
         if len(self.args):
-            self.result = self._proc(*self.args.arg_list())
+            self.result = self._proc(*self.args.get_ctypes())
         else:
             self.result = self._proc()
 
-        return Result(self.result, self.args.convert_args_back())
+        return Result(self.result, self.args.get_values())
 
     @property
     def ctype(self):

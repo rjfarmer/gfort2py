@@ -7,11 +7,15 @@ from dataclasses import dataclass
 
 import gfModParser as gf
 
-from ..types import factory
+from ...types import factory
 
 from .argument import fArg
 
 # Handle converting procedure agurements into correct type to pass to ctypes
+
+
+class ArgumentError(Exception):
+    pass
 
 
 @dataclass
@@ -23,11 +27,7 @@ class Arg:
     actual: bool = True
 
 
-class ArgumentError(Exception):
-    pass
-
-
-class fArguments:
+class fArgumentsAbstract(abc.ABC):
     def __init__(
         self,
         procedure: gf.Symbol,
@@ -39,10 +39,6 @@ class fArguments:
         self._values = values
 
         self.args: dict[str, Arg] = {}
-
-        self.expand_values()
-
-        self.set_vars()
 
     def expand_values(self):
         """
@@ -78,17 +74,42 @@ class fArguments:
             if arg.set == False and not arg.argument.can_be_unset():
                 raise ArgumentError(f"Argument {key} must have a value set")
 
-    def set_vars(self):
-        for key in self.args.keys():
-            self.args[key].argument.ctype = self.args[key].value
-
-    def arg_list(self):
+    def get_ctypes(self) -> list[Any]:
         return [c.argument.ctype for c in self.args.values()]
 
     def __len__(self):
         return len(self.args)
 
-    def convert_args_back(self):
+    @abc.abstractmethod
+    def set_values(self):
+        """
+        Sets all argument ctypes with thier value
+        """
+        raise NotImplemented
+
+    @abc.abstractmethod
+    def get_values(self) -> dict[str, Any]:
+        """
+        Converts ctypes back into thier base type and return the dict with thier values
+        """
+        raise NotImplemented
+
+
+class fArguments(fArgumentsAbstract):
+    def set_values(self):
+        """
+        Sets all argument ctypes with thier value
+        """
+        self.expand_values()
+
+        for key in self.args.keys():
+            self.args[key].argument.ctype = self.args[key].value
+
+    def get_values(self) -> dict[str, Any]:
+        """
+        Converts ctypes back into thier base type and return the dict with thier values
+        """
+
         res = {}
         for key, arg in self.args.items():
             if arg.actual:

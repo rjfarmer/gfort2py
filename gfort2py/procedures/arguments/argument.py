@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 import gfModParser as gf
 
-from ..types import factory
+from ...types import factory
 
 
 class fArg(ABC):
