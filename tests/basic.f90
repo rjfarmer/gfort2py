@@ -214,7 +214,8 @@ module basic
 		subroutine sub_many_args(a,b,c,d,e,f,g,h,i,j,k,l)
 			real :: a,b,c,d
 			logical :: e,f,g
-			character(len=*) :: h,i,j,k,l
+			character(len=10) :: h
+			character(len=*) :: i,j,k,l
 			
 			!write(output_unit,*) a,b,c,d,e,f,g,h,i,j,k,l
 		end subroutine sub_many_args

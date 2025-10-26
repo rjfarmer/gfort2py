@@ -29,12 +29,19 @@ class ftype_char(f_type, metaclass=ABCMeta):
         raise NotImplementedError
 
     def __repr__(self):
+        l = self.strlen
+        if l is None:
+            l = "*"
+
         return f"{self.ftype}(kind={self.kind},len={self.strlen})"
 
     @property
     def ctype(self):
         if self.strlen is None:
-            return self._base_ctype
+            if self._value is not None:
+                return self._base_ctype * len(self._value)
+            else:
+                return self._base_ctype
         else:
             return self._base_ctype * self.strlen
 
@@ -60,6 +67,9 @@ class ftype_char(f_type, metaclass=ABCMeta):
                 value = value + b" " * (self.strlen - len(value))
 
         self._value = value
+        if self.strlen is None:
+            self._ctype = self.ctype()
+
         self._ctype.value = value
 
     @property
@@ -71,7 +81,10 @@ class ftype_char(f_type, metaclass=ABCMeta):
         except AttributeError:
             raise AttributeError(f"{self.definition().name} is not a character")
         # else have we already got a length from self._value?
-        if l is None and self._value is not None:
+        if l is not None:
+            if l < 0:
+                l = None
+        elif l is None and self._value is not None:
             l = len(self._value)
         # else None
         self._strlen = l

@@ -25,3 +25,9 @@ class fSub(fProcedure):
     @result.setter
     def result(self, value):
         pass
+
+    @property
+    def __doc__(self):
+        ftype = f"subroutine {self.definition.name}"
+
+        return f"{ftype} ({self._doc_args()})"
