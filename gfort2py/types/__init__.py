@@ -87,6 +87,10 @@ def factory(obj: Type[gf.Symbol]) -> f_type:
 
 def find_ftype(ftype, kind) -> f_type:
     name = f"ftype_{ftype}_{kind}"
+
+    if ftype == "character":
+        return ftype_character
+
     try:
         res = getattr(sys.modules[__name__], name)
     except Exception:
