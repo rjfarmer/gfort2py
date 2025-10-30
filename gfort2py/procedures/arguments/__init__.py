@@ -30,11 +30,3 @@ def factory_return(
         return fReturnDTArguments(procedure, module, values)
     else:
         raise ValueError(f"Unknown return argument type {rt}")
-
-
-def factory_extra(
-    procedure: gf.Symbol,
-    module: Type[gf.Module],
-    values: list[tuple, dict[str, Any]],
-) -> fArguments:
-    pass

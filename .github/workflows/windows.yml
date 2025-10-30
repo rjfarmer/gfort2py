@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           choco install make
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip==25.2
           python -m pip install build wheel pytest
 
       - uses: fortran-lang/setup-fortran@v1

@@ -17,7 +17,7 @@ class Result(NamedTuple):
     args: dict[str, Any]
 
 
-class fProcedure(abc.ABC):
+class fProcedure(metaclass=abc.ABCMeta):
 
     def __init__(
         self, lib: ctypes.CDLL, definition: gf.Symbol, module: gf.Module, **kwargs

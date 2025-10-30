@@ -2,14 +2,14 @@
 
 from typing import Type, Any
 import ctypes
-from abc import ABC, abstractmethod
+from abc import abstractmethod, ABCMeta
 
 import gfModParser as gf
 
 from ...types import factory
 
 
-class fArg(ABC):
+class fArg(metaclass=ABCMeta):
     def __init__(
         self, definition: gf.Symbol, procedure: gf.Symbol, module: Type[gf.Module]
     ):

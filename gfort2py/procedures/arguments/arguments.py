@@ -27,7 +27,7 @@ class Arg:
     actual: bool = True
 
 
-class fArgumentsAbstract(abc.ABC):
+class fArgumentsAbstract(metaclass=abc.ABCMeta):
     def __init__(
         self,
         procedure: gf.Symbol,
@@ -52,7 +52,7 @@ class fArgumentsAbstract(abc.ABC):
                 argument=fArg(self.module[i], self.procedure, self.module),
             )
 
-        # First compoent of self._values is the args so expand in order
+        # First compoment of self._values is the args so expand in order
         for key, value in zip(self.args.keys(), self._values[0]):
             self.args[key].value = value
             self.args[key].set = True

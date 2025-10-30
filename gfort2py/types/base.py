@@ -6,13 +6,13 @@ import numpy as np
 import gfModParser as gf
 
 import ctypes
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, ABCMeta
 
 
 __all__ = ["f_type"]
 
 
-class f_type(ABC):
+class f_type(metaclass=ABCMeta):
     """
     Base class for interfacing with Fortran object
 
