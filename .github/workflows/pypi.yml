@@ -23,7 +23,7 @@ jobs:
     - name: Install dependices
       run: |
         sudo apt-get install gfortran-12
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip==25.2
         python -m pip install build wheel pytest
     - name: Build a binary wheel and a source tarball
       run: >-
