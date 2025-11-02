@@ -3,7 +3,13 @@
 import ctypes
 import numpy as np
 
-import pyquadp as pq
+try:
+    import pyquadp as pyq  # type: ignore[import-not-found]
+
+    PYQ_IMPORTED = True
+except ImportError:
+    PYQ_IMPORTED = False
+
 from .base import f_type
 
 
@@ -26,15 +32,21 @@ class ftype_real_8(ftype_real):
 
 class ftype_real_16(ftype_real):
     kind = 16
-    ctype = pq.c_qfloat
+
     dtype = np.dtype("S16")
 
     @property
-    def value(self) -> pq.c_qfloat:
+    def ctype(self):
+        if not PYQ_IMPORTED:
+            raise ValueError("Please install pyQuadp to handle quad precision numbers")
+        return pyq.c_qfloat
+
+    @property
+    def value(self) -> "pyq.c_qfloat":
         return self._ctype.from_bytes(bytes(self._ctype.value))
 
     @value.setter
-    def value(self, value: pq.c_qfloat):
+    def value(self, value: "pyq.c_qfloat"):
         self._value = value
         self._ctype.value = self._ctype(value).to_bytes()
 

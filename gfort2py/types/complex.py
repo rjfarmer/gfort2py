@@ -4,7 +4,12 @@ import ctypes
 import numpy as np
 from abc import ABCMeta, abstractmethod
 
-import pyquadp as pq
+try:
+    import pyquadp as pyq  # type: ignore[import-not-found]
+
+    PYQ_IMPORTED = True
+except ImportError:
+    PYQ_IMPORTED = False
 
 
 from .base import f_type
@@ -54,16 +59,21 @@ class ftype_complex_8(ftype_complex):
 
 
 class ftype_complex_16(ftype_complex):
-    ctype = pq.c_qcmplx
     kind = 16
     dtype = np.dtype("S32")
 
     @property
-    def value(self) -> pq.c_qcmplx:
+    def ctype(self):
+        if not PYQ_IMPORTED:
+            raise ValueError("Please install pyQuadp to handle quad precision numbers")
+        return pyq.c_qcmplx
+
+    @property
+    def value(self) -> "pyq.c_qcmplx":
         return self._ctype.from_bytes(bytes(self._ctype.value))
 
     @value.setter
-    def value(self, value: pq.c_qcmplx):
+    def value(self, value: "pyq.c_qcmplx"):
         self._value = value
         self._ctype.value = self._ctype(value).to_bytes()
 
