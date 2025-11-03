@@ -96,7 +96,7 @@ def find_ftype(ftype, kind) -> f_type:
 
     try:
         res = getattr(sys.modules[__name__], name)
-    except Exception:
+    except AttributeError:
         raise TypeError("Can't match object")
 
     return res

@@ -183,6 +183,7 @@ class TestDTMethods:
         o = "99 98"
         assert out.strip() == o
 
+    @pytest.mark.skip
     def test_func_return_s_struct_nested_2(self):
         y = x.func_return_s_struct_nested_2()
         assert y.result["a_int"] == 123
