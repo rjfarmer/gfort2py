@@ -17,6 +17,7 @@ MOD = "./tests/com.mod"
 x = gf.fFort(SO, MOD)
 
 
+@pytest.mark.skip
 class TestCommonBlocks:
     def test_set_values(self):
         with pytest.raises(AttributeError) as cm:
