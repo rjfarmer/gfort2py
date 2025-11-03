@@ -13,6 +13,8 @@ from .return_arguments import (
     fReturnDTArguments,
 )
 
+from .extra_arguments import fArgumentsExtra
+
 
 def factory_return(
     procedure: gf.Symbol,

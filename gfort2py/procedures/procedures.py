@@ -9,7 +9,7 @@ from functools import cache
 import gfModParser as gf
 from ..types import factory as type_factory
 
-from .arguments import fArguments
+from .arguments import fArguments, factory_return, fArgumentsExtra
 
 
 class Result(NamedTuple):
@@ -32,18 +32,31 @@ class fProcedure(metaclass=abc.ABCMeta):
 
     def __call__(self, *args, **kwargs) -> Result:
 
+        # self.args_start = factory_return(
+        #     procedure=self.definition, module=self._module, values=[args, kwargs]
+        # )
+
         self.args = fArguments(
             procedure=self.definition, module=self._module, values=[args, kwargs]
         )
 
-        self.args.set_values()
+        # self.args_end = fArgumentsExtra(
+        #     procedure=self.definition, module=self._module, values=[args, kwargs]
+        # )
 
-        if len(self.args):
-            self.result = self._proc(*self.args.get_ctypes())
+        # self.args_start.set_values()
+        self.args.set_values()
+        # self.args_end.set_values()
+
+        # all_args = [*self.args_start.get_ctypes(), *self.args.get_ctypes(), *self.args_end.get_ctypes()]
+        all_args = self.args.get_ctypes()
+
+        if len(all_args):
+            self.result = self._proc(*all_args)
         else:
             self.result = self._proc()
 
-        return Result(self.result, self.args.get_values())
+        return Result(self.resolve_return(), self.resolve_args())
 
     @property
     def ctype(self):
@@ -74,6 +87,18 @@ class fProcedure(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def result(self, value):
         raise NotImplementedError
+
+    def resolve_return(self):
+        res = self.result
+
+        if res is None and not self.definition.is_subroutine:
+            res = self._args_start.get_values()[0]
+
+        return res
+
+    def resolve_args(self):
+        # Handle self.args.get_values() and self.args_end.get_values()
+        return self.args.get_values()  # + self.args_end.get_values()
 
     # def __call__(self, *args, **kwargs) -> Result:
     #     self._args = args

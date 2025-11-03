@@ -20,8 +20,7 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
 
     def __init__(self, value=None):
         self.base = self._base()
-        self._value = value
-        super().__init__()
+        super().__init__(value=value)
 
     @abstractmethod
     def _base(self):
@@ -46,6 +45,9 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
 
     @value.setter
     def value(self, value: np.ndarray):
+        if value is None:
+            return None
+
         self._value = self._array_check(value)
         copy_array(
             self._value.ctypes.data,
@@ -56,7 +58,6 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
 
     def _array_check(self, value):
         value = np.asfortranarray(value)
-
         value = value.astype(self.base.dtype, copy=False)
 
         if value.ndim != self.ndims:
