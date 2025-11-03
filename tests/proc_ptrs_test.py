@@ -18,8 +18,6 @@ x = gf.fFort(SO, MOD)
 
 
 class TestProcPtrsMethods:
-    def assertEqual(self, x, y):
-        assert x == y
 
     @pytest.mark.skip
     def test_proc_ptr_ffunc(self):
@@ -29,13 +27,13 @@ class TestProcPtrsMethods:
 
         x.p_func_func_run_ptr = x.func_func_run
         y = x.p_func_func_run_ptr(1)
-        self.assertEqual(y.result, 10)
+        assert y.result == 10
         y = x.p_func_func_run_ptr(2)
-        self.assertEqual(y.result, 20)
+        assert y.result == 20
 
         y = x.func_proc_ptr(5)
         y2 = x.p_func_func_run_ptr(5)
-        self.assertEqual(y.result, y2.result)
+        assert y.result == y2.result
 
     @pytest.mark.skip
     def test_proc_ptr_ffunc2(self):
@@ -45,29 +43,29 @@ class TestProcPtrsMethods:
 
         x.p_func_func_run_ptr2 = x.func_func_run
         y = x.p_func_func_run_ptr2(10)
-        self.assertEqual(y.result, 100)
+        assert y.result == 100
 
     @pytest.mark.skip
     def test_proc_update(self):
         x.sub_null_proc_ptr()
         x.p_func_func_run_ptr = x.func_func_run
         y = x.p_func_func_run_ptr(1)
-        self.assertEqual(y.result, 10)
+        assert y.result == 10
 
         x.p_func_func_run_ptr = x.func_func_run2
         y = x.p_func_func_run_ptr(1)
-        self.assertEqual(y.result, 2)
+        assert y.result == 2
 
     @pytest.mark.skipif(gf.utils.is_big_endian(), reason="Skip on big endian systems")
     def test_proc_func_arg(self):
         y = x.func_func_arg_dp(5, x.func_real)
-        self.assertEqual(y.result, 500)
+        assert y.result == 500
 
         y = x.func_func_arg(x.func_func_run)
-        self.assertEqual(y.result, 10)
+        assert y.result == 10
 
         y = x.func_func_arg(func=x.func_func_run)
-        self.assertEqual(y.result, 10)
+        assert y.result == 10
 
     def test_proc_func_arg_compile(self):
         fstr = """
@@ -82,7 +80,7 @@ class TestProcPtrsMethods:
         f = gf.compile(fstr)
 
         y = x.func_func_arg(f.test)
-        self.assertEqual(y.result, 3)
+        assert y.result == 3
 
     @pytest.mark.skip
     def test_proc_proc_func_arg(self):
@@ -90,4 +88,4 @@ class TestProcPtrsMethods:
         x.p_func_func_run_ptr = x.func_func_run
 
         y = x.proc_proc_func_arg(x.p_func_func_run_ptr)
-        self.assertEqual(y.result, 90)
+        assert y.result == 90
