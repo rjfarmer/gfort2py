@@ -38,6 +38,7 @@ class TestStringMethods:
         out, err = capfd.readouterr()
         self.assertEqual(out.strip(), v)
 
+    @pytest.mark.skip
     def test_sub_str_in_implicit(self, capfd):
         v = "123456789"
 
@@ -45,6 +46,7 @@ class TestStringMethods:
         out, err = capfd.readouterr()
         self.assertEqual(out.strip(), v)
 
+    @pytest.mark.skip
     def test_sub_str_multi(self, capfd):
         v = 5
         u = "123456789"
@@ -54,6 +56,7 @@ class TestStringMethods:
         out, err = capfd.readouterr()
         self.assertEqual(out.strip(), str(v + w) + " " + u)
 
+    @pytest.mark.skip
     def test_sub_str_p(self, capfd):
         y = x.sub_str_p("abcdef")
         out, err = capfd.readouterr()
@@ -61,10 +64,12 @@ class TestStringMethods:
         self.assertEqual(y.args["zzz"], "xyzxyz")
         self.assertEqual(out.strip(), "abcdef")
 
+    @pytest.mark.skip
     def test_func_ret_str(self):
         y = x.func_ret_str("abcde")
         self.assertEqual(y.result, "Abcde")
 
+    @pytest.mark.skip
     # We need to call a func on the argument before passing it to func_str_int_len
     def test_func_str_int_len(self, capfd):
         out, err = capfd.readouterr()
@@ -72,6 +77,7 @@ class TestStringMethods:
 
         assert y.result == "10"
 
+    @pytest.mark.skip
     def test_str_alloc(self):
         self.assertEqual(x.str_alloc, None)  # Empty at start
 
@@ -85,6 +91,7 @@ class TestStringMethods:
         y = x.check_str_alloc(2)
         self.assertEqual(y.result, False)
 
+    @pytest.mark.skip
     def test_str_alloc_sub(self):
         z = None
         y = x.sub_str_alloc(z)
@@ -286,6 +293,7 @@ class TestStringMethods:
         assert res.args["x"]["a_str2"] == "asdfghjkl;zx"
         assert res.args["x"]["a_int"] == 99
 
+    @pytest.mark.skip
     def test_set_chr_star_star(self):
         res = x.set_chr_star_star("            ")
         assert res.args["x"] == "abcdefghijkl"

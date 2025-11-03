@@ -34,8 +34,9 @@ class ftype_character(f_type, metaclass=ABCMeta):
     def __repr__(self):
         return self._length.__repr__()
 
+    @property
     def ctype(self):
-        return self._length.ctype()
+        return self._length.ctype
 
     @property
     def _base_ctype(self):

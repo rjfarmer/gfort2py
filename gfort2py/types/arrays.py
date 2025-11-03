@@ -11,6 +11,7 @@ from .base import f_type
 
 from ..utils import copy_array, is_64bit
 from ..allocate import allocate_var, allocate_char
+from .character import ftype_character
 
 
 class ftype_explicit_array(f_type, metaclass=ABCMeta):
@@ -87,13 +88,16 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
     kind = None
 
     def _init__(self, value=None):
-        self.base = self._base()
         self._value = value
         super().__init__()
 
     @abstractmethod
     def _base(self):
         raise NotImplementedError
+
+    @property
+    def base(self):
+        return self._base()
 
     @property
     def ctype(self):
@@ -185,6 +189,7 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
 
 
 class ftype_character_assumed_shape(ftype_assumed_shape):
+
     def _allocate(self, shape):
         allocate_char(
             self.ctype,
@@ -196,7 +201,10 @@ class ftype_character_assumed_shape(ftype_assumed_shape):
 
 
 class ftype_number_assumed_shape(ftype_assumed_shape):
+
     def _allocate(self, shape):
+        print(self._base)
+
         allocate_var(
             self.ctype,
             kind=self.kind,

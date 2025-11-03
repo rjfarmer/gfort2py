@@ -52,7 +52,10 @@ def factory(obj: Type[gf.Symbol]) -> f_type:
         if is_explicit:
             res = ftype_explicit_array
         elif is_assumed_shape:
-            res = ftype_assumed_shape
+            if ftype == "character":
+                res = ftype_character_assumed_shape
+            else:
+                res = ftype_number_assumed_shape
         else:
             raise TypeError("Can't match object")
 
