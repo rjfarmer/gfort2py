@@ -41,6 +41,9 @@ class ftype_complex(f_type, metaclass=ABCMeta):
 
     @value.setter
     def value(self, value: complex):
+        if value is None:
+            return
+
         self._value = value
         self._ctype.real = self._value.real
         self._ctype.imag = self._value.imag
