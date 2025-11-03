@@ -4,6 +4,7 @@ import ctypes
 import numpy as np
 from abc import ABCMeta, abstractmethod
 from typing import Type
+from functools import cache
 
 import gfModParser as gf
 from .base import f_type
@@ -17,19 +18,21 @@ class ftype_character(f_type, metaclass=ABCMeta):
     ftype = "character"
 
     def __init__(self, value=None):
-        self._value = value
+        super().__init__(value=value)
 
+    @property
+    @cache
+    def _char(self):
         if self.definition().kind == 1:
-            self._char = ftype_character_1(self)
-        else:
-            self._char = ftype_character_4(self)
+            return ftype_character_1(self)
+        return ftype_character_4(self)
 
+    @property
+    @cache
+    def _length(self):
         if self.definition().properties.typespec.charlen.value > 0:
-            self._length = ftype_char_fixed(self)
-        else:
-            self._length = ftype_char_defered(self)
-
-        super().__init__()
+            return ftype_char_fixed(self)
+        return ftype_char_defered(self)
 
     def __repr__(self):
         return self._length.__repr__()
@@ -51,7 +54,7 @@ class ftype_character(f_type, metaclass=ABCMeta):
 
     @property
     def value(self) -> str | None:
-        self._char.decode_value(self._ctype)
+        return self._char.decode_value(self._ctype)
 
     @value.setter
     def value(self, value: str | bytes | None):
