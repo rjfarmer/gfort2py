@@ -63,6 +63,10 @@ class ftype_character(f_type, metaclass=ABCMeta):
 
         self._length.set_value(value)
 
+    @property
+    def strlen(self):
+        return self._length.strlen
+
 
 #####################
 

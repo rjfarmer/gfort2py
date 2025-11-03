@@ -24,10 +24,4 @@ class TestUnicodeMethods:
 
     def test_param(self):
         # TODO: Overload fParam to handle this
-        assert (
-            x.uni_param.encode("latin1")
-            .decode("unicode_escape")
-            .encode("latin1")
-            .decode("utf8")
-            == "😀😎😩"
-        )
+        assert x.uni_param == "😀😎😩"
