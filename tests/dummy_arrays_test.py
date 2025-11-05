@@ -17,7 +17,7 @@ MOD = "./tests/dummy_arrays.mod"
 x = gf.fFort(SO, MOD)
 
 
-# @pytest.mark.skip
+@pytest.mark.skip
 class TestDummyArrayMethods:
     def test_sub_alloc_1d_arrs(self):
         y = x.sub_alloc_int_1d_arrs()

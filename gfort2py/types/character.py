@@ -94,7 +94,7 @@ class ftype_char(metaclass=ABCMeta):
     default = ""
     ftype = "character"
 
-    def __init__(self, parent, value=None):
+    def __init__(self, parent: ftype_character, value=None):
         self._value = value
         self.parent = parent
 
@@ -140,7 +140,7 @@ class ftype_character_4(ftype_char):
 
 
 class ftype_char_length(metaclass=ABCMeta):
-    def __init__(self, parent):
+    def __init__(self, parent: ftype_character):
         self.parent = parent
 
     @property
@@ -173,7 +173,7 @@ class ftype_char_fixed(ftype_char_length):
 
     @property
     def ctype(self):
-        return self.parent._base_ctype * self.strlen
+        return self.parent._char._base_ctype * self.strlen
 
     def set_value(self, value):
         if len(value) > self.strlen:
@@ -181,7 +181,7 @@ class ftype_char_fixed(ftype_char_length):
         else:
             value = value + b" " * (self.strlen - len(value))
 
-        self.parent._value = value
+        self.parent._char._value = value
 
         self.parent._ctype.value = value
 
@@ -204,14 +204,14 @@ class ftype_char_defered(ftype_char_length):
 
     @property
     def ctype(self):
-        if self.parent._value is not None:
-            return self.parent._base_ctype * len(self.parent._value)
+        if self.parent._char._value is not None:
+            return self.parent._char._base_ctype * len(self.parent._char._value)
         else:
-            return self.parent._base_ctype
+            return self.parent._char._base_ctype
 
     def set_value(self, value):
 
-        self.parent._value = value
+        self.parent._char._value = value
 
         self.parent._ctype = self.ctype()
 

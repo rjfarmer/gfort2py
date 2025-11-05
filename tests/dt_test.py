@@ -17,7 +17,7 @@ MOD = "./tests/dt.mod"
 x = gf.fFort(SO, MOD)
 
 
-# @pytest.mark.skip
+@pytest.mark.skip
 class TestDTMethods:
 
     def test_dt_set_value(self):

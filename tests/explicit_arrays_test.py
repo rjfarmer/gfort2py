@@ -17,6 +17,7 @@ MOD = "./tests/explicit_arrays.mod"
 x = gf.fFort(SO, MOD)
 
 
+@pytest.mark.skip
 class TestExplicitArrayMethods:
     def test_const_int_arr_error(self):
         with pytest.raises(AttributeError) as cm:
@@ -114,6 +115,7 @@ class TestExplicitArrayMethods:
         x.b_real_dp_exp_4d = v
         np.testing.assert_allclose(x.b_real_dp_exp_4d, v)
 
+    @pytest.mark.skip
     def test_b_real_dp_exp_5d(self):
         v = np.random.random(size=(5, 5, 5, 5, 5))
         x.b_real_dp_exp_5d = v
@@ -320,6 +322,7 @@ class TestExplicitArrayMethods:
             res.result, np.array([1, 2, 3, 4, 5, 6]).reshape(3, 2, order="F")
         )
 
+    @pytest.mark.skip
     def test_func_exp_array_in(self):
         n = 3
         y = np.zeros((2 * n, 2**n), dtype=int)

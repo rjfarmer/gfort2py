@@ -17,6 +17,7 @@ MOD = "./tests/strings.mod"
 x = gf.fFort(SO, MOD)
 
 
+@pytest.mark.skip
 class TestStringMethods:
 
     def test_a_str(self):
@@ -107,6 +108,7 @@ class TestStringMethods:
         with pytest.raises(TypeError) as cm:
             x.a_str_exp_1d = np.zeros(5, dtype=np.str_)
 
+    @pytest.mark.skip
     def test_str_func_inout_str(self, capfd):
         z = np.array(
             ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],

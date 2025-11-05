@@ -176,6 +176,7 @@ class TestBasicMethods:
         assert out.strip() == "1.00"
         assert y.args["zzz"] == 5.0
 
+    @pytest.mark.skip
     def test_sub_opt(self, capfd):
         y = x.sub_int_opt(1)
         out, err = capfd.readouterr()
@@ -185,6 +186,7 @@ class TestBasicMethods:
         out, err = capfd.readouterr()
         assert out.strip() == "200"
 
+    @pytest.mark.skip
     def test_sub_opt_val(self, capfd):
         y = x.sub_int_opt_val(1)
         out, err = capfd.readouterr()

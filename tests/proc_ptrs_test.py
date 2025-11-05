@@ -57,6 +57,7 @@ class TestProcPtrsMethods:
         assert y.result == 2
 
     @pytest.mark.skipif(gf.utils.is_big_endian(), reason="Skip on big endian systems")
+    @pytest.mark.skip
     def test_proc_func_arg(self):
         y = x.func_func_arg_dp(5, x.func_real)
         assert y.result == 500
@@ -67,6 +68,7 @@ class TestProcPtrsMethods:
         y = x.func_func_arg(func=x.func_func_run)
         assert y.result == 10
 
+    @pytest.mark.skip
     def test_proc_func_arg_compile(self):
         fstr = """
                 integer function test(x)

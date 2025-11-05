@@ -59,7 +59,7 @@ class fArg(metaclass=ABCMeta):
     def ctype(self, value):
         self.base.value = value
         if self.is_value:
-            self._ctype = self.base.ctype(value)
+            self._ctype = self.base._ctype
         elif self.is_pointer:
             self._ctype = self.base.pointer2()
         else:
