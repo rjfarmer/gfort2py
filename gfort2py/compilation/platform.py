@@ -154,7 +154,7 @@ def factory_platform() -> PlatformABC:
     os_platform = platform.system()
     if os_platform == "Darwin":
         return PlatformMac()
-    elif os_platform == "Windows" or "CYGWIN" in os_platform:
+    elif os_platform == "Windows":
         return PlatformWindows()
     else:
         return PlatformLinux()
