@@ -3,6 +3,7 @@
 import os, sys
 import ctypes
 from pprint import pprint
+from pathlib import Path
 
 os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 
@@ -19,8 +20,8 @@ except ImportError:
     PYQ_IMPORTED = False
 
 
-SO = f"./tests/basic.{gf.lib_ext()}"
-MOD = "./tests/basic.mod"
+SO = Path(f"./tests/basic.{gf.lib_ext()}")
+MOD = Path("./tests/basic.mod")
 
 x = gf.fFort(SO, MOD)
 
@@ -31,10 +32,10 @@ class TestBasicMethods:
         assert gf.__version__
 
     def test_doc(self):
-        assert x.__doc__ == f"MODULE=tests/basic.mod LIBRARY={SO}"
+        assert x.__doc__ == f"MODULE={MOD} LIBRARY={SO}"
 
     def test_str(self):
-        assert f"./{x}" == MOD
+        assert str(x) == str(MOD)
 
     def test_mising_var(self):
         with pytest.raises(AttributeError) as cm:

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 import typing
+from pathlib import Path
 
 import gfModParser as gf
 
@@ -22,9 +23,9 @@ class fFort:
         shared library libname.
         """
 
-        self._libname = libname
+        self._libname = Path(libname)
         self._lib = factory_platform().load_library(self._libname)
-        self._mod_file = mod_file
+        self._mod_file = Path(mod_file)
         self._module = get_module(self._mod_file)
 
         self._saved_parameters = gf.Parameters(self._module)
