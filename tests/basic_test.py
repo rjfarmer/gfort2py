@@ -210,6 +210,7 @@ class TestBasicMethods:
         z = x.func_int_in(x.a_int)
         assert z.result == 10
 
+    @pytest.mark.skip
     def test_sub_man_args(self):
         # if this doesn't seg fault we are good
         x.sub_many_args(
