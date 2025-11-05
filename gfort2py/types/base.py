@@ -9,6 +9,9 @@ import ctypes
 from abc import ABC, abstractmethod, ABCMeta
 
 
+from ..compilation import Modulise, CompileArgs
+
+
 __all__ = ["f_type"]
 
 
@@ -157,6 +160,20 @@ class f_type(metaclass=ABCMeta):
             _ = self.pointer()
         self._p2 = ctypes.pointer(self._p1)
         return self._p2
+
+    def allocate(self, shape):
+        dims = ",".join([":"] * len(shape))
+
+        shape = ",".join([str(i) for i in shape])
+
+        string = f"""
+        subroutine alloc(x)
+        {self.ftype}(kind={self.kind}),allocatable,dimension({dims}), intent(out) :: x
+        allocate(x({shape}))
+        x = {self.default}
+        end alloc
+        """
+        return Modulise(string).as_module()
 
     # def get_from_pointer(self):
     #     if self._p2 is not None:

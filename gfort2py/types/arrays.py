@@ -10,8 +10,9 @@ import gfModParser as gf
 from .base import f_type
 
 from ..utils import copy_array, is_64bit
-from ..allocate import allocate_var, allocate_char
 from .character import ftype_character
+
+from ..compilation import Compile, CompileArgs
 
 
 class ftype_explicit_array(f_type, metaclass=ABCMeta):
@@ -175,9 +176,20 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
             np.prod(shape),
         )
 
-    @abstractmethod
     def _allocate(self, shape):
-        raise NotImplementedError
+        code = self.base.allocate(shape)
+        args = CompileArgs()
+
+        comp = Compile(code)
+        comp.compile(args=args)
+        lib = comp.platform.load_library()
+        name = f"__{comp.name}_MOD_alloc"
+        sub = getattr(lib, name)
+        sub(ctypes.byref(self.ctype))
+
+        # Did allocation work?
+        if self.ctype.data is None:
+            raise ValueError("Allocation failed")
 
     @property
     def shape(self) -> tuple[int, ...]:
@@ -186,29 +198,3 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
     @property
     def ndims(self) -> int:
         return self.definition().properties.array_spec.rank
-
-
-class ftype_character_assumed_shape(ftype_assumed_shape):
-
-    def _allocate(self, shape):
-        allocate_char(
-            self.ctype,
-            kind=self.kind,
-            length=self.base.len(),
-            shape=shape,
-            default=self.base.default,
-        )
-
-
-class ftype_number_assumed_shape(ftype_assumed_shape):
-
-    def _allocate(self, shape):
-        print(self._base)
-
-        allocate_var(
-            self.ctype,
-            kind=self.kind,
-            type=self.base.ftype,
-            shape=shape,
-            default=self.base.default,
-        )

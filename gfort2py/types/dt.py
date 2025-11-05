@@ -3,10 +3,10 @@
 import ctypes
 import numpy as np
 
-from ..allocate import allocate_dt
-
 from .base import f_type
 from .arrays import ftype_assumed_shape, ftype_explicit_array
+
+from ..compilation import Modulise, CompileArgs
 
 __all__ = ["ftype_dt", "ftype_dt_explicit", "ftype_dt_assumed_shape"]
 
@@ -140,7 +140,17 @@ class ftype_dt_assumed_shape(ftype_dt_array):
 
 
 class _f_dt_assumed_shape(ftype_assumed_shape):
-    def _allocate(self, shape):
-        allocate_dt(
-            self.ctype, type=self._base.ftype, shape=shape, module="", library=""
-        )
+
+    def allocate(self, shape):
+        dims = ",".join([":"] * len(shape))
+
+        shape = ",".join([str(i) for i in shape])
+
+        string = f"""
+        use {self.definition.module}, only: {self.name}
+        type({self.name}), allocatable, dimension({dims}) , intent(out) :: x
+        if(allocated(x)) deallocate(x)
+        allocate(x({shape}))
+        """
+
+        return Modulise(string).as_module()

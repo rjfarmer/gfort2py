@@ -118,7 +118,8 @@ x  = gf.compile(file='my_fortran_file.f90')
 ````
 
 In either casee the code will be compilied into a
-Fortran module and then into a shared library. Any Fortran code is valid as long as it can be inserted into a Fortran Module (Its optional whether you need to wrap things in ``module``/``end module``, if you do not then that is done automatically for you).
+Fortran module and then into a shared library. Any Fortran code is valid as long as it can be inserted into a Fortran Module. This code MUST NOT be inside
+a module.
 
 Additional options available for ``compile``:
 
@@ -126,7 +127,7 @@ Additional options available for ``compile``:
 - FFLAGS: str Additional Fortran compile options. This defaults to -O2.
 - LDLIBS: str Any additional libraries needed to be linked in (-l)
 - LDFLAGS: str Locations of addtional libraries (-L)
-- ouput: str Location to save intermediate files to. Defaults to ``None`` which saves files in a temporary location. Otherwise save to the location specified.
+
 
 > **_NOTE:_** The interface to compile is currently considered unstable and may change.
 

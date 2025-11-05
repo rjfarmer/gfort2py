@@ -8,6 +8,7 @@ from functools import cache
 
 import gfModParser as gf
 from .base import f_type
+from ..compilation import Modulise
 
 
 __all__ = ["ftype_character"]
@@ -69,6 +70,20 @@ class ftype_character(f_type, metaclass=ABCMeta):
     @property
     def strlen(self):
         return self._length.strlen
+
+    def allocate(self, shape) -> str:
+        dims = ",".join([":"] * len(shape))
+
+        shape = ",".join([str(i) for i in shape])
+
+        string = f"""
+        subroutine alloc(x)
+        {self.ftype}(kind={self.kind},len={self.strlen}),allocatable,dimension({dims}), intent(out) :: x
+        allocate(x({shape}))
+        x = {self.default}
+        end alloc
+        """
+        return Modulise(string).as_module()
 
 
 #####################

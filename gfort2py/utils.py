@@ -147,16 +147,3 @@ def is_big_endian() -> bool:
 
 def is_ppc64le() -> bool:
     return platform.machine() == "ppc64le"
-
-
-def load_lib(libname: str) -> ctypes.CDLL:
-    kwargs = {}
-    if platform.system() == "Windows":
-        libname = os.path.realpath(libname)
-        os.add_dll_directory(os.path.dirname(libname))
-        kwargs["winmode"] = 0
-
-    if not os.path.exists(libname):
-        raise FileNotFoundError(f"Can't find {libname}")
-
-    return ctypes.CDLL(libname, **kwargs)

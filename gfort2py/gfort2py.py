@@ -1,9 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0+
-import ctypes
-import numpy as np
-import os
-import sys
-import platform
+
 import typing
 
 import gfModParser as gf
@@ -14,9 +10,10 @@ from .fParameters import fParam
 from .types import factory as type_factory, get_module
 
 # from .fCompile import compile_and_load, common_compile
-from .utils import load_lib
 
-__all__ = ["fFort"]
+from .compilation import Compile, CompileArgs, Modulise, factory_platform
+
+__all__ = ["fFort", "compile"]
 
 
 class fFort:
@@ -29,7 +26,7 @@ class fFort:
         """
 
         self._libname = libname
-        self._lib = load_lib(self._libname)
+        self._lib = factory_platform().load_library(self._libname)
         self._mod_file = mod_file
         self._module = get_module(self._mod_file)
 
@@ -160,59 +157,62 @@ class fFort:
         return f"{self._module.filename}"
 
 
-# def compile(
-#     string=None,
-#     *,
-#     file=None,
-#     FC=None,
-#     FFLAGS="-O2",
-#     LDLIBS="",
-#     LDFLAGS="",
-#     output=None,
-#     cache_folder=None,
-# ):
-#     """
-#     Compiles and loads a snippet of Fortran code.
+def compile(
+    string=None,
+    *,
+    file=None,
+    FC=None,
+    FFLAGS="",
+    LDLIBS="",
+    LDFLAGS="",
+    INCLUDE_FLAGS="",
+):
+    """
+    Compiles and loads a snippet of Fortran code.
 
-#     Either provide the code as a string in the ``string``
-#     argument of a filename in the ``file`` argument.
+    Either provide the code as a string in the ``string``
+    argument of a filename in the ``file`` argument.
 
-#     This code will then be converted into a Fortran module and
-#     compiled.
+    This code will then be converted into a Fortran module and
+    compiled.
 
-#     FC specifies the Fortran compiler to be used. This
-#     must be some version of gfortran
+    FC specifies the Fortran compiler to be used. This
+    must be some version of gfortran
 
-#     FFLAGS specifies Fortran compile options. This defaults
-#     to -O2. We will additionally insert flags for building
-#     shared libraries on the current platform.
+    FFLAGS specifies Fortran compile options. This defaults
+    to -O2. We will additionally insert flags for building
+    shared libraries on the current platform.
 
-#     LDLIBS specifies any libraries to link against
+    LDLIBS specifies any libraries to link against
 
-#     LDFLAGS specifies extra argument to pass to the linker
-#     (usually this is specifying the directory of where libraries are
-#     stored and passed with the -L option)
+    LDFLAGS specifies extra argument to pass to the linker
+    (usually this is specifying the directory of where libraries are
+    stored and passed with the -L option)
 
-#     output Path to store intermediate files. Defaults to None
-#     where files are stored in a temp folder. Otherwise
-#     stored in ``output`` folder.
+    """
 
-#     cahce_folder same as for fFort, specifies location to save cached
-#     mod data to.
+    if file is not None:
+        with open(file, "r") as f:
+            string = "".join(f.readlines())
 
-#     """
+    mod = Modulise(text=string)
 
-#     library, mod_file = compile_and_load(
-#         string=string,
-#         file=file,
-#         FC=FC,
-#         FFLAGS=FFLAGS,
-#         LDLIBS=LDLIBS,
-#         LDFLAGS=LDFLAGS,
-#         output=output,
-#     )
+    comp = Compile(text=mod.as_module(), name=mod.strhash(), fc=FC)
 
-#     return fFort(library, mod_file, cache_folder=cache_folder)
+    args = CompileArgs()
+    if len(FFLAGS):
+        args.FFLAGS = FFLAGS
+    if len(LDLIBS):
+        args.LDLIBS = LDLIBS
+    if len(LDFLAGS):
+        args.LDFLAGS = LDFLAGS
+    if len(INCLUDE_FLAGS):
+        args.INCLUDE_FLAGS = INCLUDE_FLAGS
+
+    if not comp.compile(args=args):
+        raise ValueError("Could not compile code")
+
+    return fFort(comp.library_filename, comp.module_filename)
 
 
 # Does not work needs https://gcc.gnu.org/bugzilla/show_bug.cgi?id=47030 applied

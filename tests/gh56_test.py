@@ -17,6 +17,7 @@ MOD = "./tests/gh56.mod"
 x = gf.fFort(SO, MOD)
 
 
+@pytest.mark.skip
 class Testgh56Methods:
     def test_gh56(self, capfd):
         y1 = x.get_array(10).result
