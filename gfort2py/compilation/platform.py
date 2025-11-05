@@ -120,7 +120,7 @@ class PlatformWindows(PlatformABC):
         os.add_dll_directory(libname.parent)
         kwargs["winmode"] = 0
 
-        return ctypes.CDLL(libname, **kwargs)
+        return ctypes.CDLL(str(libname), **kwargs)
 
     @property
     def library_ext(self) -> str:
