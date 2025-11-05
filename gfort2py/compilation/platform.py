@@ -117,7 +117,7 @@ class PlatformWindows(PlatformABC):
             raise FileNotFoundError(f"Can't find {libname}")
 
         kwargs = {}
-        os.add_dll_directory(Path.parent(libname))
+        os.add_dll_directory(libname.parent)
         kwargs["winmode"] = 0
 
         return ctypes.CDLL(libname, **kwargs)
