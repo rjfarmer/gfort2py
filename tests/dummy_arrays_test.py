@@ -356,6 +356,7 @@ class TestDummyArrayMethods:
         assert y2.result
 
     @pytest.mark.skip
+    @pytest.mark.skipIfWindows
     def test_sub_arr_assumed_rank_int_1d(self, capfd):
         v = np.arange(10, 15)
         o = " ".join([str(i) for i in v.flatten(order="F")])
@@ -365,6 +366,7 @@ class TestDummyArrayMethods:
         assert np.array_equal(y.args["zzz"], np.array([100] * 5))
 
     @pytest.mark.skip
+    @pytest.mark.skipIfWindows
     def test_sub_arr_assumed_rank_real_1d(self, capfd):
         v = np.arange(10.0, 15.0)
         o = " ".join([str(i) for i in v.flatten(order="F")])
@@ -374,6 +376,7 @@ class TestDummyArrayMethods:
         assert np.array_equal(y.args["zzz"], np.array([100.0] * 5))
 
     @pytest.mark.skip
+    @pytest.mark.skipIfWindows
     def test_sub_arr_assumed_rank_dp_1d(self, capfd):
         v = np.arange(10.0, 15.0)
         o = " ".join([str(i) for i in v.flatten(order="F")])

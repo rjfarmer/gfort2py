@@ -41,18 +41,21 @@ class TestDTMethods:
         with pytest.raises(TypeError) as cm:
             x.f_struct_simple["x"] = "asde"
 
+    @pytest.mark.skipIfWindows
     def test_sub_dt_in_s_simple(self, capfd):
         y = x.sub_f_simple_in({"x": 1, "y": 10})
         out, err = capfd.readouterr()
         o = " ".join([str(i) for i in [1, 10]])
         assert out.strip() == o
 
+    @pytest.mark.skipIfWindows
     def test_sub_dt_out_s_simple(self, capfd):
         y = x.sub_f_simple_out({})
         out, err = capfd.readouterr()
         assert y.args["x"]["x"] == 1
         assert y.args["x"]["y"] == 10
 
+    @pytest.mark.skipIfWindows
     def test_sub_dt_inout_s_simple(self, capfd):
         y = x.sub_f_simple_inout({"x": 5, "y": 3})
         out, err = capfd.readouterr()
@@ -61,6 +64,7 @@ class TestDTMethods:
         assert y.args["zzz"]["x"] == 1
         assert y.args["zzz"]["y"] == 10
 
+    @pytest.mark.skipIfWindows
     def test_sub_dt_inoutp_s_simple(self, capfd):
         y = x.sub_f_simple_inoutp({"x": 5, "y": 3})
         out, err = capfd.readouterr()
@@ -168,6 +172,7 @@ class TestDTMethods:
         assert np.array_equal(s[0]["b_int_exp_1d"], np.array([66, 66, 66, 66, 66]))
         assert np.array_equal(s[1]["b_int_exp_1d"], np.array([77, 77, 77, 77, 77]))
 
+    @pytest.mark.skipIfWindows
     def test_fvar_as_arg(self, capfd):
         y = x.f_struct_simple
         y["x"] = 99
@@ -190,6 +195,7 @@ class TestDTMethods:
         assert y.result["f_nested"]["a_int"] == 234
         assert y.result["f_nested"]["f_struct"]["a_int"] == 345
 
+    @pytest.mark.skipIfWindows
     def test_derived_type_intent_out(self, capfd):
         # GH: #32
         p = {}

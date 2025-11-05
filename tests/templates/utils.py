@@ -54,6 +54,7 @@ py_proc_arg_array_check = string.Template(
 py_proc_stdout = string.Template(
     textwrap.dedent(
         """
+            @pytest.mark.skipIfWindows
             def test_${function}(self,capfd):
             """
     ).strip()

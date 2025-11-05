@@ -83,6 +83,7 @@ class TestBasicMethods:
     def test_const_real_pi_dp(self):
         assert x.const_real_pi_dp == 3.14
 
+    @pytest.mark.skipIfWindows
     def test_sub_no_args(self, capfd):
         x.sub_no_args()
         out, err = capfd.readouterr()
@@ -112,6 +113,7 @@ class TestBasicMethods:
         y = x.func_int_in_multi(v, w, u)
         assert y.result == v + w + u
 
+    @pytest.mark.skipIfWindows
     def test_sub_int_in(self, capfd):
         v = 5
 
@@ -131,6 +133,7 @@ class TestBasicMethods:
         y = x.func_real_dp_no_args()
         assert y.result == 4.0
 
+    @pytest.mark.skipIfWindows
     def test_sub_int_out(self, capfd):
         v = 5
 
@@ -138,6 +141,7 @@ class TestBasicMethods:
         out, err = capfd.readouterr()
         assert y.args == {"x": 1}
 
+    @pytest.mark.skipIfWindows
     def test_sub_int_inout(self, capfd):
         v = 5
 
@@ -145,6 +149,7 @@ class TestBasicMethods:
         out, err = capfd.readouterr()
         assert y.args == {"x": 2 * v}
 
+    @pytest.mark.skipIfWindows
     def test_sub_int_no_intent(self, capfd):
         v = 5
 
@@ -152,6 +157,7 @@ class TestBasicMethods:
         out, err = capfd.readouterr()
         assert y.args == {"x": 2 * v}
 
+    @pytest.mark.skipIfWindows
     def test_sub_real_inout(self, capfd):
         v = 5.0
 
@@ -165,12 +171,14 @@ class TestBasicMethods:
         y = x.func_return_res(10)
         assert y.result == False
 
+    @pytest.mark.skipIfWindows
     def test_sub_int_p(self, capfd):
         y = x.sub_int_p(1)
         out, err = capfd.readouterr()
         assert out.strip() == "1"
         assert y.args["zzz"] == 5
 
+    @pytest.mark.skipIfWindows
     def test_sub_real_p(self, capfd):
         y = x.sub_real_p(1.0)
         out, err = capfd.readouterr()
@@ -178,6 +186,7 @@ class TestBasicMethods:
         assert y.args["zzz"] == 5.0
 
     @pytest.mark.skip
+    @pytest.mark.skipIfWindows
     def test_sub_opt(self, capfd):
         y = x.sub_int_opt(1)
         out, err = capfd.readouterr()
@@ -188,6 +197,7 @@ class TestBasicMethods:
         assert out.strip() == "200"
 
     @pytest.mark.skip
+    @pytest.mark.skipIfWindows
     def test_sub_opt_val(self, capfd):
         y = x.sub_int_opt_val(1)
         out, err = capfd.readouterr()

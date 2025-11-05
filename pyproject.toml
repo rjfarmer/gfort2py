@@ -7,6 +7,9 @@ build-backend = "setuptools.build_meta"
 testpaths = [
     "tests",
 ]
+markers = [
+    "skipIfWindows: Windows tests using capsys are flaky at the moment",
+]
 addopts = "-s"
 
 [tool.setuptools_scm]

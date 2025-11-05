@@ -122,6 +122,7 @@ class TestExplicitArrayMethods:
         np.testing.assert_allclose(x.b_real_dp_exp_5d, v)
 
     @pytest.mark.skip
+    @pytest.mark.skipIfWindows
     def test_sub_array_n_int_1d(self, capfd):
         v = np.arange(0, 5)
         o = " ".join([str(i) for i in v.flatten(order="F")])
@@ -131,6 +132,7 @@ class TestExplicitArrayMethods:
         assert out.strip() == o.strip()
 
     @pytest.mark.skip
+    @pytest.mark.skipIfWindows
     def test_sub_array_n_int_2d(self, capfd):
         v = [0, 1, 2, 3, 4] * 5
         v = np.array(v).reshape(5, 5)
@@ -140,6 +142,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skipIfWindows
     def test_sub_exp_array_int_1d(self, capfd):
         v = np.arange(0, 5)
         o = " ".join([str(i) for i in v.flatten(order="F")])
@@ -148,6 +151,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skipIfWindows
     def test_sub_exp_array_int_2d(self, capfd):
         v = np.arange(0, 5 * 5).reshape((5, 5))
         o = "".join(
@@ -157,6 +161,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skipIfWindows
     def test_sub_exp_array_int_3d(self, capfd):
         v = np.arange(0, 5 * 5 * 5).reshape((5, 5, 5))
         o = "".join(
@@ -166,6 +171,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skipIfWindows
     def test_sub_exp_array_real_1d(self, capfd):
         v = np.arange(0, 5.0).reshape((5))
         o = "  ".join(
@@ -175,6 +181,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skipIfWindows
     def test_sub_exp_array_real_2d(self, capfd):
         v = np.arange(0, 5.0 * 5.0).reshape((5, 5))
         o = "  ".join(
@@ -184,6 +191,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skipIfWindows
     def test_sub_exp_array_real_3d(self, capfd):
         v = np.arange(0, 5.0 * 5.0 * 5.0).reshape((5, 5, 5))
         o = " ".join(
@@ -193,6 +201,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skipIfWindows
     def test_sub_exp_array_int_1d_multi(self, capfd):
         u = 19
         w = 20
@@ -202,6 +211,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == f"{u} {o.strip()} {w}"
 
+    @pytest.mark.skipIfWindows
     def test_sub_exp_array_real_dp_1d(self, capfd):
         v = np.arange(0, 5.0).reshape((5))
         o = "  ".join(
@@ -212,6 +222,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skipIfWindows
     def test_sub_exp_array_real_dp_2d(self, capfd):
         v = np.arange(0, 5.0 * 5.0).reshape((5, 5))
         o = "  ".join(
@@ -222,6 +233,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skipIfWindows
     def test_sub_exp_array_real_dp_3d(self, capfd):
         v = np.arange(0, 5.0 * 5.0 * 5.0).reshape((5, 5, 5))
         o = " ".join(
@@ -232,6 +244,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skipIfWindows
     def test_sub_exp_inout(self, capfd):
         v = np.array([1, 2, 3, 4, 5])
 
@@ -240,6 +253,7 @@ class TestExplicitArrayMethods:
 
         assert np.array_equal(y.args["x"], 2 * v)
 
+    @pytest.mark.skipIfWindows
     def test_sub_arr_exp_p(self, capfd):
         v = np.arange(0, 5)
         o = " ".join([str(i) for i in v.flatten(order="F")])

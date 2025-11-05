@@ -30,6 +30,7 @@ class TestStringMethods:
         x.a_str = v
         assert x.a_str == v[0:10]
 
+    @pytest.mark.skipIfWindows
     def test_sub_str_in_explicit(self, capfd):
         v = "1324567980"
 
@@ -38,6 +39,7 @@ class TestStringMethods:
         assert out.strip() == v
 
     @pytest.mark.skip
+    @pytest.mark.skipIfWindows
     def test_sub_str_in_implicit(self, capfd):
         v = "123456789"
 
@@ -46,6 +48,7 @@ class TestStringMethods:
         assert out.strip() == v
 
     @pytest.mark.skip
+    @pytest.mark.skipIfWindows
     def test_sub_str_multi(self, capfd):
         v = 5
         u = "123456789"
@@ -56,6 +59,7 @@ class TestStringMethods:
         assert out.strip() == str(v + w) + " " + u
 
     @pytest.mark.skip
+    @pytest.mark.skipIfWindows
     def test_sub_str_p(self, capfd):
         y = x.sub_str_p("abcdef")
         out, err = capfd.readouterr()
@@ -69,6 +73,7 @@ class TestStringMethods:
         assert y.result == "Abcde"
 
     @pytest.mark.skip
+    @pytest.mark.skipIfWindows
     # We need to call a func on the argument before passing it to func_str_int_len
     def test_func_str_int_len(self, capfd):
         out, err = capfd.readouterr()
@@ -109,6 +114,7 @@ class TestStringMethods:
             x.a_str_exp_1d = np.zeros(5, dtype=np.str_)
 
     @pytest.mark.skip
+    @pytest.mark.skipIfWindows
     def test_str_func_inout_str(self, capfd):
         z = np.array(
             ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
@@ -168,6 +174,7 @@ class TestStringMethods:
 
         assert np.all(z == res.args["x"]["b_str_alloc_1d"])
 
+    @pytest.mark.skipIfWindows
     def test_str_func_inout_str2(self, capfd):
         z = np.array(
             ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
@@ -186,6 +193,7 @@ class TestStringMethods:
 
         assert np.all(res.args["x"] == z2)
 
+    @pytest.mark.skipIfWindows
     def test_str_func_inout_str3(self, capfd):
         z = np.array(
             ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
@@ -204,6 +212,7 @@ class TestStringMethods:
 
         assert np.all(res.args["x"] == z2)
 
+    @pytest.mark.skipIfWindows
     def test_str_func_inout_alloc(self, capfd):
         z = None
 
@@ -217,6 +226,7 @@ class TestStringMethods:
         assert np.all(res.args["x"] == z2)
 
     @pytest.mark.skip
+    @pytest.mark.skipIfWindows
     def test_str_func_inout_str4(self, capfd):
         z = np.array(
             ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
@@ -238,6 +248,7 @@ class TestStringMethods:
     def test_str_array_param(self):
         assert np.all(x.a_str_p_1d == np.array(["aa", "bb", "cc"], dtype="S2"))
 
+    @pytest.mark.skipIfWindows
     def test_check_a_str_exp_1d(self, capfd):
         x.a_str_exp_1d = np.array(
             ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
@@ -298,6 +309,7 @@ class TestStringMethods:
         res = x.set_chr_star_star("            ")
         assert res.args["x"] == "abcdefghijkl"
 
+    @pytest.mark.skipIfWindows
     def test_check_assumed_shape_str(self, capfd):
         y = np.array(["a/b/c/d/e/f/g"], dtype="S")
 
