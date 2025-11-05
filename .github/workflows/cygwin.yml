@@ -19,8 +19,8 @@ jobs:
             platform: x86_64
             install-dir: 'C:\tools\cygwin'
             packages: >-
-              python310-devel python310-pip python-pip-wheel python-setuptools-wheel
-              liblapack-devel liblapack0 gcc-fortran git dash python310-numpy automake make
+              python312-devel python312-pip python-pip-wheel python-setuptools-wheel
+              liblapack-devel liblapack0 gcc-fortran git dash python312-numpy automake make
 
         - name: pip cache
           uses: actions/cache@v4
@@ -42,21 +42,21 @@ jobs:
         - name: Verify python version
           # Make sure it's the Cygwin one, not a Windows one
           run: |
-            dash -c "which python3.10; /usr/bin/python3.10 --version -V"    
+            dash -c "which python3.12; /usr/bin/python3.12 --version -V"    
         - name: Install dependencies
           shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
           run: |
-            /usr/bin/python3.10 -m pip install --upgrade pip
-            /usr/bin/python3.10 -m pip install --upgrade --user build wheel 
-            /usr/bin/python3.10 -m pip install --upgrade --user pytest dataclasses_json platformdirs importlib_metadata gfModParser
-            cygpath -w $(/usr/bin/python3.10 -c 'import dataclasses_json;print(dataclasses_json.__file__)')
+            /usr/bin/python3.12 -m pip install --upgrade pip
+            /usr/bin/python3.12 -m pip install --upgrade --user build wheel 
+            /usr/bin/python3.12 -m pip install --upgrade --user pytest dataclasses_json platformdirs importlib_metadata gfModParser
+            cygpath -w $(/usr/bin/python3.12 -c 'import dataclasses_json;print(dataclasses_json.__file__)')
         - name: Install 
           shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
           run: |
-            /usr/bin/python3.10 -m pip install .
+            /usr/bin/python3.12 -m pip install .
         - name: Run tests
           shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
           run: |
               export FC=$(which gfortran)
-              /usr/bin/python3.10 -m pytest -v
+              /usr/bin/python3.12 -m pytest -v
 
