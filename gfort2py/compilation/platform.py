@@ -36,7 +36,8 @@ class PlatformABC(metaclass=abc.ABCMeta):
 class PlatformLinux(PlatformABC):
 
     def load_library(self, libname: Path) -> ctypes.CDLL:
-        if not os.path.exists(libname):
+        libname = Path.resolve(Path(libname))
+        if not libname.exists():
             raise FileNotFoundError(f"Can't find {libname}")
 
         return ctypes.CDLL(libname)
@@ -72,7 +73,8 @@ class PlatformLinux(PlatformABC):
 class PlatformMac(PlatformABC):
 
     def load_library(self, libname: Path) -> ctypes.CDLL:
-        if not os.path.exists(libname):
+        libname = Path.resolve(Path(libname))
+        if not libname.exists():
             raise FileNotFoundError(f"Can't find {libname}")
 
         return ctypes.CDLL(libname)
@@ -110,13 +112,13 @@ class PlatformMac(PlatformABC):
 
 class PlatformWindows(PlatformABC):
     def load_library(self, libname: Path) -> ctypes.CDLL:
+        libname = Path.resolve(Path(libname))
+        if not libname.exists():
+            raise FileNotFoundError(f"Can't find {libname}")
+
         kwargs = {}
-        libname = Path.resolve(libname)
         os.add_dll_directory(Path.parent(libname))
         kwargs["winmode"] = 0
-
-        if not os.path.exists(libname):
-            raise FileNotFoundError(f"Can't find {libname}")
 
         return ctypes.CDLL(libname, **kwargs)
 
