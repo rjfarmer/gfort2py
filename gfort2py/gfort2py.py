@@ -4,12 +4,9 @@ import typing
 
 import gfModParser as gf
 
-# from .fVar import fVar
 from .procedures import factory as proc_factory
-from .fParameters import fParam
-from .types import factory as type_factory, get_module
+from .types import factory as type_factory, get_module, fParam
 
-# from .fCompile import compile_and_load, common_compile
 
 from .compilation import Compile, CompileArgs, Modulise, factory_platform
 

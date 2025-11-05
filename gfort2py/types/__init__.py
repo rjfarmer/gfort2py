@@ -15,8 +15,9 @@ from .logical import *
 from .real import *
 from .unsigned import *
 from .module import *
+from .parameters import *
 
-__all__ = ["factory", "f_strlen", "f_optional", "get_module"]
+__all__ = ["factory", "f_strlen", "f_optional", "get_module", "fParam"]
 
 
 def factory(obj: Type[gf.Symbol]) -> f_type:
