@@ -141,16 +141,18 @@ class ftype_dt_assumed_shape(ftype_dt_array):
 
 class _f_dt_assumed_shape(ftype_assumed_shape):
 
-    def allocate(self, shape):
+    def allocate(self, shape) -> Modulise:
         dims = ",".join([":"] * len(shape))
 
         shape = ",".join([str(i) for i in shape])
 
         string = f"""
+        subroutine alloc
         use {self.definition.module}, only: {self.name}
-        type({self.name}), allocatable, dimension({dims}) , intent(out) :: x
+        type({self.name}), allocatable, dimension({dims}), intent(out) :: x
         if(allocated(x)) deallocate(x)
         allocate(x({shape}))
+        end subroutine alloc
         """
 
-        return Modulise(string).as_module()
+        return Modulise(string)

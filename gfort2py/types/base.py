@@ -161,7 +161,7 @@ class f_type(metaclass=ABCMeta):
         self._p2 = ctypes.pointer(self._p1)
         return self._p2
 
-    def allocate(self, shape):
+    def allocate(self, shape) -> Modulise:
         dims = ",".join([":"] * len(shape))
 
         shape = ",".join([str(i) for i in shape])
@@ -169,11 +169,12 @@ class f_type(metaclass=ABCMeta):
         string = f"""
         subroutine alloc(x)
         {self.ftype}(kind={self.kind}),allocatable,dimension({dims}), intent(out) :: x
+        if(allocated(x)) deallocate(x)
         allocate(x({shape}))
         x = {self.default}
-        end alloc
+        end subroutine alloc
         """
-        return Modulise(string).as_module()
+        return Modulise(string)
 
     # def get_from_pointer(self):
     #     if self._p2 is not None:

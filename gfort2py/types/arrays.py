@@ -15,6 +15,10 @@ from .character import ftype_character
 from ..compilation import Compile, CompileArgs
 
 
+class AllocationError(Exception):
+    pass
+
+
 class ftype_explicit_array(f_type, metaclass=ABCMeta):
     dtype = None
     ftype = None
@@ -142,19 +146,19 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
 
     @property
     def value(self) -> np.ndarray:
-        if self.ctype.base_addr is None:
+        if self._ctype.base_addr is None:
             return None
 
         shape = []
         for i in range(self.ndims):
-            shape.append(self.ctype.dims[i].ubound - self.ctype.dims[i].lbound + 1)
+            shape.append(self._ctype.dims[i].ubound - self._ctype.dims[i].lbound + 1)
 
         shape = tuple(shape)
 
         array = np.zeros(shape, dtype=self.base.dtype, order="F")
 
         copy_array(
-            self.ctype.base_addr,
+            self._ctype.base_addr,
             array.ctypes.data,
             ctypes.sizeof(self.base.ctype),
             np.prod(shape),
@@ -164,6 +168,9 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
 
     @value.setter
     def value(self, value: np.ndarray):
+        if value is None:
+            return
+
         shape = np.shape(value)
 
         self._allocate(shape)
@@ -171,7 +178,7 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
         self._value = np.asfortranarray(value).ravel("F")
         copy_array(
             self._value.ctypes.data,
-            ctypes.addressof(self.ctype),
+            ctypes.addressof(self._ctype),
             ctypes.sizeof(self.base.ctype),
             np.prod(shape),
         )
@@ -180,15 +187,19 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
         code = self.base.allocate(shape)
         args = CompileArgs()
 
-        comp = Compile(code)
-        comp.compile(args=args)
-        lib = comp.platform.load_library()
+        code.to_file("dump.f90")
+
+        comp = Compile(code.as_module(), name=code.strhash())
+        if not comp.compile(args=args):
+            raise AllocationError("Failed to allocate array")
+
+        lib = comp.platform.load_library(comp.library_filename)
         name = f"__{comp.name}_MOD_alloc"
         sub = getattr(lib, name)
-        sub(ctypes.byref(self.ctype))
+        sub(ctypes.byref(self._ctype))
 
         # Did allocation work?
-        if self.ctype.data is None:
+        if self._ctype.base_addr is None:
             raise ValueError("Allocation failed")
 
     @property

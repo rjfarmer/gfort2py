@@ -71,7 +71,7 @@ class ftype_character(f_type, metaclass=ABCMeta):
     def strlen(self):
         return self._length.strlen
 
-    def allocate(self, shape) -> str:
+    def allocate(self, shape) -> Modulise:
         dims = ",".join([":"] * len(shape))
 
         shape = ",".join([str(i) for i in shape])
@@ -79,11 +79,12 @@ class ftype_character(f_type, metaclass=ABCMeta):
         string = f"""
         subroutine alloc(x)
         {self.ftype}(kind={self.kind},len={self.strlen}),allocatable,dimension({dims}), intent(out) :: x
+        if(allocated(x)) deallocate(x)
         allocate(x({shape}))
         x = {self.default}
-        end alloc
+        end subroutine alloc
         """
-        return Modulise(string).as_module()
+        return Modulise(string)
 
 
 #####################

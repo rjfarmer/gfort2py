@@ -31,3 +31,9 @@ class Modulise:
                 b"".join([i.encode() for i in self.text]), usedforsecurity=False
             ).hexdigest()[:15]
         )
+
+    def to_file(self, filename):
+        if self._module is None:
+            self.as_module()
+        with open(filename, "w") as f:
+            f.writelines(self._module)
