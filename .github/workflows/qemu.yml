@@ -60,7 +60,7 @@ jobs:
         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes 
 
     - name: Cache docker container
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       id: container-cache
       with:
         path: ~/docker_${{ matrix.BUILD_PROP[1] }}.tar
