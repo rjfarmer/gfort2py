@@ -9,7 +9,6 @@ from .fVar_t import fVar_t
 from .utils import copy_array, is_64bit
 from .allocate import allocate_var, allocate_char
 
-
 if is_64bit():
     _index_t = ctypes.c_int64
     _size_t = ctypes.c_int64
