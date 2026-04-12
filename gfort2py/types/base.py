@@ -11,7 +11,6 @@ from abc import ABC, abstractmethod, ABCMeta
 
 from ..compilation import Modulise, CompileArgs
 
-
 __all__ = ["f_type"]
 
 

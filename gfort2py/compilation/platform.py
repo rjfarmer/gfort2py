@@ -7,7 +7,6 @@ import os
 import subprocess
 import platform
 
-
 __all__ = ["factory_platform", "PlatformABC"]
 
 

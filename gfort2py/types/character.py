@@ -10,7 +10,6 @@ import gfModParser as gf
 from .base import f_type
 from ..compilation import Modulise
 
-
 __all__ = ["ftype_character"]
 
 

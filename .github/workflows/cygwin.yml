@@ -23,13 +23,13 @@ jobs:
               liblapack-devel liblapack0 gcc-fortran git dash python312-numpy automake make
 
         - name: pip cache
-          uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+          uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
           with:
             path: 'C:\tools\cygwin\home\runneradmin\.local'
             key: ${{ runner.os }}-${{ hashFiles('pyproject.toml') }} 
                 
         - name: Set Windows PATH
-          uses: egor-tensin/cleanup-path@cf0901d753db0bf4d15baf625a6fa537978b03a9 # v4
+          uses: egor-tensin/cleanup-path@8cbbf6af9f8cf1d347258e3f6b850622e480d16d # v5.0.1
           with:
             dirs: 'C:\tools\cygwin\bin;C:\tools\cygwin\lib\lapack'
         - name: Verify that bash is Cygwin bash
