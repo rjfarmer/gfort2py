@@ -12,15 +12,15 @@ jobs:
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
       with:
         persist-credentials: false
     - name: Set up Python 
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
       with:
         python-version: 3.11
 
-    - uses: fortran-lang/setup-fortran@v1
+    - uses: fortran-lang/setup-fortran@2a1b9c55897d827a9dfeb114408f3615e53b2b72 # v1
       id: setup-fortran
       with:
         compiler: gcc
@@ -46,5 +46,5 @@ jobs:
         python -m pytest
 
     - name: Publish package distributions to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
+      uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
       if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
