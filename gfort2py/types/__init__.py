@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0+
 
+import abc
 import sys
 from typing import Type
-import abc
 
 import gfModParser as gf
 
@@ -12,10 +12,10 @@ from .complex import *
 from .dt import *
 from .integer import *
 from .logical import *
-from .real import *
-from .unsigned import *
 from .module import *
 from .parameters import *
+from .real import *
+from .unsigned import *
 
 __all__ = ["factory", "f_strlen", "f_optional", "get_module", "fParam"]
 

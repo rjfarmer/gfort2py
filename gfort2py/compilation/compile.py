@@ -3,8 +3,8 @@
 
 import hashlib
 import subprocess
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from dataclasses import dataclass, asdict
 
 from .platform import factory_platform
 from .utils import output_folder

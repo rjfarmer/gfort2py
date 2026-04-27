@@ -1,14 +1,15 @@
-import os, sys
 import ctypes
-from pprint import pprint
+import os
 import platform
+import sys
+from pprint import pprint
 
 os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 
 import numpy as np
-import gfort2py as gf
-
 import pytest
+
+import gfort2py as gf
 
 
 class TestCompileMethods:

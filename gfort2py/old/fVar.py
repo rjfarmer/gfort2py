@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: GPL-2.0+
 import ctypes
+
 import numpy as np
 
-from .fVar_t import fVar_t
-
-from .fScalars import fScalar, fCmplx
-from .fArrays import fExplicitArr, fAssumedShape, fAssumedSize
-from .fStrings import fStr, fAllocStr, fStrExplicit, fStrAssumedShape
+from .fArrays import fAssumedShape, fAssumedSize, fExplicitArr
 from .fDT import fDT, fExplicitDT
 from .fProcPtr import fProcPointer
+from .fScalars import fCmplx, fScalar
+from .fStrings import fAllocStr, fStr, fStrAssumedShape, fStrExplicit
+from .fVar_t import fVar_t
 
 
 class fVar:

@@ -1,343 +1,183 @@
-import string
-import textwrap
-import random
-import numpy as np
-
-from dataclasses import dataclass
-
 import builtins
 import contextlib
+import random
+import string
+import textwrap
+from dataclasses import dataclass
 
+import numpy as np
 
 INDENT = " " * 4
 
-py_proc = string.Template(
-    textwrap.dedent(
-        """
+py_proc = string.Template(textwrap.dedent("""
             def test_${function}(self):
-            """
-    ).strip()
-)
+            """).strip())
 
-py_proc_call = string.Template(
-    textwrap.dedent(
-        """
+py_proc_call = string.Template(textwrap.dedent("""
             result = x.${proc}(${args})
-            """
-    ).strip()
-)
+            """).strip())
 
-py_proc_return = string.Template(
-    textwrap.dedent(
-        """
+py_proc_return = string.Template(textwrap.dedent("""
             assert result.result
-            """
-    ).strip()
-)
+            """).strip())
 
-py_proc_arg_check = string.Template(
-    textwrap.dedent(
-        """
+py_proc_arg_check = string.Template(textwrap.dedent("""
             assert result.args['${name}'] == ${value}
-            """
-    ).strip()
-)
+            """).strip())
 
-py_proc_arg_array_check = string.Template(
-    textwrap.dedent(
-        """
+py_proc_arg_array_check = string.Template(textwrap.dedent("""
             assert np.array_equal(result.args['${name}'], ${value})
-            """
-    ).strip()
-)
+            """).strip())
 
-py_proc_stdout = string.Template(
-    textwrap.dedent(
-        """
+py_proc_stdout = string.Template(textwrap.dedent("""
             @pytest.mark.skipIfWindows
             def test_${function}(self,capfd):
-            """
-    ).strip()
-)
+            """).strip())
 
-py_capture_stdout = string.Template(
-    textwrap.dedent(
-        """
+py_capture_stdout = string.Template(textwrap.dedent("""
             out, err = capfd.readouterr()
-            """
-    ).strip()
-)
+            """).strip())
 
-py_comp_stdout = string.Template(
-    textwrap.dedent(
-        """
+py_comp_stdout = string.Template(textwrap.dedent("""
             assert out.replace('\n','') == ${value}
-            """
-    ).strip()
-)
+            """).strip())
 
-py_value_set = string.Template(
-    textwrap.dedent(
-        """
+py_value_set = string.Template(textwrap.dedent("""
             x.${name} = ${value}
-            """
-    ).strip()
-)
+            """).strip())
 
-py_value_comp = string.Template(
-    textwrap.dedent(
-        """
+py_value_comp = string.Template(textwrap.dedent("""
             assert x.${name} == ${value}
-            """
-    ).strip()
-)
+            """).strip())
 
-py_fail = string.Template(
-    textwrap.dedent(
-        """with pytest.raises(AttributeError) as cm:
+py_fail = string.Template(textwrap.dedent("""with pytest.raises(AttributeError) as cm:
                 x.${var} = ${bad}
-            """
-    )
-)
+            """))
 
-py_array_check = string.Template(
-    textwrap.dedent(
-        """
+py_array_check = string.Template(textwrap.dedent("""
             assert np.allclose(x.${name}, ${value})
-            """
-    ).strip()
-)
+            """).strip())
 
-py_bool_true = string.Template(
-    textwrap.dedent(
-        """
+py_bool_true = string.Template(textwrap.dedent("""
             assert x.${name}
-            """
-    ).strip()
-)
+            """).strip())
 
-py_bool_false = string.Template(
-    textwrap.dedent(
-        """
+py_bool_false = string.Template(textwrap.dedent("""
             assert not x.${name}
-            """
-    ).strip()
-)
+            """).strip())
 
-fort_param = string.Template(
-    textwrap.dedent(
-        """
+fort_param = string.Template(textwrap.dedent("""
     ${type}(${kind}),parameter :: ${var} = ${value}
-"""
-    ).strip()
-)
+""").strip())
 
-fort_bool_param = string.Template(
-    textwrap.dedent(
-        """
+fort_bool_param = string.Template(textwrap.dedent("""
     logical,parameter :: ${var} = ${value}
-"""
-    ).strip()
-)
+""").strip())
 
-fort_bool_var = string.Template(
-    textwrap.dedent(
-        """
+fort_bool_var = string.Template(textwrap.dedent("""
     logical :: ${var}
-"""
-    ).strip()
-)
+""").strip())
 
-fort_param_array_sing = string.Template(
-    textwrap.dedent(
-        """
+fort_param_array_sing = string.Template(textwrap.dedent("""
     ${type}(${kind}),parameter,dimension(${shape}) :: ${var} = ${value}
-"""
-    ).strip()
-)
+""").strip())
 
-fort_param_array_multi = string.Template(
-    textwrap.dedent(
-        """
+fort_param_array_multi = string.Template(textwrap.dedent("""
     ${type}(${kind}),parameter,dimension(${shape}) :: ${var} = reshape( (/ ${value}/), shape(${var}))
-"""
-    ).strip()
-)
+""").strip())
 
-fort_bool_param_array_multi = string.Template(
-    textwrap.dedent(
-        """
+fort_bool_param_array_multi = string.Template(textwrap.dedent("""
     logical,parameter,dimension(${shape}) :: ${var} = reshape( (/ ${value}/), shape(${var}))
-"""
-    ).strip()
-)
+""").strip())
 
 
-fort_set_var = string.Template(
-    textwrap.dedent(
-        """
+fort_set_var = string.Template(textwrap.dedent("""
     ${type}(${kind}) :: ${var} = ${value}
-"""
-    ).strip()
-)
+""").strip())
 
-fort_set_array_sing = string.Template(
-    textwrap.dedent(
-        """
+fort_set_array_sing = string.Template(textwrap.dedent("""
     ${type}(${kind}),dimension(${shape}) :: ${var} = ${value}
-"""
-    ).strip()
-)
+""").strip())
 
-fort_set_array_multi = string.Template(
-    textwrap.dedent(
-        """
+fort_set_array_multi = string.Template(textwrap.dedent("""
     ${type}(${kind}),dimension(${shape}) :: ${var} = reshape( (/ ${value}/), shape(${var}))
-"""
-    ).strip()
-)
+""").strip())
 
 
-fort_var = string.Template(
-    textwrap.dedent(
-        """
+fort_var = string.Template(textwrap.dedent("""
     ${type}(${kind}) :: ${var}
-"""
-    ).strip()
-)
+""").strip())
 
-fort_array = string.Template(
-    textwrap.dedent(
-        """
+fort_array = string.Template(textwrap.dedent("""
     ${type}(${kind}),dimension(${shape}) :: ${var} 
-"""
-    ).strip()
-)
+""").strip())
 
 
-fort_var_opt = string.Template(
-    textwrap.dedent(
-        """
+fort_var_opt = string.Template(textwrap.dedent("""
     ${type}(${kind}),optional :: ${var}
-"""
-    ).strip()
-)
+""").strip())
 
-fort_array_opt = string.Template(
-    textwrap.dedent(
-        """
+fort_array_opt = string.Template(textwrap.dedent("""
     ${type}(${kind}),dimension(${shape}),optional :: ${var} 
-"""
-    ).strip()
-)
+""").strip())
 
 
-fort_var_value = string.Template(
-    textwrap.dedent(
-        """
+fort_var_value = string.Template(textwrap.dedent("""
     ${type}(${kind}),value :: ${var}
-"""
-    ).strip()
-)
+""").strip())
 
-fort_array_value = string.Template(
-    textwrap.dedent(
-        """
+fort_array_value = string.Template(textwrap.dedent("""
     ${type}(${kind}),dimension(${shape}),value :: ${var} 
-"""
-    ).strip()
-)
+""").strip())
 
 
-fort_array_allocatable = string.Template(
-    textwrap.dedent(
-        """
+fort_array_allocatable = string.Template(textwrap.dedent("""
     ${type}(${kind}),dimension(${shape}),allocatable :: ${var} 
-"""
-    ).strip()
-)
+""").strip())
 
-fort_array_pointer = string.Template(
-    textwrap.dedent(
-        """
+fort_array_pointer = string.Template(textwrap.dedent("""
     ${type}(${kind}),dimension(${shape}),pointer :: ${var} 
-"""
-    ).strip()
-)
+""").strip())
 
-fort_array_target = string.Template(
-    textwrap.dedent(
-        """
+fort_array_target = string.Template(textwrap.dedent("""
     ${type}(${kind}),dimension(${shape}),target :: ${var} 
-"""
-    ).strip()
-)
+""").strip())
 
 
-fort_func_start = string.Template(
-    textwrap.dedent(
-        """
+fort_func_start = string.Template(textwrap.dedent("""
     function ${name}(${args}) result(${result}) 
         implicit none
-"""
-    ).strip()
-)
+""").strip())
 
-fort_func_end = string.Template(
-    textwrap.dedent(
-        """
+fort_func_end = string.Template(textwrap.dedent("""
     end function ${name}
-"""
-    ).strip()
-)
+""").strip())
 
 
-fort_sub_start = string.Template(
-    textwrap.dedent(
-        """
+fort_sub_start = string.Template(textwrap.dedent("""
     subroutine ${name}(${args}) 
         implicit none
-"""
-    ).strip()
-)
+""").strip())
 
-fort_sub_end = string.Template(
-    textwrap.dedent(
-        """
+fort_sub_end = string.Template(textwrap.dedent("""
     end subroutine ${name}
-"""
-    ).strip()
-)
+""").strip())
 
 
-fort_var_set = string.Template(
-    textwrap.dedent(
-        """
+fort_var_set = string.Template(textwrap.dedent("""
     ${name} = ${value}
-"""
-    ).strip()
-)
+""").strip())
 
-fort_var_comp = string.Template(
-    textwrap.dedent(
-        """
+fort_var_comp = string.Template(textwrap.dedent("""
     if(${name}/=${value}) return
-"""
-    ).strip()
-)
+""").strip())
 
 
-fort_var_write = string.Template(
-    textwrap.dedent(
-        """
+fort_var_write = string.Template(textwrap.dedent("""
    write(*,*) ${name}
-"""
-    ).strip()
-)
+""").strip())
 
-fort_module_start = string.Template(
-    textwrap.dedent(
-        """
+fort_module_start = string.Template(textwrap.dedent("""
 ! SPDX-License-Identifier: GPL-2.0+
 ! This file is auto generated do not edit by hand
 module ${name}
@@ -354,34 +194,22 @@ module ${name}
                                             
     integer, parameter :: c1 = selected_char_kind ("ascii")
     integer, parameter :: c4  = selected_char_kind ('ISO_10646')
-"""
-    )
-)
+"""))
 
 
-fort_module_mid = string.Template(
-    textwrap.dedent(
-        """
+fort_module_mid = string.Template(textwrap.dedent("""
 
 contains
 
-"""
-    )
-)
+"""))
 
 
-fort_module_end = string.Template(
-    textwrap.dedent(
-        """
+fort_module_end = string.Template(textwrap.dedent("""
 end module ${name}
-"""
-    )
-)
+"""))
 
 
-py_module_start = string.Template(
-    textwrap.dedent(
-        """
+py_module_start = string.Template(textwrap.dedent("""
 # SPDX-License-Identifier: GPL-2.0+
 # This file is auto generated do not edit by hand
 
@@ -401,9 +229,7 @@ MOD = "./tests/${modname}.mod"
 x = gf.fFort(SO, MOD)
 
 class Test_${modname}:
-"""
-    )
-)
+"""))
 
 
 fort_int_kinds = {

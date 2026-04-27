@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
+import collections
 import ctypes
 import os
-import collections
 from dataclasses import dataclass
 
 from .fVar import fVar

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 import ctypes
+
 import numpy as np
 
 from .base import f_type

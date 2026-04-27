@@ -1,16 +1,15 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-import sys
-from typing import Type, Any, Iterable
 import abc
+import sys
 from dataclasses import dataclass
+from typing import Any, Iterable, Type
 
 import gfModParser as gf
 
 from ...types import factory
-
 from .argument import fArg
-from .arguments import fArguments, Arg
+from .arguments import Arg, fArguments
 
 
 class fArgumentsExtra(fArguments):

@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-import subprocess
-import pytest
 import os
 import platform
+import subprocess
+
 import _pytest.skipping
+import pytest
 
 
 def pytest_configure(config):

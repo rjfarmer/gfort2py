@@ -2,11 +2,11 @@
 
 import ctypes
 import itertools
-from pprint import pprint
-import platform
 import os
+import platform
 import subprocess
 import sys
+from pprint import pprint
 from typing import Type
 
 # from .fUnary import run_unary

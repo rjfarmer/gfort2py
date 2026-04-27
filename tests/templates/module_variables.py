@@ -1,6 +1,5 @@
 from utils import *
 
-
 modname = "vars_modules"
 libname = "t_vars_modules"
 filename_f90 = "../t_vars_modules.f90"

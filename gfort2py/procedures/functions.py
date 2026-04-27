@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: GPL-2.0+
+import collections
 import ctypes
 import os
-import collections
-from typing import List, Any, NamedTuple, Type
 from functools import cache
+from typing import Any, List, NamedTuple, Type
 
 import gfModParser as gf
 
-from ..types import factory as type_factory, f_type
-
+from ..types import f_type
+from ..types import factory as type_factory
 from .arguments import fArguments
 from .procedures import fProcedure
 

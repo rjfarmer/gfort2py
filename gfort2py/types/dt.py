@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 import ctypes
+
 import numpy as np
 
-from .base import f_type
+from ..compilation import CompileArgs, Modulise
 from .arrays import ftype_assumed_shape, ftype_explicit_array
-
-from ..compilation import Modulise, CompileArgs
+from .base import f_type
 
 __all__ = ["ftype_dt", "ftype_dt_explicit", "ftype_dt_assumed_shape"]
 

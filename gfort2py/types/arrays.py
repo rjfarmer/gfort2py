@@ -1,18 +1,16 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 import ctypes
-import numpy as np
 from abc import ABCMeta, abstractmethod
-from typing import Type, Tuple
+from typing import Tuple, Type
 
 import gfModParser as gf
-
-from .base import f_type
-
-from ..utils import copy_array, is_64bit
-from .character import ftype_character
+import numpy as np
 
 from ..compilation import Compile, CompileArgs
+from ..utils import copy_array, is_64bit
+from .base import f_type
+from .character import ftype_character
 
 
 class AllocationError(Exception):

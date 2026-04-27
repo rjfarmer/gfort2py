@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-from typing import Type, Any
 import ctypes
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
+from typing import Any, Type
 
 import gfModParser as gf
 

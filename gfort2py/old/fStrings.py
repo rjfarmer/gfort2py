@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 import ctypes
+
 import numpy as np
 
-from .fVar_t import fVar_t
 from .fArrays import fAssumedShape
+from .fVar_t import fVar_t
 from .utils import copy_array, is_64bit
 
 

@@ -53,3 +53,6 @@ packages = ["gfort2py"]
 test = ['pytest']
 quad = ['pyquadp']
 dev = ['pre-commit','black']
+
+[tool.isort]
+profile = "black"

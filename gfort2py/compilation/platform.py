@@ -2,10 +2,10 @@
 
 import abc
 import ctypes
-from pathlib import Path
 import os
-import subprocess
 import platform
+import subprocess
+from pathlib import Path
 
 __all__ = ["factory_platform", "PlatformABC"]
 

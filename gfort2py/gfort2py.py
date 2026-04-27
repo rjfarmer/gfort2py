@@ -5,11 +5,10 @@ from pathlib import Path
 
 import gfModParser as gf
 
-from .procedures import factory as proc_factory
-from .types import factory as type_factory, get_module, fParam
-
-
 from .compilation import Compile, CompileArgs, Modulise, factory_platform
+from .procedures import factory as proc_factory
+from .types import factory as type_factory
+from .types import fParam, get_module
 
 __all__ = ["fFort", "compile"]
 

@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 import ctypes
-import numpy as np
 from abc import ABCMeta, abstractmethod
+
+import numpy as np
 
 try:
     import pyquadp as pyq  # type: ignore[import-not-found]

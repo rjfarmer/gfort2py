@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-import ctypes
 import collections
+import ctypes
 
 from .utils import resolve_other_args
 

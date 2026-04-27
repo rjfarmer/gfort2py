@@ -1,19 +1,18 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-import sys
-from typing import Type, Any, Iterable
 import abc
+import sys
+from typing import Any, Iterable, Type
 
 import gfModParser as gf
 
 from .arguments import fArguments
+from .extra_arguments import fArgumentsExtra
 from .return_arguments import (
-    fReturnCharArguments,
     fReturnArrayArguments,
+    fReturnCharArguments,
     fReturnDTArguments,
 )
-
-from .extra_arguments import fArgumentsExtra
 
 
 def factory_return(

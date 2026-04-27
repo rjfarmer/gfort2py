@@ -1,15 +1,15 @@
 # SPDX-License-Identifier: GPL-2.0+
-import ctypes
-import os
 import abc
 import collections
-from typing import List, Any, NamedTuple, Type
+import ctypes
+import os
 from functools import cache
+from typing import Any, List, NamedTuple, Type
 
 import gfModParser as gf
-from ..types import factory as type_factory
 
-from .arguments import fArguments, factory_return, fArgumentsExtra
+from ..types import factory as type_factory
+from .arguments import factory_return, fArguments, fArgumentsExtra
 
 
 class Result(NamedTuple):

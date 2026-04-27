@@ -1,14 +1,15 @@
 # SPDX-License-Identifier: GPL-2.0+i
 
 import ctypes
-import numpy as np
 from abc import ABCMeta, abstractmethod
-from typing import Type
 from functools import cache
+from typing import Type
 
 import gfModParser as gf
-from .base import f_type
+import numpy as np
+
 from ..compilation import Modulise
+from .base import f_type
 
 __all__ = ["ftype_character"]
 

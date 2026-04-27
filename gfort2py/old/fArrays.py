@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: GPL-2.0+
 import ctypes
-import numpy as np
 import platform
 import weakref
 
+import numpy as np
 
+from .allocate import allocate_char, allocate_var
 from .fVar_t import fVar_t
 from .utils import copy_array, is_64bit
-from .allocate import allocate_var, allocate_char
 
 if is_64bit():
     _index_t = ctypes.c_int64

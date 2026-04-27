@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
-from .subroutine import fSub
 from .functions import fFunc
 from .procedures import fProcedure
+from .subroutine import fSub
 
 
 def factory(procedure) -> fProcedure:
