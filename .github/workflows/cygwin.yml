@@ -20,7 +20,7 @@ jobs:
             install-dir: 'C:\tools\cygwin'
             packages: >-
               python312-devel python312-pip python-pip-wheel python-setuptools-wheel
-              liblapack-devel liblapack0 gcc-fortran git dash python312-numpy automake make
+              liblapack-devel liblapack0 gcc-fortran git dash ninja automake make
 
         - name: pip cache
           uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
@@ -48,7 +48,7 @@ jobs:
           run: |
             /usr/bin/python3.12 -m pip install --upgrade pip
             /usr/bin/python3.12 -m pip install --upgrade --user build wheel 
-            /usr/bin/python3.12 -m pip install --upgrade --user pytest dataclasses_json platformdirs importlib_metadata gfModParser
+            /usr/bin/python3.12 -m pip install --upgrade --user pytest dataclasses_json platformdirs importlib_metadata gfModParser numpy
             cygpath -w $(/usr/bin/python3.12 -c 'import dataclasses_json;print(dataclasses_json.__file__)')
         - name: Install 
           shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
