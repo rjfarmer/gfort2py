@@ -133,7 +133,7 @@ class TestFortranSymbolProtocol:
         import gfort2py as gft
         from gfort2py.types.parameters import fParam
 
-        m = gf.Module("./tests/basic.mod")
+        m = gf.Module("./tests/build/basic.mod")
         params = gf.Parameters(m)
         key = list(params.keys())[0]
         param = fParam(m[key])

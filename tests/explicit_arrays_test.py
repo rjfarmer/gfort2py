@@ -12,8 +12,8 @@ import pytest
 
 import gfort2py as gf
 
-SO = f"./tests/explicit_arrays.{gf.lib_ext()}"
-MOD = "./tests/explicit_arrays.mod"
+SO = f"./tests/build/explicit_arrays.{gf.lib_ext()}"
+MOD = "./tests/build/explicit_arrays.mod"
 
 x = gf.fFort(SO, MOD)
 

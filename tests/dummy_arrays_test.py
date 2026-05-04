@@ -12,8 +12,8 @@ import pytest
 
 import gfort2py as gf
 
-SO = f"./tests/dummy_arrays.{gf.lib_ext()}"
-MOD = "./tests/dummy_arrays.mod"
+SO = f"./tests/build/dummy_arrays.{gf.lib_ext()}"
+MOD = "./tests/build/dummy_arrays.mod"
 
 x = gf.fFort(SO, MOD)
 
@@ -158,51 +158,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5, 5, 5, 5, 5])
         v[:] = 1
         assert np.array_equal(x.c_real_alloc_5d, v)
-
-    @pytest.mark.skip
-    def test_c_real_dp_alloc_1d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_1d = v
-        assert np.array_equal(x.c_real_dp_alloc_1d, v)
-
-    @pytest.mark.skip
-    def test_c_real_dp_alloc_2d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_2d = v
-        assert np.array_equal(x.c_real_dp_alloc_2d, v)
-
-    @pytest.mark.skip
-    def test_c_real_dp_alloc_3d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_3d = v
-        assert np.array_equal(x.c_real_dp_alloc_3d, v)
-
-    @pytest.mark.skip
-    def test_c_real_dp_alloc_4d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5, 5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_4d = v
-        assert np.array_equal(x.c_real_dp_alloc_4d, v)
-
-    @pytest.mark.skip
-    def test_c_real_dp_alloc_5d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5, 5, 5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_5d = v
-        assert np.array_equal(x.c_real_dp_alloc_5d, v)
 
     def test_c_real_dp_alloc_1d(self):
         y = x.sub_alloc_real_dp_1d_cleanup()

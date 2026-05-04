@@ -12,8 +12,8 @@ import pytest
 
 import gfort2py as gf
 
-SO = f"./tests/params2.{gf.lib_ext()}"
-MOD = "./tests/params2.mod"
+SO = f"./tests/build/params2.{gf.lib_ext()}"
+MOD = "./tests/build/params2.mod"
 
 x = gf.fFort(SO, MOD)
 

@@ -19,8 +19,8 @@ try:
 except ImportError:
     PYQ_IMPORTED = False
 
-SO = f"./tests/complex.{gf.lib_ext()}"
-MOD = "./tests/comp.mod"
+SO = f"./tests/build/complex.{gf.lib_ext()}"
+MOD = "./tests/build/comp.mod"
 
 x = gf.fFort(SO, MOD)
 

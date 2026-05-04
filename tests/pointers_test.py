@@ -20,8 +20,8 @@ except ImportError:
     PYQ_IMPORTED = False
 
 
-SO = f"./tests/pointers.{gf.lib_ext()}"
-MOD = "./tests/ptrs.mod"
+SO = f"./tests/build/pointers.{gf.lib_ext()}"
+MOD = "./tests/build/ptrs.mod"
 
 x = gf.fFort(SO, MOD)
 

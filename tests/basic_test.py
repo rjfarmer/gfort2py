@@ -21,8 +21,8 @@ except ImportError:
     PYQ_IMPORTED = False
 
 
-SO = Path(f"./tests/basic.{gf.lib_ext()}")
-MOD = Path("./tests/basic.mod")
+SO = Path(f"./tests/build/basic.{gf.lib_ext()}")
+MOD = Path("./tests/build/basic.mod")
 
 x = gf.fFort(SO, MOD)
 

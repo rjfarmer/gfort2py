@@ -18,7 +18,7 @@ __all__ = ["fFort", "compile"]
 class fFort:
     _initialized = False
 
-    def __init__(self, libname: str, mod_file: str):
+    def __init__(self, libname: str | Path, mod_file: str | Path):
         """
         Loads a gfortran module given by mod_file and saved in a
         shared library libname.

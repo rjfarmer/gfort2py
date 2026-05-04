@@ -12,8 +12,8 @@ import pytest
 
 import gfort2py as gf
 
-SO = f"./tests/unicode.{gf.lib_ext()}"
-MOD = "./tests/unicode.mod"
+SO = f"./tests/build/unicode.{gf.lib_ext()}"
+MOD = "./tests/build/unicode.mod"
 
 x = gf.fFort(SO, MOD)
 
