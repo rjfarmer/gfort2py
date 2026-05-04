@@ -90,7 +90,7 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
     ftype = None
     kind = None
 
-    def _init__(self, value=None):
+    def __init__(self, value=None):
         self._value = value
         super().__init__()
 
@@ -176,7 +176,7 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
         self._value = np.asfortranarray(value).ravel("F")
         copy_array(
             self._value.ctypes.data,
-            ctypes.addressof(self._ctype),
+            self._ctype.base_addr,
             ctypes.sizeof(self.base.ctype),
             np.prod(shape),
         )
@@ -184,8 +184,6 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
     def _allocate(self, shape):
         code = self.base.allocate(shape)
         args = CompileArgs()
-
-        code.to_file("dump.f90")
 
         comp = Compile(code.as_module(), name=code.strhash())
         if not comp.compile(args=args):

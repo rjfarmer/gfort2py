@@ -1,9 +1,9 @@
-# SPDX-License-Identifier: GPL-2.0+i
+# SPDX-License-Identifier: GPL-2.0+
 
 import ctypes
 from abc import ABCMeta, abstractmethod
-from functools import cache
 from typing import Type
+from functools import cached_property
 
 import gfModParser as gf
 import numpy as np
@@ -21,15 +21,13 @@ class ftype_character(f_type, metaclass=ABCMeta):
     def __init__(self, value=None):
         super().__init__(value=value)
 
-    @property
-    @cache
+    @cached_property
     def _char(self):
         if self.definition().kind == 1:
             return ftype_character_1(self)
         return ftype_character_4(self)
 
-    @property
-    @cache
+    @cached_property
     def _length(self):
         if self.definition().properties.typespec.charlen.value > 0:
             return ftype_char_fixed(self)
@@ -46,6 +44,7 @@ class ftype_character(f_type, metaclass=ABCMeta):
     def _base_ctype(self):
         return self._char._base_ctype
 
+    @property
     def kind(self):
         return self._char.kind
 
@@ -132,7 +131,7 @@ class ftype_character_4(ftype_char):
     dtype = np.dtype(np.str_)
     encoding = "utf16"
 
-    def decode_value(self, ctype) -> bytes:
+    def decode_value(self, ctype) -> str:
         return b"".join([ctype[i].value for i in range(self.parent.strlen)]).decode()
 
 

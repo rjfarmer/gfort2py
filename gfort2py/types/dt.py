@@ -49,12 +49,13 @@ class ftype_dt(f_type):
         res = {}
         for key in self.fields.keys():
             res[key] = self[key]
+        return res
 
     @value.setter
     def value(self, value):
         self._value = value
-        for key, value in value.items():
-            self[key] = value
+        for key, val in value.items():
+            self[key] = val
 
     def keys(self) -> list[str]:
         return self.fields.keys()
@@ -90,7 +91,7 @@ class ftype_dt_array(f_type):
 
     def _index(self, index):
         if isinstance(index, tuple):
-            ind = np.ravel_multi_index(index, self.shape(), order="F")
+            ind = np.ravel_multi_index(index, self.shape, order="F")
         else:
             ind = index
 
@@ -135,7 +136,7 @@ class ftype_dt_assumed_shape(ftype_dt_array):
         super().__init__(*args, **kwargs, array_cls=_f_dt_assumed_shape)
 
     def __repr__(self):
-        s = ",".join([i for i in self.shape])
+        s = ",".join([str(i) for i in self.shape])
         return f"type({self.ftype})({s})"
 
 
@@ -148,8 +149,8 @@ class _f_dt_assumed_shape(ftype_assumed_shape):
 
         string = f"""
         subroutine alloc
-        use {self.definition.module}, only: {self.name}
-        type({self.name}), allocatable, dimension({dims}), intent(out) :: x
+        use {self.definition().module}, only: {self.definition().name}
+        type({self.definition().name}), allocatable, dimension({dims}), intent(out) :: x
         if(allocated(x)) deallocate(x)
         allocate(x({shape}))
         end subroutine alloc

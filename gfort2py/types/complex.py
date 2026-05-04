@@ -67,6 +67,12 @@ class ftype_complex_16(ftype_complex):
     dtype = np.dtype("S32")
 
     @property
+    def base_ctype(self):
+        if not PYQ_IMPORTED:
+            raise ValueError("Please install pyQuadp to handle quad precision numbers")
+        return pyq.c_qfloat
+
+    @property
     def ctype(self):
         if not PYQ_IMPORTED:
             raise ValueError("Please install pyQuadp to handle quad precision numbers")

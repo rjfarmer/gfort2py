@@ -14,13 +14,13 @@ class ftype_unsigned(f_type):
 
 class ftype_unsigned_1(ftype_unsigned):
     kind = 1
-    ctype = ctypes.c_uint32
+    ctype = ctypes.c_uint8
     dtype = np.dtype(np.ubyte)
 
 
 class ftype_unsigned_2(ftype_unsigned):
     kind = 2
-    ctype = ctypes.c_uint32
+    ctype = ctypes.c_uint16
     dtype = np.dtype(np.ushort)
 
 
