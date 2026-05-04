@@ -34,22 +34,18 @@ else
 endif
 
 LIBS = $(patsubst %.f90,$(BUILDDIR)/%.$(LIB_SUFFIX),$(SRCS))
-# .gz targets are derived from the .mod files the compiler writes to BUILDDIR
-GZ   = $(patsubst %.f90,$(BUILDDIR)/%.gz,$(SRCS))
 
-all: $(LIBS) $(GZ)
+all: $(LIBS) | $(BUILDDIR)
+	@for modfile in $(BUILDDIR)/*.mod; do \
+		name=$$(basename "$$modfile" .mod); \
+		gunzip -f -c "$$modfile" > "$(BUILDDIR)/$$name.gz.extract"; \
+	done
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
 
 $(BUILDDIR)/%.$(LIB_SUFFIX): %.f90 | $(BUILDDIR)
 	$(FC) $(FFLAGS) $(LIB_FLAGS) -cpp -J$(BUILDDIR) -o $@ $<
-
-# .gz depends on the library so the compiler-generated .mod is present first
-$(BUILDDIR)/%.gz: $(BUILDDIR)/%.$(LIB_SUFFIX) | $(BUILDDIR)
-	@cp $(BUILDDIR)/$*.mod $@
-	@gunzip -f $@ -c > $@.extract
-	@rm $@
 
 clean:
 	-rm -rf $(BUILDDIR)

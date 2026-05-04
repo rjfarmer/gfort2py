@@ -9,8 +9,7 @@ import pytest
 
 
 def pytest_configure(config):
-    subprocess.call(["make", "clean"], shell=True, cwd="tests")
-    subprocess.call(["make"], shell=True, cwd="tests")
+    subprocess.call(["make"], cwd="tests")
 
 
 def pytest_runtest_setup(item):

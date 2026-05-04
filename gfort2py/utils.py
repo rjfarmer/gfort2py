@@ -9,6 +9,8 @@ import sys
 from pprint import pprint
 from typing import Type
 
+from packaging.version import Version
+
 # from .fUnary import run_unary
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
@@ -147,3 +149,13 @@ def is_big_endian() -> bool:
 
 def is_ppc64le() -> bool:
     return platform.machine() == "ppc64le"
+
+
+def gfortran_version(fc_path: str) -> Version:
+    """
+    Get gfortran version as a Version object
+    """
+    output = subprocess.run(
+        [fc_path, "-dumpversion"], capture_output=True
+    ).stdout.decode()
+    return Version(output.strip())

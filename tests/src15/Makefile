@@ -14,6 +14,9 @@ FFLAGS = -ggdb -fdump-tree-original -D_FORTIFY_SOURCE=2 \
 
 SRCS = $(wildcard *.f90)
 
+# All sources in src15 require -funsigned
+FFLAGS += -funsigned
+
 ifeq ($(OS),Windows_NT)
     uname_S := Windows
 else
@@ -38,26 +41,22 @@ else
 endif
 
 LIBS = $(patsubst %.f90,$(BUILDDIR)/%.$(LIB_SUFFIX),$(SRCS))
-# .gz targets are derived from the .mod files the compiler writes to BUILDDIR
-GZ   = $(patsubst %.f90,$(BUILDDIR)/%.gz,$(SRCS))
 
-all: $(LIBS) $(GZ)
 ifeq ($(FC_GE_15),0)
 all:
 	@echo "Skipping src15: $(FC) version $(FC_VERSION) is less than 15"
 else
+all: $(LIBS) | $(BUILDDIR)
+	@for modfile in $(BUILDDIR)/*.mod; do \
+		name=$$(basename "$$modfile" .mod); \
+		gunzip -f -c "$$modfile" > "$(BUILDDIR)/$$name.gz.extract"; \
+	done
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
 
 $(BUILDDIR)/%.$(LIB_SUFFIX): %.f90 | $(BUILDDIR)
 	$(FC) $(FFLAGS) $(LIB_FLAGS) -cpp -J$(BUILDDIR) -o $@ $<
-
-# .gz depends on the library so the compiler-generated .mod is present first
-$(BUILDDIR)/%.gz: $(BUILDDIR)/%.$(LIB_SUFFIX) | $(BUILDDIR)
-	@cp $(BUILDDIR)/$*.mod $@
-	@gunzip -f $@ -c > $@.extract
-	@rm $@
 
 endif # FC_GE_15
 
