@@ -33,6 +33,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Code Generators",
 ]
 
@@ -40,7 +41,7 @@ dependencies = [
     "numpy >=1.13.0",
     "platformdirs >=3",
     "dataclasses_json >=0.6",
-    "gfModParser >= 1.0.1"
+    "gfModParser >= 1.1.0"
 ]
 
 dynamic = ["version"]
@@ -56,3 +57,8 @@ dev = ['pre-commit','black']
 
 [tool.isort]
 profile = "black"
+types = ["mypy","types-setuptools", "types-toml"]
+
+[tool.mypy]
+exclude = ["gfort2py/old"]
+

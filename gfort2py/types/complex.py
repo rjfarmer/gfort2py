@@ -78,7 +78,7 @@ class ftype_complex_16(ftype_complex):
             raise ValueError("Please install pyQuadp to handle quad precision numbers")
         return pyq.c_qcmplx
 
-    @property
+    @property  # type: ignore[override]
     def value(self) -> "pyq.c_qcmplx":
         return self._ctype.from_bytes(bytes(self._ctype.value))
 

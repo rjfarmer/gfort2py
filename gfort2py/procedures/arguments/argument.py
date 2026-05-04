@@ -10,11 +10,9 @@ from ...types import factory
 
 
 class fArg(metaclass=ABCMeta):
-    def __init__(
-        self, definition: gf.Symbol, procedure: gf.Symbol, module: Type[gf.Module]
-    ):
+    def __init__(self, definition: gf.Symbol, procedure: gf.Symbol, module: gf.Module):
         self.definition: gf.Symbol = definition
-        self.module: Type[gf.Module] = module
+        self.module: gf.Module = module
         self.procedure: gf.Symbol = procedure
 
         self.base = factory(self.definition)()

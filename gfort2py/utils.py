@@ -118,17 +118,17 @@ def fc_path() -> str:
         subprocess.run([cmd, "gfortran"], capture_output=True).stdout.decode().strip()
     )
 
-    x = x.split()
+    parts = x.split()
 
     fc = None
     if _TEST_FLAG and os_platform == "Windows":
-        for i in x:
+        for i in parts:
             if "Chocolatey" in i:
                 # Hardcode the choice for testing
                 fc = i.strip()
                 break
     else:
-        fc = x[0].strip()
+        fc = parts[0].strip()
 
     if fc is None:
         raise ValueError("Did not find a gfortran compilier")

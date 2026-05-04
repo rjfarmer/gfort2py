@@ -8,9 +8,9 @@ import hashlib
 class Modulise:
     def __init__(self, text: str):
         self.text = text
-        self._module = None
+        self._module: list[str] | None = None
 
-    def as_module(self) -> list[str]:
+    def as_module(self) -> str:
         name = self.strhash()
         if self._module is None:
             self._module = [

@@ -4,7 +4,7 @@ from .procedures import fProcedure
 from .subroutine import fSub
 
 
-def factory(procedure) -> fProcedure:
+def factory(procedure) -> type[fProcedure]:
     if procedure.is_subroutine:
         return fSub
     else:

@@ -2,7 +2,7 @@
 
 import abc
 import sys
-from typing import Any, Iterable, Type
+from typing import Any, cast
 
 import gfModParser as gf
 
@@ -17,11 +17,11 @@ from .return_arguments import (
 
 def factory_return(
     procedure: gf.Symbol,
-    module: Type[gf.Module],
-    values: list[tuple, dict[str, Any]],
+    module: gf.Module,
+    values: tuple[tuple[Any, ...], dict[str, Any]],
 ) -> fArguments:
 
-    rt = procedure.return_type
+    rt = cast(Any, procedure).return_type
 
     if rt.ftype == "character":
         return fReturnCharArguments(procedure, module, values)

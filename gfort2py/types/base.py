@@ -2,7 +2,7 @@
 
 import ctypes
 from abc import ABC, ABCMeta, abstractmethod
-from typing import Type
+from typing import Any, Type
 
 import gfModParser as gf
 import numpy as np
@@ -30,6 +30,8 @@ class f_type(metaclass=ABCMeta):
     encoding: character types need to store their character encoding
 
     """
+
+    default: Any = 0
 
     def __init__(self, value=None):
         self._ctype = self.ctype()

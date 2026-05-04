@@ -29,7 +29,7 @@ class Compile:
         self.platform = factory_platform()
         self._fc = fc
 
-    def compile(self, *, args: CompileArgs = CompileArgs) -> bool:
+    def compile(self, *, args: CompileArgs = CompileArgs()) -> bool:
         # Compile code, reading from stdin
         try:
             p = subprocess.run(
@@ -63,16 +63,16 @@ class Compile:
         return self.library_filename.exists()
 
     @property
-    def library_filename(self) -> str:
+    def library_filename(self) -> Path:
         output = output_folder()
         return output.joinpath(f"lib{self.name}.{self.platform.library_ext}")
 
     @property
-    def module_filename(self) -> str:
+    def module_filename(self) -> Path:
         output = output_folder()
         return output.joinpath(f"{self.name}.mod")
 
     @property
-    def object_filename(self) -> str:
+    def object_filename(self) -> Path:
         output = output_folder()
         return output.joinpath(f"{self.name}.o")

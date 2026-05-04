@@ -2,7 +2,7 @@
 
 import abc
 import sys
-from typing import Type
+from typing import Any
 
 import gfModParser as gf
 
@@ -20,7 +20,7 @@ from .unsigned import *
 __all__ = ["factory", "f_strlen", "f_optional", "get_module", "fParam"]
 
 
-def factory(obj: Type[gf.Symbol]) -> f_type:
+def factory(obj: gf.Symbol) -> type[f_type]:
     """Factory class to convert a (ftype,kind) into a wrapper object
 
     Args:
@@ -42,7 +42,7 @@ def factory(obj: Type[gf.Symbol]) -> f_type:
     if is_dt:
         if is_array:
             if is_explicit:
-                res = ftype_dt_explicit
+                res: Any = ftype_dt_explicit
             elif is_assumed_shape:
                 res = ftype_dt_assumed_shape
             else:
@@ -70,7 +70,7 @@ def factory(obj: Type[gf.Symbol]) -> f_type:
             abc.update_abstractmethods(cls)
             return cls()
 
-        res._base = classmethod(_base)
+        res._base = classmethod(_base)  # type: ignore[attr-defined]
     else:
         res = find_ftype(ftype, kind)
 
@@ -79,14 +79,14 @@ def factory(obj: Type[gf.Symbol]) -> f_type:
         return self._obj
 
     # Inject into Fortran definition all the other module data
-    res.definition = classmethod(definition)
+    res.definition = classmethod(definition)  # type: ignore[assignment]
 
     abc.update_abstractmethods(res)
 
     return res
 
 
-def find_ftype(ftype, kind) -> f_type:
+def find_ftype(ftype, kind) -> type[f_type]:
     name = f"ftype_{ftype}_{kind}"
 
     if ftype == "character":

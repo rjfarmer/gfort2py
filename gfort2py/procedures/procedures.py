@@ -37,7 +37,7 @@ class fProcedure(metaclass=abc.ABCMeta):
         # )
 
         self.args = fArguments(
-            procedure=self.definition, module=self._module, values=[args, kwargs]
+            procedure=self.definition, module=self._module, values=(args, kwargs)
         )
 
         # self.args_end = fArgumentsExtra(

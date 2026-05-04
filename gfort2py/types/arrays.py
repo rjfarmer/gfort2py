@@ -2,7 +2,7 @@
 
 import ctypes
 from abc import ABCMeta, abstractmethod
-from typing import Tuple, Type
+from typing import Optional, Tuple, Type
 
 import gfModParser as gf
 import numpy as np
@@ -18,9 +18,9 @@ class AllocationError(Exception):
 
 
 class ftype_explicit_array(f_type, metaclass=ABCMeta):
-    dtype = None
-    ftype = None
-    kind = None
+    dtype = None  # type: ignore[assignment]
+    ftype = None  # type: ignore[assignment]
+    kind = None  # type: ignore[assignment]
 
     def __init__(self, value=None):
         self.base = self._base()
@@ -82,13 +82,13 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
 
     @property
     def size(self) -> int:
-        return np.prod(self.shape)
+        return int(np.prod(self.shape))
 
 
 class ftype_assumed_shape(f_type, metaclass=ABCMeta):
-    dtype = None
-    ftype = None
-    kind = None
+    dtype = None  # type: ignore[assignment]
+    ftype = None  # type: ignore[assignment]
+    kind = None  # type: ignore[assignment]
 
     def __init__(self, value=None):
         self._value = value
@@ -143,15 +143,17 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
         return f"{self.ftype}(kind={self.kind})({s})"
 
     @property
-    def value(self) -> np.ndarray:
+    def value(self) -> Optional[np.ndarray]:
         if self._ctype.base_addr is None:
             return None
 
-        shape = []
+        shape_list = []
         for i in range(self.ndims):
-            shape.append(self._ctype.dims[i].ubound - self._ctype.dims[i].lbound + 1)
+            shape_list.append(
+                self._ctype.dims[i].ubound - self._ctype.dims[i].lbound + 1
+            )
 
-        shape = tuple(shape)
+        shape = tuple(shape_list)
 
         array = np.zeros(shape, dtype=self.base.dtype, order="F")
 
@@ -159,7 +161,7 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
             self._ctype.base_addr,
             array.ctypes.data,
             ctypes.sizeof(self.base.ctype),
-            np.prod(shape),
+            int(np.prod(shape)),
         )
         self._value = array
         return array
@@ -178,7 +180,7 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
             self._value.ctypes.data,
             self._ctype.base_addr,
             ctypes.sizeof(self.base.ctype),
-            np.prod(shape),
+            int(np.prod(shape)),
         )
 
     def _allocate(self, shape):

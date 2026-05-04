@@ -15,7 +15,7 @@ _all_dts = {}
 
 
 class ftype_dt(f_type):
-    dtype = None
+    dtype = None  # type: ignore[assignment]
     kind = -1
 
     def __init__(self, *, ftype: str, fields: dict[str, f_type]):
@@ -58,7 +58,7 @@ class ftype_dt(f_type):
             self[key] = val
 
     def keys(self) -> list[str]:
-        return self.fields.keys()
+        return list(self.fields.keys())
 
     def values(self):
         return [self[key] for key in self.keys()]
@@ -111,7 +111,7 @@ class ftype_dt_array(f_type):
         self._ctype[ind][key] = value
 
     def keys(self) -> list[str]:
-        return self.fields.keys()
+        return list(self.fields.keys())
 
     def items(self):
         return [(key, self[key]) for key in self.keys()]

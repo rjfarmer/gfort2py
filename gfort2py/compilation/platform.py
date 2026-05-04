@@ -159,10 +159,10 @@ class PlatformWindows(PlatformABC):
             raise FileNotFoundError(f"Can't find {libname}")
 
         kwargs = {}
-        os.add_dll_directory(libname.parent)
+        os.add_dll_directory(libname.parent)  # type: ignore[attr-defined]
         kwargs["winmode"] = 0
 
-        return ctypes.CDLL(str(libname), **kwargs)
+        return ctypes.CDLL(str(libname), winmode=0)  # type: ignore[call-arg]
 
     @property
     def library_ext(self) -> str:

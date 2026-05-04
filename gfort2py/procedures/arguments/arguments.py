@@ -30,11 +30,11 @@ class fArgumentsAbstract(metaclass=abc.ABCMeta):
     def __init__(
         self,
         procedure: gf.Symbol,
-        module: Type[gf.Module],
-        values: list[tuple, dict[str, Any]],
+        module: gf.Module,
+        values: tuple[tuple[Any, ...], dict[str, Any]],
     ):
         self.procedure: gf.Symbol = procedure
-        self.module: Type[gf.Module] = module
+        self.module: gf.Module = module
         self._values = values
 
         self.args: dict[str, Arg] = {}
@@ -84,14 +84,14 @@ class fArgumentsAbstract(metaclass=abc.ABCMeta):
         """
         Sets all argument ctypes with thier value
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     @abc.abstractmethod
     def get_values(self) -> dict[str, Any]:
         """
         Converts ctypes back into thier base type and return the dict with thier values
         """
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class fArguments(fArgumentsAbstract):
