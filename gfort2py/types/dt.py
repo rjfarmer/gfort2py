@@ -29,14 +29,21 @@ class ftype_dt(f_type):
 
     @property
     def ctype(self):
-        if self.ftype not in _all_dts:
+        try:
+            module_name: str | None = self.definition().module
+        except (NotImplementedError, AttributeError):
+            module_name = None
+
+        key = (module_name, self.ftype)
+
+        if key not in _all_dts:
 
             class dt(ctypes.Structure):
                 _fields_ = list(self.fields.items())
 
-            _all_dts[self.ftype] = dt
+            _all_dts[key] = dt
 
-        return _all_dts[self.ftype]
+        return _all_dts[key]
 
     def __getitem__(self, key):
         return getattr(self._ctype, key)

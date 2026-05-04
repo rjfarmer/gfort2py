@@ -2,14 +2,31 @@
 
 import ctypes
 from abc import ABC, ABCMeta, abstractmethod
-from typing import Any, Type
+from typing import Any, Protocol, Type, runtime_checkable
 
 import gfModParser as gf
 import numpy as np
 
 from ..compilation import CompileArgs, Modulise
 
-__all__ = ["f_type"]
+__all__ = ["f_type", "FortranSymbol"]
+
+
+@runtime_checkable
+class FortranSymbol(Protocol):
+    """Minimal interface shared by all Fortran symbols (variables and parameters)."""
+
+    @property
+    def value(self) -> Any: ...
+
+    @property
+    def ftype(self) -> str: ...
+
+    @property
+    def kind(self) -> int: ...
+
+    @property
+    def module(self) -> str: ...
 
 
 class f_type(metaclass=ABCMeta):

@@ -7,6 +7,7 @@ from typing import Any
 import gfModParser as gf
 
 from .arrays import *
+from .base import FortranSymbol
 from .character import *
 from .complex import *
 from .dt import *
@@ -17,7 +18,7 @@ from .parameters import *
 from .real import *
 from .unsigned import *
 
-__all__ = ["factory", "f_strlen", "f_optional", "get_module", "fParam"]
+__all__ = ["factory", "f_strlen", "f_optional", "get_module", "fParam", "FortranSymbol"]
 
 
 def factory(obj: gf.Symbol) -> type[f_type]:

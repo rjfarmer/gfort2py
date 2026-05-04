@@ -22,5 +22,13 @@ class fParam:
         return str(self.value)
 
     @property
+    def ftype(self) -> str:
+        return self.obj.type.lower()
+
+    @property
+    def kind(self) -> int:
+        return self.obj.kind
+
+    @property
     def module(self) -> str:
         return self.obj.module

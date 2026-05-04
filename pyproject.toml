@@ -54,10 +54,10 @@ packages = ["gfort2py"]
 test = ['pytest']
 quad = ['pyquadp']
 dev = ['pre-commit','black']
+types = ["mypy","types-setuptools", "types-toml"]
 
 [tool.isort]
 profile = "black"
-types = ["mypy","types-setuptools", "types-toml"]
 
 [tool.mypy]
 exclude = ["gfort2py/old"]
