@@ -64,6 +64,7 @@ class f_type(metaclass=ABCMeta):
 
     default: Any = 0
     alloc_strategy: AllocStrategy = AllocStrategy.INTRINSIC
+    _symbol: gf.Symbol | None = None
 
     def __init__(self, value=None):
         self._ctype = self.ctype()
@@ -111,20 +112,18 @@ class f_type(metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    @classmethod
-    @abstractmethod
-    def definition(self) -> gf.Symbol:
-        """Stores the module data
-
-        Should be injected into the class before creation
-
-        Returns:
-            Module data
-        """
-        raise NotImplementedError
-
     def __repr__(self):
         return f"{self.ftype}(kind={self.kind})"
+
+    @property
+    def _sym(self) -> gf.Symbol:
+        """Return the bound gf.Symbol, raising clearly if not yet set."""
+        if self._symbol is None:
+            raise RuntimeError(
+                f"{type(self).__name__} has no bound symbol; "
+                "pass symbol= to in_dll(), from_address(), or from_ctype()."
+            )
+        return self._symbol
 
     @property
     def value(self):
@@ -157,8 +156,12 @@ class f_type(metaclass=ABCMeta):
         return self._ctype
 
     @classmethod
-    def in_dll(cls, lib: ctypes.CDLL, name: str):
-        c = cls()
+    def in_dll(
+        cls, lib: ctypes.CDLL, name: str, *, symbol: gf.Symbol | None = None
+    ) -> "f_type":
+        c = cls.__new__(cls)
+        c._symbol = symbol
+        c.__init__()  # type: ignore[misc]
         c._ctype = c.ctype.in_dll(lib, name)
         return c
 
@@ -168,14 +171,18 @@ class f_type(metaclass=ABCMeta):
         return c.ctype
 
     @classmethod
-    def from_address(cls, address: int) -> "f_type":
-        c = cls()
+    def from_address(cls, address: int, *, symbol: gf.Symbol | None = None) -> "f_type":
+        c = cls.__new__(cls)
+        c._symbol = symbol
+        c.__init__()  # type: ignore[misc]
         c._ctype = c.ctype.from_address(address)
         return c
 
     @classmethod
-    def from_ctype(cls, ctype) -> "f_type":
-        c = cls()
+    def from_ctype(cls, ctype, *, symbol: gf.Symbol | None = None) -> "f_type":
+        c = cls.__new__(cls)
+        c._symbol = symbol
+        c.__init__()  # type: ignore[misc]
         c._ctype = ctype
         return c
 

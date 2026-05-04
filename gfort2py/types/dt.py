@@ -31,8 +31,8 @@ class ftype_dt(f_type):
     @property
     def ctype(self) -> type[ctypes.Structure]:
         try:
-            module_name: str | None = self.definition().module
-        except (NotImplementedError, AttributeError):
+            module_name: str | None = self._symbol.module if self._symbol else None
+        except AttributeError:
             module_name = None
 
         key = (module_name, self.ftype)
@@ -157,8 +157,8 @@ class _f_dt_assumed_shape(ftype_assumed_shape):
 
         string = f"""
         subroutine alloc
-        use {self.definition().module}, only: {self.definition().name}
-        type({self.definition().name}), allocatable, dimension({dims}), intent(out) :: x
+        use {self._sym.module}, only: {self._sym.name}
+        type({self._sym.name}), allocatable, dimension({dims}), intent(out) :: x
         if(allocated(x)) deallocate(x)
         allocate(x({shape}))
         end subroutine alloc

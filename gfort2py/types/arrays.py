@@ -74,11 +74,11 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
 
     @property
     def shape(self) -> tuple[int, ...]:
-        return self.definition().properties.array_spec.pyshape
+        return self._sym.properties.array_spec.pyshape
 
     @property
     def ndims(self) -> int:
-        return self.definition().properties.array_spec.rank
+        return self._sym.properties.array_spec.rank
 
     @property
     def size(self) -> int:
@@ -203,8 +203,8 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
 
     @property
     def shape(self) -> tuple[int, ...]:
-        return self.definition().properties.array_spec.pyshape
+        return self._sym.properties.array_spec.pyshape
 
     @property
     def ndims(self) -> int:
-        return self.definition().properties.array_spec.rank
+        return self._sym.properties.array_spec.rank

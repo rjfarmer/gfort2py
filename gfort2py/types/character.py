@@ -2,8 +2,8 @@
 
 import ctypes
 from abc import ABCMeta, abstractmethod
-from typing import Type
 from functools import cached_property
+from typing import Type
 
 import gfModParser as gf
 import numpy as np
@@ -23,13 +23,13 @@ class ftype_character(f_type, metaclass=ABCMeta):
 
     @cached_property
     def _char(self):
-        if self.definition().kind == 1:
+        if self._sym.kind == 1:
             return ftype_character_1(self)
         return ftype_character_4(self)
 
     @cached_property
     def _length(self):
-        if self.definition().properties.typespec.charlen.value > 0:
+        if self._sym.properties.typespec.charlen.value > 0:
             return ftype_char_fixed(self)
         return ftype_char_defered(self)
 
@@ -165,7 +165,7 @@ class ftype_char_fixed(ftype_char_length):
 
     @property
     def strlen(self):
-        return self.parent.definition().properties.typespec.charlen.value
+        return self.parent._sym.properties.typespec.charlen.value
 
     def __repr__(self):
         return f"character(kind={self.parent.kind},len={self.strlen})"

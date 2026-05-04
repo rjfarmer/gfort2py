@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-import abc
 import ctypes
 from typing import Any
 
@@ -108,29 +107,11 @@ def factory(obj: gf.Symbol) -> type[f_type]:
 
         # Inject in the base type
         def _base(self):
-            cls = find_ftype(ftype, kind)
-
-            def definition(self):
-                return None
-
-            # Inject into Fortran definition all the other module data
-            cls.definition = classmethod(definition)
-
-            abc.update_abstractmethods(cls)
-            return cls()
+            return find_ftype(ftype, kind)()
 
         res._base = classmethod(_base)  # type: ignore[attr-defined]
     else:
         res = find_ftype(ftype, kind)
-
-    def definition(self):
-        self._obj = obj
-        return self._obj
-
-    # Inject into Fortran definition all the other module data
-    res.definition = classmethod(definition)  # type: ignore[assignment]
-
-    abc.update_abstractmethods(res)
 
     return res
 
