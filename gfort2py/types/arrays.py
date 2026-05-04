@@ -9,7 +9,7 @@ import numpy as np
 
 from ..compilation import Compile, CompileArgs
 from ..utils import copy_array, is_64bit
-from .base import f_type
+from .base import AllocStrategy, f_type
 from .character import ftype_character
 
 
@@ -89,6 +89,7 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
     dtype = None  # type: ignore[assignment]
     ftype = None  # type: ignore[assignment]
     kind = None  # type: ignore[assignment]
+    alloc_strategy: AllocStrategy = AllocStrategy.FORTRAN
 
     def __init__(self, value=None):
         self._value = value

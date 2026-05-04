@@ -7,7 +7,7 @@ import numpy as np
 
 from ..compilation import CompileArgs, Modulise
 from .arrays import ftype_assumed_shape, ftype_explicit_array
-from .base import f_type
+from .base import AllocStrategy, f_type
 
 __all__ = ["ftype_dt", "ftype_dt_explicit", "ftype_dt_assumed_shape"]
 

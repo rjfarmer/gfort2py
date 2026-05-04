@@ -2,6 +2,7 @@
 
 import ctypes
 from abc import ABC, ABCMeta, abstractmethod
+from enum import Enum, auto
 from typing import Any, Protocol, Type, runtime_checkable
 
 import gfModParser as gf
@@ -9,7 +10,20 @@ import numpy as np
 
 from ..compilation import CompileArgs, Modulise
 
-__all__ = ["f_type", "FortranSymbol"]
+__all__ = ["f_type", "FortranSymbol", "AllocStrategy"]
+
+
+class AllocStrategy(Enum):
+    """Declares how a type allocates memory for assumed-shape (allocatable) arrays.
+
+    INTRINSIC: allocation is expressed as a pure Fortran intrinsic call and needs
+        no extra compiler support.  Used by all scalar-backed array types.
+    FORTRAN: allocation requires a small Fortran helper subroutine to be compiled
+        at runtime (e.g. derived-type arrays that need the host module in scope).
+    """
+
+    INTRINSIC = auto()
+    FORTRAN = auto()
 
 
 @runtime_checkable
@@ -49,6 +63,7 @@ class f_type(metaclass=ABCMeta):
     """
 
     default: Any = 0
+    alloc_strategy: AllocStrategy = AllocStrategy.INTRINSIC
 
     def __init__(self, value=None):
         self._ctype = self.ctype()

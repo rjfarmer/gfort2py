@@ -7,7 +7,7 @@ from typing import Any
 import gfModParser as gf
 
 from .arrays import *
-from .base import FortranSymbol, f_type
+from .base import AllocStrategy, FortranSymbol, f_type
 from .character import *
 from .complex import *
 from .dt import *
@@ -25,6 +25,7 @@ __all__ = [
     "get_module",
     "fParam",
     "FortranSymbol",
+    "AllocStrategy",
     "register_ftype",
 ]
 
