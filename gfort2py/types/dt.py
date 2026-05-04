@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 import ctypes
+from typing import Any
 
 import numpy as np
 
@@ -18,7 +19,7 @@ class ftype_dt(f_type):
     dtype = None  # type: ignore[assignment]
     kind = -1
 
-    def __init__(self, *, ftype: str, fields: dict[str, f_type]):
+    def __init__(self, *, ftype: str, fields: dict[str, Any]):
         self._ftype = ftype
         self.fields = fields
         super().__init__()
@@ -28,7 +29,7 @@ class ftype_dt(f_type):
         return self._ftype
 
     @property
-    def ctype(self):
+    def ctype(self) -> type[ctypes.Structure]:
         try:
             module_name: str | None = self.definition().module
         except (NotImplementedError, AttributeError):
@@ -93,7 +94,7 @@ class ftype_dt_array(f_type):
         super().__init__()
 
     @property
-    def ctype(self):
+    def ctype(self) -> ftype_dt_array:
         return self._array_cls(self._dt, shape=self.shape)
 
     def _index(self, index):
