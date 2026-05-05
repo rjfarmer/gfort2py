@@ -21,16 +21,17 @@ except ImportError:
     PYQ_IMPORTED = False
 
 
+gf_version = gf.utils.gfortran_version(gf.utils.fc_path())
+
+if gf_version < gf.utils.Version("15.0.0"):
+    pytest.skip("Requires gfortran 15 or later", allow_module_level=True)
+
 SO = Path(f"./tests/build/unsign.{gf.lib_ext()}")
 MOD = Path("./tests/build/unsign.mod")
 
 x = gf.fFort(SO, MOD)
 
 
-@pytest.mark.skipif(
-    gf.utils.gfortran_version(gf.utils.fc_path()) < gf.utils.Version("15.0.0"),
-    reason="Requires gfortran 15 or later",
-)
 class TestUnsigned:
     # --- scalar module variable ---
 
