@@ -98,18 +98,19 @@ def factory(obj: gf.Symbol) -> type[f_type]:
         else:
             res = ftype_dt
     elif is_array:
+        base_arr_cls: Any
         if is_explicit:
-            res = ftype_explicit_array
+            base_arr_cls = ftype_explicit_array
         elif is_assumed_shape:
-            res = ftype_assumed_shape
+            base_arr_cls = ftype_assumed_shape
         else:
             raise TypeError("Can't match object")
 
-        # Inject in the base type
+        # Create a concrete subclass with _base implemented as an instance method
         def _base(self):
             return find_ftype(ftype, kind)()
 
-        res._base = classmethod(_base)  # type: ignore[attr-defined]
+        res = type(base_arr_cls.__name__, (base_arr_cls,), {"_base": _base})
     else:
         res = find_ftype(ftype, kind)
 

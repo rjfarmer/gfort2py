@@ -18,7 +18,6 @@ MOD = "./tests/build/explicit_arrays.mod"
 x = gf.fFort(SO, MOD)
 
 
-@pytest.mark.skip
 class TestExplicitArrayMethods:
     def test_const_int_arr_error(self):
         with pytest.raises(AttributeError) as cm:
@@ -143,6 +142,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_exp_array_int_1d(self, capfd):
         v = np.arange(0, 5)
@@ -152,6 +152,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_exp_array_int_2d(self, capfd):
         v = np.arange(0, 5 * 5).reshape((5, 5))
@@ -162,6 +163,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_exp_array_int_3d(self, capfd):
         v = np.arange(0, 5 * 5 * 5).reshape((5, 5, 5))
@@ -172,6 +174,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_exp_array_real_1d(self, capfd):
         v = np.arange(0, 5.0).reshape((5))
@@ -182,6 +185,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_exp_array_real_2d(self, capfd):
         v = np.arange(0, 5.0 * 5.0).reshape((5, 5))
@@ -192,6 +196,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_exp_array_real_3d(self, capfd):
         v = np.arange(0, 5.0 * 5.0 * 5.0).reshape((5, 5, 5))
@@ -202,6 +207,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_exp_array_int_1d_multi(self, capfd):
         u = 19
@@ -212,6 +218,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == f"{u} {o.strip()} {w}"
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_exp_array_real_dp_1d(self, capfd):
         v = np.arange(0, 5.0).reshape((5))
@@ -223,6 +230,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_exp_array_real_dp_2d(self, capfd):
         v = np.arange(0, 5.0 * 5.0).reshape((5, 5))
@@ -234,6 +242,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_exp_array_real_dp_3d(self, capfd):
         v = np.arange(0, 5.0 * 5.0 * 5.0).reshape((5, 5, 5))
@@ -245,6 +254,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_exp_inout(self, capfd):
         v = np.array([1, 2, 3, 4, 5])
@@ -254,6 +264,7 @@ class TestExplicitArrayMethods:
 
         assert np.array_equal(y.args["x"], 2 * v)
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_arr_exp_p(self, capfd):
         v = np.arange(0, 5)
@@ -263,6 +274,7 @@ class TestExplicitArrayMethods:
         out, err = capfd.readouterr()
         assert out.strip() == o.strip()
 
+    @pytest.mark.skip
     def test_logical_arr_multi(self):
         xarr = np.zeros(5)
         xarr[:] = True
@@ -298,6 +310,7 @@ class TestExplicitArrayMethods:
         y = x.func_mesh_exp4(z, i)
         assert np.array_equal(y.args["x"], np.arange(1, ((i + 3) * 2) + 1 + 1))
 
+    @pytest.mark.skip
     def test_check_exp_2d_2m3(self):
         # Github issue #19
         arr_test = np.zeros((3, 4), dtype=int, order="F")

@@ -15,7 +15,11 @@ class fArg(metaclass=ABCMeta):
         self.module: gf.Module = module
         self.procedure: gf.Symbol = procedure
 
-        self.base = factory(self.definition)()
+        cls = factory(self.definition)
+        c = cls.__new__(cls)
+        c._symbol = self.definition
+        type(c).__init__(c)  # type: ignore[misc]
+        self.base = c
         self._ctype = None
 
     @property
