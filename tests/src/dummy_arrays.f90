@@ -256,27 +256,27 @@ module dummy_arrays
 	
 	
 	
-	subroutine sub_arr_assumed_rank_int_1d(zzz)
+	subroutine sub_arr_assumed_pointer_int_1d(zzz)
 		integer,dimension(:),pointer, intent(inout) :: zzz
 		
 		write(output_unit,*) zzz(1:5)
 		zzz(1:5) = 100
-	end subroutine sub_arr_assumed_rank_int_1d
+	end subroutine sub_arr_assumed_pointer_int_1d
 	
-	subroutine sub_arr_assumed_rank_real_1d(zzz)
+	subroutine sub_arr_assumed_pointer_real_1d(zzz)
 		real,dimension(:),pointer, intent(inout) :: zzz
 		
 		write(output_unit,*) zzz(1:5)
 		zzz(1:5) = 100.0
-	end subroutine sub_arr_assumed_rank_real_1d
+	end subroutine sub_arr_assumed_pointer_real_1d
 	
-	subroutine sub_arr_assumed_rank_dp_1d(zzz)
+	subroutine sub_arr_assumed_pointer_dp_1d(zzz)
 		real(dp),dimension(:),pointer, intent(inout) :: zzz
 		
 		write(output_unit,*) zzz(1:5),lbound(zzz),ubound(zzz),size(zzz)
 		zzz(1:4) = 100.0_dp
 		zzz(5) = 100_dp
-	end subroutine sub_arr_assumed_rank_dp_1d
+	end subroutine sub_arr_assumed_pointer_dp_1d
 
 
 
@@ -344,6 +344,25 @@ module dummy_arrays
         yp = [1.0_dp, -42.014_dp]
      end subroutine multi_array_pass
 
+	subroutine sub_assumed_rank_int(x)
+		integer, dimension(..), intent(in) :: x
+		select rank(x)
+		rank(0) ; write(output_unit,'(I1,1X)') x
+		rank(1) ; write(output_unit,'(5(I1,1X))') x
+		rank(2) ; write(output_unit,'(10(I1,1X))') x
+		rank default ; 
+		end select
+	end subroutine sub_assumed_rank_int
+
+	subroutine sub_assumed_rank_real(x)
+		real, dimension(..), intent(in) :: x
+		select rank(x)
+		rank(0) ; write(output_unit,'(F5.1,1X)') x
+		rank(1) ; write(output_unit,'(5(F5.1,1X))') x
+		rank(2) ; write(output_unit,'(10(F5.1,1X))') x
+		rank default ; 
+		end select
+	end subroutine sub_assumed_rank_real
 
 
 end module dummy_arrays

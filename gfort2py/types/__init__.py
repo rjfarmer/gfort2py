@@ -86,6 +86,7 @@ def factory(obj: gf.Symbol) -> type[f_type]:
     is_dt = obj.is_dt
     is_explicit = obj.properties.array_spec.is_explicit
     is_assumed_shape = obj.properties.array_spec.is_deferred
+    is_assumed_rank = obj.properties.array_spec.is_assumed_rank
 
     if is_dt:
         if is_array:
@@ -101,6 +102,8 @@ def factory(obj: gf.Symbol) -> type[f_type]:
         base_arr_cls: Any
         if is_explicit:
             base_arr_cls = ftype_explicit_array
+        elif is_assumed_rank:
+            base_arr_cls = ftype_assumed_rank
         elif is_assumed_shape:
             base_arr_cls = ftype_assumed_shape
         else:

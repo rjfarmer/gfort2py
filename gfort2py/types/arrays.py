@@ -272,3 +272,46 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
     @property
     def ndims(self) -> int:
         return self._sym.properties.array_spec.rank
+
+
+class ftype_assumed_rank(ftype_assumed_shape, metaclass=ABCMeta):
+    """Fortran assumed-rank dummy argument: dimension(..).
+
+    The rank is not known from the symbol metadata and must be derived from
+    the numpy value passed at runtime.
+    """
+
+    def __init__(self, value=None):
+        self._ndims = 0
+        super().__init__(value=None)
+        if value is not None:
+            self.value = value
+
+    @property
+    def value(self) -> Optional[np.ndarray]:
+        return super().value
+
+    @value.setter
+    def value(self, value: np.ndarray):
+        if value is None:
+            return
+
+        shape = np.shape(value)
+        self._ndims = len(shape)
+        self._ctype = self.ctype()
+
+        self._allocate(shape)
+
+        self._value = (
+            np.asfortranarray(value).astype(self.base.dtype, copy=False).ravel("F")
+        )
+        copy_array(
+            self._value.ctypes.data,
+            self._ctype.base_addr,
+            ctypes.sizeof(self.base.ctype),
+            int(np.prod(shape)),
+        )
+
+    @property
+    def ndims(self) -> int:
+        return self._ndims

@@ -295,31 +295,31 @@ class TestDummyArrayMethods:
 
     @pytest.mark.skip
     @pytest.mark.skipIfWindows
-    def test_sub_arr_assumed_rank_int_1d(self, capfd):
+    def test_sub_arr_assumed_pointer_int_1d(self, capfd):
         v = np.arange(10, 15)
         o = " ".join([str(i) for i in v.flatten(order="F")])
 
-        y = x.sub_arr_assumed_rank_int_1d(v)
+        y = x.sub_arr_assumed_pointer_int_1d(v)
         out, err = capfd.readouterr()
         assert np.array_equal(y.args["zzz"], np.array([100] * 5))
 
     @pytest.mark.skip
     @pytest.mark.skipIfWindows
-    def test_sub_arr_assumed_rank_real_1d(self, capfd):
+    def test_sub_arr_assumed_pointer_real_1d(self, capfd):
         v = np.arange(10.0, 15.0)
         o = " ".join([str(i) for i in v.flatten(order="F")])
 
-        y = x.sub_arr_assumed_rank_real_1d(v)
+        y = x.sub_arr_assumed_pointer_real_1d(v)
         out, err = capfd.readouterr()
         assert np.array_equal(y.args["zzz"], np.array([100.0] * 5))
 
     @pytest.mark.skip
     @pytest.mark.skipIfWindows
-    def test_sub_arr_assumed_rank_dp_1d(self, capfd):
+    def test_sub_arr_assumed_pointer_dp_1d(self, capfd):
         v = np.arange(10.0, 15.0)
         o = " ".join([str(i) for i in v.flatten(order="F")])
 
-        y = x.sub_arr_assumed_rank_dp_1d(v)
+        y = x.sub_arr_assumed_pointer_dp_1d(v)
         out, err = capfd.readouterr()
         assert np.array_equal(y.args["zzz"], np.array([100.0] * 5))
 
@@ -376,3 +376,19 @@ class TestDummyArrayMethods:
         assert res.args["y"] == -1000.0
         assert np.array_equal(res.args["xp"], np.array([13, -2]))
         assert np.array_equal(res.args["yp"], np.array([1, -42.014]))
+
+    def test_sub_assumed_rank_int_1d(self, capfd):
+        v = np.arange(5)
+        o = " ".join([str(i) for i in v.flatten(order="F")])
+
+        y = x.sub_assumed_rank_int(v)
+        out, err = capfd.readouterr()
+        assert out.strip() == o
+
+    def test_sub_assumed_rank_int_2d(self, capfd):
+        v = np.arange(10).reshape((5, 2))
+        o = " ".join([str(i) for i in v.flatten(order="F")])
+
+        y = x.sub_assumed_rank_int(v)
+        out, err = capfd.readouterr()
+        assert out.strip() == o
