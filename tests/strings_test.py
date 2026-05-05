@@ -18,7 +18,6 @@ MOD = "./tests/build/strings.mod"
 x = gf.fFort(SO, MOD)
 
 
-@pytest.mark.skip
 class TestStringMethods:
 
     def test_a_str(self):
@@ -31,6 +30,7 @@ class TestStringMethods:
         x.a_str = v
         assert x.a_str == v[0:10]
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_str_in_explicit(self, capfd):
         v = "1324567980"
@@ -110,6 +110,7 @@ class TestStringMethods:
         y2 = x.sub_str_alloc2("qwerty")
         assert y2.args["x"] == "asdfghjkl"
 
+    @pytest.mark.skip
     def test_str_array_type_chceck(self):
         with pytest.raises(TypeError) as cm:
             x.a_str_exp_1d = np.zeros(5, dtype=np.str_)
@@ -134,6 +135,7 @@ class TestStringMethods:
 
         assert np.all(res.args["x"] == z2)
 
+    @pytest.mark.skip
     def test_func_str_array_dt(self):
         data = {
             "start_guard": 123456789,
@@ -157,6 +159,7 @@ class TestStringMethods:
 
         assert x.func_str_array_dt(data).result
 
+    @pytest.mark.skip
     def test_func_str_array_dt_alloc(self):
         data = {
             "start_guard": 123456789,
@@ -175,6 +178,7 @@ class TestStringMethods:
 
         assert np.all(z == res.args["x"]["b_str_alloc_1d"])
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_str_func_inout_str2(self, capfd):
         z = np.array(
@@ -194,6 +198,7 @@ class TestStringMethods:
 
         assert np.all(res.args["x"] == z2)
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_str_func_inout_str3(self, capfd):
         z = np.array(
@@ -213,6 +218,7 @@ class TestStringMethods:
 
         assert np.all(res.args["x"] == z2)
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_str_func_inout_alloc(self, capfd):
         z = None
@@ -249,6 +255,7 @@ class TestStringMethods:
     def test_str_array_param(self):
         assert np.all(x.a_str_p_1d == np.array(["aa", "bb", "cc"], dtype="S2"))
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_check_a_str_exp_1d(self, capfd):
         x.a_str_exp_1d = np.array(
@@ -268,6 +275,7 @@ class TestStringMethods:
 
         assert np.all(x.a_str_exp_1d == z2)
 
+    @pytest.mark.skip
     def test_b_str_alloc_1d(self):
         x.b_str_alloc_1d = np.array(
             ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
@@ -287,6 +295,7 @@ class TestStringMethods:
 
         assert not res.result
 
+    @pytest.mark.skip
     def test_alloc_b_str_alloc_1d(self):
         res = x.alloc_b_str_alloc_1d()
 
@@ -298,6 +307,7 @@ class TestStringMethods:
             )
         )
 
+    @pytest.mark.skip
     def test_set_str_array_dt_out(self):
         res = x.set_str_array_dt_out({})
 
@@ -310,6 +320,7 @@ class TestStringMethods:
         res = x.set_chr_star_star("            ")
         assert res.args["x"] == "abcdefghijkl"
 
+    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_check_assumed_shape_str(self, capfd):
         y = np.array(["a/b/c/d/e/f/g"], dtype="S")
@@ -318,6 +329,7 @@ class TestStringMethods:
         out, err = capfd.readouterr()
         assert out.strip() == "a/b/c/d/e/f/g"
 
+    @pytest.mark.skip
     def test_check_str_opt(self):
         res = x.check_str_opt(None, 0)
         assert res.result == 3
