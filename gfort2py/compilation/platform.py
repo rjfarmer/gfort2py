@@ -39,6 +39,12 @@ class PlatformABC(metaclass=abc.ABCMeta):
         """
         pass
 
+    def _load_posix_library(self, libname: Path) -> ctypes.CDLL:
+        libname = Path(libname).resolve()
+        if not libname.exists():
+            raise FileNotFoundError(f"Can't find {libname}")
+        return ctypes.CDLL(str(libname))
+
     @property
     @abc.abstractmethod
     def library_ext(self) -> str:
@@ -103,11 +109,7 @@ class PlatformLinux(PlatformABC):
     which = "which"
 
     def load_library(self, libname: Path) -> ctypes.CDLL:
-        libname = Path.resolve(Path(libname))
-        if not libname.exists():
-            raise FileNotFoundError(f"Can't find {libname}")
-
-        return ctypes.CDLL(libname)
+        return self._load_posix_library(libname)
 
     @property
     def library_ext(self) -> str:
@@ -122,11 +124,7 @@ class PlatformMac(PlatformABC):
     which = "which"
 
     def load_library(self, libname: Path) -> ctypes.CDLL:
-        libname = Path.resolve(Path(libname))
-        if not libname.exists():
-            raise FileNotFoundError(f"Can't find {libname}")
-
-        return ctypes.CDLL(libname)
+        return self._load_posix_library(libname)
 
     @property
     def library_ext(self) -> str:
@@ -136,32 +134,16 @@ class PlatformMac(PlatformABC):
     def library_flags(self) -> list[str]:
         return ["-dynamiclib"]
 
-    # @property
-    # def fcpath(self, path=None) -> Path:
-    #     if path is not None:
-    #         return Path(path)
-
-    #     if "FC" in os.environ:
-    #         return Path(os.environ["FC"])
-
-    #     if os.path.exists("/usr/local/bin/gfortran"):
-    #         return Path("/usr/local/bin/gfortran")
-
-    #     return self._find()
-
 
 class PlatformWindows(PlatformABC):
     which = "where"
 
     def load_library(self, libname: Path) -> ctypes.CDLL:
-        libname = Path.resolve(Path(libname))
+        libname = Path(libname).resolve()
         if not libname.exists():
             raise FileNotFoundError(f"Can't find {libname}")
 
-        kwargs = {}
         os.add_dll_directory(libname.parent)  # type: ignore[attr-defined]
-        kwargs["winmode"] = 0
-
         return ctypes.CDLL(str(libname), winmode=0)  # type: ignore[call-arg]
 
     @property

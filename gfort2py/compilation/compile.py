@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 
-import hashlib
 import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -31,35 +30,31 @@ class Compile:
 
     def compile(self, *, args: CompileArgs = CompileArgs()) -> bool:
         # Compile code, reading from stdin
-        try:
-            p = subprocess.run(
-                [
-                    str(self.platform.fcpath(self._fc)),
-                    "-o",
-                    str(self.library_filename),
-                    "-x",
-                    "f95",
-                    *str(args).split(),
-                    *self.platform.library_flags,
-                    "-J",
-                    str(output_folder()),
-                    "-",
-                ],
-                input=self.text.encode(),
-                capture_output=True,
+        p = subprocess.run(
+            [
+                str(self.platform.fcpath(self._fc)),
+                "-o",
+                str(self.library_filename),
+                "-x",
+                "f95",
+                *str(args).split(),
+                *self.platform.library_flags,
+                "-J",
+                str(output_folder()),
+                "-",
+            ],
+            input=self.text.encode(),
+            capture_output=True,
+        )
+
+        if p.returncode != 0:
+            raise subprocess.CalledProcessError(
+                p.returncode,
+                p.args,
+                output=p.stdout,
+                stderr=p.stderr,
             )
-        except subprocess.CalledProcessError:
-            print(p.stdout)
-            print(p.stderr.decode())
-            raise
 
-        # print(self.text)
-
-        # print(p.stdout)
-        # print(p.stderr.decode())
-        # print(" ".join(p.args))
-
-        # print(self.library_filename)
         return self.library_filename.exists()
 
     @property

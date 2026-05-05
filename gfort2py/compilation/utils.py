@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-import hashlib
 import os
 import tempfile
 from functools import cache
@@ -17,4 +16,4 @@ def output_folder(output=None) -> Path:
 
         return temp_folder
     else:
-        return Path.resolve(output)
+        return Path(output).resolve()
