@@ -18,7 +18,6 @@ MOD = "./tests/build/dummy_arrays.mod"
 x = gf.fFort(SO, MOD)
 
 
-@pytest.mark.skip
 class TestDummyArrayMethods:
     def test_sub_alloc_1d_arrs(self):
         y = x.sub_alloc_int_1d_arrs()
@@ -275,24 +274,28 @@ class TestDummyArrayMethods:
         y = x.func_assumed_shape_arr_5d(v)
         assert y.result
 
+    @pytest.mark.skip
     def test_func_assumed_size_arr_1d(self):
         v = np.zeros([5], dtype="int32")
         v[1] = 2
         y = x.func_assumed_size_arr_1d(v)
         assert y.result
 
+    @pytest.mark.skip
     def test_func_assumed_size_arr_real_1d(self):
         v = np.zeros([5], dtype="float32")
         v[1] = 2.0
         y = x.func_assumed_size_arr_real_1d(v)
         assert y.result
 
+    @pytest.mark.skip
     def test_func_assumed_size_arr_real_dp_1d(self):
         v = np.zeros([5], dtype="float64")
         v[1] = 2.0
         y = x.func_assumed_size_arr_real_dp_1d(v)
         assert y.result
 
+    @pytest.mark.skip
     def test_sub_alloc_arr_1d(self):
         y = x.sub_alloc_arr_1d(None)
         vTest = np.zeros(10)
@@ -341,6 +344,7 @@ class TestDummyArrayMethods:
         out, err = capfd.readouterr()
         assert np.array_equal(y.args["zzz"], np.array([100.0] * 5))
 
+    @pytest.mark.skip
     def test_sub_check_alloc_int_2d(self):
         arr_test = np.zeros((3, 4), dtype=np.int32, order="F")
         y = x.sub_check_alloc_int_2d(None)
@@ -351,6 +355,7 @@ class TestDummyArrayMethods:
 
         assert np.array_equal(y.args["x"], z)
 
+    @pytest.mark.skip
     def test_sub_check_alloc_int_3d(self):
         arr_test = np.zeros((3, 4, 5), dtype=np.int32, order="F")
         y = x.sub_check_alloc_int_3d(None)
