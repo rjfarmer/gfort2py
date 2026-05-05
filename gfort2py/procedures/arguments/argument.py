@@ -78,4 +78,4 @@ class fArg(metaclass=ABCMeta):
         else:
             c = self._ctype.contents
 
-        return self.base.from_ctype(c).value
+        return self.base.from_ctype(c, symbol=self.definition).value

@@ -176,7 +176,9 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
 
         self._allocate(shape)
 
-        self._value = np.asfortranarray(value).ravel("F")
+        self._value = (
+            np.asfortranarray(value).astype(self.base.dtype, copy=False).ravel("F")
+        )
         copy_array(
             self._value.ctypes.data,
             self._ctype.base_addr,
