@@ -41,7 +41,7 @@ dependencies = [
     "numpy >=1.13.0",
     "platformdirs >=3",
     "dataclasses_json >=0.6",
-    "gfModParser >= 1.1.0"
+    "gfModParser >= 1.2.0"
 ]
 
 dynamic = ["version"]
