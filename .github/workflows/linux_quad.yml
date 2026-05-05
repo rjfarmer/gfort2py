@@ -11,11 +11,9 @@ jobs:
         os: [ubuntu-22.04]    
         python-version: ['3.13']    
         toolchain:
-          - {compiler: gcc, version: 9}
-          - {compiler: gcc, version: 10}
-          - {compiler: gcc, version: 11}
-          - {compiler: gcc, version: 12}
           - {compiler: gcc, version: 13}
+          - {compiler: gcc, version: 14}
+          - {compiler: gcc, version: 15}
 
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5

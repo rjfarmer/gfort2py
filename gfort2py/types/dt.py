@@ -94,7 +94,7 @@ class ftype_dt_array(f_type):
         super().__init__()
 
     @property
-    def ctype(self) -> ftype_dt_array:
+    def ctype(self) -> "ftype_dt_array":
         return self._array_cls(self._dt, shape=self.shape)
 
     def _index(self, index):
