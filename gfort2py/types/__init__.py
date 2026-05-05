@@ -104,7 +104,7 @@ def factory(obj: gf.Symbol) -> type[f_type]:
         elif is_assumed_shape:
             base_arr_cls = ftype_assumed_shape
         else:
-            raise TypeError("Can't match object")
+            base_arr_cls = ftype_assumed_size_array
 
         # Create a concrete subclass with _base implemented as an instance method
         def _base(self):

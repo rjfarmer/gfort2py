@@ -258,21 +258,18 @@ class TestDummyArrayMethods:
         y = x.func_assumed_shape_arr_5d(v)
         assert y.result
 
-    @pytest.mark.skip
     def test_func_assumed_size_arr_1d(self):
         v = np.zeros([5], dtype="int32")
         v[1] = 2
         y = x.func_assumed_size_arr_1d(v)
         assert y.result
 
-    @pytest.mark.skip
     def test_func_assumed_size_arr_real_1d(self):
         v = np.zeros([5], dtype="float32")
         v[1] = 2.0
         y = x.func_assumed_size_arr_real_1d(v)
         assert y.result
 
-    @pytest.mark.skip
     def test_func_assumed_size_arr_real_dp_1d(self):
         v = np.zeros([5], dtype="float64")
         v[1] = 2.0

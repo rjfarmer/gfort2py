@@ -85,6 +85,68 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
         return int(np.prod(self.shape))
 
 
+class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
+    """Fortran assumed-size array argument: integer, intent(inout) :: x(*)
+
+    The size is unknown from the .mod file; it is determined entirely by the
+    numpy array passed in by the caller.  The ABI is a plain pointer to
+    contiguous data — identical to an explicit array, but without a fixed size.
+    """
+
+    dtype = None  # type: ignore[assignment]
+    ftype = None  # type: ignore[assignment]
+    kind = None  # type: ignore[assignment]
+
+    def __init__(self, value=None):
+        self.base = self._base()
+        # Cannot call super().__init__() because the ctype size is unknown until
+        # a value is provided.
+        self._ctype = None
+        self._p1 = None
+        self._p2 = None
+        self.value = value
+
+    @abstractmethod
+    def _base(self):
+        raise NotImplementedError
+
+    @property
+    def ctype(self):
+        if self._ctype is None:
+            raise RuntimeError(
+                "No value has been set; ctype size is unknown for assumed-size arrays"
+            )
+        return type(self._ctype)
+
+    def __repr__(self):
+        return f"{self.base.ftype}(kind={self.base.kind})(*)"
+
+    @property
+    def value(self) -> Optional[np.ndarray]:
+        if self._ctype is None:
+            return None
+        return np.ctypeslib.as_array(self._ctype).astype(self.base.dtype)
+
+    @value.setter
+    def value(self, value: np.ndarray):
+        if value is None:
+            return
+        flat = np.asfortranarray(value).astype(self.base.dtype, copy=False).ravel("F")
+        n = flat.size
+        arr_type = self.base.ctype * n
+        self._ctype = arr_type()
+        copy_array(
+            flat.ctypes.data,
+            ctypes.addressof(self._ctype),
+            ctypes.sizeof(self.base.ctype),
+            n,
+        )
+
+    @property
+    def ndims(self) -> int:
+        return self._sym.properties.array_spec.rank
+
+
 class ftype_assumed_shape(f_type, metaclass=ABCMeta):
     dtype = None  # type: ignore[assignment]
     ftype = None  # type: ignore[assignment]
