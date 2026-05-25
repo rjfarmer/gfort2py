@@ -1,7 +1,7 @@
 
 .PHONY: all clean
 
-FC      ?= gfortran
+FC       = gfortran
 BUILDDIR = ../build
 
 FFLAGS = -ggdb -fdump-tree-original -D_FORTIFY_SOURCE=2 \

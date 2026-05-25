@@ -1,7 +1,7 @@
 
 .PHONY: all clean
 
-FC      ?= gfortran
+FC       = gfortran
 BUILDDIR = ../build
 
 # Skip if gfortran version < 15
