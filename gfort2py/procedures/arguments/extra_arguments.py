@@ -46,8 +46,11 @@ class fArgumentsExtra(fArguments):
             name = symbol.name
             arg = self._arguments.args[name]
             is_character = symbol.type.lower() == "character"
+            is_allocatable_character = (
+                is_character and symbol.properties.attributes.allocatable
+            )
 
-            if is_character:
+            if is_character and not is_allocatable_character:
                 length = self._string_length(arg.value)
                 self._ctypes.append(self._strlen_ctype()(length))
 

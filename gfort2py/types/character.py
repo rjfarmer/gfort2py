@@ -19,7 +19,43 @@ class ftype_character(f_type, metaclass=ABCMeta):
     ftype = "character"
 
     def __init__(self, value=None):
+        self._alloc_len_ctype = None
         super().__init__(value=value)
+
+    @staticmethod
+    def _strlen_ctype():
+        if ctypes.sizeof(ctypes.c_void_p) == 8:
+            return ctypes.c_int64
+        return ctypes.c_int32
+
+    @classmethod
+    def in_dll(
+        cls, lib: ctypes.CDLL, name: str, *, symbol: gf.Symbol | None = None
+    ) -> "ftype_character":
+        c = cls.__new__(cls)
+        c._symbol = symbol
+        c.__init__()  # type: ignore[misc]
+
+        is_alloc_deferred = (
+            symbol is not None
+            and symbol.properties.attributes.allocatable
+            and symbol.properties.typespec.charlen.value <= 0
+        )
+
+        if is_alloc_deferred:
+            c._ctype = ctypes.c_void_p.in_dll(lib, name)
+            c._alloc_len_ctype = None
+            if name.startswith("__") and "_MOD_" in name:
+                module_and_rest = name[2:]
+                len_symbol = f"_F.{module_and_rest}"
+                try:
+                    c._alloc_len_ctype = cls._strlen_ctype().in_dll(lib, len_symbol)
+                except ValueError:
+                    c._alloc_len_ctype = None
+            return c
+
+        c._ctype = c.ctype.in_dll(lib, name)
+        return c
 
     @cached_property
     def _char(self):
@@ -54,10 +90,72 @@ class ftype_character(f_type, metaclass=ABCMeta):
 
     @property
     def value(self) -> str | None:
+        is_alloc_deferred = (
+            self._sym.properties.attributes.allocatable
+            and self._sym.properties.typespec.charlen.value <= 0
+            and isinstance(self._ctype, ctypes.c_void_p)
+        )
+
+        if is_alloc_deferred:
+            ptr = self._ctype.value
+            if ptr is None:
+                return None
+
+            if self._alloc_len_ctype is not None:
+                strlen = int(self._alloc_len_ctype.value)
+            else:
+                strlen = len(ctypes.string_at(ptr))
+
+            if strlen <= 0:
+                return ""
+
+            return ctypes.string_at(ptr, strlen).decode(self._char.encoding)
+
         return self._char.decode_value(self._ctype)
 
     @value.setter
     def value(self, value: str | bytes | None):
+        is_alloc_deferred = (
+            self._sym.properties.attributes.allocatable
+            and self._sym.properties.typespec.charlen.value <= 0
+            and isinstance(self._ctype, ctypes.c_void_p)
+        )
+
+        if is_alloc_deferred:
+            libc = ctypes.CDLL(None)
+            libc.malloc.argtypes = [ctypes.c_size_t]
+            libc.malloc.restype = ctypes.c_void_p
+            libc.realloc.argtypes = [ctypes.c_void_p, ctypes.c_size_t]
+            libc.realloc.restype = ctypes.c_void_p
+
+            if value is None:
+                self._ctype.value = None
+                if self._alloc_len_ctype is not None:
+                    self._alloc_len_ctype.value = 0
+                return None
+
+            if hasattr(value, "encode"):
+                value = value.encode(self._char.encoding)
+
+            strlen = len(value)
+            current_ptr = self._ctype.value
+
+            if current_ptr is None:
+                new_ptr = libc.malloc(strlen)
+            else:
+                new_ptr = libc.realloc(current_ptr, strlen)
+
+            if not new_ptr and strlen > 0:
+                raise MemoryError("Unable to allocate memory for allocatable character")
+
+            if strlen > 0:
+                ctypes.memmove(new_ptr, value, strlen)
+
+            self._ctype.value = new_ptr
+            if self._alloc_len_ctype is not None:
+                self._alloc_len_ctype.value = strlen
+            return None
+
         if value is None:
             return None
 

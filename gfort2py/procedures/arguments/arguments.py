@@ -74,7 +74,14 @@ class fArgumentsAbstract(metaclass=abc.ABCMeta):
                 raise ArgumentError(f"Argument {key} must have a value set")
 
     def get_ctypes(self) -> list[Any]:
-        return [c.argument.ctype for c in self.args.values()]
+        ctypes_args: list[Any] = []
+        for c in self.args.values():
+            arg_ctype = c.argument.ctype
+            if isinstance(arg_ctype, tuple | list):
+                ctypes_args.extend(arg_ctype)
+            else:
+                ctypes_args.append(arg_ctype)
+        return ctypes_args
 
     def __len__(self):
         return len(self.args)

@@ -22,6 +22,29 @@ class fArg(metaclass=ABCMeta):
         type(c).__init__(c)  # type: ignore[misc]
         self.base = c
         self._ctype = None
+        self._alloc_char_input_buf = None
+        self._alloc_char_data = None
+        self._alloc_char_data_ptr = None
+        self._alloc_char_len = None
+        self._alloc_char_len_ptr = None
+
+    def _libc(self):
+        libc = ctypes.CDLL(None)
+        libc.malloc.argtypes = [ctypes.c_size_t]
+        libc.malloc.restype = ctypes.c_void_p
+        return libc
+
+    def _strlen_ctype(self):
+        if ctypes.sizeof(ctypes.c_void_p) == 8:
+            return ctypes.c_int64
+        return ctypes.c_int32
+
+    def _setup_allocatable_character(self):
+        if self._alloc_char_data is None:
+            self._alloc_char_data = ctypes.c_void_p(0)
+            self._alloc_char_data_ptr = ctypes.pointer(self._alloc_char_data)
+            self._alloc_char_len = self._strlen_ctype()(0)
+            self._alloc_char_len_ptr = ctypes.pointer(self._alloc_char_len)
 
     @property
     def is_optional(self) -> bool:
@@ -64,6 +87,31 @@ class fArg(metaclass=ABCMeta):
 
     @ctype.setter
     def ctype(self, value):
+        if self.is_allocatable and self.is_character:
+            self._setup_allocatable_character()
+
+            if value is None:
+                self._alloc_char_input_buf = None
+                self._alloc_char_data.value = None
+                self._alloc_char_len.value = 0
+            else:
+                if hasattr(value, "encode"):
+                    value = value.encode(self.base._char.encoding)
+
+                length = len(value)
+                self._alloc_char_len.value = length
+
+                if length > 0:
+                    self._alloc_char_input_buf = self._libc().malloc(length)
+                    ctypes.memmove(self._alloc_char_input_buf, value, length)
+                    self._alloc_char_data.value = self._alloc_char_input_buf
+                else:
+                    self._alloc_char_input_buf = None
+                    self._alloc_char_data.value = None
+
+            self._ctype = (self._alloc_char_data_ptr, self._alloc_char_len_ptr)
+            return
+
         if value is None and self.is_optional:
             if self.is_character:
                 self._ctype = ctypes.c_void_p(0)
@@ -83,6 +131,19 @@ class fArg(metaclass=ABCMeta):
             self._ctype = self.base.pointer()
 
     def value(self):
+        if self.is_allocatable and self.is_character:
+            self._setup_allocatable_character()
+
+            if self._alloc_char_data.value is None:
+                return None
+
+            length = int(self._alloc_char_len.value)
+            if length <= 0:
+                return ""
+
+            data = ctypes.string_at(self._alloc_char_data.value, length)
+            return data.decode(self.base._char.encoding)
+
         if self._ctype is None:
             return None
 

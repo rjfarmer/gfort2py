@@ -77,7 +77,6 @@ class TestStringMethods:
 
         assert y.result == "10"
 
-    @pytest.mark.skip
     def test_str_alloc(self):
         assert x.str_alloc is None  # Empty at start
 
@@ -91,7 +90,6 @@ class TestStringMethods:
         y = x.check_str_alloc(2)
         assert not y.result
 
-    @pytest.mark.skip
     def test_str_alloc_sub(self):
         z = None
         y = x.sub_str_alloc(z)
@@ -100,7 +98,6 @@ class TestStringMethods:
         y2 = x.sub_str_alloc2(None)
         assert y2.args["x"] == "zxcvbnm"
 
-    @pytest.mark.skip
     def test_str_alloc_sub_realloc(self):
         y2 = x.sub_str_alloc2("qwerty")
         assert y2.args["x"] == "asdfghjkl"
