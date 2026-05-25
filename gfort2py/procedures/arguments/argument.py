@@ -66,6 +66,9 @@ class fArg(metaclass=ABCMeta):
         if value is None and self.is_optional:
             if self.is_character:
                 self._ctype = ctypes.c_void_p(0)
+            elif self.is_value:
+                self.base.value = 0
+                self._ctype = self.base._ctype
             else:
                 self._ctype = None
             return
