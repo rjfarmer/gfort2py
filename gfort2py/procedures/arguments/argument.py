@@ -2,7 +2,7 @@
 
 import ctypes
 from abc import ABCMeta, abstractmethod
-from typing import Any, Type
+from typing import Any, Type, cast
 
 import gfModParser as gf
 
@@ -50,6 +50,10 @@ class fArg(metaclass=ABCMeta):
         return False
 
     @property
+    def is_character(self) -> bool:
+        return self.definition.type.lower() == "character"
+
+    @property
     def needs_resolving_late(self) -> bool:
         return False
 
@@ -59,6 +63,13 @@ class fArg(metaclass=ABCMeta):
 
     @ctype.setter
     def ctype(self, value):
+        if value is None and self.is_optional:
+            if self.is_character:
+                self._ctype = ctypes.c_void_p(0)
+            else:
+                self._ctype = None
+            return
+
         self.base.value = value
         if self.is_value:
             self._ctype = self.base._ctype
@@ -71,11 +82,21 @@ class fArg(metaclass=ABCMeta):
         if self._ctype is None:
             return None
 
+        if (
+            self.is_optional
+            and self.is_character
+            and isinstance(self._ctype, ctypes.c_void_p)
+            and self._ctype.value is None
+        ):
+            return None
+
         if self.is_value:
             c = self._ctype
         elif self.is_pointer:
-            c = self._ctype.contents.contents
+            p = cast(Any, self._ctype)
+            c = p.contents.contents
         else:
-            c = self._ctype.contents
+            p = cast(Any, self._ctype)
+            c = p.contents
 
         return self.base.from_ctype(c, symbol=self.definition).value
