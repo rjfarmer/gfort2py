@@ -8,6 +8,7 @@ import numpy as np
 
 from ...types import factory, find_ftype
 from ...types.arrays import ftype_assumed_shape
+from ...types.dt import ftype_dt_assumed_shape
 
 
 class fReturnArguments:
@@ -95,21 +96,24 @@ class fReturnArrayArguments(fReturnArguments):
         self._result_type = None
 
     def _build_return_type(self):
-        if (
-            self.return_symbol.properties.attributes.always_explicit
-            and not self.return_symbol.is_dt
-        ):
-            ftype = self.return_symbol.type.lower()
-            kind = self.return_symbol.kind
+        if self.return_symbol.properties.array_spec.is_explicit:
+            if self.return_symbol.is_dt:
+                # Explicit-shape DT function results are returned through a
+                # descriptor hidden argument in this ABI; use descriptor-backed
+                # storage so dims/offset/data are initialized before the call.
+                cls = ftype_dt_assumed_shape
+            else:
+                ftype = self.return_symbol.type.lower()
+                kind = self.return_symbol.kind
 
-            def _base(self):
-                return find_ftype(ftype, kind)()
+                def _base(self):
+                    return find_ftype(ftype, kind)()
 
-            cls = type(
-                "ftype_return_always_explicit",
-                (ftype_assumed_shape,),
-                {"_base": _base},
-            )
+                cls = type(
+                    "ftype_return_always_explicit",
+                    (ftype_assumed_shape,),
+                    {"_base": _base},
+                )
         else:
             cls = factory(self.return_symbol)
 
@@ -180,12 +184,18 @@ class fReturnArrayArguments(fReturnArguments):
         self._result_type = self._build_return_type()
 
         if (
-            self.return_symbol.properties.attributes.always_explicit
+            self.return_symbol.properties.array_spec.is_explicit
             and not self.return_symbol.is_dt
         ):
             shape = self._resolve_shape()
             initial = np.zeros(shape, dtype=self._result_type.base.dtype, order="F")
             self._result_type.value = initial
+        elif (
+            self.return_symbol.properties.array_spec.is_explicit
+            and self.return_symbol.is_dt
+        ):
+            shape = self._resolve_shape()
+            self._result_type._ensure_shape(shape)
 
         self._buffer = self._result_type.pointer()
         self._ctypes.append(self._buffer)

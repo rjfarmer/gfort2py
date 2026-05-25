@@ -225,9 +225,6 @@ class TestDTMethods:
         assert y.result["f_nested"]["a_int"] == 234
         assert y.result["f_nested"]["f_struct"]["a_int"] == 345
 
-    @pytest.mark.skip(
-        reason="Explicit DT array function returns are ABI-unstable in this toolchain"
-    )
     def test_func_return_s_struct_basic_exp_1d(self):
         y = x.func_return_s_struct_basic_exp_1d()
         s = y.result
@@ -237,9 +234,6 @@ class TestDTMethods:
         assert np.array_equal(s[0]["b_int_exp_1d"], np.array([1, 2, 3, 4, 5]))
         assert np.array_equal(s[1]["b_int_exp_1d"], np.array([6, 7, 8, 9, 10]))
 
-    @pytest.mark.skip(
-        reason="Explicit DT array function returns are ABI-unstable in this toolchain"
-    )
     def test_func_return_s_struct_basic_exp_2d(self):
         y = x.func_return_s_struct_basic_exp_2d()
         s = y.result
@@ -266,9 +260,6 @@ class TestDTMethods:
         assert s[0, 1]["a_int"] == 43
         assert s[1, 1]["a_int"] == 44
 
-    @pytest.mark.skip(
-        reason="Explicit DT array function returns are ABI-unstable in this toolchain"
-    )
     def test_func_return_s_struct_nested_2_exp_1d(self):
         y = x.func_return_s_struct_nested_2_exp_1d()
         s = y.result

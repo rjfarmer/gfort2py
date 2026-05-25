@@ -464,6 +464,42 @@ class ftype_dt_explicit(ftype_dt_array):
 class ftype_dt_assumed_shape(ftype_dt_array):
     alloc_strategy: AllocStrategy = AllocStrategy.FORTRAN
 
+    def _resolved_use_module_name(self) -> str:
+        sym_module = getattr(self._sym, "module", "")
+        if sym_module not in {"", "."}:
+            return sym_module
+
+        module_obj = getattr(self, "_module_obj", None)
+        if module_obj is not None:
+            try:
+                first_key = next(iter(module_obj.keys()))
+                name = module_obj[first_key].module
+                if name not in {"", "."}:
+                    return name
+            except Exception:
+                pass
+
+        if self._module_name not in {"", "."}:
+            return self._module_name
+
+        return sym_module
+
+    def _resolved_module_file(self) -> Path | None:
+        module_obj = getattr(self, "_module_obj", None)
+        if module_obj is not None:
+            filename = getattr(module_obj, "filename", None)
+            if filename:
+                return Path(filename)
+
+        module_name = self._module_name
+        if module_name in {"", "."}:
+            module_name = self._resolved_use_module_name()
+
+        if module_name in {"", "."}:
+            return None
+
+        return Path(get_module(module_name).filename)
+
     @property
     def ctype(self):
         return _array_descriptor_ctype(self._sym.properties.array_spec.rank)
@@ -481,6 +517,7 @@ class ftype_dt_assumed_shape(ftype_dt_array):
     def _alloc_source(self, shape: tuple[int, ...]) -> Modulise:
         dims = ",".join([":"] * len(shape))
         shape_s = ",".join([str(i) for i in shape])
+        use_module_name = self._resolved_use_module_name()
         dt_name = ftype_dt._dt_definition(
             self._module_name,
             self._type_id,
@@ -489,7 +526,7 @@ class ftype_dt_assumed_shape(ftype_dt_array):
 
         string = f"""
         subroutine alloc(x)
-        use {self._sym.module}, only: {dt_name}
+        use {use_module_name}, only: {dt_name}
         type({dt_name}), allocatable, dimension({dims}), intent(out) :: x
         if(allocated(x)) deallocate(x)
         allocate(x({shape_s}))
@@ -501,8 +538,8 @@ class ftype_dt_assumed_shape(ftype_dt_array):
         code = self._alloc_source(shape)
         comp = Compile(code.as_module(), name=code.strhash())
         args = CompileArgs()
-        module_file = Path(get_module(self._module_name).filename)
-        if module_file.parent:
+        module_file = self._resolved_module_file()
+        if module_file is not None and module_file.parent:
             args.INCLUDE_FLAGS = f"-I{module_file.parent}"
 
         if not comp.compile(args=args):
