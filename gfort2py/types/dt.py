@@ -18,6 +18,7 @@ __all__ = ["ftype_dt", "ftype_dt_explicit", "ftype_dt_assumed_shape"]
 
 _all_dts: dict[tuple[str, int], type[ctypes.Structure]] = {}
 _building_dts: set[tuple[str, int]] = set()
+_pointer_owners: dict[tuple[int, str], Any] = {}
 
 
 def _array_descriptor_ctype(ndims: int) -> type[ctypes.Structure]:
@@ -294,33 +295,6 @@ class ftype_dt(f_type):
         """
         return Modulise(string)
 
-    def _alloc_pointer_component_source(self, comp) -> Modulise:
-        use_module_name = self._resolved_use_module_name()
-        dt_name = self.ftype
-
-        string = f"""
-        subroutine alloc_pointer_component(x)
-        use {use_module_name}, only: {dt_name}
-        type({dt_name}), intent(inout) :: x
-        if (.not. associated(x%{comp.name})) allocate(x%{comp.name})
-        end subroutine alloc_pointer_component
-        """
-        return Modulise(string)
-
-    def _compile_component_helper(
-        self, code: Modulise, symbol_name: str
-    ) -> ctypes.CDLL:
-        comp_args = CompileArgs()
-        module_file = self._resolved_module_file()
-        if module_file is not None and module_file.parent:
-            comp_args.INCLUDE_FLAGS = f"-I{module_file.parent}"
-
-        compiled = Compile(code.as_module(), name=code.strhash())
-        if not compiled.compile(args=comp_args):
-            raise ValueError(f"Failed to compile derived-type helper {symbol_name}")
-
-        return compiled.platform.load_library(compiled.library_filename)
-
     def _allocate_component_array(self, comp, value, shape: tuple[int, ...]) -> None:
         if (
             value.base_addr is not None
@@ -352,19 +326,18 @@ class ftype_dt(f_type):
         if bool(value):
             return value
 
-        code = self._alloc_pointer_component_source(comp)
-        compiled = Compile(code.as_module(), name=code.strhash())
-        comp_args = CompileArgs()
-        module_file = self._resolved_module_file()
-        if module_file is not None and module_file.parent:
-            comp_args.INCLUDE_FLAGS = f"-I{module_file.parent}"
-        if not compiled.compile(args=comp_args):
-            raise ValueError(f"Failed to allocate pointer component {comp.name}")
+        pointee_ctype = self._build_ctype(
+            self._module_name,
+            int(comp.typespec.class_ref),
+            module_obj=getattr(self, "_module_obj", None),
+        )
+        pointee = pointee_ctype()
+        pointer = ctypes.pointer(pointee)
 
-        lib = compiled.platform.load_library(compiled.library_filename)
-        sub = getattr(lib, f"__{compiled.name}_MOD_alloc_pointer_component")
-        sub(ctypes.byref(self._ctype))
+        # Keep the pointee alive independently of temporary wrappers.
+        _pointer_owners[(ctypes.addressof(self._ctype), comp.name)] = pointee
 
+        setattr(self._ctype, comp.name, pointer)
         refreshed = getattr(self._ctype, comp.name)
         if not bool(refreshed):
             raise ValueError(f"Allocation failed for pointer component {comp.name}")
