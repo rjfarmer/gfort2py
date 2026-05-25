@@ -4,8 +4,10 @@ import ctypes
 from typing import Any
 
 import gfModParser as gf
+import numpy as np
 
-from ...types import factory
+from ...types import factory, find_ftype
+from ...types.arrays import ftype_assumed_shape
 
 
 class fReturnArguments:
@@ -81,7 +83,57 @@ class fReturnCharArguments(fReturnArguments):
 
 
 class fReturnArrayArguments(fReturnArguments):
-    pass
+    def __init__(
+        self,
+        procedure: gf.Symbol,
+        module: gf.Module,
+        values: tuple[tuple[Any, ...], dict[str, Any]],
+        return_symbol: gf.Symbol,
+    ):
+        super().__init__(procedure, module, values, return_symbol)
+        self._buffer = None
+        self._result_type = None
+
+    def _build_return_type(self):
+        if self.return_symbol.properties.attributes.always_explicit:
+            ftype = self.return_symbol.type.lower()
+            kind = self.return_symbol.kind
+
+            def _base(self):
+                return find_ftype(ftype, kind)()
+
+            cls = type(
+                "ftype_return_always_explicit",
+                (ftype_assumed_shape,),
+                {"_base": _base},
+            )
+        else:
+            cls = factory(self.return_symbol)
+
+        c = cls.__new__(cls)
+        c._symbol = self.return_symbol
+        type(c).__init__(c)  # type: ignore[misc]
+        return c
+
+    def set_values(self):
+        self._ctypes = []
+        self._result_type = self._build_return_type()
+
+        if self.return_symbol.properties.attributes.always_explicit:
+            shape = tuple(
+                int(i) for i in self.return_symbol.properties.array_spec.pyshape
+            )
+            initial = np.zeros(shape, dtype=self._result_type.base.dtype, order="F")
+            self._result_type.value = initial
+
+        self._buffer = self._result_type.pointer()
+        self._ctypes.append(self._buffer)
+
+    def get_values(self) -> list[Any]:
+        if self._result_type is None:
+            return []
+
+        return [self._result_type.value]
 
 
 class fReturnDTArguments(fReturnArguments):
