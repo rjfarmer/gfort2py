@@ -297,7 +297,6 @@ class TestExplicitArrayMethods:
         y = x.func_mesh_exp4(z, i)
         assert np.array_equal(y.args["x"], np.arange(1, ((i + 3) * 2) + 1 + 1))
 
-    @pytest.mark.skip
     def test_check_exp_2d_2m3(self):
         # Github issue #19
         arr_test = np.zeros((3, 4), dtype=int, order="F")
