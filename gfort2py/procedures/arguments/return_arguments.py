@@ -190,4 +190,33 @@ class fReturnArrayArguments(fReturnArguments):
 
 
 class fReturnDTArguments(fReturnArguments):
-    pass
+    def __init__(
+        self,
+        procedure: gf.Symbol,
+        module: gf.Module,
+        values: tuple[tuple[Any, ...], dict[str, Any]],
+        return_symbol: gf.Symbol,
+    ):
+        super().__init__(procedure, module, values, return_symbol)
+        self._buffer = None
+        self._result_type = None
+
+    def _build_return_type(self):
+        cls = factory(self.return_symbol)
+        c = cls.__new__(cls)
+        c._symbol = self.return_symbol
+        c._module_obj = self.module
+        type(c).__init__(c)  # type: ignore[misc]
+        return c
+
+    def set_values(self):
+        self._ctypes = []
+        self._result_type = self._build_return_type()
+        self._buffer = self._result_type.pointer()
+        self._ctypes.append(self._buffer)
+
+    def get_values(self) -> list[Any]:
+        if self._result_type is None:
+            return []
+
+        return [self._result_type.value]
