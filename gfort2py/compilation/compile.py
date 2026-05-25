@@ -2,6 +2,7 @@
 
 
 import subprocess
+import uuid
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -27,6 +28,9 @@ class Compile:
 
         self.platform = factory_platform()
         self._fc = fc
+        self._library_filename = output_folder().joinpath(
+            f"lib{self.name}_{uuid.uuid4().hex[:8]}.{self.platform.library_ext}"
+        )
 
     def compile(self, *, args: CompileArgs = CompileArgs()) -> bool:
         # Compile code, reading from stdin
@@ -45,6 +49,7 @@ class Compile:
             ],
             input=self.text.encode(),
             capture_output=True,
+            check=False,
         )
 
         if p.returncode != 0:
@@ -59,8 +64,7 @@ class Compile:
 
     @property
     def library_filename(self) -> Path:
-        output = output_folder()
-        return output.joinpath(f"lib{self.name}.{self.platform.library_ext}")
+        return self._library_filename
 
     @property
     def module_filename(self) -> Path:
