@@ -221,13 +221,36 @@ class TestDTMethods:
         assert np.array_equal(x.f_struct["d_int_point_1d"], v)
 
     def test_recur_dt(self):
-        with pytest.raises(NotImplementedError) as cm:
-            x.r_recur["a_int"] = 9
-            assert x.r_recur["a_int"] == 9
-            x.r_recur["s_recur"]["a_int"] = 9
-            assert x.r_recur["s_recur"]["a_int"] == 9
-            x.r_recur["s_recur"]["s_recur"]["a_int"] = 9
-            assert x.r_recur["s_recur"]["s_recur"]["a_int"] == 9
+        x.r_recur["a_int"] = 9
+        assert x.r_recur["a_int"] == 9
+
+        x.r_recur["s_recur"]["a_int"] = 9
+        assert x.r_recur["s_recur"]["a_int"] == 9
+
+        x.r_recur["s_recur"]["s_recur"]["a_int"] = 9
+        assert x.r_recur["s_recur"]["s_recur"]["a_int"] == 9
+
+        y = x.check_recur()
+        assert y.result is True
+
+    def test_mutual_recur_dt(self):
+        x.r_recur_1["a_int"] = 11
+        assert x.r_recur_1["a_int"] == 11
+
+        x.r_recur_1["s_recur"]["a_int"] = 22
+        assert x.r_recur_1["s_recur"]["a_int"] == 22
+
+        x.r_recur_1["s_recur"]["s_recur"]["a_int"] = 33
+        assert x.r_recur_1["s_recur"]["s_recur"]["a_int"] == 33
+
+        x.r_recur_2["a_int"] = 44
+        assert x.r_recur_2["a_int"] == 44
+
+        x.r_recur_2["s_recur"]["a_int"] = 55
+        assert x.r_recur_2["s_recur"]["a_int"] == 55
+
+        x.r_recur_2["s_recur"]["s_recur"]["a_int"] = 66
+        assert x.r_recur_2["s_recur"]["s_recur"]["a_int"] == 66
 
     def test_arr_dt_exp_1d_set(self):
         x.g_struct_exp_1d[0]["a_int"] = 5

@@ -108,9 +108,33 @@ class ftype_dt(f_type):
         return get_module(module_name)[type_id]
 
     @classmethod
+    def _component_is_pointer(cls, comp) -> bool:
+        attribute = getattr(comp, "attribute", None)
+        if attribute is not None:
+            return bool(getattr(attribute, "pointer", False))
+
+        attributes = getattr(comp, "attributes", None)
+        if attributes is not None:
+            return bool(getattr(attributes, "pointer", False))
+
+        properties = getattr(comp, "properties", None)
+        if properties is not None:
+            return bool(getattr(properties.attributes, "pointer", False))
+
+        return False
+
+    @classmethod
     def _component_ctype(cls, module_name: str, comp, module_obj=None) -> Any:
         base_ctype: Any
         if comp.typespec.is_dt:
+            if cls._component_is_pointer(comp):
+                base_ctype = cls._build_ctype(
+                    module_name,
+                    int(comp.typespec.class_ref),
+                    module_obj=module_obj,
+                )
+                return ctypes.POINTER(base_ctype)
+
             base_ctype = cls._build_ctype(
                 module_name,
                 int(comp.typespec.class_ref),
@@ -142,11 +166,10 @@ class ftype_dt(f_type):
         if key in _all_dts:
             return _all_dts[key]
 
-        if key in _building_dts:
-            raise NotImplementedError(
-                "Derived types containing themselves are not supported yet"
-            )
+        class dt(ctypes.Structure):
+            pass
 
+        _all_dts[key] = dt
         _building_dts.add(key)
 
         try:
@@ -161,11 +184,11 @@ class ftype_dt(f_type):
                     )
                 )
 
-            class dt(ctypes.Structure):
-                _fields_ = fields
-
-            _all_dts[key] = dt
+            dt._fields_ = fields
             return dt
+        except Exception:
+            _all_dts.pop(key, None)
+            raise
         finally:
             _building_dts.discard(key)
 
@@ -264,6 +287,33 @@ class ftype_dt(f_type):
         """
         return Modulise(string)
 
+    def _alloc_pointer_component_source(self, comp) -> Modulise:
+        use_module_name = self._resolved_use_module_name()
+        dt_name = self.ftype
+
+        string = f"""
+        subroutine alloc_pointer_component(x)
+        use {use_module_name}, only: {dt_name}
+        type({dt_name}), intent(inout) :: x
+        if (.not. associated(x%{comp.name})) allocate(x%{comp.name})
+        end subroutine alloc_pointer_component
+        """
+        return Modulise(string)
+
+    def _compile_component_helper(
+        self, code: Modulise, symbol_name: str
+    ) -> ctypes.CDLL:
+        comp_args = CompileArgs()
+        module_file = self._resolved_module_file()
+        if module_file is not None and module_file.parent:
+            comp_args.INCLUDE_FLAGS = f"-I{module_file.parent}"
+
+        compiled = Compile(code.as_module(), name=code.strhash())
+        if not compiled.compile(args=comp_args):
+            raise ValueError(f"Failed to compile derived-type helper {symbol_name}")
+
+        return compiled.platform.load_library(compiled.library_filename)
+
     def _allocate_component_array(self, comp, value, shape: tuple[int, ...]) -> None:
         if (
             value.base_addr is not None
@@ -272,12 +322,11 @@ class ftype_dt(f_type):
             return
 
         code = self._alloc_component_source(comp, shape)
+        compiled = Compile(code.as_module(), name=code.strhash())
         comp_args = CompileArgs()
         module_file = self._resolved_module_file()
         if module_file is not None and module_file.parent:
             comp_args.INCLUDE_FLAGS = f"-I{module_file.parent}"
-
-        compiled = Compile(code.as_module(), name=code.strhash())
         if not compiled.compile(args=comp_args):
             raise ValueError(f"Failed to allocate derived-type component {comp.name}")
 
@@ -290,6 +339,30 @@ class ftype_dt(f_type):
             raise ValueError(
                 f"Allocation failed for derived-type component {comp.name}"
             )
+
+    def _ensure_pointer_component(self, comp):
+        value = getattr(self._ctype, comp.name)
+        if bool(value):
+            return value
+
+        code = self._alloc_pointer_component_source(comp)
+        compiled = Compile(code.as_module(), name=code.strhash())
+        comp_args = CompileArgs()
+        module_file = self._resolved_module_file()
+        if module_file is not None and module_file.parent:
+            comp_args.INCLUDE_FLAGS = f"-I{module_file.parent}"
+        if not compiled.compile(args=comp_args):
+            raise ValueError(f"Failed to allocate pointer component {comp.name}")
+
+        lib = compiled.platform.load_library(compiled.library_filename)
+        sub = getattr(lib, f"__{compiled.name}_MOD_alloc_pointer_component")
+        sub(ctypes.byref(self._ctype))
+
+        refreshed = getattr(self._ctype, comp.name)
+        if not bool(refreshed):
+            raise ValueError(f"Allocation failed for pointer component {comp.name}")
+
+        return refreshed
 
     def _get_array_value(self, comp, value):
         ctype_name = comp.typespec.type.lower()
@@ -362,6 +435,16 @@ class ftype_dt(f_type):
                 raise NotImplementedError(
                     "Derived-type components that are arrays are unsupported"
                 )
+
+            if self._component_is_pointer(comp):
+                value = self._ensure_pointer_component(comp)
+                return ftype_dt.from_existing_ctype(
+                    self._module_name,
+                    int(comp.typespec.class_ref),
+                    value.contents,
+                    module_obj=getattr(self, "_module_obj", None),
+                )
+
             return ftype_dt.from_existing_ctype(
                 self._module_name,
                 int(comp.typespec.class_ref),
@@ -390,12 +473,16 @@ class ftype_dt(f_type):
                 raise NotImplementedError(
                     "Derived-type components that are arrays are unsupported"
                 )
-            nested = ftype_dt.from_existing_ctype(
-                self._module_name,
-                int(comp.typespec.class_ref),
-                cur,
-                module_obj=getattr(self, "_module_obj", None),
-            )
+
+            if self._component_is_pointer(comp):
+                nested = self[key]
+            else:
+                nested = ftype_dt.from_existing_ctype(
+                    self._module_name,
+                    int(comp.typespec.class_ref),
+                    cur,
+                    module_obj=getattr(self, "_module_obj", None),
+                )
             nested.value = value
             return
 
