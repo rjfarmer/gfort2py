@@ -46,10 +46,6 @@ dependencies = [
 
 dynamic = ["version"]
 
-[tool.setuptools]
-packages = ["gfort2py"]
-
-
 [project.optional-dependencies]
 test = ['pytest']
 quad = ['pyquadp']
@@ -62,4 +58,5 @@ profile = "black"
 [tool.mypy]
 exclude = ["gfort2py/old"]
 
-
+[tool.setuptools.packages.find]
+where = ["gfort2py"]
