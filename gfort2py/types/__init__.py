@@ -101,7 +101,12 @@ def factory(obj: gf.Symbol) -> type[f_type]:
     elif is_array:
         base_arr_cls: Any
         if is_explicit:
-            base_arr_cls = ftype_explicit_array
+            try:
+                _ = obj.properties.array_spec.pyshape
+                base_arr_cls = ftype_explicit_array
+            except Exception:
+                # Bounds depend on runtime arguments (e.g. 2*n, 2**n).
+                base_arr_cls = ftype_assumed_size_array
         elif is_assumed_rank:
             base_arr_cls = ftype_assumed_rank
         elif is_assumed_shape:

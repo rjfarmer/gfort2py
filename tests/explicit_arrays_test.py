@@ -334,7 +334,6 @@ class TestExplicitArrayMethods:
             res.result, np.array([1, 2, 3, 4, 5, 6]).reshape(3, 2, order="F")
         )
 
-    @pytest.mark.skip
     def test_func_exp_array_in(self):
         n = 3
         y = np.zeros((2 * n, 2**n), dtype=int)

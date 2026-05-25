@@ -99,6 +99,7 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
 
     def __init__(self, value=None):
         self.base = self._base()
+        self._shape: tuple[int, ...] | None = None
         # Cannot call super().__init__() because the ctype size is unknown until
         # a value is provided.
         self._ctype = None
@@ -125,12 +126,24 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
     def value(self) -> Optional[np.ndarray]:
         if self._ctype is None:
             return None
-        return np.ctypeslib.as_array(self._ctype).astype(self.base.dtype)
+
+        arr = np.ctypeslib.as_array(self._ctype).astype(self.base.dtype)
+        if self._shape is not None:
+            arr = arr.reshape(self._shape, order="F")
+
+        return arr
 
     @value.setter
     def value(self, value: np.ndarray):
         if value is None:
             return
+
+        if value.ndim != self.ndims:
+            raise ValueError(
+                f"Wrong number of dimensions, got {value.ndim} expected {self.ndims}"
+            )
+
+        self._shape = tuple(value.shape)
         flat = np.asfortranarray(value).astype(self.base.dtype, copy=False).ravel("F")
         n = flat.size
         arr_type = self.base.ctype * n

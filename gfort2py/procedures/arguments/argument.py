@@ -102,4 +102,8 @@ class fArg(metaclass=ABCMeta):
             p = cast(Any, self._ctype)
             c = p.contents
 
+        if self.definition.is_array:
+            self.base._ctype = c
+            return self.base.value
+
         return self.base.from_ctype(c, symbol=self.definition).value
