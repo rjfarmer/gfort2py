@@ -225,6 +225,86 @@ class TestDTMethods:
         assert y.result["f_nested"]["a_int"] == 234
         assert y.result["f_nested"]["f_struct"]["a_int"] == 345
 
+    @pytest.mark.skip(
+        reason="Explicit DT array function returns are ABI-unstable in this toolchain"
+    )
+    def test_func_return_s_struct_basic_exp_1d(self):
+        y = x.func_return_s_struct_basic_exp_1d()
+        s = y.result
+
+        assert s[0]["a_int"] == 11
+        assert s[1]["a_int"] == 22
+        assert np.array_equal(s[0]["b_int_exp_1d"], np.array([1, 2, 3, 4, 5]))
+        assert np.array_equal(s[1]["b_int_exp_1d"], np.array([6, 7, 8, 9, 10]))
+
+    @pytest.mark.skip(
+        reason="Explicit DT array function returns are ABI-unstable in this toolchain"
+    )
+    def test_func_return_s_struct_basic_exp_2d(self):
+        y = x.func_return_s_struct_basic_exp_2d()
+        s = y.result
+
+        assert s[0, 0]["a_int"] == 101
+        assert s[1, 0]["a_int"] == 102
+        assert s[0, 1]["a_int"] == 103
+        assert s[1, 1]["a_int"] == 104
+
+    def test_func_return_s_struct_basic_alloc_1d(self):
+        y = x.func_return_s_struct_basic_alloc_1d()
+        s = y.result
+
+        assert s[0]["a_int"] == 31
+        assert s[1]["a_int"] == 32
+        assert s[2]["a_int"] == 33
+
+    def test_func_return_s_struct_basic_alloc_2d(self):
+        y = x.func_return_s_struct_basic_alloc_2d()
+        s = y.result
+
+        assert s[0, 0]["a_int"] == 41
+        assert s[1, 0]["a_int"] == 42
+        assert s[0, 1]["a_int"] == 43
+        assert s[1, 1]["a_int"] == 44
+
+    @pytest.mark.skip(
+        reason="Explicit DT array function returns are ABI-unstable in this toolchain"
+    )
+    def test_func_return_s_struct_nested_2_exp_1d(self):
+        y = x.func_return_s_struct_nested_2_exp_1d()
+        s = y.result
+
+        assert s[0]["a_int"] == 1001
+        assert s[1]["a_int"] == 1002
+        assert s[0]["f_nested"]["a_int"] == 2001
+        assert s[1]["f_nested"]["a_int"] == 2002
+        assert s[0]["f_nested"]["f_struct"]["a_int"] == 3001
+        assert s[1]["f_nested"]["f_struct"]["a_int"] == 3002
+
+    def test_func_return_s_struct_nested_2_alloc_1d(self):
+        y = x.func_return_s_struct_nested_2_alloc_1d()
+        s = y.result
+
+        assert s[0]["a_int"] == 4001
+        assert s[1]["a_int"] == 4002
+        assert s[0]["f_nested"]["a_int"] == 5001
+        assert s[1]["f_nested"]["a_int"] == 5002
+        assert s[0]["f_nested"]["f_struct"]["a_int"] == 6001
+        assert s[1]["f_nested"]["f_struct"]["a_int"] == 6002
+
+    def test_func_return_s_struct_nested_2_alloc_2d(self):
+        y = x.func_return_s_struct_nested_2_alloc_2d()
+        s = y.result
+
+        assert s[0, 0]["a_int"] == 7001
+        assert s[1, 0]["a_int"] == 7002
+        assert s[0, 1]["a_int"] == 7003
+        assert s[1, 1]["a_int"] == 7004
+
+        assert s[0, 0]["f_nested"]["a_int"] == 8001
+        assert s[1, 0]["f_nested"]["a_int"] == 8002
+        assert s[0, 1]["f_nested"]["a_int"] == 8003
+        assert s[1, 1]["f_nested"]["a_int"] == 8004
+
     @pytest.mark.skipIfWindows
     def test_derived_type_intent_out(self, capfd):
         # GH: #32

@@ -95,7 +95,10 @@ class fReturnArrayArguments(fReturnArguments):
         self._result_type = None
 
     def _build_return_type(self):
-        if self.return_symbol.properties.attributes.always_explicit:
+        if (
+            self.return_symbol.properties.attributes.always_explicit
+            and not self.return_symbol.is_dt
+        ):
             ftype = self.return_symbol.type.lower()
             kind = self.return_symbol.kind
 
@@ -112,6 +115,8 @@ class fReturnArrayArguments(fReturnArguments):
 
         c = cls.__new__(cls)
         c._symbol = self.return_symbol
+        if self.return_symbol.is_dt:
+            c._module_obj = self.module
         type(c).__init__(c)  # type: ignore[misc]
         return c
 
@@ -174,7 +179,10 @@ class fReturnArrayArguments(fReturnArguments):
         self._ctypes = []
         self._result_type = self._build_return_type()
 
-        if self.return_symbol.properties.attributes.always_explicit:
+        if (
+            self.return_symbol.properties.attributes.always_explicit
+            and not self.return_symbol.is_dt
+        ):
             shape = self._resolve_shape()
             initial = np.zeros(shape, dtype=self._result_type.base.dtype, order="F")
             self._result_type.value = initial

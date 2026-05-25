@@ -290,6 +290,94 @@ module dt
     end function func_return_s_struct_nested_2
 
 
+    function func_return_s_struct_basic_exp_1d() result(s)
+        type(s_struct_basic), dimension(2) :: s
+
+        s(1)%a_int = 11
+        s(2)%a_int = 22
+
+        s(1)%b_int_exp_1d = (/1, 2, 3, 4, 5/)
+        s(2)%b_int_exp_1d = (/6, 7, 8, 9, 10/)
+    end function func_return_s_struct_basic_exp_1d
+
+
+    function func_return_s_struct_basic_exp_2d() result(s)
+        type(s_struct_basic), dimension(2,2) :: s
+
+        s(1,1)%a_int = 101
+        s(2,1)%a_int = 102
+        s(1,2)%a_int = 103
+        s(2,2)%a_int = 104
+    end function func_return_s_struct_basic_exp_2d
+
+
+    function func_return_s_struct_basic_alloc_1d() result(s)
+        type(s_struct_basic), allocatable, dimension(:) :: s
+
+        allocate(s(3))
+        s(1)%a_int = 31
+        s(2)%a_int = 32
+        s(3)%a_int = 33
+    end function func_return_s_struct_basic_alloc_1d
+
+
+    function func_return_s_struct_basic_alloc_2d() result(s)
+        type(s_struct_basic), allocatable, dimension(:,:) :: s
+
+        allocate(s(2,2))
+        s(1,1)%a_int = 41
+        s(2,1)%a_int = 42
+        s(1,2)%a_int = 43
+        s(2,2)%a_int = 44
+    end function func_return_s_struct_basic_alloc_2d
+
+
+    function func_return_s_struct_nested_2_exp_1d() result(s)
+        type(s_struct_nested_2), dimension(2) :: s
+
+        s(1)%a_int = 1001
+        s(2)%a_int = 1002
+
+        s(1)%f_nested%a_int = 2001
+        s(2)%f_nested%a_int = 2002
+
+        s(1)%f_nested%f_struct%a_int = 3001
+        s(2)%f_nested%f_struct%a_int = 3002
+    end function func_return_s_struct_nested_2_exp_1d
+
+
+    function func_return_s_struct_nested_2_alloc_1d() result(s)
+        type(s_struct_nested_2), allocatable, dimension(:) :: s
+
+        allocate(s(2))
+        s(1)%a_int = 4001
+        s(2)%a_int = 4002
+
+        s(1)%f_nested%a_int = 5001
+        s(2)%f_nested%a_int = 5002
+
+        s(1)%f_nested%f_struct%a_int = 6001
+        s(2)%f_nested%f_struct%a_int = 6002
+    end function func_return_s_struct_nested_2_alloc_1d
+
+
+    function func_return_s_struct_nested_2_alloc_2d() result(s)
+        type(s_struct_nested_2), allocatable, dimension(:,:) :: s
+
+        allocate(s(2,2))
+
+        s(1,1)%a_int = 7001
+        s(2,1)%a_int = 7002
+        s(1,2)%a_int = 7003
+        s(2,2)%a_int = 7004
+
+        s(1,1)%f_nested%a_int = 8001
+        s(2,1)%f_nested%a_int = 8002
+        s(1,2)%f_nested%a_int = 8003
+        s(2,2)%f_nested%a_int = 8004
+    end function func_return_s_struct_nested_2_alloc_2d
+
+
     subroutine derived_structure(p)
         ! GH: #32
         type(point), intent(out) :: p
