@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 import ctypes
+import os
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -76,6 +78,11 @@ def _array_index(index: Any, shape: tuple[int, ...]) -> int:
         raise IndexError("Out of bounds")
 
     return ind
+
+
+def _dt_index_debug_enabled() -> bool:
+    value = os.environ.get("GFORT2PY_DT_INDEX_DEBUG", "")
+    return value.lower() in {"1", "true", "yes", "on"}
 
 
 def _shape_from_descriptor(desc: ctypes.Structure, ndims: int) -> tuple[int, ...]:
@@ -563,7 +570,18 @@ class ftype_dt_array(f_type):
         raise NotImplementedError
 
     def _index(self, index: Any) -> int:
-        return _array_index(index, self._shape())
+        shape = self._shape()
+        if _dt_index_debug_enabled():
+            print(
+                "[gfort2py.dt-index-debug] "
+                f"index={index!r} "
+                f"index_type={type(index).__name__} "
+                f"shape={shape!r} "
+                f"shape_type={type(shape).__name__}",
+                file=sys.stderr,
+                flush=True,
+            )
+        return _array_index(index, shape)
 
     @property
     def value(self):
