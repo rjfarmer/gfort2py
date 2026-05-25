@@ -11,6 +11,7 @@ from .compilation import Compile, CompileArgs, Modulise, factory_platform
 from .procedures import factory as proc_factory
 from .types import factory as type_factory
 from .types import fParam, get_module
+from .types.module import register_module_alias
 
 __all__ = ["fFort", "compile"]
 
@@ -34,6 +35,15 @@ class fFort:
         """Shared initialiser; sets all runtime state and marks the instance ready."""
         self._lib = lib
         self._module = module
+
+        # Symbols refer to their logical module name (e.g. "dt"); register an
+        # alias to this loaded gf.Module so downstream type resolution can reuse it.
+        try:
+            first_key = next(iter(module.keys()))
+            register_module_alias(module[first_key].module, module)
+        except StopIteration:
+            pass
+
         self._saved_parameters = gf.Parameters(module)
         self._saved_variables = gf.Variables(module)
         self._saved_procedures = gf.Procedures(module)

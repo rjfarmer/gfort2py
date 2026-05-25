@@ -18,6 +18,7 @@ class fArg(metaclass=ABCMeta):
         cls = factory(self.definition)
         c = cls.__new__(cls)
         c._symbol = self.definition
+        c._module_obj = self.module
         type(c).__init__(c)  # type: ignore[misc]
         self.base = c
         self._ctype = None
@@ -102,7 +103,7 @@ class fArg(metaclass=ABCMeta):
             p = cast(Any, self._ctype)
             c = p.contents
 
-        if self.definition.is_array:
+        if self.definition.is_array or self.definition.is_dt:
             self.base._ctype = c
             return self.base.value
 

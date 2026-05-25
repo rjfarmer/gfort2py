@@ -65,6 +65,7 @@ class f_type(metaclass=ABCMeta):
     default: Any = 0
     alloc_strategy: AllocStrategy = AllocStrategy.INTRINSIC
     _symbol: gf.Symbol | None = None
+    _module_obj: gf.Module | None = None
 
     def __init__(self, value=None):
         self._ctype = self.ctype()

@@ -18,7 +18,38 @@ MOD = "./tests/build/dt.mod"
 x = gf.fFort(SO, MOD)
 
 
-@pytest.mark.skip
+class TestDTRuntimeKinds:
+
+    def test_scalar_dt_set_get(self):
+        x.g_struct["a_int"] = 42
+        assert x.g_struct["a_int"] == 42
+
+    def test_explicit_dt_array_set_get(self):
+        x.g_struct_exp_1d[0]["a_int"] = 5
+        x.g_struct_exp_1d[1]["a_int"] = 9
+
+        assert x.g_struct_exp_1d[0]["a_int"] == 5
+        assert x.g_struct_exp_1d[1]["a_int"] == 9
+
+    def test_allocatable_dt_array_1d_set_get(self):
+        x.g_struct_alloc_1d = [{"a_int": 7}, {"a_int": 8}, {"a_int": 9}]
+
+        assert x.g_struct_alloc_1d[0]["a_int"] == 7
+        assert x.g_struct_alloc_1d[1]["a_int"] == 8
+        assert x.g_struct_alloc_1d[2]["a_int"] == 9
+
+    def test_allocatable_dt_array_2d_set_get(self):
+        x.g_struct_alloc_2d = [
+            [{"a_int": 1}, {"a_int": 2}],
+            [{"a_int": 3}, {"a_int": 4}],
+        ]
+
+        assert x.g_struct_alloc_2d[0, 0]["a_int"] == 1
+        assert x.g_struct_alloc_2d[1, 0]["a_int"] == 3
+        assert x.g_struct_alloc_2d[0, 1]["a_int"] == 2
+        assert x.g_struct_alloc_2d[1, 1]["a_int"] == 4
+
+
 class TestDTMethods:
 
     def test_dt_set_value(self):
