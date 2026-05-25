@@ -30,7 +30,6 @@ class TestStringMethods:
         x.a_str = v
         assert x.a_str == v[0:10]
 
-    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_str_in_explicit(self, capfd):
         v = "1324567980"
@@ -39,7 +38,6 @@ class TestStringMethods:
         out, err = capfd.readouterr()
         assert out.strip() == v
 
-    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_str_in_implicit(self, capfd):
         v = "123456789"
@@ -48,7 +46,6 @@ class TestStringMethods:
         out, err = capfd.readouterr()
         assert out.strip() == v
 
-    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_str_multi(self, capfd):
         v = 5
@@ -59,7 +56,6 @@ class TestStringMethods:
         out, err = capfd.readouterr()
         assert out.strip() == str(v + w) + " " + u
 
-    @pytest.mark.skip
     @pytest.mark.skipIfWindows
     def test_sub_str_p(self, capfd):
         y = x.sub_str_p("abcdef")
@@ -68,7 +64,6 @@ class TestStringMethods:
         assert y.args["zzz"] == "xyzxyz"
         assert out.strip() == "abcdef"
 
-    @pytest.mark.skip
     def test_func_ret_str(self):
         y = x.func_ret_str("abcde")
         assert y.result == "Abcde"

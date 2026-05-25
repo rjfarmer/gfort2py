@@ -26,16 +26,18 @@ class fProcedure(metaclass=abc.ABCMeta):
         self.definition = definition
         self._lib = lib
         self._result = None
-        self._args_start = None
+        self._args_start: Any = None
 
         self._proc = getattr(self._lib, self.definition.mangled_name)
         self._set_return()
 
     def __call__(self, *args, **kwargs) -> Result:
 
-        # self.args_start = factory_return(
-        #     procedure=self.definition, module=self._module, values=[args, kwargs]
-        # )
+        self._args_start = factory_return(
+            procedure=self.definition,
+            module=self._module,
+            values=(args, kwargs),
+        )
 
         self.args = fArguments(
             procedure=self.definition, module=self._module, values=(args, kwargs)
@@ -48,12 +50,16 @@ class fProcedure(metaclass=abc.ABCMeta):
             arguments=self.args,
         )
 
-        # self.args_start.set_values()
+        if self._args_start is not None:
+            self._args_start.set_values()
         self.args.set_values()
         self.args_end.set_values()
 
-        # all_args = [*self.args_start.get_ctypes(), *self.args.get_ctypes(), *self.args_end.get_ctypes()]
-        all_args = [*self.args.get_ctypes(), *self.args_end.get_ctypes()]
+        args_start: list[Any] = []
+        if self._args_start is not None:
+            args_start = self._args_start.get_ctypes()
+
+        all_args = [*args_start, *self.args.get_ctypes(), *self.args_end.get_ctypes()]
 
         if len(all_args):
             self.result = self._proc(*all_args)
@@ -100,7 +106,9 @@ class fProcedure(metaclass=abc.ABCMeta):
             and not self.definition.is_subroutine
             and self._args_start is not None
         ):
-            res = self._args_start.get_values()[0]
+            values = self._args_start.get_values()
+            if len(values):
+                res = values[0]
 
         return res
 

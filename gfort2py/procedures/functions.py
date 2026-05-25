@@ -18,11 +18,12 @@ class fFunc(fProcedure):
     def _set_return(self):
         # Procedures need values accessing via their number not name
 
-        ftype = self.return_type.type
+        ftype = self.return_type.type.lower()
         kind = self.return_type.kind
         # If we are returning a character or array that gets added to the arguments
         # not the return value.
         if ftype == "character" or self.return_type.is_array or self.return_type.is_dt:
+            self._proc.restype = None
             return
 
         # Quad's cant currently be returned
@@ -56,4 +57,12 @@ class fFunc(fProcedure):
 
     @result.setter
     def result(self, value):
+        if (
+            self.return_type.type.lower() == "character"
+            or self.return_type.is_array
+            or self.return_type.is_dt
+        ):
+            self._result = None
+            return
+
         self._result = self.return_var.from_ctype(value).value

@@ -1,14 +1,13 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-import abc
-import sys
-from typing import Any, cast
+from typing import Any
 
 import gfModParser as gf
 
 from .arguments import fArguments
 from .extra_arguments import fArgumentsExtra
 from .return_arguments import (
+    fReturnArguments,
     fReturnArrayArguments,
     fReturnCharArguments,
     fReturnDTArguments,
@@ -19,15 +18,19 @@ def factory_return(
     procedure: gf.Symbol,
     module: gf.Module,
     values: tuple[tuple[Any, ...], dict[str, Any]],
-) -> fArguments:
+) -> fReturnArguments | None:
 
-    rt = cast(Any, procedure).return_type
+    if procedure.is_subroutine:
+        return None
 
-    if rt.ftype == "character":
-        return fReturnCharArguments(procedure, module, values)
+    key = procedure.properties.symbol_reference
+    rt = module[key]
+
+    if rt.type.lower() == "character":
+        return fReturnCharArguments(procedure, module, values, rt)
     elif rt.is_array:
-        return fReturnArrayArguments(procedure, module, values)
+        return fReturnArrayArguments(procedure, module, values, rt)
     elif rt.is_dt:
-        return fReturnDTArguments(procedure, module, values)
+        return fReturnDTArguments(procedure, module, values, rt)
     else:
-        raise ValueError(f"Unknown return argument type {rt}")
+        return None
