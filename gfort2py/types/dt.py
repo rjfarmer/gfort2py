@@ -212,6 +212,85 @@ class ftype_dt(f_type):
             return tuple(int(i) for i in comp.array.pyshape)
         return tuple()
 
+    def _resolved_use_module_name(self) -> str:
+        symbol = getattr(self, "_symbol", None)
+        sym_module = getattr(symbol, "module", "")
+        if sym_module not in {"", "."}:
+            return sym_module
+
+        module_obj = getattr(self, "_module_obj", None)
+        if module_obj is not None:
+            try:
+                first_key = next(iter(module_obj.keys()))
+                name = module_obj[first_key].module
+                if name not in {"", "."}:
+                    return name
+            except Exception:
+                pass
+
+        if self._module_name not in {"", "."}:
+            return self._module_name
+
+        return sym_module
+
+    def _resolved_module_file(self) -> Path | None:
+        module_obj = getattr(self, "_module_obj", None)
+        if module_obj is not None:
+            filename = getattr(module_obj, "filename", None)
+            if filename:
+                return Path(filename)
+
+        module_name = self._module_name
+        if module_name in {"", "."}:
+            module_name = self._resolved_use_module_name()
+
+        if module_name in {"", "."}:
+            return None
+
+        return Path(get_module(module_name).filename)
+
+    def _alloc_component_source(self, comp, shape: tuple[int, ...]) -> Modulise:
+        dims = ",".join([f"1:{i}" for i in shape])
+        use_module_name = self._resolved_use_module_name()
+        dt_name = self.ftype
+
+        string = f"""
+        subroutine alloc_component(x)
+        use {use_module_name}, only: {dt_name}
+        type({dt_name}), intent(inout) :: x
+        if (allocated(x%{comp.name})) deallocate(x%{comp.name})
+        allocate(x%{comp.name}({dims}))
+        end subroutine alloc_component
+        """
+        return Modulise(string)
+
+    def _allocate_component_array(self, comp, value, shape: tuple[int, ...]) -> None:
+        if (
+            value.base_addr is not None
+            and _shape_from_descriptor(value, comp.array.rank) == shape
+        ):
+            return
+
+        code = self._alloc_component_source(comp, shape)
+        comp_args = CompileArgs()
+        module_file = self._resolved_module_file()
+        if module_file is not None and module_file.parent:
+            comp_args.INCLUDE_FLAGS = f"-I{module_file.parent}"
+
+        compiled = Compile(code.as_module(), name=code.strhash())
+        if not compiled.compile(args=comp_args):
+            raise ValueError(f"Failed to allocate derived-type component {comp.name}")
+
+        lib = compiled.platform.load_library(compiled.library_filename)
+        sub = getattr(lib, f"__{compiled.name}_MOD_alloc_component")
+        sub(ctypes.byref(self._ctype))
+
+        refreshed = getattr(self._ctype, comp.name)
+        if refreshed.base_addr is None:
+            raise ValueError(
+                f"Allocation failed for derived-type component {comp.name}"
+            )
+
     def _get_array_value(self, comp, value):
         ctype_name = comp.typespec.type.lower()
         kind = int(comp.typespec.kind)
@@ -254,7 +333,21 @@ class ftype_dt(f_type):
             )
             return
 
-        raise NotImplementedError("Setting allocatable DT components is not supported")
+        shape = tuple(int(i) for i in array.shape)
+        if len(shape) != comp.array.rank:
+            raise ValueError(
+                f"Wrong number of dimensions, got {len(shape)} expected {comp.array.rank}"
+            )
+
+        self._allocate_component_array(comp, value, shape)
+
+        flat = array.ravel("F")
+        copy_array(
+            flat.ctypes.data,
+            value.base_addr,
+            ctypes.sizeof(base.ctype),
+            int(np.prod(shape)),
+        )
 
     def __getitem__(self, key):
         comps = self._components()

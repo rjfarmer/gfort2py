@@ -38,6 +38,27 @@ class TestDTRuntimeKinds:
         assert x.g_struct_alloc_1d[1]["a_int"] == 8
         assert x.g_struct_alloc_1d[2]["a_int"] == 9
 
+    def test_allocatable_dt_array_1d_alloc_component_set_get(self):
+        x.g_struct_alloc_1d = [
+            {"a_int": 7, "c_int_alloc_1d": np.array([1, 2], dtype="int32")},
+            {"a_int": 8, "c_int_alloc_1d": np.array([3, 4, 5], dtype="int32")},
+            {"a_int": 9, "c_int_alloc_1d": np.array([6], dtype="int32")},
+        ]
+
+        assert x.g_struct_alloc_1d[0]["a_int"] == 7
+        assert np.array_equal(
+            x.g_struct_alloc_1d[0]["c_int_alloc_1d"], np.array([1, 2], dtype="int32")
+        )
+        assert x.g_struct_alloc_1d[1]["a_int"] == 8
+        assert np.array_equal(
+            x.g_struct_alloc_1d[1]["c_int_alloc_1d"],
+            np.array([3, 4, 5], dtype="int32"),
+        )
+        assert x.g_struct_alloc_1d[2]["a_int"] == 9
+        assert np.array_equal(
+            x.g_struct_alloc_1d[2]["c_int_alloc_1d"], np.array([6], dtype="int32")
+        )
+
     def test_allocatable_dt_array_2d_set_get(self):
         x.g_struct_alloc_2d = [
             [{"a_int": 1}, {"a_int": 2}],
@@ -48,6 +69,35 @@ class TestDTRuntimeKinds:
         assert x.g_struct_alloc_2d[1, 0]["a_int"] == 3
         assert x.g_struct_alloc_2d[0, 1]["a_int"] == 2
         assert x.g_struct_alloc_2d[1, 1]["a_int"] == 4
+
+    def test_allocatable_dt_array_2d_alloc_component_realloc(self):
+        x.g_struct_alloc_2d = [
+            [
+                {"a_int": 1, "c_int_alloc_1d": np.array([10], dtype="int32")},
+                {"a_int": 2, "c_int_alloc_1d": np.array([20, 21], dtype="int32")},
+            ],
+            [
+                {"a_int": 3, "c_int_alloc_1d": np.array([30, 31, 32], dtype="int32")},
+                {"a_int": 4, "c_int_alloc_1d": np.array([40], dtype="int32")},
+            ],
+        ]
+
+        x.g_struct_alloc_2d[1, 0]["c_int_alloc_1d"] = np.array([99, 98], dtype="int32")
+
+        assert np.array_equal(
+            x.g_struct_alloc_2d[0, 0]["c_int_alloc_1d"], np.array([10], dtype="int32")
+        )
+        assert np.array_equal(
+            x.g_struct_alloc_2d[0, 1]["c_int_alloc_1d"],
+            np.array([20, 21], dtype="int32"),
+        )
+        assert np.array_equal(
+            x.g_struct_alloc_2d[1, 0]["c_int_alloc_1d"],
+            np.array([99, 98], dtype="int32"),
+        )
+        assert np.array_equal(
+            x.g_struct_alloc_2d[1, 1]["c_int_alloc_1d"], np.array([40], dtype="int32")
+        )
 
 
 class TestDTMethods:
@@ -147,6 +197,21 @@ class TestDTMethods:
         y = x.func_set_f_struct()
 
         v = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], dtype="int32")
+        assert np.array_equal(x.f_struct["c_int_alloc_1d"], v)
+
+    def test_func_set_f_struct_array_alloc_set(self):
+        v = np.array([10, 20, 30, 40], dtype="int32")
+
+        x.f_struct["c_int_alloc_1d"] = v
+
+        assert np.array_equal(x.f_struct["c_int_alloc_1d"], v)
+
+    def test_func_set_f_struct_array_alloc_realloc_set(self):
+        x.f_struct["c_int_alloc_1d"] = np.array([10, 20, 30, 40], dtype="int32")
+        v = np.array([1, 2, 3], dtype="int32")
+
+        x.f_struct["c_int_alloc_1d"] = v
+
         assert np.array_equal(x.f_struct["c_int_alloc_1d"], v)
 
     def test_func_set_f_struct_array_ptr(self):
