@@ -115,14 +115,67 @@ class fReturnArrayArguments(fReturnArguments):
         type(c).__init__(c)  # type: ignore[misc]
         return c
 
+    def _arg_context(self) -> dict[str, Any]:
+        ctx: dict[str, Any] = {}
+        refs = self.procedure.properties.formal_argument
+        names = [self.module[i].name for i in refs]
+
+        for key, value in zip(names, self.values[0]):
+            ctx[key] = value
+
+        for key, value in self.values[1].items():
+            ctx[key] = value
+
+        for ref in refs:
+            name = self.module[ref].name
+            if name in ctx:
+                ctx[str(ref)] = ctx[name]
+
+        return ctx
+
+    def _resolve_bound(self, expr: Any, ctx: dict[str, Any]) -> int:
+        value = getattr(expr, "value", expr)
+
+        if isinstance(value, (int, np.integer)):
+            return int(value)
+
+        if isinstance(value, str):
+            if value in ctx:
+                return int(ctx[value])
+            if value.isdigit():
+                return int(value)
+
+        if value is None:
+            raise ValueError("Array bound is unresolved at runtime")
+
+        return int(value)
+
+    def _resolve_shape(self) -> tuple[int, ...]:
+        try:
+            return tuple(
+                int(i) for i in self.return_symbol.properties.array_spec.pyshape
+            )
+        except Exception:
+            pass
+
+        ctx = self._arg_context()
+        lower = self.return_symbol.properties.array_spec.lower
+        upper = self.return_symbol.properties.array_spec.upper
+
+        shape = []
+        for lo, up in zip(lower, upper):
+            l = self._resolve_bound(lo, ctx)
+            u = self._resolve_bound(up, ctx)
+            shape.append(u - l + 1)
+
+        return tuple(shape)
+
     def set_values(self):
         self._ctypes = []
         self._result_type = self._build_return_type()
 
         if self.return_symbol.properties.attributes.always_explicit:
-            shape = tuple(
-                int(i) for i in self.return_symbol.properties.array_spec.pyshape
-            )
+            shape = self._resolve_shape()
             initial = np.zeros(shape, dtype=self._result_type.base.dtype, order="F")
             self._result_type.value = initial
 
