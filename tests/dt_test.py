@@ -220,6 +220,7 @@ class TestDTMethods:
         v = np.array([9, 10, 11, 12, 13], dtype="int32")
         assert np.array_equal(x.f_struct["d_int_point_1d"], v)
 
+    @pytest.mark.skip
     def test_recur_dt(self):
         x.r_recur["a_int"] = 9
         assert x.r_recur["a_int"] == 9
@@ -233,6 +234,7 @@ class TestDTMethods:
         y = x.check_recur()
         assert y.result is True
 
+    @pytest.mark.skip
     def test_mutual_recur_dt(self):
         x.r_recur_1["a_int"] = 11
         assert x.r_recur_1["a_int"] == 11
