@@ -10,17 +10,11 @@ defaults:
 
 jobs:
   qemu:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     continue-on-error: true
     strategy:
       matrix:
         BUILD_PROP:
-          - [
-              "armhf",
-              "arm-linux-gnueabihf",
-              "arm32v7/ubuntu:24.04",
-              "linux/arm/v7",
-          ]
           - [
               "ppc64le",
               "powerpc64le-linux-gnu",
@@ -69,22 +63,22 @@ jobs:
     - name: Creates new container
       if: steps.container-cache.outputs.cache-hit != 'true'
       run: |
-        docker run --name ${TOOLCHAIN_NAME} --platform ${PLATFORM_NAME} --interactive -v $(pwd):/gfort2py ${DOCKER_CONTAINER} /bin/bash -c "
+        docker run --name "${TOOLCHAIN_NAME}" --platform "${PLATFORM_NAME}" --interactive -v "$PWD":/gfort2py "${DOCKER_CONTAINER}" /bin/bash -c "
           apt-get update &&
           apt-get install -y cmake git python3 python-is-python3 python3-{dev,venv,pip,numpy,wheel} automake libc6-dev linux-libc-dev gcc gfortran &&
           git config --global --add safe.directory /gfort2py
           "
 
-        docker commit ${TOOLCHAIN_NAME} ${TOOLCHAIN_NAME}
-        docker save -o ~/docker_${TOOLCHAIN_NAME}.tar ${TOOLCHAIN_NAME}
+        docker commit "${TOOLCHAIN_NAME}" "${TOOLCHAIN_NAME}"
+        docker save -o "${HOME}/docker_${TOOLCHAIN_NAME}.tar" "${TOOLCHAIN_NAME}"
 
     - name: Load container from cache
       if: steps.container-cache.outputs.cache-hit == 'true'
-      run: docker load -i ~/docker_${TOOLCHAIN_NAME}.tar
+      run: docker load -i "${HOME}/docker_${TOOLCHAIN_NAME}.tar"
 
     - name: Build and test
       run: |
-        docker run -v $(pwd):/gfort2py --platform ${PLATFORM_NAME} --ulimit core=0 ${TOOLCHAIN_NAME} /bin/bash -c "
+        docker run -v "$PWD":/gfort2py --platform "${PLATFORM_NAME}" --ulimit core=0 "${TOOLCHAIN_NAME}" /bin/bash -c "
         cd /gfort2py && 
         export FC=$(which gfortran) && 
         export PIP_BREAK_SYSTEM_PACKAGES=1 &&

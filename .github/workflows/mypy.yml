@@ -42,4 +42,4 @@ jobs:
 
   
       - name: Test
-        run: python -m mypy *.py gfort2py
+        run: python -m mypy -- ./*.py gfort2py

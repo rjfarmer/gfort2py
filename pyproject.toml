@@ -38,7 +38,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "numpy >=1.13.0",
+    "numpy >=2.0.0",
     "platformdirs >=3",
     "dataclasses_json >=0.6",
     "gfModParser >= 1.2.0"
