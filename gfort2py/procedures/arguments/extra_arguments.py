@@ -30,12 +30,16 @@ class fArgumentsExtra(fArguments):
         if value is None:
             return 0
         if isinstance(value, np.ndarray):
-            # For CHARACTER arrays gfortran expects the element width, not count.
+            if np.issubdtype(value.dtype, np.str_):
+                flat = np.asfortranarray(value).ravel(order="F")
+                if flat.size == 0:
+                    return 0
+                return max(len(str(item).encode("utf-8")) for item in flat)
             return int(value.dtype.itemsize)
         if isinstance(value, bytes):
             return len(value)
         if isinstance(value, str):
-            return len(value)
+            return len(value.encode("utf-8"))
         try:
             return len(value)
         except TypeError:

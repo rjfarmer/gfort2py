@@ -44,14 +44,19 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
     def _character_dtype(self, value: np.ndarray | None = None) -> np.dtype:
         strlen = int(self._sym.properties.typespec.charlen.value)
         if strlen <= 0 and value is not None:
-            strlen = int(np.asarray(value).dtype.itemsize)
+            itemsize = int(np.asarray(value).dtype.itemsize)
+            if self.base.kind == 4:
+                strlen = max(itemsize // 4, 1)
+            else:
+                strlen = itemsize
         if strlen <= 0 and hasattr(self, "_ctype") and self._ctype is not None:
             ctype_elem = getattr(type(self._ctype), "_type_", None)
             if ctype_elem is not None:
-                strlen = int(ctypes.sizeof(ctype_elem))
+                size = int(ctypes.sizeof(ctype_elem))
+                strlen = max(size // 4, 1) if self.base.kind == 4 else size
         if strlen <= 0:
             strlen = 1
-        return np.dtype(f"S{strlen}")
+        return np.dtype(f"U{strlen}") if self.base.kind == 4 else np.dtype(f"S{strlen}")
 
     def _array_dtype(self, value: np.ndarray | None = None) -> np.dtype:
         if self._is_character_array():
@@ -61,6 +66,21 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
     @property
     def value(self) -> np.ndarray:
         if self._is_character_array():
+            if self.base.kind == 4:
+                elem_size = ctypes.sizeof(self._ctype._type_)
+                raw = ctypes.string_at(
+                    ctypes.addressof(self._ctype), self.size * elem_size
+                )
+                values = []
+                for i in range(self.size):
+                    chunk = raw[i * elem_size : (i + 1) * elem_size]
+                    utf8_bytes = bytes(chunk[j] for j in range(0, elem_size, 4))
+                    values.append(utf8_bytes.decode("utf-8").rstrip())
+                self._value = np.array(values, dtype=np.str_).reshape(
+                    self.shape, order="F"
+                )
+                return self._value
+
             dtype = self._array_dtype()
             strlen = int(dtype.itemsize)
             raw = ctypes.string_at(ctypes.addressof(self._ctype), self.size * strlen)
@@ -97,6 +117,33 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
         self._value = self._array_check(value)
         elem_size = ctypes.sizeof(self.base.ctype)
         if self._is_character_array():
+            if self.base.kind == 4:
+                flat = (
+                    np.asfortranarray(value)
+                    .astype(np.str_, copy=False)
+                    .ravel(order="F")
+                )
+                if self._sym.properties.typespec.charlen.value > 0:
+                    utf8_len = int(self._sym.properties.typespec.charlen.value)
+                    elem_size = utf8_len * 4
+                else:
+                    utf8_len = max(len(str(item).encode("utf-8")) for item in flat)
+                    elem_size = utf8_len * 4
+                    arr_type = (ctypes.c_char * elem_size) * self.size
+                    self._ctype = arr_type()
+
+                base_addr = ctypes.addressof(self._ctype)
+                for idx, item in enumerate(flat):
+                    encoded = item.encode("utf-8")
+                    if len(encoded) > utf8_len:
+                        encoded = encoded[:utf8_len]
+                    else:
+                        encoded = encoded + b" " * (utf8_len - len(encoded))
+
+                    raw = b"".join(bytes([byte, 0, 0, 0]) for byte in encoded)
+                    ctypes.memmove(base_addr + idx * elem_size, raw, len(raw))
+                return
+
             elem_size = int(self._array_dtype(value).itemsize)
         copy_array(
             self._value.ctypes.data,
@@ -106,8 +153,11 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
         )
 
     def _array_check(self, value):
-        if self._is_character_array() and not np.issubdtype(value.dtype, np.bytes_):
-            raise TypeError("Character strings must be bytes (S dtype)")
+        if self._is_character_array():
+            if self.base.kind == 1 and not np.issubdtype(value.dtype, np.bytes_):
+                raise TypeError("Character strings must be bytes (S dtype)")
+            if self.base.kind == 4 and not np.issubdtype(value.dtype, np.str_):
+                raise TypeError("Unicode strings must be unicode (U dtype)")
 
         value = np.asfortranarray(value)
         value = value.astype(self._array_dtype(value), copy=False)
@@ -176,14 +226,19 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
     def _character_dtype(self, value: np.ndarray | None = None) -> np.dtype:
         strlen = int(self._sym.properties.typespec.charlen.value)
         if strlen <= 0 and value is not None:
-            strlen = int(np.asarray(value).dtype.itemsize)
+            itemsize = int(np.asarray(value).dtype.itemsize)
+            if self.base.kind == 4:
+                strlen = max(itemsize // 4, 1)
+            else:
+                strlen = itemsize
         if strlen <= 0 and self._ctype is not None:
             ctype_elem = getattr(type(self._ctype), "_type_", None)
             if ctype_elem is not None:
-                strlen = int(ctypes.sizeof(ctype_elem))
+                size = int(ctypes.sizeof(ctype_elem))
+                strlen = max(size // 4, 1) if self.base.kind == 4 else size
         if strlen <= 0:
             strlen = 1
-        return np.dtype(f"S{strlen}")
+        return np.dtype(f"U{strlen}") if self.base.kind == 4 else np.dtype(f"S{strlen}")
 
     def _array_dtype(self, value: np.ndarray | None = None) -> np.dtype:
         if self._is_character_array():
@@ -213,11 +268,17 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
 
     @value.setter
     def value(self, value: np.ndarray):
+        self._set_array_value(value)
+
+    def _set_array_value(self, value: np.ndarray):
         if value is None:
             return
 
-        if self._is_character_array() and not np.issubdtype(value.dtype, np.bytes_):
-            raise TypeError("Character strings must be bytes (S dtype)")
+        if self._is_character_array():
+            if self.base.kind == 1 and not np.issubdtype(value.dtype, np.bytes_):
+                raise TypeError("Character strings must be bytes (S dtype)")
+            if self.base.kind == 4 and not np.issubdtype(value.dtype, np.str_):
+                raise TypeError("Unicode strings must be unicode (U dtype)")
 
         if value.ndim != self.ndims:
             raise ValueError(
@@ -316,17 +377,60 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
     def _character_dtype(self, value: np.ndarray | None = None) -> np.dtype:
         strlen = int(self._sym.properties.typespec.charlen.value)
         if strlen <= 0 and value is not None:
-            strlen = int(np.asarray(value).dtype.itemsize)
+            itemsize = int(np.asarray(value).dtype.itemsize)
+            if self.base.kind == 4:
+                strlen = max(itemsize // 4, 1)
+            else:
+                strlen = itemsize
         if strlen <= 0 and self._ctype.base_addr is not None:
-            strlen = int(self._ctype.dtype.elem_len)
+            itemsize = int(self._ctype.dtype.elem_len)
+            strlen = max(itemsize // 4, 1) if self.base.kind == 4 else itemsize
         if strlen <= 0:
             strlen = 1
-        return np.dtype(f"S{strlen}")
+        return np.dtype(f"U{strlen}") if self.base.kind == 4 else np.dtype(f"S{strlen}")
 
     def _array_dtype(self, value: np.ndarray | None = None) -> np.dtype:
         if self._is_character_array():
             return self._character_dtype(value)
         return self.base.dtype
+
+    def _decode_kind4_flat(self, raw: bytes, elem_size: int, count: int) -> np.ndarray:
+        values = []
+        for i in range(count):
+            chunk = raw[i * elem_size : (i + 1) * elem_size]
+            utf8_bytes = bytes(chunk[j] for j in range(0, elem_size, 4))
+            values.append(utf8_bytes.decode("utf-8").rstrip())
+        return np.array(values, dtype=np.str_)
+
+    def _kind4_utf8_len(self, value: np.ndarray) -> int:
+        flat = np.asfortranarray(value).astype(np.str_, copy=False).ravel("F")
+        if flat.size == 0:
+            return 1
+        return max(len(str(item).encode("utf-8")) for item in flat)
+
+    def _write_kind4_array(self, value: np.ndarray, shape: tuple[int, ...]) -> None:
+        flat = np.asfortranarray(value).astype(np.str_, copy=False).ravel("F")
+        elem_size = int(self._ctype.dtype.elem_len)
+        if elem_size <= 0:
+            declared_len = int(self._sym.properties.typespec.charlen.value)
+            if declared_len > 0:
+                elem_size = declared_len * 4
+            else:
+                elem_size = self._kind4_utf8_len(value) * 4
+
+        utf8_len = max(elem_size // 4, 1)
+        base_addr = int(self._ctype.base_addr)
+        for idx, item in enumerate(flat):
+            encoded = str(item).encode("utf-8")
+            if len(encoded) > utf8_len:
+                encoded = encoded[:utf8_len]
+            else:
+                encoded = encoded + b" " * (utf8_len - len(encoded))
+
+            raw = b"".join(bytes([byte, 0, 0, 0]) for byte in encoded)
+            ctypes.memmove(base_addr + idx * elem_size, raw, len(raw))
+
+        self._value = flat.reshape(shape, order="F")
 
     @property
     def value(self) -> Optional[np.ndarray]:
@@ -340,6 +444,14 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
             )
 
         shape = tuple(shape_list)
+        count = int(np.prod(shape))
+
+        if self._is_character_array() and self.base.kind == 4:
+            elem_size = int(self._ctype.dtype.elem_len)
+            raw = ctypes.string_at(self._ctype.base_addr, count * elem_size)
+            flat = self._decode_kind4_flat(raw, elem_size, count)
+            self._value = flat.reshape(shape, order="F")
+            return self._value
 
         array = np.zeros(shape, dtype=self._array_dtype(), order="F")
         elem_size = ctypes.sizeof(self.base.ctype)
@@ -350,18 +462,24 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
             self._ctype.base_addr,
             array.ctypes.data,
             elem_size,
-            int(np.prod(shape)),
+            count,
         )
         self._value = array
         return array
 
     @value.setter
     def value(self, value: np.ndarray):
+        self._set_descriptor_value(value)
+
+    def _set_descriptor_value(self, value: np.ndarray):
         if value is None:
             return
 
-        if self._is_character_array() and not np.issubdtype(value.dtype, np.bytes_):
-            raise TypeError("Character strings must be bytes (S dtype)")
+        if self._is_character_array():
+            if self.base.kind == 1 and not np.issubdtype(value.dtype, np.bytes_):
+                raise TypeError("Character strings must be bytes (S dtype)")
+            if self.base.kind == 4 and not np.issubdtype(value.dtype, np.str_):
+                raise TypeError("Unicode strings must be unicode (U dtype)")
 
         shape = np.shape(value)
 
@@ -369,12 +487,19 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
             self._is_character_array()
             and self._sym.properties.typespec.charlen.value <= 0
         ):
-            strlen = int(np.asarray(value).dtype.itemsize)
+            if self.base.kind == 4:
+                strlen = self._kind4_utf8_len(value)
+            else:
+                strlen = int(np.asarray(value).dtype.itemsize)
             if strlen <= 0:
                 strlen = 1
             self.base.value = b" " * strlen
 
         self._allocate(shape)
+
+        if self._is_character_array() and self.base.kind == 4:
+            self._write_kind4_array(value, shape)
+            return
 
         self._value = (
             np.asfortranarray(value)
@@ -441,29 +566,10 @@ class ftype_assumed_rank(ftype_assumed_shape, metaclass=ABCMeta):
         if value is None:
             return
 
-        if self._is_character_array() and not np.issubdtype(value.dtype, np.bytes_):
-            raise TypeError("Character strings must be bytes (S dtype)")
-
         shape = np.shape(value)
         self._ndims = len(shape)
         self._ctype = self.ctype()
-
-        self._allocate(shape)
-
-        self._value = (
-            np.asfortranarray(value)
-            .astype(self._array_dtype(value), copy=False)
-            .ravel("F")
-        )
-        elem_size = ctypes.sizeof(self.base.ctype)
-        if self._is_character_array():
-            elem_size = int(self._array_dtype(value).itemsize)
-        copy_array(
-            self._value.ctypes.data,
-            self._ctype.base_addr,
-            elem_size,
-            int(np.prod(shape)),
-        )
+        self._set_descriptor_value(value)
 
     @property
     def ndims(self) -> int:

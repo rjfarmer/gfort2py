@@ -243,10 +243,11 @@ class ftype_character_4(ftype_char):
     kind = 4
     _base_ctype = ctypes.c_char * 4
     dtype = np.dtype(np.str_)
-    encoding = "utf16"
+    encoding = "utf-8"
 
     def decode_value(self, ctype) -> str:
-        return b"".join([ctype[i].value for i in range(self.parent.strlen)]).decode()
+        raw = bytes([ctype[i].value[0] for i in range(self.parent.strlen)])
+        return raw.decode(self.encoding)
 
 
 ##############################
@@ -294,6 +295,22 @@ class ftype_char_fixed(ftype_char_length):
         return self.parent._char._base_ctype * self.strlen
 
     def set_value(self, value):
+        if self.parent.kind == 4:
+            if hasattr(value, "encode"):
+                value = value.encode(self.parent._char.encoding)
+
+            capacity = self.strlen
+            pad = " ".encode(self.parent._char.encoding)
+            if len(value) > capacity:
+                value = value[:capacity]
+            else:
+                value = value + pad * (capacity - len(value))
+
+            raw = b"".join(bytes([byte, 0, 0, 0]) for byte in value)
+            self.parent._char._value = value
+            ctypes.memmove(ctypes.addressof(self.parent._ctype), raw, len(raw))
+            return
+
         if len(value) > self.strlen:
             value = value[: self.strlen]
         else:
@@ -328,6 +345,15 @@ class ftype_char_defered(ftype_char_length):
             return self.parent._char._base_ctype
 
     def set_value(self, value):
+        if self.parent.kind == 4:
+            if hasattr(value, "encode"):
+                value = value.encode(self.parent._char.encoding)
+
+            self.parent._char._value = value
+            self.parent._ctype = self.ctype()
+            raw = b"".join(bytes([byte, 0, 0, 0]) for byte in value)
+            ctypes.memmove(ctypes.addressof(self.parent._ctype), raw, len(raw))
+            return
 
         self.parent._char._value = value
 
