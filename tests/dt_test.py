@@ -313,6 +313,17 @@ class TestDTMethods:
         assert y.result["f_nested"]["a_int"] == 234
         assert y.result["f_nested"]["f_struct"]["a_int"] == 345
 
+    def test_func_return_s_struct_nested_2_no_hidden_start_args(self):
+        # Regression guard: scalar DT function returns should not be passed via
+        # hidden start arguments (platform-sensitive ABI path on macOS).
+        proc = x.func_return_s_struct_nested_2
+        y = proc()
+
+        assert proc._args_start is None
+        assert y.result["a_int"] == 123
+        assert y.result["f_nested"]["a_int"] == 234
+        assert y.result["f_nested"]["f_struct"]["a_int"] == 345
+
     def test_func_return_s_struct_basic_exp_1d(self):
         y = x.func_return_s_struct_basic_exp_1d()
         s = y.result

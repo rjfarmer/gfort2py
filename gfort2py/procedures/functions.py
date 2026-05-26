@@ -22,7 +22,7 @@ class fFunc(fProcedure):
         kind = self.return_type.kind
         # If we are returning a character or array that gets added to the arguments
         # not the return value.
-        if ftype == "character" or self.return_type.is_array or self.return_type.is_dt:
+        if ftype == "character" or self.return_type.is_array:
             self._proc.restype = None
             return
 
@@ -43,7 +43,12 @@ class fFunc(fProcedure):
     @property
     @cache
     def return_var(self) -> f_type:
-        return type_factory(self.return_type)()
+        cls = type_factory(self.return_type)
+        c = cls.__new__(cls)
+        c._symbol = self.return_type
+        c._module_obj = self._module
+        type(c).__init__(c)  # type: ignore[misc]
+        return c
 
     @property
     def __doc__(self):
@@ -57,12 +62,9 @@ class fFunc(fProcedure):
 
     @result.setter
     def result(self, value):
-        if (
-            self.return_type.type.lower() == "character"
-            or self.return_type.is_array
-            or self.return_type.is_dt
-        ):
+        if self.return_type.type.lower() == "character" or self.return_type.is_array:
             self._result = None
             return
 
-        self._result = self.return_var.from_ctype(value).value
+        self.return_var._ctype = value
+        self._result = self.return_var.value

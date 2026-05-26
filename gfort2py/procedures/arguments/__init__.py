@@ -30,7 +30,7 @@ def factory_return(
         return fReturnCharArguments(procedure, module, values, rt)
     elif rt.is_array:
         return fReturnArrayArguments(procedure, module, values, rt)
-    elif rt.is_dt:
+    elif rt.is_dt and rt.is_array:
         return fReturnDTArguments(procedure, module, values, rt)
     else:
         return None
