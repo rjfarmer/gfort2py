@@ -5,7 +5,7 @@ import ctypes
 import gfort2py.utils as utils
 
 
-def test_get_c_runtime_uses_msvcrt_on_windows(monkeypatch):
+def test_get_c_runtime_uses_ucrtbase_on_windows(monkeypatch):
     calls = []
 
     def fake_cdll(name):
@@ -15,5 +15,21 @@ def test_get_c_runtime_uses_msvcrt_on_windows(monkeypatch):
     monkeypatch.setattr(utils.os, "name", "nt", raising=False)
     monkeypatch.setattr(ctypes, "CDLL", fake_cdll)
 
+    assert utils.get_c_runtime() == "ucrtbase.dll"
+    assert calls == ["ucrtbase.dll"]
+
+
+def test_get_c_runtime_falls_back_to_msvcrt_on_windows(monkeypatch):
+    calls = []
+
+    def fake_cdll(name):
+        calls.append(name)
+        if name == "ucrtbase.dll":
+            raise OSError("not found")
+        return name
+
+    monkeypatch.setattr(utils.os, "name", "nt", raising=False)
+    monkeypatch.setattr(ctypes, "CDLL", fake_cdll)
+
     assert utils.get_c_runtime() == "msvcrt.dll"
-    assert calls == ["msvcrt.dll"]
+    assert calls == ["ucrtbase.dll", "msvcrt.dll"]
