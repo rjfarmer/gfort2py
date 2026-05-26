@@ -219,11 +219,16 @@ class TestBasicMethods:
         z = x.func_int_in(x.a_int)
         assert z.result == 10
 
-    @pytest.mark.skip
-    def test_sub_man_args(self):
+    @pytest.mark.skipIfWindows
+    def test_sub_man_args(self, capfd):
         # if this doesn't seg fault we are good
         x.sub_many_args(
             1, 2, 3, 4, True, False, True, "abc", "def", "ghj", "qwerty", "zxcvb"
+        )
+        out, err = capfd.readouterr()
+        assert (
+            out.strip()
+            == "1.00000000       2.00000000       3.00000000       4.00000000     T F T abc       defghjqwertyzxcvb"
         )
 
     def test_func_intent_out(self):

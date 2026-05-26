@@ -8,6 +8,10 @@ gfort2py is a Python library for reading Fortran module files. It parses `.mod` 
 
 Prefer minimal, focused changes. Every change should have a corresponding test case added or updated.
 
+Prefer clean designs that avoid explicit type checking where practical. Favor class-level properties and polymorphism over branching on type names.
+
+Prefer to reuse exisiting code cnad classes whgere possible, before creating new classes or duplicating code.
+
 ## Testing
 
 Always run pytest after making code changes:
