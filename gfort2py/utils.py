@@ -24,6 +24,12 @@ def copy_array(src: int, dst: int, length: int, size: int):
     )
 
 
+def get_c_runtime() -> ctypes.CDLL:
+    if os.name == "nt":
+        return ctypes.CDLL("msvcrt.dll")
+    return ctypes.CDLL(None)
+
+
 # def resolve_other_args(obj, other_args, module, lib, fProc):
 #     """
 #     We want to iterate over the components of obj

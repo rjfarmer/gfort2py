@@ -9,6 +9,7 @@ import gfModParser as gf
 import numpy as np
 
 from ..compilation import Modulise
+from ..utils import get_c_runtime
 from .base import f_type
 
 __all__ = ["ftype_character"]
@@ -122,7 +123,7 @@ class ftype_character(f_type, metaclass=ABCMeta):
         )
 
         if is_alloc_deferred:
-            libc = ctypes.CDLL(None)
+            libc = get_c_runtime()
             libc.malloc.argtypes = [ctypes.c_size_t]
             libc.malloc.restype = ctypes.c_void_p
             libc.realloc.argtypes = [ctypes.c_void_p, ctypes.c_size_t]

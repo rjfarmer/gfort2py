@@ -7,6 +7,7 @@ from typing import Any, Type, cast
 import gfModParser as gf
 
 from ...types import factory
+from ...utils import get_c_runtime
 
 
 class fArg(metaclass=ABCMeta):
@@ -29,7 +30,7 @@ class fArg(metaclass=ABCMeta):
         self._alloc_char_len_ptr = None
 
     def _libc(self):
-        libc = ctypes.CDLL(None)
+        libc = get_c_runtime()
         libc.malloc.argtypes = [ctypes.c_size_t]
         libc.malloc.restype = ctypes.c_void_p
         return libc
