@@ -82,7 +82,7 @@ jobs:
         cd /gfort2py && 
         export FC=$(which gfortran) && 
         export PIP_BREAK_SYSTEM_PACKAGES=1 &&
-        python -m pip install --upgrade pip build wheel pytest &&
+        python -m pip install --upgrade build wheel pytest &&
         python -m pip install --upgrade dist/gfort2py-*.whl && 
         python -m pytest -v"
 
