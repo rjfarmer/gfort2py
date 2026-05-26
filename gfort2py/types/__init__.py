@@ -116,7 +116,12 @@ def factory(obj: gf.Symbol) -> type[f_type]:
 
         # Create a concrete subclass with _base implemented as an instance method
         def _base(self):
-            return find_ftype(ftype, kind)()
+            base_cls = find_ftype(ftype, kind)
+            base = base_cls.__new__(base_cls)
+            base._symbol = getattr(self, "_symbol", None)
+            base._module_obj = getattr(self, "_module_obj", None)
+            type(base).__init__(base)  # type: ignore[misc]
+            return base
 
         res = type(base_arr_cls.__name__, (base_arr_cls,), {"_base": _base})
     else:

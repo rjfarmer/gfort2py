@@ -16,11 +16,12 @@ __all__ = ["ftype_character"]
 
 
 class ftype_character(f_type, metaclass=ABCMeta):
-    default = ""
+    default = "''"
     ftype = "character"
 
     def __init__(self, value=None):
         self._alloc_len_ctype = None
+        self._value = None
         super().__init__(value=value)
 
     @staticmethod
@@ -28,6 +29,13 @@ class ftype_character(f_type, metaclass=ABCMeta):
         if ctypes.sizeof(ctypes.c_void_p) == 8:
             return ctypes.c_int64
         return ctypes.c_int32
+
+    @staticmethod
+    def _charlen_as_int(value) -> int | None:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
 
     @classmethod
     def in_dll(
@@ -37,10 +45,14 @@ class ftype_character(f_type, metaclass=ABCMeta):
         c._symbol = symbol
         c.__init__()  # type: ignore[misc]
 
+        declared_len = None
+        if symbol is not None:
+            declared_len = cls._charlen_as_int(symbol.properties.typespec.charlen.value)
+
         is_alloc_deferred = (
             symbol is not None
             and symbol.properties.attributes.allocatable
-            and symbol.properties.typespec.charlen.value <= 0
+            and (declared_len is None or declared_len <= 0)
         )
 
         if is_alloc_deferred:
@@ -66,7 +78,8 @@ class ftype_character(f_type, metaclass=ABCMeta):
 
     @cached_property
     def _length(self):
-        if self._sym.properties.typespec.charlen.value > 0:
+        declared_len = self._charlen_as_int(self._sym.properties.typespec.charlen.value)
+        if declared_len is not None and declared_len > 0:
             return ftype_char_fixed(self)
         return ftype_char_defered(self)
 
@@ -91,9 +104,10 @@ class ftype_character(f_type, metaclass=ABCMeta):
 
     @property
     def value(self) -> str | None:
+        declared_len = self._charlen_as_int(self._sym.properties.typespec.charlen.value)
         is_alloc_deferred = (
             self._sym.properties.attributes.allocatable
-            and self._sym.properties.typespec.charlen.value <= 0
+            and (declared_len is None or declared_len <= 0)
             and isinstance(self._ctype, ctypes.c_void_p)
         )
 
@@ -116,9 +130,10 @@ class ftype_character(f_type, metaclass=ABCMeta):
 
     @value.setter
     def value(self, value: str | bytes | None):
+        declared_len = self._charlen_as_int(self._sym.properties.typespec.charlen.value)
         is_alloc_deferred = (
             self._sym.properties.attributes.allocatable
-            and self._sym.properties.typespec.charlen.value <= 0
+            and (declared_len is None or declared_len <= 0)
             and isinstance(self._ctype, ctypes.c_void_p)
         )
 
@@ -264,7 +279,12 @@ class ftype_char_fixed(ftype_char_length):
 
     @property
     def strlen(self):
-        return self.parent._sym.properties.typespec.charlen.value
+        length = ftype_character._charlen_as_int(
+            self.parent._sym.properties.typespec.charlen.value
+        )
+        if length is None:
+            raise ValueError("Character length is not a fixed integer")
+        return length
 
     def __repr__(self):
         return f"character(kind={self.parent.kind},len={self.strlen})"

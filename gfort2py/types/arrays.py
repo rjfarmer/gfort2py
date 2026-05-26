@@ -38,12 +38,43 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
         s = ",".join([str(i) for i in self.shape])
         return f"{self.base.ftype}(kind={self.base.kind})({s})"
 
+    def _is_character_array(self) -> bool:
+        return isinstance(self.base, ftype_character)
+
+    def _character_dtype(self, value: np.ndarray | None = None) -> np.dtype:
+        strlen = int(self._sym.properties.typespec.charlen.value)
+        if strlen <= 0 and value is not None:
+            strlen = int(np.asarray(value).dtype.itemsize)
+        if strlen <= 0 and hasattr(self, "_ctype") and self._ctype is not None:
+            ctype_elem = getattr(type(self._ctype), "_type_", None)
+            if ctype_elem is not None:
+                strlen = int(ctypes.sizeof(ctype_elem))
+        if strlen <= 0:
+            strlen = 1
+        return np.dtype(f"S{strlen}")
+
+    def _array_dtype(self, value: np.ndarray | None = None) -> np.dtype:
+        if self._is_character_array():
+            return self._character_dtype(value)
+        return self.base.dtype
+
     @property
     def value(self) -> np.ndarray:
+        if self._is_character_array():
+            dtype = self._array_dtype()
+            strlen = int(dtype.itemsize)
+            raw = ctypes.string_at(ctypes.addressof(self._ctype), self.size * strlen)
+            self._value = (
+                np.frombuffer(raw, dtype=dtype, count=self.size)
+                .copy()
+                .reshape(self.shape, order="F")
+            )
+            return self._value
+
         self._value = (
             np.ctypeslib.as_array(self._ctype)
             .reshape(self.shape, order="F")
-            .astype(self.base.dtype)
+            .astype(self._array_dtype())
         )
         return self._value
 
@@ -52,17 +83,34 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
         if value is None:
             return None
 
+        if (
+            self._is_character_array()
+            and self._sym.properties.typespec.charlen.value <= 0
+        ):
+            strlen = int(np.asarray(value).dtype.itemsize)
+            if strlen <= 0:
+                strlen = 1
+            arr_type = (ctypes.c_char * strlen) * self.size
+            if not isinstance(self._ctype, arr_type):
+                self._ctype = arr_type()
+
         self._value = self._array_check(value)
+        elem_size = ctypes.sizeof(self.base.ctype)
+        if self._is_character_array():
+            elem_size = int(self._array_dtype(value).itemsize)
         copy_array(
             self._value.ctypes.data,
             ctypes.addressof(self._ctype),
-            ctypes.sizeof(self.base.ctype),
+            elem_size,
             self.size,
         )
 
     def _array_check(self, value):
+        if self._is_character_array() and not np.issubdtype(value.dtype, np.bytes_):
+            raise TypeError("Character strings must be bytes (S dtype)")
+
         value = np.asfortranarray(value)
-        value = value.astype(self.base.dtype, copy=False)
+        value = value.astype(self._array_dtype(value), copy=False)
 
         if value.ndim != self.ndims:
             raise ValueError(
@@ -122,12 +170,42 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
     def __repr__(self):
         return f"{self.base.ftype}(kind={self.base.kind})(*)"
 
+    def _is_character_array(self) -> bool:
+        return isinstance(self.base, ftype_character)
+
+    def _character_dtype(self, value: np.ndarray | None = None) -> np.dtype:
+        strlen = int(self._sym.properties.typespec.charlen.value)
+        if strlen <= 0 and value is not None:
+            strlen = int(np.asarray(value).dtype.itemsize)
+        if strlen <= 0 and self._ctype is not None:
+            ctype_elem = getattr(type(self._ctype), "_type_", None)
+            if ctype_elem is not None:
+                strlen = int(ctypes.sizeof(ctype_elem))
+        if strlen <= 0:
+            strlen = 1
+        return np.dtype(f"S{strlen}")
+
+    def _array_dtype(self, value: np.ndarray | None = None) -> np.dtype:
+        if self._is_character_array():
+            return self._character_dtype(value)
+        return self.base.dtype
+
     @property
     def value(self) -> Optional[np.ndarray]:
         if self._ctype is None:
             return None
 
-        arr = np.ctypeslib.as_array(self._ctype).astype(self.base.dtype)
+        if self._is_character_array():
+            dtype = self._array_dtype()
+            n = len(self._ctype)
+            strlen = int(dtype.itemsize)
+            raw = ctypes.string_at(ctypes.addressof(self._ctype), n * strlen)
+            arr = np.frombuffer(raw, dtype=dtype, count=n).copy()
+            if self._shape is not None:
+                arr = arr.reshape(self._shape, order="F")
+            return arr
+
+        arr = np.ctypeslib.as_array(self._ctype).astype(self._array_dtype())
         if self._shape is not None:
             arr = arr.reshape(self._shape, order="F")
 
@@ -138,20 +216,34 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
         if value is None:
             return
 
+        if self._is_character_array() and not np.issubdtype(value.dtype, np.bytes_):
+            raise TypeError("Character strings must be bytes (S dtype)")
+
         if value.ndim != self.ndims:
             raise ValueError(
                 f"Wrong number of dimensions, got {value.ndim} expected {self.ndims}"
             )
 
         self._shape = tuple(value.shape)
-        flat = np.asfortranarray(value).astype(self.base.dtype, copy=False).ravel("F")
+        flat = (
+            np.asfortranarray(value)
+            .astype(self._array_dtype(value), copy=False)
+            .ravel("F")
+        )
         n = flat.size
-        arr_type = self.base.ctype * n
+        if self._is_character_array():
+            strlen = int(self._array_dtype(value).itemsize)
+            arr_type = (ctypes.c_char * strlen) * n
+        else:
+            arr_type = self.base.ctype * n
         self._ctype = arr_type()
+        elem_size = ctypes.sizeof(self.base.ctype)
+        if self._is_character_array():
+            elem_size = int(self._array_dtype(value).itemsize)
         copy_array(
             flat.ctypes.data,
             ctypes.addressof(self._ctype),
-            ctypes.sizeof(self.base.ctype),
+            elem_size,
             n,
         )
 
@@ -218,6 +310,24 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
         s = ",".join([":" for i in range(self.ndims)])
         return f"{self.ftype}(kind={self.kind})({s})"
 
+    def _is_character_array(self) -> bool:
+        return isinstance(self.base, ftype_character)
+
+    def _character_dtype(self, value: np.ndarray | None = None) -> np.dtype:
+        strlen = int(self._sym.properties.typespec.charlen.value)
+        if strlen <= 0 and value is not None:
+            strlen = int(np.asarray(value).dtype.itemsize)
+        if strlen <= 0 and self._ctype.base_addr is not None:
+            strlen = int(self._ctype.dtype.elem_len)
+        if strlen <= 0:
+            strlen = 1
+        return np.dtype(f"S{strlen}")
+
+    def _array_dtype(self, value: np.ndarray | None = None) -> np.dtype:
+        if self._is_character_array():
+            return self._character_dtype(value)
+        return self.base.dtype
+
     @property
     def value(self) -> Optional[np.ndarray]:
         if self._ctype.base_addr is None:
@@ -231,12 +341,15 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
 
         shape = tuple(shape_list)
 
-        array = np.zeros(shape, dtype=self.base.dtype, order="F")
+        array = np.zeros(shape, dtype=self._array_dtype(), order="F")
+        elem_size = ctypes.sizeof(self.base.ctype)
+        if self._is_character_array():
+            elem_size = int(self._array_dtype().itemsize)
 
         copy_array(
             self._ctype.base_addr,
             array.ctypes.data,
-            ctypes.sizeof(self.base.ctype),
+            elem_size,
             int(np.prod(shape)),
         )
         self._value = array
@@ -247,17 +360,34 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
         if value is None:
             return
 
+        if self._is_character_array() and not np.issubdtype(value.dtype, np.bytes_):
+            raise TypeError("Character strings must be bytes (S dtype)")
+
         shape = np.shape(value)
+
+        if (
+            self._is_character_array()
+            and self._sym.properties.typespec.charlen.value <= 0
+        ):
+            strlen = int(np.asarray(value).dtype.itemsize)
+            if strlen <= 0:
+                strlen = 1
+            self.base.value = b" " * strlen
 
         self._allocate(shape)
 
         self._value = (
-            np.asfortranarray(value).astype(self.base.dtype, copy=False).ravel("F")
+            np.asfortranarray(value)
+            .astype(self._array_dtype(value), copy=False)
+            .ravel("F")
         )
+        elem_size = ctypes.sizeof(self.base.ctype)
+        if self._is_character_array():
+            elem_size = int(self._array_dtype(value).itemsize)
         copy_array(
             self._value.ctypes.data,
             self._ctype.base_addr,
-            ctypes.sizeof(self.base.ctype),
+            elem_size,
             int(np.prod(shape)),
         )
 
@@ -311,6 +441,9 @@ class ftype_assumed_rank(ftype_assumed_shape, metaclass=ABCMeta):
         if value is None:
             return
 
+        if self._is_character_array() and not np.issubdtype(value.dtype, np.bytes_):
+            raise TypeError("Character strings must be bytes (S dtype)")
+
         shape = np.shape(value)
         self._ndims = len(shape)
         self._ctype = self.ctype()
@@ -318,12 +451,17 @@ class ftype_assumed_rank(ftype_assumed_shape, metaclass=ABCMeta):
         self._allocate(shape)
 
         self._value = (
-            np.asfortranarray(value).astype(self.base.dtype, copy=False).ravel("F")
+            np.asfortranarray(value)
+            .astype(self._array_dtype(value), copy=False)
+            .ravel("F")
         )
+        elem_size = ctypes.sizeof(self.base.ctype)
+        if self._is_character_array():
+            elem_size = int(self._array_dtype(value).itemsize)
         copy_array(
             self._value.ctypes.data,
             self._ctype.base_addr,
-            ctypes.sizeof(self.base.ctype),
+            elem_size,
             int(np.prod(shape)),
         )
 

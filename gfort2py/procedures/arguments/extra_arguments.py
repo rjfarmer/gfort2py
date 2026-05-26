@@ -4,6 +4,7 @@ import ctypes
 from typing import Any
 
 import gfModParser as gf
+import numpy as np
 
 from .arguments import fArguments
 
@@ -28,6 +29,9 @@ class fArgumentsExtra(fArguments):
     def _string_length(self, value: Any) -> int:
         if value is None:
             return 0
+        if isinstance(value, np.ndarray):
+            # For CHARACTER arrays gfortran expects the element width, not count.
+            return int(value.dtype.itemsize)
         if isinstance(value, bytes):
             return len(value)
         if isinstance(value, str):

@@ -47,6 +47,15 @@ class fArg(metaclass=ABCMeta):
             self._alloc_char_len = self._strlen_ctype()(0)
             self._alloc_char_len_ptr = ctypes.pointer(self._alloc_char_len)
 
+    def _uses_scalar_allocatable_character_abi(self) -> bool:
+        if not (self.is_allocatable and self.is_character):
+            return False
+        # Character arrays are descriptor-backed; only scalar deferred-length
+        # characters use the lowered char** + strlen* ABI.
+        if self.definition.is_array:
+            return False
+        return self.definition.properties.typespec.charlen.value <= 0
+
     @property
     def is_optional(self) -> bool:
         return self.definition.properties.attributes.optional
@@ -88,7 +97,7 @@ class fArg(metaclass=ABCMeta):
 
     @ctype.setter
     def ctype(self, value):
-        if self.is_allocatable and self.is_character:
+        if self._uses_scalar_allocatable_character_abi():
             self._setup_allocatable_character()
 
             if value is None:
@@ -132,7 +141,7 @@ class fArg(metaclass=ABCMeta):
             self._ctype = self.base.pointer()
 
     def value(self):
-        if self.is_allocatable and self.is_character:
+        if self._uses_scalar_allocatable_character_abi():
             self._setup_allocatable_character()
 
             if self._alloc_char_data.value is None:

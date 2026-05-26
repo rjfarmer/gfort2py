@@ -21,6 +21,16 @@ _building_dts: set[tuple[str, int]] = set()
 _pointer_owners: dict[tuple[int, str], Any] = {}
 
 
+def _dt_cache_module_key(module_name: str, module_obj=None) -> str:
+    if module_obj is not None:
+        filename = getattr(module_obj, "filename", None)
+        if filename:
+            return str(Path(filename).resolve())
+        return f"module_obj:{id(module_obj)}"
+
+    return f"module_name:{module_name}"
+
+
 def _array_descriptor_ctype(ndims: int) -> type[ctypes.Structure]:
     index_t: Any
     size_t: Any
@@ -170,7 +180,7 @@ class ftype_dt(f_type):
     def _build_ctype(
         cls, module_name: str, type_id: int, module_obj=None
     ) -> type[ctypes.Structure]:
-        key = (module_name, type_id)
+        key = (_dt_cache_module_key(module_name, module_obj=module_obj), type_id)
         if key in _all_dts:
             return _all_dts[key]
 
@@ -347,30 +357,62 @@ class ftype_dt(f_type):
     def _get_array_value(self, comp, value):
         ctype_name = comp.typespec.type.lower()
         kind = int(comp.typespec.kind)
-        base = _find_ftype(ctype_name, kind)()
+        elem_size: int
+        if ctype_name == "character":
+            strlen = int(comp.typespec.charlen.value)
+            if strlen <= 0 and hasattr(value, "dtype"):
+                strlen = int(value.dtype.elem_len)
+            if strlen <= 0:
+                strlen = 1
+            dtype = np.dtype(f"S{strlen}")
+            elem_size = strlen
+        else:
+            base = _find_ftype(ctype_name, kind)()
+            dtype = base.dtype
+            elem_size = ctypes.sizeof(base.ctype)
         if comp.array.is_explicit:
             shape = self._component_shape(comp)
             arr = np.ctypeslib.as_array(value).reshape(shape, order="F")
-            return arr.astype(base.dtype)
+            return arr.astype(dtype)
 
         if value.base_addr is None:
             return None
 
         shape = _shape_from_descriptor(value, comp.array.rank)
-        array = np.zeros(shape, dtype=base.dtype, order="F")
+        array = np.zeros(shape, dtype=dtype, order="F")
         copy_array(
             value.base_addr,
             array.ctypes.data,
-            ctypes.sizeof(base.ctype),
+            elem_size,
             int(np.prod(shape)),
         )
         return array
 
     def _set_array_value(self, comp, value, input_value):
+        if input_value is None:
+            if comp.array.is_explicit:
+                raise ValueError("Explicit-shape array component must not be None")
+            return
+
         ctype_name = comp.typespec.type.lower()
         kind = int(comp.typespec.kind)
-        base = _find_ftype(ctype_name, kind)()
-        array = np.asfortranarray(input_value).astype(base.dtype, copy=False)
+        elem_size: int
+        if ctype_name == "character":
+            if not np.issubdtype(np.asarray(input_value).dtype, np.bytes_):
+                raise TypeError("Character strings must be bytes (S dtype)")
+            strlen = int(comp.typespec.charlen.value)
+            if strlen <= 0:
+                strlen = int(np.asarray(input_value).dtype.itemsize)
+            if strlen <= 0:
+                strlen = 1
+            dtype = np.dtype(f"S{strlen}")
+            elem_size = strlen
+        else:
+            base = _find_ftype(ctype_name, kind)()
+            dtype = base.dtype
+            elem_size = ctypes.sizeof(base.ctype)
+
+        array = np.asfortranarray(input_value).astype(dtype, copy=False)
 
         if comp.array.is_explicit:
             shape = self._component_shape(comp)
@@ -381,7 +423,7 @@ class ftype_dt(f_type):
             copy_array(
                 flat.ctypes.data,
                 ctypes.addressof(value),
-                ctypes.sizeof(base.ctype),
+                elem_size,
                 int(np.prod(shape)),
             )
             return
@@ -398,7 +440,7 @@ class ftype_dt(f_type):
         copy_array(
             flat.ctypes.data,
             value.base_addr,
-            ctypes.sizeof(base.ctype),
+            elem_size,
             int(np.prod(shape)),
         )
 
