@@ -48,8 +48,7 @@ jobs:
           run: |
             /usr/bin/python3.12 -m pip install --upgrade pip
             /usr/bin/python3.12 -m pip install --upgrade --user build wheel 
-            /usr/bin/python3.12 -m pip install --upgrade --user pytest dataclasses_json platformdirs importlib_metadata gfModParser
-            cygpath -w $(/usr/bin/python3.12 -c 'import dataclasses_json;print(dataclasses_json.__file__)')
+            /usr/bin/python3.12 -m pip install --upgrade --user pytest platformdirs importlib_metadata gfModParser
         - name: Install 
           shell: "C:\\tools\\cygwin\\bin\\bash.exe -o igncr -eo pipefail {0}"
           run: |
