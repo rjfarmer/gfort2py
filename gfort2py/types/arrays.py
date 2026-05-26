@@ -264,6 +264,8 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
     def _allocate(self, shape):
         code = self.base.allocate(shape)
         args = CompileArgs()
+        if self.base.extra_fflags:
+            args.FFLAGS = f"{args.FFLAGS} {self.base.extra_fflags}".strip()
 
         comp = Compile(code.as_module(), name=code.strhash())
         if not comp.compile(args=args):

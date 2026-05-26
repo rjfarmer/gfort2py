@@ -64,6 +64,7 @@ class f_type(metaclass=ABCMeta):
 
     default: Any = 0
     alloc_strategy: AllocStrategy = AllocStrategy.INTRINSIC
+    extra_fflags: str = ""
     _symbol: gf.Symbol | None = None
     _module_obj: gf.Module | None = None
 

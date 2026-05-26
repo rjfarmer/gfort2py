@@ -9,7 +9,8 @@ from .base import f_type
 
 class ftype_unsigned(f_type):
     ftype = "unsigned"
-    default = 0
+    default = "0u"
+    extra_fflags = "-funsigned"
 
 
 class ftype_unsigned_1(ftype_unsigned):
