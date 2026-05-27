@@ -61,6 +61,44 @@ module ptrs
 	
 	
 	contains
+
+	subroutine sub_set_scalar_pointer_and_get(value_in, value_out)
+		integer, intent(in) :: value_in
+		integer, intent(out) :: value_out
+
+		a_int_target = value_in
+		a_int_point => a_int_target
+		a_int_point = a_int_point * 2
+
+		value_out = a_int_point
+	end subroutine sub_set_scalar_pointer_and_get
+
+	subroutine sub_return_scalar_pointer_arg(value_out)
+		integer, intent(out) :: value_out
+		integer, pointer :: p
+
+		p => a_int_target
+		value_out = p
+	end subroutine sub_return_scalar_pointer_arg
+
+	subroutine sub_set_array_pointer_and_get(values_in, values_out)
+		integer, dimension(5), intent(in) :: values_in
+		integer, dimension(5), intent(out) :: values_out
+
+		e_int_target_1d = values_in + 10
+		d_int_point_1d => e_int_target_1d
+		d_int_point_1d = d_int_point_1d * 2
+
+		values_out = d_int_point_1d
+	end subroutine sub_set_array_pointer_and_get
+
+	subroutine sub_return_array_pointer_arg(values_out)
+		integer, dimension(5), intent(out) :: values_out
+		integer, pointer, dimension(:) :: p
+
+		p => e_int_target_1d
+		values_out = p
+	end subroutine sub_return_array_pointer_arg
 	
 	subroutine sub_set_ptrs()
 	

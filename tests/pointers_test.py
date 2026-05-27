@@ -77,3 +77,33 @@ class TestPtrsMethods:
         v = "abcdefghij"
         x.a_str_target = v
         assert x.a_str_target == v
+
+    @pytest.mark.skip
+    def test_sub_set_scalar_pointer_and_get(self):
+        y = x.sub_set_scalar_pointer_and_get(7)
+
+        assert y.args["value_out"] == 14
+        assert x.a_int_point == 14
+        assert x.a_int_target == 14
+
+    def test_sub_return_scalar_pointer_arg(self):
+        x.sub_set_scalar_pointer_and_get(11)
+
+        y = x.sub_return_scalar_pointer_arg()
+        assert y.args["value_out"] == 22
+
+    def test_sub_set_array_pointer_and_get(self):
+        v = np.arange(1, 6, dtype=np.int32)
+        expected = (v + 10) * 2
+
+        y = x.sub_set_array_pointer_and_get(v)
+        assert np.array_equal(y.args["values_out"], expected)
+        assert np.array_equal(x.d_int_point_1d, expected)
+
+    def test_sub_return_array_pointer_arg(self):
+        v = np.arange(3, 8, dtype=np.int32)
+        expected = (v + 10) * 2
+        x.sub_set_array_pointer_and_get(v)
+
+        y = x.sub_return_array_pointer_arg()
+        assert np.array_equal(y.args["values_out"], expected)
