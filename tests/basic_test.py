@@ -77,11 +77,10 @@ class TestBasicMethods:
     def test_const_real_pi_dp(self):
         assert x.const_real_pi_dp == 3.14
 
-    @pytest.mark.skipIfWindows
-    def test_sub_no_args(self, capfd):
-        x.sub_no_args()
-        out, err = capfd.readouterr()
-        assert out.strip() == "1"
+    def test_sub_no_args(self, fortran_output):
+        with fortran_output() as get_output:
+            x.sub_no_args()
+        assert get_output().strip() == "1"
 
     def test_sub_alter_mod(self):
         y = x.sub_alter_mod()
@@ -107,13 +106,12 @@ class TestBasicMethods:
         y = x.func_int_in_multi(v, w, u)
         assert y.result == v + w + u
 
-    @pytest.mark.skipIfWindows
-    def test_sub_int_in(self, capfd):
+    def test_sub_int_in(self, fortran_output):
         v = 5
 
-        y = x.sub_int_in(v)
-        out, err = capfd.readouterr()
-        assert int(out) == 2 * v
+        with fortran_output() as get_output:
+            y = x.sub_int_in(v)
+        assert int(get_output()) == 2 * v
 
     def test_func_int_no_args(self):
         y = x.func_int_no_args()
@@ -127,36 +125,28 @@ class TestBasicMethods:
         y = x.func_real_dp_no_args()
         assert y.result == 4.0
 
-    @pytest.mark.skipIfWindows
-    def test_sub_int_out(self, capfd):
+    def test_sub_int_out(self):
         v = 5
 
         y = x.sub_int_out(v)
-        out, err = capfd.readouterr()
         assert y.args == {"x": 1}
 
-    @pytest.mark.skipIfWindows
-    def test_sub_int_inout(self, capfd):
+    def test_sub_int_inout(self):
         v = 5
 
         y = x.sub_int_inout(v)
-        out, err = capfd.readouterr()
         assert y.args == {"x": 2 * v}
 
-    @pytest.mark.skipIfWindows
-    def test_sub_int_no_intent(self, capfd):
+    def test_sub_int_no_intent(self):
         v = 5
 
         y = x.sub_int_no_intent(v)
-        out, err = capfd.readouterr()
         assert y.args == {"x": 2 * v}
 
-    @pytest.mark.skipIfWindows
-    def test_sub_real_inout(self, capfd):
+    def test_sub_real_inout(self):
         v = 5.0
 
         y = x.sub_real_inout(v)
-        out, err = capfd.readouterr()
         assert y.args == {"x": 2 * v}
 
     def test_func_return_res(self):
@@ -165,39 +155,35 @@ class TestBasicMethods:
         y = x.func_return_res(10)
         assert y.result == False
 
-    @pytest.mark.skipIfWindows
-    def test_sub_int_p(self, capfd):
-        y = x.sub_int_p(1)
-        out, err = capfd.readouterr()
-        assert out.strip() == "1"
+    def test_sub_int_p(self, fortran_output):
+        with fortran_output() as get_output:
+            y = x.sub_int_p(1)
+        assert get_output().strip() == "1"
         assert y.args["zzz"] == 5
 
-    @pytest.mark.skipIfWindows
-    def test_sub_real_p(self, capfd):
-        y = x.sub_real_p(1.0)
-        out, err = capfd.readouterr()
-        assert out.strip() == "1.00"
+    def test_sub_real_p(self, fortran_output):
+        with fortran_output() as get_output:
+            y = x.sub_real_p(1.0)
+        assert get_output().strip() == "1.00"
         assert y.args["zzz"] == 5.0
 
-    @pytest.mark.skipIfWindows
-    def test_sub_opt(self, capfd):
-        y = x.sub_int_opt(1)
-        out, err = capfd.readouterr()
-        assert out.strip() == "100"
+    def test_sub_opt(self, fortran_output):
+        with fortran_output() as get_output:
+            y = x.sub_int_opt(1)
+        assert get_output().strip() == "100"
 
-        y = x.sub_int_opt(None)
-        out, err = capfd.readouterr()
-        assert out.strip() == "200"
+        with fortran_output() as get_output:
+            y = x.sub_int_opt(None)
+        assert get_output().strip() == "200"
 
-    @pytest.mark.skipIfWindows
-    def test_sub_opt_val(self, capfd):
-        y = x.sub_int_opt_val(1)
-        out, err = capfd.readouterr()
-        assert out.strip() == "100"
+    def test_sub_opt_val(self, fortran_output):
+        with fortran_output() as get_output:
+            y = x.sub_int_opt_val(1)
+        assert get_output().strip() == "100"
 
-        y = x.sub_int_opt_val(None)
-        out, err = capfd.readouterr()
-        assert out.strip() == "200"
+        with fortran_output() as get_output:
+            y = x.sub_int_opt_val(None)
+        assert get_output().strip() == "200"
 
     def test_second_mod(self):
         y = x.sub_use_mod()
@@ -212,15 +198,14 @@ class TestBasicMethods:
         z = x.func_int_in(x.a_int)
         assert z.result == 10
 
-    @pytest.mark.skipIfWindows
-    def test_sub_man_args(self, capfd):
+    def test_sub_man_args(self, fortran_output):
         # if this doesn't seg fault we are good
-        x.sub_many_args(
-            1, 2, 3, 4, True, False, True, "abc", "def", "ghj", "qwerty", "zxcvb"
-        )
-        out, err = capfd.readouterr()
+        with fortran_output() as get_output:
+            x.sub_many_args(
+                1, 2, 3, 4, True, False, True, "abc", "def", "ghj", "qwerty", "zxcvb"
+            )
         assert (
-            out.strip()
+            get_output().strip()
             == "1.00000000       2.00000000       3.00000000       4.00000000     T F T abc       defghjqwertyzxcvb"
         )
 
