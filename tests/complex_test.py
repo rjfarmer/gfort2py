@@ -12,13 +12,6 @@ import pytest
 
 import gfort2py as gf
 
-try:
-    import pyquadp as pyq
-
-    PYQ_IMPORTED = True
-except ImportError:
-    PYQ_IMPORTED = False
-
 SO = f"./tests/build/complex.{gf.lib_ext()}"
 MOD = "./tests/build/comp.mod"
 

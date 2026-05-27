@@ -15,6 +15,8 @@ module quad
 		real(qp), parameter :: const_real_qp=1.0_qp
 
 		real(qp)          :: a_real_qp
+		real(qp), dimension(4) :: a_real_qp_arr = [1.0_qp, 2.0_qp, 3.0_qp, 4.0_qp]
+		real(qp), allocatable, dimension(:) :: a_real_qp_alloc_arr
 		
 		! Set variables
 		real(qp)          :: a_real_qp_set=9.0_qp
@@ -22,6 +24,12 @@ module quad
 		complex(qp), parameter  :: const_cmplx_qp=(1.0_qp,1.0_qp)
 		complex(qp)       :: a_cmplx_qp
 		complex(qp)       :: a_cmplx_qp_set
+		complex(qp), dimension(4) :: a_cmplx_qp_arr = (/ &
+			cmplx(1.0_qp, -1.0_qp, kind=qp), &
+			cmplx(2.0_qp, -2.0_qp, kind=qp), &
+			cmplx(3.0_qp, -3.0_qp, kind=qp), &
+			cmplx(4.0_qp, -4.0_qp, kind=qp) /)
+		complex(qp), allocatable, dimension(:) :: a_cmplx_qp_alloc_arr
 
         real(qp),pointer           :: a_real_qp_point => null()
         
@@ -51,6 +59,138 @@ module quad
 			x = y * 3
 		
 		end subroutine sub_test_quad
+
+
+		subroutine sub_qp_scalar_inout(x)
+			real(qp), intent(inout) :: x
+
+			x = x * 2
+
+		end subroutine sub_qp_scalar_inout
+
+
+		subroutine sub_qcmplx_qp_scalar_inout(x)
+			complex(qp), intent(inout) :: x
+
+			x = x + (1.0_qp, -1.0_qp)
+
+		end subroutine sub_qcmplx_qp_scalar_inout
+
+
+		subroutine sub_alloc_qp_module_arr(n, val)
+			integer, intent(in) :: n
+			real(qp), intent(in) :: val
+
+			if (allocated(a_real_qp_alloc_arr)) deallocate(a_real_qp_alloc_arr)
+			allocate(a_real_qp_alloc_arr(n))
+			a_real_qp_alloc_arr = val
+
+		end subroutine sub_alloc_qp_module_arr
+
+
+		subroutine sub_alloc_qcmplx_qp_module_arr(n, val)
+			integer, intent(in) :: n
+			complex(qp), intent(in) :: val
+
+			if (allocated(a_cmplx_qp_alloc_arr)) deallocate(a_cmplx_qp_alloc_arr)
+			allocate(a_cmplx_qp_alloc_arr(n))
+			a_cmplx_qp_alloc_arr = val
+
+		end subroutine sub_alloc_qcmplx_qp_module_arr
+
+
+		logical function func_qp_explicit_arr_1d(x) result(res)
+			real(qp), dimension(4), intent(inout) :: x
+
+			res = .false.
+			if (x(2) == 2.0_qp) res = .true.
+			x = x + 1.0_qp
+
+		end function func_qp_explicit_arr_1d
+
+
+		logical function func_qp_assumed_shape_arr_1d(x) result(res)
+			real(qp), dimension(:), intent(inout) :: x
+
+			res = .false.
+			if (size(x) >= 2) res = (x(2) == 2.0_qp)
+			x = x + 2.0_qp
+
+		end function func_qp_assumed_shape_arr_1d
+
+
+		logical function func_qp_assumed_size_arr_1d(x, n) result(res)
+			real(qp), intent(inout) :: x(*)
+			integer, intent(in) :: n
+
+			res = .false.
+			if (n >= 2) res = (x(2) == 2.0_qp)
+			x(1:n) = x(1:n) + 3.0_qp
+
+		end function func_qp_assumed_size_arr_1d
+
+
+		logical function func_qp_assumed_rank_arr(x) result(res)
+			real(qp), dimension(..), intent(in) :: x
+
+			res = .false.
+			select rank(x)
+			rank(1)
+				if (size(x) >= 2) res = (x(2) == 2.0_qp)
+			rank(2)
+				if (size(x,1) >= 2 .and. size(x,2) >= 1) res = (x(2,1) == 2.0_qp)
+			rank default
+				res = .false.
+			end select
+
+		end function func_qp_assumed_rank_arr
+
+
+		logical function func_qcmplx_qp_explicit_arr_1d(x) result(res)
+			complex(qp), dimension(4), intent(inout) :: x
+
+			res = .false.
+			if (x(2) == (2.0_qp, -2.0_qp)) res = .true.
+			x = x + (1.0_qp, 1.0_qp)
+
+		end function func_qcmplx_qp_explicit_arr_1d
+
+
+		logical function func_qcmplx_qp_assumed_shape_arr_1d(x) result(res)
+			complex(qp), dimension(:), intent(inout) :: x
+
+			res = .false.
+			if (size(x) >= 2) res = (x(2) == (2.0_qp, -2.0_qp))
+			x = x + (2.0_qp, 0.0_qp)
+
+		end function func_qcmplx_qp_assumed_shape_arr_1d
+
+
+		logical function func_qcmplx_qp_assumed_size_arr_1d(x, n) result(res)
+			complex(qp), intent(inout) :: x(*)
+			integer, intent(in) :: n
+
+			res = .false.
+			if (n >= 2) res = (x(2) == (2.0_qp, -2.0_qp))
+			x(1:n) = x(1:n) + (3.0_qp, -3.0_qp)
+
+		end function func_qcmplx_qp_assumed_size_arr_1d
+
+
+		logical function func_qcmplx_qp_assumed_rank_arr(x) result(res)
+			complex(qp), dimension(..), intent(in) :: x
+
+			res = .false.
+			select rank(x)
+			rank(1)
+				if (size(x) >= 2) res = (x(2) == (2.0_qp, -2.0_qp))
+			rank(2)
+				if (size(x,1) >= 2 .and. size(x,2) >= 1) res = (x(2,1) == (2.0_qp, -2.0_qp))
+			rank default
+				res = .false.
+			end select
+
+		end function func_qcmplx_qp_assumed_rank_arr
 
 
 		real(qp) function func_test_quad_ret()

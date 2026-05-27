@@ -13,14 +13,6 @@ import pytest
 
 import gfort2py as gf
 
-try:
-    import pyquadp as pyq
-
-    PYQ_IMPORTED = True
-except ImportError:
-    PYQ_IMPORTED = False
-
-
 gf_version = gf.utils.gfortran_version(gf.utils.fc_path())
 
 if gf_version < gf.utils.Version("15.0.0"):
