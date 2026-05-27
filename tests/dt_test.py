@@ -12,8 +12,9 @@ import pytest
 
 import gfort2py as gf
 
-SO = f"./tests/build/dt.{gf.lib_ext()}"
-MOD = "./tests/build/dt.mod"
+from .conftest import build_paths
+
+SO, MOD = build_paths("dt", "dt")
 
 x = gf.fFort(SO, MOD)
 

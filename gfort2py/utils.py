@@ -11,6 +11,8 @@ from typing import Type
 
 from packaging.version import Version
 
+from .compilation.platform import PlatformError, factory_platform
+
 # from .fUnary import run_unary
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
@@ -109,13 +111,7 @@ def lib_ext() -> str:
     """
     Determine shared library extension for a current os_platform
     """
-    os_platform = platform.system()
-    if os_platform == "Darwin":
-        return "dylib"
-    elif os_platform == "Windows" or "CYGWIN" in os_platform:
-        return "dll"
-    else:
-        return "so"
+    return factory_platform().library_ext
 
 
 def fc_path() -> str:
@@ -131,29 +127,18 @@ def fc_path() -> str:
         if os.path.exists("/usr/local/bin/gfortran"):
             return "/usr/local/bin/gfortran"
 
-    cmd = "where" if os_platform == "Windows" else "which"
-    result = subprocess.run([cmd, "gfortran"], capture_output=True, check=False)
-    stdout = result.stdout.decode().strip()
-    parts = stdout.split()
-
-    if not parts:
-        raise ValueError("Did not find a gfortran compilier")
-
-    fc = None
     if _TEST_FLAG and os_platform == "Windows":
-        for i in parts:
-            if "Chocolatey" in i:
-                # Hardcode the choice for testing
-                fc = i.strip()
-                break
-    else:
-        fc = parts[0].strip()
+        # Keep deterministic test behavior when where.exe returns multiple paths.
+        result = subprocess.run(["where", "gfortran"], capture_output=True, check=False)
+        parts = result.stdout.decode().split()
+        for item in parts:
+            if "Chocolatey" in item:
+                return item.strip()
 
-    if fc is None:
-        raise ValueError("Did not find a gfortran compilier")
-
-    # Windows may return several possible paths
-    return fc
+    try:
+        return str(factory_platform().fcpath())
+    except (PlatformError, FileNotFoundError, OSError) as exc:
+        raise ValueError("Did not find a gfortran compilier") from exc
 
 
 def is_64bit() -> bool:

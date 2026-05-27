@@ -12,8 +12,9 @@ import pytest
 
 import gfort2py as gf
 
-SO = f"./tests/build/pointers.{gf.lib_ext()}"
-MOD = "./tests/build/ptrs.mod"
+from .conftest import build_paths
+
+SO, MOD = build_paths("pointers", "ptrs")
 
 x = gf.fFort(SO, MOD)
 

@@ -12,8 +12,9 @@ import pytest
 
 import gfort2py as gf
 
-SO = f"./tests/build/dummy_arrays.{gf.lib_ext()}"
-MOD = "./tests/build/dummy_arrays.mod"
+from .conftest import build_paths
+
+SO, MOD = build_paths("dummy_arrays", "dummy_arrays")
 
 x = gf.fFort(SO, MOD)
 

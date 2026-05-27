@@ -7,8 +7,9 @@ import pytest
 
 import gfort2py as gf
 
-MOD = Path("./tests/build/basic.mod")
-SO = Path(f"./tests/build/basic.{gf.lib_ext()}")
+from .conftest import build_paths
+
+SO, MOD = build_paths("basic", "basic", as_path=True)
 
 
 def _basic_mod_text() -> str:

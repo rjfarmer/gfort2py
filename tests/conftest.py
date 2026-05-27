@@ -3,9 +3,23 @@
 import os
 import platform
 import subprocess
+from pathlib import Path
 
 import _pytest.skipping
 import pytest
+
+import gfort2py as gf
+
+
+def build_paths(
+    lib_name: str, mod_name: str | None = None, *, as_path: bool = False
+) -> tuple[str, str] | tuple[Path, Path]:
+    mod_stem = lib_name if mod_name is None else mod_name
+    so = f"./tests/build/{lib_name}.{gf.lib_ext()}"
+    mod = f"./tests/build/{mod_stem}.mod"
+    if as_path:
+        return Path(so), Path(mod)
+    return so, mod
 
 
 def pytest_configure(config):

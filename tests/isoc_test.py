@@ -12,8 +12,9 @@ import pytest
 
 import gfort2py as gf
 
-SO = f"./tests/build/isoc.{gf.lib_ext()}"
-MOD = "./tests/build/isoc.mod"
+from .conftest import build_paths
+
+SO, MOD = build_paths("isoc", "isoc")
 
 x = gf.fFort(SO, MOD)
 

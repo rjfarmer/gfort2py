@@ -10,10 +10,11 @@ import pytest
 
 import gfort2py as gf
 
+from .conftest import build_paths
+
 pyq = pytest.importorskip("pyquadp", reason="Requires pyquadp to be installed")
 
-SO = Path(f"./tests/build/quad.{gf.lib_ext()}")
-MOD = Path("./tests/build/quad.mod")
+SO, MOD = build_paths("quad", "quad", as_path=True)
 
 x = gf.fFort(SO, MOD)
 

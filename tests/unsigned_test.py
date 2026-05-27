@@ -13,13 +13,14 @@ import pytest
 
 import gfort2py as gf
 
+from .conftest import build_paths
+
 gf_version = gf.utils.gfortran_version(gf.utils.fc_path())
 
 if gf_version < gf.utils.Version("15.0.0"):
     pytest.skip("Requires gfortran 15 or later", allow_module_level=True)
 
-SO = Path(f"./tests/build/unsign.{gf.lib_ext()}")
-MOD = Path("./tests/build/unsign.mod")
+SO, MOD = build_paths("unsign", "unsign", as_path=True)
 
 x = gf.fFort(SO, MOD)
 
