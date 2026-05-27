@@ -23,7 +23,7 @@ def test_fc_path_raises_when_lookup_is_empty(monkeypatch):
         gf_utils.fc_path()
         assert False, "Expected ValueError"
     except ValueError as exc:
-        assert "Did not find a gfortran compilier" in str(exc)
+        assert "Did not find a gfortran compiler" in str(exc)
 
 
 def test_compile_args_preserve_quoted_flags(monkeypatch, tmp_path):

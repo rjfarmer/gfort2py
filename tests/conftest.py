@@ -5,7 +5,6 @@ import platform
 import subprocess
 from pathlib import Path
 
-import _pytest.skipping
 import pytest
 
 import gfort2py as gf
@@ -23,6 +22,7 @@ def build_paths(
 
 
 def pytest_configure(config):
+    _ = config
     subprocess.call(["make"], cwd="tests")
 
 
@@ -30,6 +30,6 @@ def pytest_runtest_setup(item):
     is_windows = platform.system() == "Windows"
     is_github = "GITHUB_ACTIONS" in os.environ
 
-    for mark in item.iter_markers(name="skipIfWindows"):
+    for _ in item.iter_markers(name="skipIfWindows"):
         if is_github and is_windows:
             pytest.skip()

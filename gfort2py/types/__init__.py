@@ -152,3 +152,8 @@ class ftype_strlen(ftype_integer):
 
 class ftype_optional(f_type):
     ctype = ctypes.c_byte
+
+
+# Backward-compatible aliases exported via __all__.
+f_strlen = ftype_strlen
+f_optional = ftype_optional
