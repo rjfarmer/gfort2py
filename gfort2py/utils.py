@@ -125,11 +125,12 @@ def fc_path() -> str:
             return "/usr/local/bin/gfortran"
 
     cmd = "where" if os_platform == "Windows" else "which"
-    x = os.path.normpath(
-        subprocess.run([cmd, "gfortran"], capture_output=True).stdout.decode().strip()
-    )
+    result = subprocess.run([cmd, "gfortran"], capture_output=True, check=False)
+    stdout = result.stdout.decode().strip()
+    parts = stdout.split()
 
-    parts = x.split()
+    if not parts:
+        raise ValueError("Did not find a gfortran compilier")
 
     fc = None
     if _TEST_FLAG and os_platform == "Windows":

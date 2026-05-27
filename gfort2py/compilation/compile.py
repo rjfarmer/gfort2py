@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 
+import shlex
 import subprocess
 import uuid
 from dataclasses import asdict, dataclass
@@ -20,6 +21,14 @@ class CompileArgs:
     def __str__(self):
         return " ".join(asdict(self).values()).strip()
 
+    def argv(self) -> list[str]:
+        """Return compiler/linker flags as argv tokens preserving quoting."""
+        argv: list[str] = []
+        for value in asdict(self).values():
+            if value:
+                argv.extend(shlex.split(value))
+        return argv
+
 
 class Compile:
     def __init__(self, text: str, name: str, fc=None):
@@ -32,8 +41,9 @@ class Compile:
             f"lib{self.name}_{uuid.uuid4().hex[:8]}.{self.platform.library_ext}"
         )
 
-    def compile(self, *, args: CompileArgs = CompileArgs()) -> bool:
+    def compile(self, *, args: CompileArgs | None = None) -> bool:
         # Compile code, reading from stdin
+        compile_args = CompileArgs() if args is None else args
         p = subprocess.run(
             [
                 str(self.platform.fcpath(self._fc)),
@@ -41,7 +51,7 @@ class Compile:
                 str(self.library_filename),
                 "-x",
                 "f95",
-                *str(args).split(),
+                *compile_args.argv(),
                 *self.platform.library_flags,
                 "-J",
                 str(output_folder()),
