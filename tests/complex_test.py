@@ -60,3 +60,101 @@ class TestComplexMethods:
         v = complex(1.0, 1.0)
         y = x.func_ret_cmplx(v)
         assert y.result == v * 5
+
+    @pytest.mark.xfail(
+        reason="Complex module array variable roundtrip currently fails dtype conversion from structured real/imag buffers",
+    )
+    def test_a_cmplx_arr(self):
+        v = np.array(
+            [
+                complex(1.0, 1.0),
+                complex(2.0, -1.0),
+                complex(3.0, 2.0),
+                complex(4.0, 3.0),
+                complex(5.0, -4.0),
+            ],
+            dtype=np.complex64,
+        )
+        x.a_cmplx_arr = v
+        assert np.array_equal(x.a_cmplx_arr, v)
+
+    @pytest.mark.xfail(
+        reason="Complex(dp) module array variable roundtrip currently fails dtype conversion from structured real/imag buffers",
+    )
+    def test_a_cmplx_dp_arr(self):
+        v = np.array(
+            [
+                [complex(1.0, 1.0), complex(2.0, -1.0), complex(3.0, 2.0)],
+                [complex(4.0, 3.0), complex(5.0, -4.0), complex(6.0, 5.0)],
+            ],
+            dtype=np.complex128,
+            order="F",
+        )
+        x.a_cmplx_dp_arr = v
+        assert np.array_equal(x.a_cmplx_dp_arr, v)
+
+    @pytest.mark.xfail(
+        reason="Complex explicit-shape array argument output conversion currently fails dtype conversion",
+    )
+    def test_func_cmplx_explicit_arr_2d(self):
+        v = np.zeros((2, 3), dtype=np.complex64, order="F")
+        v[1, 0] = complex(2.0, 1.0)
+        y = x.func_cmplx_explicit_arr_2d(v)
+        assert y.result
+        assert y.args["x"][0, 0] == complex(9.0, -1.0)
+
+    def test_func_cmplx_assumed_shape_arr_1d(self):
+        v = np.zeros([5], dtype=np.complex64)
+        v[0] = complex(2.0, 1.0)
+        y = x.func_cmplx_assumed_shape_arr_1d(v)
+        assert y.result
+        assert np.array_equal(
+            y.args["x"], np.array([complex(5.0, 2.0)] * 5, dtype=np.complex64)
+        )
+
+    @pytest.mark.xfail(
+        reason="Complex assumed-size array argument output conversion currently fails dtype conversion",
+    )
+    def test_func_cmplx_assumed_size_arr_1d(self):
+        v = np.zeros([5], dtype=np.complex64)
+        v[1] = complex(3.0, -2.0)
+        y = x.func_cmplx_assumed_size_arr_1d(v)
+        assert y.result
+        assert y.args["x"][0] == complex(11.0, -7.0)
+
+    def test_func_cmplx_assumed_rank_arr_1d(self):
+        v = np.zeros([5], dtype=np.complex64)
+        v[0] = complex(2.0, 1.0)
+        y = x.func_cmplx_assumed_rank_arr(v)
+        assert y.result
+
+    def test_func_cmplx_assumed_rank_arr_2d(self):
+        v = np.zeros((2, 3), dtype=np.complex64, order="F")
+        v[1, 0] = complex(2.0, 1.0)
+        y = x.func_cmplx_assumed_rank_arr(v)
+        assert y.result
+
+    def test_func_ret_cmplx_arr_1d(self):
+        y = x.func_ret_cmplx_arr_1d()
+        assert np.array_equal(
+            y.result,
+            np.array(
+                [complex(1.0, -1.0), complex(2.0, -2.0), complex(3.0, -3.0)],
+                dtype=np.complex64,
+            ),
+        )
+
+    def test_func_ret_cmplx_arr_n(self):
+        y = x.func_ret_cmplx_arr_n(4)
+        assert np.array_equal(
+            y.result,
+            np.array(
+                [
+                    complex(1.0, 2.0),
+                    complex(2.0, 3.0),
+                    complex(3.0, 4.0),
+                    complex(4.0, 5.0),
+                ],
+                dtype=np.complex64,
+            ),
+        )
