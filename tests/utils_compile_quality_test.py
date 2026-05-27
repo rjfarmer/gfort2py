@@ -10,6 +10,7 @@ from gfort2py.compilation.compile import Compile, CompileArgs
 
 def test_fc_path_raises_when_lookup_is_empty(monkeypatch):
     monkeypatch.delenv("FC", raising=False)
+    monkeypatch.setattr(gf_utils.platform, "system", lambda: "Linux")
 
     def fake_run(*_args, **_kwargs):
         return subprocess.CompletedProcess(
