@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 
+import os
 import shlex
 import subprocess
 import uuid
@@ -24,9 +25,10 @@ class CompileArgs:
     def argv(self) -> list[str]:
         """Return compiler/linker flags as argv tokens preserving quoting."""
         argv: list[str] = []
+        posix = os.name != "nt"
         for value in asdict(self).values():
             if value:
-                argv.extend(shlex.split(value))
+                argv.extend(shlex.split(value, posix=posix))
         return argv
 
 

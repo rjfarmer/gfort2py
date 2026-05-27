@@ -91,3 +91,9 @@ def test_compile_uses_fresh_default_args_each_call(monkeypatch, tmp_path):
 def test_strlen_ctype_matches_pointer_size():
     expected = ctypes.c_int64 if ctypes.sizeof(ctypes.c_void_p) == 8 else ctypes.c_int32
     assert gf_utils.strlen_ctype() is expected
+
+
+def test_compile_args_preserve_windows_backslashes(monkeypatch):
+    monkeypatch.setattr("gfort2py.compilation.compile.os.name", "nt")
+    args = CompileArgs(INCLUDE_FLAGS="-Itests\\build")
+    assert "-Itests\\build" in args.argv()
