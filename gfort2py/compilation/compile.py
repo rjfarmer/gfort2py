@@ -25,10 +25,14 @@ class CompileArgs:
     def argv(self) -> list[str]:
         """Return compiler/linker flags as argv tokens preserving quoting."""
         argv: list[str] = []
-        posix = os.name != "nt"
         for value in asdict(self).values():
             if value:
-                argv.extend(shlex.split(value, posix=posix))
+                split_value = value
+                if os.name == "nt":
+                    # In POSIX splitting mode, backslashes are escape characters.
+                    # Doubling preserves literal Windows path separators.
+                    split_value = value.replace("\\", "\\\\")
+                argv.extend(shlex.split(split_value, posix=True))
         return argv
 
 

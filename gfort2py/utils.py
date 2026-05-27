@@ -138,7 +138,7 @@ def fc_path() -> str:
     try:
         return str(factory_platform().fcpath())
     except (PlatformError, FileNotFoundError, OSError) as exc:
-        raise ValueError("Did not find a gfortran compilier") from exc
+        raise ValueError("Did not find a gfortran compiler") from exc
 
 
 def is_64bit() -> bool:
