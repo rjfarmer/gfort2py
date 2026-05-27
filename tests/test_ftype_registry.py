@@ -9,9 +9,11 @@ import pytest
 from gfort2py.types import (
     FortranSymbol,
     _ftype_registry,
+    factory,
     find_ftype,
     register_ftype,
 )
+from gfort2py.types.arrays import ftype_assumed_size_array
 from gfort2py.types.character import ftype_character
 from gfort2py.types.complex import ftype_complex_4, ftype_complex_8, ftype_complex_16
 from gfort2py.types.integer import (
@@ -174,3 +176,28 @@ class TestFortranSymbolProtocol:
                 return "m"
 
         assert isinstance(Full(), FortranSymbol)
+
+
+class TestFactoryFallbacks:
+    def test_explicit_array_with_runtime_bounds_uses_assumed_size(self):
+        class RaisingPyshape:
+            @property
+            def pyshape(self):
+                raise ValueError("unresolved bound")
+
+            is_explicit = True
+            is_deferred = False
+            is_assumed_rank = False
+
+        class Properties:
+            array_spec = RaisingPyshape()
+
+        class Symbol:
+            type = "integer"
+            kind = 4
+            is_array = True
+            is_dt = False
+            properties = Properties()
+
+        cls = factory(Symbol())
+        assert issubclass(cls, ftype_assumed_size_array)

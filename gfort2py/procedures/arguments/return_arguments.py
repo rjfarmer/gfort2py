@@ -9,6 +9,7 @@ import numpy as np
 from ...types import factory, find_ftype
 from ...types.arrays import ftype_assumed_shape
 from ...types.dt import ftype_dt_assumed_shape
+from ...utils import strlen_ctype
 
 
 class fReturnArguments:
@@ -47,11 +48,6 @@ class fReturnCharArguments(fReturnArguments):
         self._buffer = None
         self._result_type = None
 
-    def _strlen_ctype(self):
-        if ctypes.sizeof(ctypes.c_void_p) == 8:
-            return ctypes.c_int64
-        return ctypes.c_int32
-
     def _build_return_type(self):
         cls = factory(self.return_symbol)
         c = cls.__new__(cls)
@@ -71,7 +67,7 @@ class fReturnCharArguments(fReturnArguments):
         self._buffer = self._result_type._ctype
 
         self._ctypes.append(self._buffer)
-        self._ctypes.append(self._strlen_ctype()(length))
+        self._ctypes.append(strlen_ctype()(length))
 
     def get_values(self) -> list[Any]:
         if self._result_type is None or self._buffer is None:
@@ -164,7 +160,7 @@ class fReturnArrayArguments(fReturnArguments):
             return tuple(
                 int(i) for i in self.return_symbol.properties.array_spec.pyshape
             )
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             pass
 
         ctx = self._arg_context()

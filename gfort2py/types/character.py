@@ -9,7 +9,7 @@ import gfModParser as gf
 import numpy as np
 
 from ..compilation import Modulise
-from ..utils import get_c_runtime
+from ..utils import get_c_runtime, strlen_ctype
 from .base import f_type
 
 __all__ = ["ftype_character"]
@@ -23,12 +23,6 @@ class ftype_character(f_type, metaclass=ABCMeta):
         self._alloc_len_ctype = None
         self._value = None
         super().__init__(value=value)
-
-    @staticmethod
-    def _strlen_ctype():
-        if ctypes.sizeof(ctypes.c_void_p) == 8:
-            return ctypes.c_int64
-        return ctypes.c_int32
 
     @staticmethod
     def _charlen_as_int(value) -> int | None:
@@ -62,7 +56,7 @@ class ftype_character(f_type, metaclass=ABCMeta):
                 module_and_rest = name[2:]
                 len_symbol = f"_F.{module_and_rest}"
                 try:
-                    c._alloc_len_ctype = cls._strlen_ctype().in_dll(lib, len_symbol)
+                    c._alloc_len_ctype = strlen_ctype().in_dll(lib, len_symbol)
                 except ValueError:
                     c._alloc_len_ctype = None
             return c

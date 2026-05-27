@@ -33,6 +33,13 @@ def get_c_runtime() -> ctypes.CDLL:
     return ctypes.CDLL(None)
 
 
+def strlen_ctype():
+    """Return the ABI integer ctype used for hidden string-length arguments."""
+    if ctypes.sizeof(ctypes.c_void_p) == 8:
+        return ctypes.c_int64
+    return ctypes.c_int32
+
+
 # def resolve_other_args(obj, other_args, module, lib, fProc):
 #     """
 #     We want to iterate over the components of obj

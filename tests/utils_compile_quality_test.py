@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0+
 
+import ctypes
 import subprocess
 from pathlib import Path
 
@@ -85,3 +86,8 @@ def test_compile_uses_fresh_default_args_each_call(monkeypatch, tmp_path):
     assert c.compile()
     assert c.compile()
     assert len(call_commands) == 2
+
+
+def test_strlen_ctype_matches_pointer_size():
+    expected = ctypes.c_int64 if ctypes.sizeof(ctypes.c_void_p) == 8 else ctypes.c_int32
+    assert gf_utils.strlen_ctype() is expected

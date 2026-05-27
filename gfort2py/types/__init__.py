@@ -104,7 +104,7 @@ def factory(obj: gf.Symbol) -> type[f_type]:
             try:
                 _ = obj.properties.array_spec.pyshape
                 base_arr_cls = ftype_explicit_array
-            except Exception:
+            except (AttributeError, TypeError, ValueError):
                 # Bounds depend on runtime arguments (e.g. 2*n, 2**n).
                 base_arr_cls = ftype_assumed_size_array
         elif is_assumed_rank:

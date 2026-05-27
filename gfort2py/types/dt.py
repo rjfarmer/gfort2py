@@ -103,7 +103,52 @@ def _shape_from_descriptor(desc: ctypes.Structure, ndims: int) -> tuple[int, ...
     return tuple(int(i) for i in shape)
 
 
-class ftype_dt(f_type):
+class _DTModuleResolutionMixin:
+    def _resolved_symbol_module(self) -> str:
+        # Access bound symbol directly from instance state; touching the
+        # `_sym` property can raise when no symbol is bound.
+        symbol = self.__dict__.get("_symbol", None)
+        return getattr(symbol, "module", "")
+
+    def _resolved_use_module_name(self) -> str:
+        sym_module = self._resolved_symbol_module()
+        if sym_module not in {"", "."}:
+            return sym_module
+
+        module_obj = getattr(self, "_module_obj", None)
+        if module_obj is not None:
+            try:
+                first_key = next(iter(module_obj.keys()))
+                name = module_obj[first_key].module
+                if name not in {"", "."}:
+                    return name
+            except (AttributeError, KeyError, StopIteration, TypeError):
+                pass
+
+        module_name = getattr(self, "_module_name", "")
+        if module_name not in {"", "."}:
+            return module_name
+
+        return sym_module
+
+    def _resolved_module_file(self) -> Path | None:
+        module_obj = getattr(self, "_module_obj", None)
+        if module_obj is not None:
+            filename = getattr(module_obj, "filename", None)
+            if filename:
+                return Path(filename)
+
+        module_name = getattr(self, "_module_name", "")
+        if module_name in {"", "."}:
+            module_name = self._resolved_use_module_name()
+
+        if module_name in {"", "."}:
+            return None
+
+        return Path(get_module(module_name).filename)
+
+
+class ftype_dt(_DTModuleResolutionMixin, f_type):
     kind = -1
     dtype = np.dtype(object)
 
@@ -252,43 +297,6 @@ class ftype_dt(f_type):
         if comp.array.is_explicit:
             return tuple(int(i) for i in comp.array.pyshape)
         return tuple()
-
-    def _resolved_use_module_name(self) -> str:
-        symbol = getattr(self, "_symbol", None)
-        sym_module = getattr(symbol, "module", "")
-        if sym_module not in {"", "."}:
-            return sym_module
-
-        module_obj = getattr(self, "_module_obj", None)
-        if module_obj is not None:
-            try:
-                first_key = next(iter(module_obj.keys()))
-                name = module_obj[first_key].module
-                if name not in {"", "."}:
-                    return name
-            except Exception:
-                pass
-
-        if self._module_name not in {"", "."}:
-            return self._module_name
-
-        return sym_module
-
-    def _resolved_module_file(self) -> Path | None:
-        module_obj = getattr(self, "_module_obj", None)
-        if module_obj is not None:
-            filename = getattr(module_obj, "filename", None)
-            if filename:
-                return Path(filename)
-
-        module_name = self._module_name
-        if module_name in {"", "."}:
-            module_name = self._resolved_use_module_name()
-
-        if module_name in {"", "."}:
-            return None
-
-        return Path(get_module(module_name).filename)
 
     def _alloc_component_source(self, comp, shape: tuple[int, ...]) -> Modulise:
         dims = ",".join([f"1:{i}" for i in shape])
@@ -674,44 +682,8 @@ class ftype_dt_explicit(ftype_dt_array):
         return f"type({self.ftype})({self._shape()})"
 
 
-class ftype_dt_assumed_shape(ftype_dt_array):
+class ftype_dt_assumed_shape(_DTModuleResolutionMixin, ftype_dt_array):
     alloc_strategy: AllocStrategy = AllocStrategy.FORTRAN
-
-    def _resolved_use_module_name(self) -> str:
-        sym_module = getattr(self._sym, "module", "")
-        if sym_module not in {"", "."}:
-            return sym_module
-
-        module_obj = getattr(self, "_module_obj", None)
-        if module_obj is not None:
-            try:
-                first_key = next(iter(module_obj.keys()))
-                name = module_obj[first_key].module
-                if name not in {"", "."}:
-                    return name
-            except Exception:
-                pass
-
-        if self._module_name not in {"", "."}:
-            return self._module_name
-
-        return sym_module
-
-    def _resolved_module_file(self) -> Path | None:
-        module_obj = getattr(self, "_module_obj", None)
-        if module_obj is not None:
-            filename = getattr(module_obj, "filename", None)
-            if filename:
-                return Path(filename)
-
-        module_name = self._module_name
-        if module_name in {"", "."}:
-            module_name = self._resolved_use_module_name()
-
-        if module_name in {"", "."}:
-            return None
-
-        return Path(get_module(module_name).filename)
 
     @property
     def ctype(self):

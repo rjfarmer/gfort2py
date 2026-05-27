@@ -7,7 +7,7 @@ from typing import Any, Type, cast
 import gfModParser as gf
 
 from ...types import factory
-from ...utils import get_c_runtime
+from ...utils import get_c_runtime, strlen_ctype
 
 
 class fArg(metaclass=ABCMeta):
@@ -35,16 +35,11 @@ class fArg(metaclass=ABCMeta):
         libc.malloc.restype = ctypes.c_void_p
         return libc
 
-    def _strlen_ctype(self):
-        if ctypes.sizeof(ctypes.c_void_p) == 8:
-            return ctypes.c_int64
-        return ctypes.c_int32
-
     def _setup_allocatable_character(self):
         if self._alloc_char_data is None:
             self._alloc_char_data = ctypes.c_void_p(0)
             self._alloc_char_data_ptr = ctypes.pointer(self._alloc_char_data)
-            self._alloc_char_len = self._strlen_ctype()(0)
+            self._alloc_char_len = strlen_ctype()(0)
             self._alloc_char_len_ptr = ctypes.pointer(self._alloc_char_len)
 
     def _uses_scalar_allocatable_character_abi(self) -> bool:
