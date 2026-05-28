@@ -7,7 +7,7 @@ from typing import Any, Optional, Tuple, Type
 import gfModParser as gf
 import numpy as np
 
-from ..compilation import Compile, CompileArgs
+from ..compilation import Compile, CompileArgs, Modulise
 from ..utils import copy_array, is_64bit
 from .base import AllocStrategy, f_type
 from .character import ftype_character
@@ -20,6 +20,7 @@ class AllocationError(Exception):
 # Cache compiled allocator entry points by (generated module name, compile args)
 # so repeated array marshaling avoids spawning the compiler each call.
 _ALLOCATOR_CACHE: dict[tuple[str, str], tuple[Any, Any]] = {}
+_DEALLOCATOR_CACHE: dict[tuple[str, str], tuple[Any, Any]] = {}
 
 
 class ftype_explicit_array(f_type, metaclass=ABCMeta):
@@ -563,6 +564,62 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
         # Did allocation work?
         if self._ctype.base_addr is None:
             raise ValueError("Allocation failed")
+
+    def _deallocate_code(self) -> Modulise:
+        dims = ",".join([":"] * self.ndims)
+
+        if self._is_character_array():
+            elem_len = int(self._ctype.dtype.elem_len)
+            if elem_len <= 0:
+                declared_len = int(self._sym.properties.typespec.charlen.value)
+                if declared_len > 0:
+                    elem_len = declared_len * (4 if self.base.kind == 4 else 1)
+                else:
+                    elem_len = int(self._array_dtype().itemsize)
+
+            strlen = max(elem_len // 4, 1) if self.base.kind == 4 else max(elem_len, 1)
+            decl = (
+                f"{self.ftype}(kind={self.kind},len={strlen}),"
+                f"allocatable,dimension({dims}), intent(inout) :: x"
+            )
+        else:
+            decl = (
+                f"{self.ftype}(kind={self.kind}),"
+                f"allocatable,dimension({dims}), intent(inout) :: x"
+            )
+
+        string = f"""
+        subroutine dealloc(x)
+        {decl}
+        if(allocated(x)) deallocate(x)
+        end subroutine dealloc
+        """
+        return Modulise(string)
+
+    def release(self) -> None:
+        if self._ctype.base_addr is None:
+            return
+
+        code = self._deallocate_code()
+        args = CompileArgs()
+        if self.base.extra_fflags:
+            args.FFLAGS = f"{args.FFLAGS} {self.base.extra_fflags}".strip()
+
+        cache_key = (code.strhash(), str(args))
+        if cache_key in _DEALLOCATOR_CACHE:
+            lib, sub = _DEALLOCATOR_CACHE[cache_key]
+        else:
+            comp = Compile(code.as_module(), name=code.strhash())
+            if not comp.compile(args=args):
+                raise AllocationError("Failed to deallocate array")
+
+            lib = comp.platform.load_library(comp.library_filename)
+            name = f"__{comp.name}_MOD_dealloc"
+            sub = getattr(lib, name)
+            _DEALLOCATOR_CACHE[cache_key] = (lib, sub)
+
+        sub(ctypes.byref(self._ctype))
+        self._ctype.base_addr = None
 
     @property
     def shape(self) -> tuple[int, ...]:

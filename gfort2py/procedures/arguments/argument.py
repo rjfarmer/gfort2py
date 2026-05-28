@@ -174,3 +174,12 @@ class fArg(metaclass=ABCMeta):
             return self.base.value
 
         return self.base.from_ctype(c, symbol=self.definition).value
+
+    def cleanup(self) -> None:
+        release = getattr(self.base, "release", None)
+        if callable(release):
+            try:
+                release()
+            except Exception:
+                # Cleanup is best-effort and should not mask call results.
+                pass

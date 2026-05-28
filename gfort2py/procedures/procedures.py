@@ -19,6 +19,31 @@ class Result(NamedTuple):
 
 class fProcedure(metaclass=abc.ABCMeta):
 
+    def _cleanup_argument_container(self, container: Any) -> None:
+        if container is None:
+            return
+
+        args = getattr(container, "args", None)
+        if not args:
+            return
+
+        for entry in args.values():
+            cleanup = getattr(entry.argument, "cleanup", None)
+            if callable(cleanup):
+                cleanup()
+
+    def _cleanup_return_arguments(self) -> None:
+        if self._args_start is None:
+            return
+
+        result_type = getattr(self._args_start, "_result_type", None)
+        release = getattr(result_type, "release", None)
+        if callable(release):
+            try:
+                release()
+            except Exception:
+                pass
+
     def __init__(
         self, lib: ctypes.CDLL, definition: gf.Symbol, module: gf.Module, **kwargs
     ):
@@ -32,7 +57,6 @@ class fProcedure(metaclass=abc.ABCMeta):
         self._set_return()
 
     def __call__(self, *args, **kwargs) -> Result:
-
         self._args_start = factory_return(
             procedure=self.definition,
             module=self._module,
@@ -50,23 +74,34 @@ class fProcedure(metaclass=abc.ABCMeta):
             arguments=self.args,
         )
 
-        if self._args_start is not None:
-            self._args_start.set_values()
-        self.args.set_values()
-        self.args_end.set_values()
+        try:
+            if self._args_start is not None:
+                self._args_start.set_values()
+            self.args.set_values()
+            self.args_end.set_values()
 
-        args_start: list[Any] = []
-        if self._args_start is not None:
-            args_start = self._args_start.get_ctypes()
+            args_start: list[Any] = []
+            if self._args_start is not None:
+                args_start = self._args_start.get_ctypes()
 
-        all_args = [*args_start, *self.args.get_ctypes(), *self.args_end.get_ctypes()]
+            all_args = [
+                *args_start,
+                *self.args.get_ctypes(),
+                *self.args_end.get_ctypes(),
+            ]
 
-        if len(all_args):
-            self.result = self._proc(*all_args)
-        else:
-            self.result = self._proc()
+            if len(all_args):
+                self.result = self._proc(*all_args)
+            else:
+                self.result = self._proc()
 
-        return Result(self.resolve_return(), self.resolve_args())
+            resolved_return = self.resolve_return()
+            resolved_args = self.resolve_args()
+            return Result(resolved_return, resolved_args)
+        finally:
+            self._cleanup_argument_container(self.args_end)
+            self._cleanup_argument_container(self.args)
+            self._cleanup_return_arguments()
 
     @property
     def ctype(self):
