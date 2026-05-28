@@ -370,6 +370,20 @@ module strings
     end subroutine check_assumed_shape_str
 
 
+    logical function check_assumed_shape_str_value(x)
+        character(len=*), dimension(:), intent(in) :: x
+
+        check_assumed_shape_str_value = .false.
+
+        if(ubound(x, dim=1) /= 1) return
+
+        if(trim(x(1)) == 'a/b/c/d/e/f/g') then
+            check_assumed_shape_str_value = .true.
+        end if
+
+    end function check_assumed_shape_str_value
+
+
     integer function check_str_opt(x, n)
         integer, intent(in) :: n
         character*(N), optional, intent(inout) :: x

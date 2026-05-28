@@ -297,12 +297,10 @@ class TestStringMethods:
         res = x.set_chr_star_star("            ")
         assert res.args["x"] == "abcdefghijkl"
 
-    def test_check_assumed_shape_str(self, fortran_output):
-        y = np.array(["a/b/c/d/e/f/g"], dtype="S")
-
-        with fortran_output() as get_output:
-            res = x.check_assumed_shape_str(y)
-        assert get_output().strip() == "a/b/c/d/e/f/g"
+    def test_check_assumed_shape_str(self):
+        y = np.array(["a/b/c/d/e/f/g"], dtype="S13")
+        res = x.check_assumed_shape_str_value(y)
+        assert res.result
 
     def test_check_str_opt(self):
         res = x.check_str_opt(None, 0)
