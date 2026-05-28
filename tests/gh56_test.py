@@ -21,8 +21,7 @@ x = gf.fFort(SO, MOD)
 
 @pytest.mark.skip
 class Testgh56Methods:
-    @pytest.mark.skipIfWindows
-    def test_gh56(self, capfd):
+    def test_gh56(self):
         y1 = x.get_array(10).result
 
         y2 = x.get_array(5).result

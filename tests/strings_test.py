@@ -31,49 +31,42 @@ class TestStringMethods:
         x.a_str = v
         assert x.a_str == v[0:10]
 
-    @pytest.mark.skipIfWindows
-    def test_sub_str_in_explicit(self, capfd):
+    def test_sub_str_in_explicit(self, fortran_output):
         v = "1324567980"
 
-        y = x.sub_str_in_explicit(v)
-        out, err = capfd.readouterr()
-        assert out.strip() == v
+        with fortran_output() as get_output:
+            y = x.sub_str_in_explicit(v)
+        assert get_output().strip() == v
 
-    @pytest.mark.skipIfWindows
-    def test_sub_str_in_implicit(self, capfd):
+    def test_sub_str_in_implicit(self, fortran_output):
         v = "123456789"
 
-        y = x.sub_str_in_implicit(v)
-        out, err = capfd.readouterr()
-        assert out.strip() == v
+        with fortran_output() as get_output:
+            y = x.sub_str_in_implicit(v)
+        assert get_output().strip() == v
 
-    @pytest.mark.skipIfWindows
-    def test_sub_str_multi(self, capfd):
+    def test_sub_str_multi(self, fortran_output):
         v = 5
         u = "123456789"
         w = 4
 
-        y = x.sub_str_multi(v, u, w)
-        out, err = capfd.readouterr()
-        assert out.strip() == str(v + w) + " " + u
+        with fortran_output() as get_output:
+            y = x.sub_str_multi(v, u, w)
+        assert get_output().strip() == str(v + w) + " " + u
 
-    @pytest.mark.skipIfWindows
-    def test_sub_str_p(self, capfd):
-        y = x.sub_str_p("abcdef")
-        out, err = capfd.readouterr()
-        assert err == ""
+    def test_sub_str_p(self, fortran_output):
+        with fortran_output() as get_output:
+            y = x.sub_str_p("abcdef")
         assert y.args["zzz"] == "xyzxyz"
-        assert out.strip() == "abcdef"
+        assert get_output().strip() == "abcdef"
 
     def test_func_ret_str(self):
         y = x.func_ret_str("abcde")
         assert y.result == "Abcde"
 
     @pytest.mark.skip
-    @pytest.mark.skipIfWindows
     # We need to call a func on the argument before passing it to func_str_int_len
-    def test_func_str_int_len(self, capfd):
-        out, err = capfd.readouterr()
+    def test_func_str_int_len(self):
         y = x.func_str_int_len(10)
 
         assert y.result == "10"
@@ -107,17 +100,18 @@ class TestStringMethods:
         with pytest.raises(TypeError) as cm:
             x.a_str_exp_1d = np.zeros(5, dtype=np.str_)
 
-    @pytest.mark.skipIfWindows
-    def test_str_func_inout_str(self, capfd):
+    def test_str_func_inout_str(self, fortran_output):
         z = np.array(
             ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
             dtype="S10",
         )
 
-        res = x.str_array_inout(z)
-        out, err = capfd.readouterr()
+        with fortran_output() as get_output:
+            res = x.str_array_inout(z)
 
-        assert out.strip() == "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
+        assert (
+            get_output().strip() == "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
+        )
 
         z2 = np.array(
             ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
@@ -167,17 +161,18 @@ class TestStringMethods:
 
         assert np.all(z == res.args["x"]["b_str_alloc_1d"])
 
-    @pytest.mark.skipIfWindows
-    def test_str_func_inout_str2(self, capfd):
+    def test_str_func_inout_str2(self, fortran_output):
         z = np.array(
             ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
             dtype="S10",
         )
 
-        res = x.str_array_inout2(z, 5)
-        out, err = capfd.readouterr()
+        with fortran_output() as get_output:
+            res = x.str_array_inout2(z, 5)
 
-        assert out.strip() == "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
+        assert (
+            get_output().strip() == "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
+        )
 
         z2 = np.array(
             ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
@@ -186,17 +181,18 @@ class TestStringMethods:
 
         assert np.all(res.args["x"] == z2)
 
-    @pytest.mark.skipIfWindows
-    def test_str_func_inout_str3(self, capfd):
+    def test_str_func_inout_str3(self, fortran_output):
         z = np.array(
             ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
             dtype="S10",
         )
 
-        res = x.str_array_inout3(z)
-        out, err = capfd.readouterr()
+        with fortran_output() as get_output:
+            res = x.str_array_inout3(z)
 
-        assert out.strip() == "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
+        assert (
+            get_output().strip() == "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
+        )
 
         z2 = np.array(
             ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
@@ -205,8 +201,7 @@ class TestStringMethods:
 
         assert np.all(res.args["x"] == z2)
 
-    @pytest.mark.skipIfWindows
-    def test_str_func_inout_alloc(self, capfd):
+    def test_str_func_inout_alloc(self):
         z = None
 
         res = x.str_array_allocate(z)
@@ -218,17 +213,18 @@ class TestStringMethods:
 
         assert np.all(res.args["x"] == z2)
 
-    @pytest.mark.skipIfWindows
-    def test_str_func_inout_str4(self, capfd):
+    def test_str_func_inout_str4(self, fortran_output):
         z = np.array(
             ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
             dtype="S10",
         )
 
-        res = x.str_array_inout4(z)
-        out, err = capfd.readouterr()
+        with fortran_output() as get_output:
+            res = x.str_array_inout4(z)
 
-        assert out.strip() == "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
+        assert (
+            get_output().strip() == "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
+        )
 
         z2 = np.array(
             ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
@@ -240,17 +236,18 @@ class TestStringMethods:
     def test_str_array_param(self):
         assert np.all(x.a_str_p_1d == np.array(["aa", "bb", "cc"], dtype="S2"))
 
-    @pytest.mark.skipIfWindows
-    def test_check_a_str_exp_1d(self, capfd):
+    def test_check_a_str_exp_1d(self, fortran_output):
         x.a_str_exp_1d = np.array(
             ["aaaaaaaaaa", "bbbbbbbbbb", "cccccccccc", "dddddddddd", "eeeeeeeeee"],
             dtype="S10",
         )
 
-        res = x.check_a_str_exp_1d()
-        out, err = capfd.readouterr()
+        with fortran_output() as get_output:
+            res = x.check_a_str_exp_1d()
 
-        assert out.strip() == "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
+        assert (
+            get_output().strip() == "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeee"
+        )
 
         z2 = np.array(
             ["zzzzzzzzzz", "yyyyyyyyyy", "qqqqqqqqqq", "wwwwwwwwww", "xxxxxxxxxx"],
@@ -300,13 +297,12 @@ class TestStringMethods:
         res = x.set_chr_star_star("            ")
         assert res.args["x"] == "abcdefghijkl"
 
-    @pytest.mark.skipIfWindows
-    def test_check_assumed_shape_str(self, capfd):
+    def test_check_assumed_shape_str(self, fortran_output):
         y = np.array(["a/b/c/d/e/f/g"], dtype="S")
 
-        res = x.check_assumed_shape_str(y)
-        out, err = capfd.readouterr()
-        assert out.strip() == "a/b/c/d/e/f/g"
+        with fortran_output() as get_output:
+            res = x.check_assumed_shape_str(y)
+        assert get_output().strip() == "a/b/c/d/e/f/g"
 
     def test_check_str_opt(self):
         res = x.check_str_opt(None, 0)

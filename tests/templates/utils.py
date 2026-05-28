@@ -1,6 +1,4 @@
-import builtins
-import contextlib
-import random
+# SPDX-License-Identifier: GPL-2.0+
 import string
 import textwrap
 from dataclasses import dataclass
@@ -29,10 +27,6 @@ py_proc_arg_array_check = string.Template(textwrap.dedent("""
             assert np.array_equal(result.args['${name}'], ${value})
             """).strip())
 
-py_proc_stdout = string.Template(textwrap.dedent("""
-            @pytest.mark.skipIfWindows
-            def test_${function}(self,capfd):
-            """).strip())
 
 py_capture_stdout = string.Template(textwrap.dedent("""
             out, err = capfd.readouterr()

@@ -295,33 +295,24 @@ class TestDummyArrayMethods:
         assert y2.result
 
     @pytest.mark.skip
-    @pytest.mark.skipIfWindows
-    def test_sub_arr_assumed_pointer_int_1d(self, capfd):
+    def test_sub_arr_assumed_pointer_int_1d(self):
         v = np.arange(10, 15)
-        o = " ".join([str(i) for i in v.flatten(order="F")])
 
         y = x.sub_arr_assumed_pointer_int_1d(v)
-        out, err = capfd.readouterr()
         assert np.array_equal(y.args["zzz"], np.array([100] * 5))
 
     @pytest.mark.skip
-    @pytest.mark.skipIfWindows
-    def test_sub_arr_assumed_pointer_real_1d(self, capfd):
+    def test_sub_arr_assumed_pointer_real_1d(self):
         v = np.arange(10.0, 15.0)
-        o = " ".join([str(i) for i in v.flatten(order="F")])
 
         y = x.sub_arr_assumed_pointer_real_1d(v)
-        out, err = capfd.readouterr()
         assert np.array_equal(y.args["zzz"], np.array([100.0] * 5))
 
     @pytest.mark.skip
-    @pytest.mark.skipIfWindows
-    def test_sub_arr_assumed_pointer_dp_1d(self, capfd):
+    def test_sub_arr_assumed_pointer_dp_1d(self):
         v = np.arange(10.0, 15.0)
-        o = " ".join([str(i) for i in v.flatten(order="F")])
 
         y = x.sub_arr_assumed_pointer_dp_1d(v)
-        out, err = capfd.readouterr()
         assert np.array_equal(y.args["zzz"], np.array([100.0] * 5))
 
     def test_sub_check_alloc_int_2d(self):

@@ -124,35 +124,30 @@ class TestDTMethods:
         with pytest.raises(TypeError) as cm:
             x.f_struct_simple["x"] = "asde"
 
-    @pytest.mark.skipIfWindows
-    def test_sub_dt_in_s_simple(self, capfd):
-        y = x.sub_f_simple_in({"x": 1, "y": 10})
-        out, err = capfd.readouterr()
+    def test_sub_dt_in_s_simple(self, fortran_output):
+        with fortran_output() as get_output:
+            y = x.sub_f_simple_in({"x": 1, "y": 10})
         o = " ".join([str(i) for i in [1, 10]])
-        assert out.strip() == o
+        assert get_output().strip() == o
 
-    @pytest.mark.skipIfWindows
-    def test_sub_dt_out_s_simple(self, capfd):
+    def test_sub_dt_out_s_simple(self):
         y = x.sub_f_simple_out({})
-        out, err = capfd.readouterr()
         assert y.args["x"]["x"] == 1
         assert y.args["x"]["y"] == 10
 
-    @pytest.mark.skipIfWindows
-    def test_sub_dt_inout_s_simple(self, capfd):
-        y = x.sub_f_simple_inout({"x": 5, "y": 3})
-        out, err = capfd.readouterr()
+    def test_sub_dt_inout_s_simple(self, fortran_output):
+        with fortran_output() as get_output:
+            y = x.sub_f_simple_inout({"x": 5, "y": 3})
         o = "  ".join([str(i) for i in [5, 3]])
-        assert out.strip() == o
+        assert get_output().strip() == o
         assert y.args["zzz"]["x"] == 1
         assert y.args["zzz"]["y"] == 10
 
-    @pytest.mark.skipIfWindows
-    def test_sub_dt_inoutp_s_simple(self, capfd):
-        y = x.sub_f_simple_inoutp({"x": 5, "y": 3})
-        out, err = capfd.readouterr()
+    def test_sub_dt_inoutp_s_simple(self, fortran_output):
+        with fortran_output() as get_output:
+            y = x.sub_f_simple_inoutp({"x": 5, "y": 3})
         o = "  ".join([str(i) for i in [5, 3]])
-        assert out.strip() == o
+        assert get_output().strip() == o
         assert y.args["zzz"]["x"] == 1
         assert y.args["zzz"]["y"] == 10
 
@@ -292,21 +287,20 @@ class TestDTMethods:
         assert np.array_equal(s[0]["b_int_exp_1d"], np.array([66, 66, 66, 66, 66]))
         assert np.array_equal(s[1]["b_int_exp_1d"], np.array([77, 77, 77, 77, 77]))
 
-    @pytest.mark.skipIfWindows
-    def test_fvar_as_arg(self, capfd):
+    def test_fvar_as_arg(self, fortran_output):
         y = x.f_struct_simple
         y["x"] = 99
         y["y"] = 98
 
-        z = x.sub_f_simple_in(y)
-        out, err = capfd.readouterr()
+        with fortran_output() as get_output:
+            z = x.sub_f_simple_in(y)
         o = "99 98"
-        assert out.strip() == o
+        assert get_output().strip() == o
 
-        z2 = x.sub_f_simple_in(z.args["x"])
-        out, err = capfd.readouterr()
+        with fortran_output() as get_output:
+            z2 = x.sub_f_simple_in(z.args["x"])
         o = "99 98"
-        assert out.strip() == o
+        assert get_output().strip() == o
 
     def test_func_return_s_struct_nested_2(self):
         y = x.func_return_s_struct_nested_2()
@@ -396,12 +390,11 @@ class TestDTMethods:
         assert s[0, 1]["f_nested"]["a_int"] == 8003
         assert s[1, 1]["f_nested"]["a_int"] == 8004
 
-    @pytest.mark.skipIfWindows
-    def test_derived_type_intent_out(self, capfd):
+    def test_derived_type_intent_out(self, fortran_output):
         # GH: #32
         p = {}
-        y = x.derived_structure(p)
-        out, err = capfd.readouterr()
-        assert out.strip() == "10 20 30 40"
+        with fortran_output() as get_output:
+            y = x.derived_structure(p)
+        assert get_output().strip() == "10 20 30 40"
 
         assert np.all(y.args["p"]["iq"] == np.array([10, 20, 30, 40]))
