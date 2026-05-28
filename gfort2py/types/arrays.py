@@ -19,8 +19,7 @@ class AllocationError(Exception):
 
 # Cache compiled allocator entry points by (generated module name, compile args)
 # so repeated array marshaling avoids spawning the compiler each call.
-_ALLOCATOR_CACHE: dict[tuple[str, str], tuple[Any, Any]] = {}
-_DEALLOCATOR_CACHE: dict[tuple[str, str], tuple[Any, Any]] = {}
+_ALLOCATOR_CACHE: dict[tuple[str, str], tuple[Any, Any, Any]] = {}
 
 
 class ftype_explicit_array(f_type, metaclass=ABCMeta):
@@ -327,7 +326,30 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
 
     def __init__(self, value=None):
         self._value = value
+        self._alloc_cache_key: tuple[str, str] | None = None
+        self._base_obj = self._base()
         super().__init__()
+
+    def _deallocate_subroutine_text(self, ndims: int) -> str:
+        dims = ",".join([":"] * ndims)
+
+        if self._is_character_array():
+            decl = (
+                f"{self.base.ftype}(kind={self.base.kind},len={self.base.strlen}),"
+                f"allocatable,dimension({dims}), intent(inout) :: x"
+            )
+        else:
+            decl = (
+                f"{self.base.ftype}(kind={self.base.kind}),"
+                f"allocatable,dimension({dims}), intent(inout) :: x"
+            )
+
+        return f"""
+        subroutine dealloc(x)
+        {decl}
+        if(allocated(x)) deallocate(x)
+        end subroutine dealloc
+        """
 
     @abstractmethod
     def _base(self):
@@ -335,7 +357,7 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
 
     @property
     def base(self):
-        return self._base()
+        return self._base_obj
 
     @property
     def ctype(self):
@@ -541,23 +563,29 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
         )
 
     def _allocate(self, shape):
-        code = self.base.allocate(shape)
+        alloc_code = self.base.allocate(shape)
+        code = Modulise(
+            "\n".join([alloc_code.text, self._deallocate_subroutine_text(len(shape))])
+        )
         args = CompileArgs()
         if self.base.extra_fflags:
             args.FFLAGS = f"{args.FFLAGS} {self.base.extra_fflags}".strip()
 
         cache_key = (code.strhash(), str(args))
+        self._alloc_cache_key = cache_key
         if cache_key in _ALLOCATOR_CACHE:
-            lib, sub = _ALLOCATOR_CACHE[cache_key]
+            lib, sub, _dealloc = _ALLOCATOR_CACHE[cache_key]
         else:
             comp = Compile(code.as_module(), name=code.strhash())
             if not comp.compile(args=args):
                 raise AllocationError("Failed to allocate array")
 
             lib = comp.platform.load_library(comp.library_filename)
-            name = f"__{comp.name}_MOD_alloc"
-            sub = getattr(lib, name)
-            _ALLOCATOR_CACHE[cache_key] = (lib, sub)
+            alloc_name = f"__{comp.name}_MOD_alloc"
+            dealloc_name = f"__{comp.name}_MOD_dealloc"
+            sub = getattr(lib, alloc_name)
+            dealloc_sub = getattr(lib, dealloc_name)
+            _ALLOCATOR_CACHE[cache_key] = (lib, sub, dealloc_sub)
 
         sub(ctypes.byref(self._ctype))
 
@@ -565,60 +593,17 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
         if self._ctype.base_addr is None:
             raise ValueError("Allocation failed")
 
-    def _deallocate_code(self) -> Modulise:
-        dims = ",".join([":"] * self.ndims)
-
-        if self._is_character_array():
-            elem_len = int(self._ctype.dtype.elem_len)
-            if elem_len <= 0:
-                declared_len = int(self._sym.properties.typespec.charlen.value)
-                if declared_len > 0:
-                    elem_len = declared_len * (4 if self.base.kind == 4 else 1)
-                else:
-                    elem_len = int(self._array_dtype().itemsize)
-
-            strlen = max(elem_len // 4, 1) if self.base.kind == 4 else max(elem_len, 1)
-            decl = (
-                f"{self.ftype}(kind={self.kind},len={strlen}),"
-                f"allocatable,dimension({dims}), intent(inout) :: x"
-            )
-        else:
-            decl = (
-                f"{self.ftype}(kind={self.kind}),"
-                f"allocatable,dimension({dims}), intent(inout) :: x"
-            )
-
-        string = f"""
-        subroutine dealloc(x)
-        {decl}
-        if(allocated(x)) deallocate(x)
-        end subroutine dealloc
-        """
-        return Modulise(string)
-
     def release(self) -> None:
         if self._ctype.base_addr is None:
             return
 
-        code = self._deallocate_code()
-        args = CompileArgs()
-        if self.base.extra_fflags:
-            args.FFLAGS = f"{args.FFLAGS} {self.base.extra_fflags}".strip()
+        if (
+            self._alloc_cache_key is not None
+            and self._alloc_cache_key in _ALLOCATOR_CACHE
+        ):
+            _lib, _alloc_sub, dealloc_sub = _ALLOCATOR_CACHE[self._alloc_cache_key]
+            dealloc_sub(ctypes.byref(self._ctype))
 
-        cache_key = (code.strhash(), str(args))
-        if cache_key in _DEALLOCATOR_CACHE:
-            lib, sub = _DEALLOCATOR_CACHE[cache_key]
-        else:
-            comp = Compile(code.as_module(), name=code.strhash())
-            if not comp.compile(args=args):
-                raise AllocationError("Failed to deallocate array")
-
-            lib = comp.platform.load_library(comp.library_filename)
-            name = f"__{comp.name}_MOD_dealloc"
-            sub = getattr(lib, name)
-            _DEALLOCATOR_CACHE[cache_key] = (lib, sub)
-
-        sub(ctypes.byref(self._ctype))
         self._ctype.base_addr = None
 
     @property
