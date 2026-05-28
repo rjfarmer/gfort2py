@@ -43,4 +43,8 @@ jobs:
   
       - name: Test
         run: python -m pytest -v
-
+        env:
+          PYTHONFAULTHANDLER: 1
+          PYTHONMALLOC: debug
+          MALLOC_CHECK_: 3
+          MALLOC_PERTURB_: 153
