@@ -488,6 +488,23 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
 
         shape = np.shape(value)
 
+        needs_alloc = self._ctype.base_addr is None
+        if not needs_alloc:
+            current_shape = tuple(
+                self._ctype.dims[i].ubound - self._ctype.dims[i].lbound + 1
+                for i in range(self.ndims)
+            )
+            needs_alloc = current_shape != tuple(shape)
+
+        if (
+            self._is_character_array()
+            and not needs_alloc
+            and self._sym.properties.typespec.charlen.value <= 0
+        ):
+            desired_elem_len = int(self._array_dtype(value).itemsize)
+            current_elem_len = int(self._ctype.dtype.elem_len)
+            needs_alloc = desired_elem_len != current_elem_len
+
         if (
             self._is_character_array()
             and self._sym.properties.typespec.charlen.value <= 0
@@ -500,7 +517,8 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
                 strlen = 1
             self.base.value = b" " * strlen
 
-        self._allocate(shape)
+        if needs_alloc:
+            self._allocate(shape)
 
         if self._is_character_array() and self.base.kind == 4:
             self._write_kind4_array(value, shape)
