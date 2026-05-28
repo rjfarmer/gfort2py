@@ -2,7 +2,7 @@
 
 import ctypes
 from abc import ABCMeta, abstractmethod
-from typing import Optional, Tuple, Type
+from typing import Any, Optional, Tuple, Type
 
 import gfModParser as gf
 import numpy as np
@@ -15,6 +15,11 @@ from .character import ftype_character
 
 class AllocationError(Exception):
     pass
+
+
+# Cache compiled allocator entry points by (generated module name, compile args)
+# so repeated array marshaling avoids spawning the compiler each call.
+_ALLOCATOR_CACHE: dict[tuple[str, str], tuple[Any, Any]] = {}
 
 
 class ftype_explicit_array(f_type, metaclass=ABCMeta):
@@ -522,13 +527,19 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
         if self.base.extra_fflags:
             args.FFLAGS = f"{args.FFLAGS} {self.base.extra_fflags}".strip()
 
-        comp = Compile(code.as_module(), name=code.strhash())
-        if not comp.compile(args=args):
-            raise AllocationError("Failed to allocate array")
+        cache_key = (code.strhash(), str(args))
+        if cache_key in _ALLOCATOR_CACHE:
+            lib, sub = _ALLOCATOR_CACHE[cache_key]
+        else:
+            comp = Compile(code.as_module(), name=code.strhash())
+            if not comp.compile(args=args):
+                raise AllocationError("Failed to allocate array")
 
-        lib = comp.platform.load_library(comp.library_filename)
-        name = f"__{comp.name}_MOD_alloc"
-        sub = getattr(lib, name)
+            lib = comp.platform.load_library(comp.library_filename)
+            name = f"__{comp.name}_MOD_alloc"
+            sub = getattr(lib, name)
+            _ALLOCATOR_CACHE[cache_key] = (lib, sub)
+
         sub(ctypes.byref(self._ctype))
 
         # Did allocation work?
