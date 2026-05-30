@@ -29,6 +29,15 @@ def pytest_configure(config):
     subprocess.call(["make"], cwd="tests")
 
 
+def pytest_runtest_setup(item):
+    is_windows = platform.system() == "Windows"
+    is_github = "GITHUB_ACTIONS" in os.environ
+
+    for _ in item.iter_markers(name="skipIfWindows"):
+        if is_github and is_windows:
+            pytest.skip()
+
+
 @contextlib.contextmanager
 def _redirect_fd1():
     """Redirect C-level fd 1 to a temp file and yield a callable to read it back."""

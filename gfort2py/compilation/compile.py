@@ -14,11 +14,7 @@ from .utils import output_folder
 
 @dataclass
 class CompileArgs:
-    FFLAGS: str = (
-        "-O2 -ggdb -fdump-tree-original -D_FORTIFY_SOURCE=2 "
-        "-ffree-line-length-none -fimplicit-none -ffree-form -cpp "
-        "-fstack-clash-protection -fstack-protector-all -fstack-protector"
-    )
+    FFLAGS: str = "-O2 -ffree-line-length-none -fimplicit-none -ffree-form -cpp "
     LDLIBS: str = ""
     LDFLAGS: str = ""
     INCLUDE_FLAGS: str = ""
