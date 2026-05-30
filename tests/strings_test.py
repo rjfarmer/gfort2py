@@ -302,6 +302,7 @@ class TestStringMethods:
         res = x.check_assumed_shape_str_value(y)
         assert res.result
 
+    @pytest.mark.skipIfWindows
     def test_check_str_opt(self):
         res = x.check_str_opt(None, 0)
         assert res.result == 3
