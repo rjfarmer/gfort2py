@@ -34,7 +34,11 @@ class ftype_real_8(ftype_real):
 class ftype_real_16(ftype_real):
     kind = 16
 
-    dtype = np.dtype("S16")
+    @property
+    def dtype(self):
+        if not PYQ_IMPORTED:
+            raise ValueError("Please install pyQuadp to handle quad precision numbers")
+        return np.dtype(pyq.c_qfloat)
 
     @property
     def ctype(self):
@@ -43,14 +47,18 @@ class ftype_real_16(ftype_real):
         return pyq.c_qfloat
 
     @property
-    def value(self) -> "pyq.c_qfloat":
-        return self._ctype.from_bytes(bytes(self._ctype.value))
+    def value(self) -> "pyq.qfloat":
+        return pyq.qfloat.from_bytes(bytes(self._ctype))
 
     @value.setter
-    def value(self, value: "pyq.c_qfloat"):
-        self._value = value
-        self._ctype.value = self._ctype(value).to_bytes()
+    def value(self, value: "pyq.qfloat"):
+        if value is None:
+            return
+
+        self._value = pyq.qfloat(value)
+        raw = self._value.to_bytes()
+        ctypes.memmove(ctypes.addressof(self._ctype), raw, len(raw))
 
     @property
     def _as_parameter_(self):
-        return self._ctype.to_bytes()
+        return self._ctype

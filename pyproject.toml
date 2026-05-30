@@ -7,9 +7,11 @@ build-backend = "setuptools.build_meta"
 testpaths = [
     "tests",
 ]
+
 markers = [
-    "skipIfWindows: Windows tests using capsys are flaky at the moment",
+    "skipIfWindows: Windows tests can be flaky",
 ]
+
 addopts = "-s"
 
 [tool.setuptools_scm]
@@ -40,14 +42,14 @@ classifiers = [
 dependencies = [
     "numpy >=2.0.0",
     "platformdirs >=3",
-    "gfModParser >= 1.2.0"
+    "gfModParser >= 1.2.1"
 ]
 
 dynamic = ["version"]
 
 [project.optional-dependencies]
 test = ['pytest']
-quad = ['pyquadp']
+quad = ['pyquadp >= 2.0.1']
 dev = ['pre-commit','black']
 types = ["mypy","types-setuptools", "types-toml"]
 

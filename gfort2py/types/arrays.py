@@ -7,6 +7,13 @@ from typing import Any, Optional, Tuple, Type
 import gfModParser as gf
 import numpy as np
 
+try:
+    import pyquadp as pyq  # type: ignore[import-not-found]
+
+    PYQ_IMPORTED = True
+except ImportError:
+    PYQ_IMPORTED = False
+
 from ..compilation import Compile, CompileArgs, Modulise
 from ..utils import copy_array, is_64bit
 from .base import AllocStrategy, f_type
@@ -68,6 +75,32 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
             return self._character_dtype(value)
         return self.base.dtype
 
+    def _is_quad_real_array(self) -> bool:
+        return self.base.ftype == "real" and self.base.kind == 16
+
+    def _is_quad_complex_array(self) -> bool:
+        return self.base.ftype == "complex" and self.base.kind == 16
+
+    def _quad_raw_array(self, value: np.ndarray) -> np.ndarray:
+        if not PYQ_IMPORTED:
+            raise ValueError("Please install pyQuadp to handle quad precision numbers")
+
+        flat = np.asfortranarray(value).ravel(order="F")
+        out = np.empty(flat.size, dtype=self.base.dtype)
+        for i, item in enumerate(flat):
+            out[i] = np.frombuffer(pyq.qfloat(item).to_bytes(), dtype=np.int8)
+        return out
+
+    def _qcmplx_raw_array(self, value: np.ndarray) -> np.ndarray:
+        if not PYQ_IMPORTED:
+            raise ValueError("Please install pyQuadp to handle quad precision numbers")
+
+        flat = np.asfortranarray(value).ravel(order="F")
+        out = np.empty(flat.size, dtype=self.base.dtype)
+        for i, item in enumerate(flat):
+            out[i] = pyq.qcmplx(item).to_bytes()
+        return out
+
     @property
     def value(self) -> np.ndarray:
         if self._is_character_array():
@@ -94,6 +127,34 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
                 .copy()
                 .reshape(self.shape, order="F")
             )
+            return self._value
+
+        if self._is_quad_real_array():
+            if not PYQ_IMPORTED:
+                raise ValueError(
+                    "Please install pyQuadp to handle quad precision numbers"
+                )
+            elem_size = ctypes.sizeof(self.base.ctype)
+            raw = ctypes.string_at(ctypes.addressof(self._ctype), self.size * elem_size)
+            values = [
+                pyq.qfloat.from_bytes(raw[i * elem_size : (i + 1) * elem_size])
+                for i in range(self.size)
+            ]
+            self._value = np.array(values, dtype=object).reshape(self.shape, order="F")
+            return self._value
+
+        if self._is_quad_complex_array():
+            if not PYQ_IMPORTED:
+                raise ValueError(
+                    "Please install pyQuadp to handle quad precision numbers"
+                )
+            elem_size = ctypes.sizeof(self.base.ctype)
+            raw = ctypes.string_at(ctypes.addressof(self._ctype), self.size * elem_size)
+            values = [
+                pyq.qcmplx.from_bytes(raw[i * elem_size : (i + 1) * elem_size])
+                for i in range(self.size)
+            ]
+            self._value = np.array(values, dtype=object).reshape(self.shape, order="F")
             return self._value
 
         self._value = (
@@ -150,6 +211,26 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
                 return
 
             elem_size = int(self._array_dtype(value).itemsize)
+        if self._is_quad_real_array():
+            raw = self._quad_raw_array(value)
+            copy_array(
+                raw.ctypes.data,
+                ctypes.addressof(self._ctype),
+                elem_size,
+                self.size,
+            )
+            return
+
+        if self._is_quad_complex_array():
+            raw = self._qcmplx_raw_array(value)
+            copy_array(
+                raw.ctypes.data,
+                ctypes.addressof(self._ctype),
+                elem_size,
+                self.size,
+            )
+            return
+
         copy_array(
             self._value.ctypes.data,
             ctypes.addressof(self._ctype),
@@ -163,6 +244,22 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
                 raise TypeError("Character strings must be bytes (S dtype)")
             if self.base.kind == 4 and not np.issubdtype(value.dtype, np.str_):
                 raise TypeError("Unicode strings must be unicode (U dtype)")
+
+        if self._is_quad_real_array():
+            value = np.asfortranarray(value)
+            if value.ndim != self.ndims:
+                raise ValueError(
+                    f"Wrong number of dimensions, got {value.ndim} expected {self.ndims}"
+                )
+            return value.ravel(order="F")
+
+        if self._is_quad_complex_array():
+            value = np.asfortranarray(value)
+            if value.ndim != self.ndims:
+                raise ValueError(
+                    f"Wrong number of dimensions, got {value.ndim} expected {self.ndims}"
+                )
+            return value.ravel(order="F")
 
         value = np.asfortranarray(value)
         value = value.astype(self._array_dtype(value), copy=False)
@@ -250,6 +347,32 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
             return self._character_dtype(value)
         return self.base.dtype
 
+    def _is_quad_real_array(self) -> bool:
+        return self.base.ftype == "real" and self.base.kind == 16
+
+    def _is_quad_complex_array(self) -> bool:
+        return self.base.ftype == "complex" and self.base.kind == 16
+
+    def _quad_real_raw_flat(self, value: np.ndarray) -> np.ndarray:
+        if not PYQ_IMPORTED:
+            raise ValueError("Please install pyQuadp to handle quad precision numbers")
+
+        flat = np.asfortranarray(value).ravel("F")
+        out = np.empty(flat.size, dtype=self.base.dtype)
+        for i, item in enumerate(flat):
+            out[i] = np.frombuffer(pyq.qfloat(item).to_bytes(), dtype=np.int8)
+        return out
+
+    def _quad_complex_raw_flat(self, value: np.ndarray) -> np.ndarray:
+        if not PYQ_IMPORTED:
+            raise ValueError("Please install pyQuadp to handle quad precision numbers")
+
+        flat = np.asfortranarray(value).ravel("F")
+        out = np.empty(flat.size, dtype=self.base.dtype)
+        for i, item in enumerate(flat):
+            out[i] = pyq.qcmplx(item).to_bytes()
+        return out
+
     @property
     def value(self) -> Optional[np.ndarray]:
         if self._ctype is None:
@@ -261,6 +384,40 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
             strlen = int(dtype.itemsize)
             raw = ctypes.string_at(ctypes.addressof(self._ctype), n * strlen)
             arr = np.frombuffer(raw, dtype=dtype, count=n).copy()
+            if self._shape is not None:
+                arr = arr.reshape(self._shape, order="F")
+            return arr
+
+        if self._is_quad_real_array():
+            if not PYQ_IMPORTED:
+                raise ValueError(
+                    "Please install pyQuadp to handle quad precision numbers"
+                )
+            n = len(self._ctype)
+            elem_size = ctypes.sizeof(self.base.ctype)
+            raw = ctypes.string_at(ctypes.addressof(self._ctype), n * elem_size)
+            values = [
+                pyq.qfloat.from_bytes(raw[i * elem_size : (i + 1) * elem_size])
+                for i in range(n)
+            ]
+            arr = np.array(values, dtype=object)
+            if self._shape is not None:
+                arr = arr.reshape(self._shape, order="F")
+            return arr
+
+        if self._is_quad_complex_array():
+            if not PYQ_IMPORTED:
+                raise ValueError(
+                    "Please install pyQuadp to handle quad precision numbers"
+                )
+            n = len(self._ctype)
+            elem_size = ctypes.sizeof(self.base.ctype)
+            raw = ctypes.string_at(ctypes.addressof(self._ctype), n * elem_size)
+            values = [
+                pyq.qcmplx.from_bytes(raw[i * elem_size : (i + 1) * elem_size])
+                for i in range(n)
+            ]
+            arr = np.array(values, dtype=object)
             if self._shape is not None:
                 arr = arr.reshape(self._shape, order="F")
             return arr
@@ -291,11 +448,14 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
             )
 
         self._shape = tuple(value.shape)
-        flat = (
-            np.asfortranarray(value)
-            .astype(self._array_dtype(value), copy=False)
-            .ravel("F")
-        )
+        if self._is_quad_real_array() or self._is_quad_complex_array():
+            flat = np.asfortranarray(value).ravel("F")
+        else:
+            flat = (
+                np.asfortranarray(value)
+                .astype(self._array_dtype(value), copy=False)
+                .ravel("F")
+            )
         n = flat.size
         if self._is_character_array():
             strlen = int(self._array_dtype(value).itemsize)
@@ -306,6 +466,27 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
         elem_size = ctypes.sizeof(self.base.ctype)
         if self._is_character_array():
             elem_size = int(self._array_dtype(value).itemsize)
+
+        if self._is_quad_real_array():
+            raw = self._quad_real_raw_flat(value)
+            copy_array(
+                raw.ctypes.data,
+                ctypes.addressof(self._ctype),
+                elem_size,
+                n,
+            )
+            return
+
+        if self._is_quad_complex_array():
+            raw = self._quad_complex_raw_flat(value)
+            copy_array(
+                raw.ctypes.data,
+                ctypes.addressof(self._ctype),
+                elem_size,
+                n,
+            )
+            return
+
         copy_array(
             flat.ctypes.data,
             ctypes.addressof(self._ctype),
@@ -422,6 +603,32 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
             return self._character_dtype(value)
         return self.base.dtype
 
+    def _is_quad_real_array(self) -> bool:
+        return self.base.ftype == "real" and self.base.kind == 16
+
+    def _is_quad_complex_array(self) -> bool:
+        return self.base.ftype == "complex" and self.base.kind == 16
+
+    def _quad_real_raw_flat(self, value: np.ndarray) -> np.ndarray:
+        if not PYQ_IMPORTED:
+            raise ValueError("Please install pyQuadp to handle quad precision numbers")
+
+        flat = np.asfortranarray(value).ravel("F")
+        out = np.empty(flat.size, dtype=self.base.dtype)
+        for i, item in enumerate(flat):
+            out[i] = np.frombuffer(pyq.qfloat(item).to_bytes(), dtype=np.int8)
+        return out
+
+    def _quad_complex_raw_flat(self, value: np.ndarray) -> np.ndarray:
+        if not PYQ_IMPORTED:
+            raise ValueError("Please install pyQuadp to handle quad precision numbers")
+
+        flat = np.asfortranarray(value).ravel("F")
+        out = np.empty(flat.size, dtype=self.base.dtype)
+        for i, item in enumerate(flat):
+            out[i] = pyq.qcmplx(item).to_bytes()
+        return out
+
     def _decode_kind4_flat(self, raw: bytes, elem_size: int, count: int) -> np.ndarray:
         values = []
         for i in range(count):
@@ -479,6 +686,34 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
             raw = ctypes.string_at(self._ctype.base_addr, count * elem_size)
             flat = self._decode_kind4_flat(raw, elem_size, count)
             self._value = flat.reshape(shape, order="F")
+            return self._value
+
+        if self._is_quad_real_array():
+            if not PYQ_IMPORTED:
+                raise ValueError(
+                    "Please install pyQuadp to handle quad precision numbers"
+                )
+            elem_size = ctypes.sizeof(self.base.ctype)
+            raw = ctypes.string_at(self._ctype.base_addr, count * elem_size)
+            values = [
+                pyq.qfloat.from_bytes(raw[i * elem_size : (i + 1) * elem_size])
+                for i in range(count)
+            ]
+            self._value = np.array(values, dtype=object).reshape(shape, order="F")
+            return self._value
+
+        if self._is_quad_complex_array():
+            if not PYQ_IMPORTED:
+                raise ValueError(
+                    "Please install pyQuadp to handle quad precision numbers"
+                )
+            elem_size = ctypes.sizeof(self.base.ctype)
+            raw = ctypes.string_at(self._ctype.base_addr, count * elem_size)
+            values = [
+                pyq.qcmplx.from_bytes(raw[i * elem_size : (i + 1) * elem_size])
+                for i in range(count)
+            ]
+            self._value = np.array(values, dtype=object).reshape(shape, order="F")
             return self._value
 
         array = np.zeros(shape, dtype=self._array_dtype(), order="F")
@@ -545,6 +780,30 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
 
         if self._is_character_array() and self.base.kind == 4:
             self._write_kind4_array(value, shape)
+            return
+
+        if self._is_quad_real_array():
+            self._value = np.asfortranarray(value).ravel("F")
+            raw = self._quad_real_raw_flat(value)
+            elem_size = ctypes.sizeof(self.base.ctype)
+            copy_array(
+                raw.ctypes.data,
+                self._ctype.base_addr,
+                elem_size,
+                int(np.prod(shape)),
+            )
+            return
+
+        if self._is_quad_complex_array():
+            self._value = np.asfortranarray(value).ravel("F")
+            raw = self._quad_complex_raw_flat(value)
+            elem_size = ctypes.sizeof(self.base.ctype)
+            copy_array(
+                raw.ctypes.data,
+                self._ctype.base_addr,
+                elem_size,
+                int(np.prod(shape)),
+            )
             return
 
         self._value = (

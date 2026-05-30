@@ -79,14 +79,18 @@ class ftype_complex_16(ftype_complex):
         return pyq.c_qcmplx
 
     @property  # type: ignore[override]
-    def value(self) -> "pyq.c_qcmplx":
-        return self._ctype.from_bytes(bytes(self._ctype.value))
+    def value(self) -> "pyq.qcmplx":
+        return pyq.qcmplx.from_bytes(bytes(self._ctype))
 
     @value.setter
-    def value(self, value: "pyq.c_qcmplx"):
-        self._value = value
-        self._ctype.value = self._ctype(value).to_bytes()
+    def value(self, value: "pyq.qcmplx"):
+        if value is None:
+            return
+
+        self._value = pyq.qcmplx(value)
+        raw = self._value.to_bytes()
+        ctypes.memmove(ctypes.addressof(self._ctype), raw, len(raw))
 
     @property
     def _as_parameter_(self):
-        return self._ctype.to_bytes()
+        return self._ctype
