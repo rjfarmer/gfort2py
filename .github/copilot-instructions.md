@@ -10,7 +10,17 @@ Prefer minimal, focused changes. Every change should have a corresponding test c
 
 Prefer clean designs that avoid explicit type checking where practical. Favor class-level properties and polymorphism over branching on type names.
 
-Prefer to reuse exisiting code cnad classes whgere possible, before creating new classes or duplicating code.
+Prefer to reuse existing code and classes where possible, before creating new classes or duplicating code.
+
+Prefer factory based patterns for creating objects, to centralize the logic for constructing complex objects and to avoid spreading that logic across the codebase.
+
+Code should always be written with the expectation that it will be read by other developers. Prioritize readability and maintainability over cleverness or brevity.
+
+Code should have comments where necessary to explain non-obvious logic, but avoid redundant comments that simply restate what the code does.
+
+Follow PEP 8 style guidelines for Python code, and use consistent formatting throughout the codebase.
+
+Add mypy types to all functions and methods, and fix any type errors reported by mypy.
 
 ## Testing
 
