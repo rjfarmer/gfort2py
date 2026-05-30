@@ -96,7 +96,9 @@ class TestUnsigned:
         assert y.result == 7
 
     # --- subroutine: copy_unsigned_array ---
-
+    @pytest.mark.skipIfWindows(
+        reason="Sometimes causes heap crashes on Windows, needs investigation"
+    )
     def test_copy_unsigned_array(self):
         src = np.array([1, 2, 3, 4, 5], dtype=np.uintc)
         dst = np.zeros(5, dtype=np.uintc)

@@ -4,12 +4,14 @@ import ctypes
 import subprocess
 from pathlib import Path
 
+import pytest
+
 import gfort2py.utils as gf_utils
 from gfort2py.compilation.compile import Compile, CompileArgs
 
 
 def test_fc_path_raises_when_lookup_is_empty(monkeypatch):
-    monkeypatch.delenv("FC", raising=False)
+    monkeypatch.setattr(gf_utils.os, "environ", {})
     monkeypatch.setattr(gf_utils.platform, "system", lambda: "Linux")
 
     def fake_run(*_args, **_kwargs):
@@ -19,11 +21,8 @@ def test_fc_path_raises_when_lookup_is_empty(monkeypatch):
 
     monkeypatch.setattr(gf_utils.subprocess, "run", fake_run)
 
-    try:
+    with pytest.raises(ValueError, match="Did not find a gfortran compiler"):
         gf_utils.fc_path()
-        assert False, "Expected ValueError"
-    except ValueError as exc:
-        assert "Did not find a gfortran compiler" in str(exc)
 
 
 def test_compile_args_preserve_quoted_flags(monkeypatch, tmp_path):
