@@ -247,7 +247,6 @@ class TestExplicitArrayMethods:
             y = x.sub_exp_array_int_1d(v)
         assert get_output().strip() == o.strip()
 
-    @pytest.mark.skip
     def test_logical_arr_multi(self):
         xarr = np.zeros(5)
         xarr[:] = True
