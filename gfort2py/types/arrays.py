@@ -18,6 +18,7 @@ from ..compilation import Compile, CompileArgs, Modulise
 from ..utils import copy_array, is_64bit
 from .base import AllocStrategy, f_type
 from .character import ftype_character
+from .numpy_convert import to_numpy_array_with_dtype
 
 
 class AllocationError(Exception):
@@ -161,10 +162,9 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
             )
             return self._value
 
-        self._value = (
-            np.ctypeslib.as_array(self._ctype)
-            .reshape(self.shape, order="F")
-            .astype(self._array_dtype())
+        self._value = to_numpy_array_with_dtype(
+            np.ctypeslib.as_array(self._ctype).reshape(self.shape, order="F"),
+            self._array_dtype(),
         )
         return self._value
 
@@ -426,7 +426,10 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
                 arr = arr.reshape(self._shape, order="F")
             return arr
 
-        arr = np.ctypeslib.as_array(self._ctype).astype(self._array_dtype())
+        arr = to_numpy_array_with_dtype(
+            np.ctypeslib.as_array(self._ctype),
+            self._array_dtype(),
+        )
         if self._shape is not None:
             arr = arr.reshape(self._shape, order="F")
 

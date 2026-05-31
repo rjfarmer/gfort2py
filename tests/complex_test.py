@@ -55,9 +55,6 @@ class TestComplexMethods:
         y = x.func_ret_cmplx(v)
         assert y.result == v * 5
 
-    @pytest.mark.xfail(
-        reason="Complex module array variable roundtrip currently fails dtype conversion from structured real/imag buffers",
-    )
     def test_a_cmplx_arr(self):
         v = np.array(
             [
@@ -72,9 +69,6 @@ class TestComplexMethods:
         x.a_cmplx_arr = v
         assert np.array_equal(x.a_cmplx_arr, v)
 
-    @pytest.mark.xfail(
-        reason="Complex(dp) module array variable roundtrip currently fails dtype conversion from structured real/imag buffers",
-    )
     def test_a_cmplx_dp_arr(self):
         v = np.array(
             [
@@ -87,9 +81,6 @@ class TestComplexMethods:
         x.a_cmplx_dp_arr = v
         assert np.array_equal(x.a_cmplx_dp_arr, v)
 
-    @pytest.mark.xfail(
-        reason="Complex explicit-shape array argument output conversion currently fails dtype conversion",
-    )
     def test_func_cmplx_explicit_arr_2d(self):
         v = np.zeros((2, 3), dtype=np.complex64, order="F")
         v[1, 0] = complex(2.0, 1.0)
@@ -106,9 +97,6 @@ class TestComplexMethods:
             y.args["x"], np.array([complex(5.0, 2.0)] * 5, dtype=np.complex64)
         )
 
-    @pytest.mark.xfail(
-        reason="Complex assumed-size array argument output conversion currently fails dtype conversion",
-    )
     def test_func_cmplx_assumed_size_arr_1d(self):
         v = np.zeros([5], dtype=np.complex64)
         v[1] = complex(3.0, -2.0)

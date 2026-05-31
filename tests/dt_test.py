@@ -287,6 +287,17 @@ class TestDTMethods:
         assert np.array_equal(s[0]["b_int_exp_1d"], np.array([66, 66, 66, 66, 66]))
         assert np.array_equal(s[1]["b_int_exp_1d"], np.array([77, 77, 77, 77, 77]))
 
+    def test_dt_explicit_complex_array_component_set_get(self):
+        value = np.array(
+            [complex(1.0, -1.0), complex(2.5, 3.0), complex(-4.0, 0.5)],
+            dtype=np.complex64,
+        )
+
+        x.f_struct_cmplx["a_cmplx_exp_1d"] = value
+
+        got = x.f_struct_cmplx["a_cmplx_exp_1d"]
+        assert np.array_equal(got, value)
+
     def test_fvar_as_arg(self, fortran_output):
         y = x.f_struct_simple
         y["x"] = 99
