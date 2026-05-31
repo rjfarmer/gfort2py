@@ -109,12 +109,12 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
                 raw = ctypes.string_at(
                     ctypes.addressof(self._ctype), self.size * elem_size
                 )
-                values = []
+                decoded_values = []
                 for i in range(self.size):
                     chunk = raw[i * elem_size : (i + 1) * elem_size]
                     utf8_bytes = bytes(chunk[j] for j in range(0, elem_size, 4))
-                    values.append(utf8_bytes.decode("utf-8").rstrip())
-                self._value = np.array(values, dtype=np.str_).reshape(
+                    decoded_values.append(utf8_bytes.decode("utf-8").rstrip())
+                self._value = np.array(decoded_values, dtype=np.str_).reshape(
                     self.shape, order="F"
                 )
                 return self._value
@@ -136,11 +136,13 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
                 )
             elem_size = ctypes.sizeof(self.base.ctype)
             raw = ctypes.string_at(ctypes.addressof(self._ctype), self.size * elem_size)
-            values = [
+            quad_real_values = [
                 pyq.qfloat.from_bytes(raw[i * elem_size : (i + 1) * elem_size])
                 for i in range(self.size)
             ]
-            self._value = np.array(values, dtype=object).reshape(self.shape, order="F")
+            self._value = np.array(quad_real_values, dtype=object).reshape(
+                self.shape, order="F"
+            )
             return self._value
 
         if self._is_quad_complex_array():
@@ -150,11 +152,13 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
                 )
             elem_size = ctypes.sizeof(self.base.ctype)
             raw = ctypes.string_at(ctypes.addressof(self._ctype), self.size * elem_size)
-            values = [
+            quad_complex_values = [
                 pyq.qcmplx.from_bytes(raw[i * elem_size : (i + 1) * elem_size])
                 for i in range(self.size)
             ]
-            self._value = np.array(values, dtype=object).reshape(self.shape, order="F")
+            self._value = np.array(quad_complex_values, dtype=object).reshape(
+                self.shape, order="F"
+            )
             return self._value
 
         self._value = (
@@ -206,15 +210,15 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
                     else:
                         encoded = encoded + b" " * (utf8_len - len(encoded))
 
-                    raw = b"".join(bytes([byte, 0, 0, 0]) for byte in encoded)
-                    ctypes.memmove(base_addr + idx * elem_size, raw, len(raw))
+                    raw_utf8 = b"".join(bytes([byte, 0, 0, 0]) for byte in encoded)
+                    ctypes.memmove(base_addr + idx * elem_size, raw_utf8, len(raw_utf8))
                 return
 
             elem_size = int(self._array_dtype(value).itemsize)
         if self._is_quad_real_array():
-            raw = self._quad_raw_array(value)
+            raw_array = self._quad_raw_array(value)
             copy_array(
-                raw.ctypes.data,
+                raw_array.ctypes.data,
                 ctypes.addressof(self._ctype),
                 elem_size,
                 self.size,
@@ -222,9 +226,9 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
             return
 
         if self._is_quad_complex_array():
-            raw = self._qcmplx_raw_array(value)
+            raw_array = self._qcmplx_raw_array(value)
             copy_array(
-                raw.ctypes.data,
+                raw_array.ctypes.data,
                 ctypes.addressof(self._ctype),
                 elem_size,
                 self.size,
@@ -396,11 +400,11 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
             n = len(self._ctype)
             elem_size = ctypes.sizeof(self.base.ctype)
             raw = ctypes.string_at(ctypes.addressof(self._ctype), n * elem_size)
-            values = [
+            quad_real_values = [
                 pyq.qfloat.from_bytes(raw[i * elem_size : (i + 1) * elem_size])
                 for i in range(n)
             ]
-            arr = np.array(values, dtype=object)
+            arr = np.array(quad_real_values, dtype=object)
             if self._shape is not None:
                 arr = arr.reshape(self._shape, order="F")
             return arr
@@ -413,11 +417,11 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
             n = len(self._ctype)
             elem_size = ctypes.sizeof(self.base.ctype)
             raw = ctypes.string_at(ctypes.addressof(self._ctype), n * elem_size)
-            values = [
+            quad_complex_values = [
                 pyq.qcmplx.from_bytes(raw[i * elem_size : (i + 1) * elem_size])
                 for i in range(n)
             ]
-            arr = np.array(values, dtype=object)
+            arr = np.array(quad_complex_values, dtype=object)
             if self._shape is not None:
                 arr = arr.reshape(self._shape, order="F")
             return arr
@@ -695,11 +699,13 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
                 )
             elem_size = ctypes.sizeof(self.base.ctype)
             raw = ctypes.string_at(self._ctype.base_addr, count * elem_size)
-            values = [
+            quad_real_values = [
                 pyq.qfloat.from_bytes(raw[i * elem_size : (i + 1) * elem_size])
                 for i in range(count)
             ]
-            self._value = np.array(values, dtype=object).reshape(shape, order="F")
+            self._value = np.array(quad_real_values, dtype=object).reshape(
+                shape, order="F"
+            )
             return self._value
 
         if self._is_quad_complex_array():
@@ -709,11 +715,13 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
                 )
             elem_size = ctypes.sizeof(self.base.ctype)
             raw = ctypes.string_at(self._ctype.base_addr, count * elem_size)
-            values = [
+            quad_complex_values = [
                 pyq.qcmplx.from_bytes(raw[i * elem_size : (i + 1) * elem_size])
                 for i in range(count)
             ]
-            self._value = np.array(values, dtype=object).reshape(shape, order="F")
+            self._value = np.array(quad_complex_values, dtype=object).reshape(
+                shape, order="F"
+            )
             return self._value
 
         array = np.zeros(shape, dtype=self._array_dtype(), order="F")
