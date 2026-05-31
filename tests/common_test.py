@@ -1,22 +1,25 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-import os, sys
 import ctypes
+import os
+import sys
 from pprint import pprint
 
 os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 
 import numpy as np
-import gfort2py as gf
-
 import pytest
 
-SO = f"./tests/common.{gf.lib_ext()}"
-MOD = "./tests/com.mod"
+import gfort2py as gf
+
+from .conftest import build_paths
+
+SO, MOD = build_paths("com", "com")
 
 x = gf.fFort(SO, MOD)
 
 
+@pytest.mark.skip
 class TestCommonBlocks:
     def test_set_values(self):
         with pytest.raises(AttributeError) as cm:

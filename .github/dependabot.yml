@@ -10,10 +10,10 @@ updates:
     schedule:
       interval: "weekly"
     cooldown:
-      default-days: 30
+      default-days: 21
   - package-ecosystem: "pip" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
     cooldown:
-      default-days: 30
+      default-days: 21

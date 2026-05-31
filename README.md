@@ -21,7 +21,7 @@ or install via pypi
 python -m pip install --upgrade --user gfort2py
 ````
 
-For a full list of supportetd platforms [see the support documentation](docs/support.md).
+For a full list of supported platforms [see the support documentation](docs/support.md).
 
 ## Why use this over other Fortran to Python translators?
 
@@ -33,15 +33,15 @@ gfort2py has three main aims:
 
 We achieve this by tightly coupling the code to the gfortran compiler, by doing so we can easily embed assumptions about how advanced Fortran features work which makes development easier and minimises the number of changes needed on the Fortran side. 
 
-gfort2py use the gfortran ``mod`` files to translate your Fortran code's ABI to Python-compatible types using Python's ctype library.
+gfort2py uses the gfortran ``mod`` files to translate your Fortran code's ABI to Python-compatible types using Python's ``ctypes`` library.
 By using the ``mod`` file we can determine the call signature of all procedures, components of derived types, and the size and shapes of all module-level variables. As long as your code is inside a Fortran module, no other changes are needed to your Fortran code.
 
-The downside to this approach is that we are tightly tied to gfortran's ABI, which means we can not support other non-gfortran compilers and we do not support all versions of gfortran. When gfortran next breaks its ABI (which happens rarely, the last break was gfortran 8) we will re-evaluate our supported gfortran versions.
+The downside to this approach is that we are tightly tied to gfortran's ABI, which means we cannot support other non-gfortran compilers and we do not support all versions of gfortran. When gfortran next breaks its ABI (which happens rarely, the last break was gfortran 8) we will re-evaluate our supported gfortran versions.
 
 ## Using
 
-There are two ways to load Fortran code into Python.
-Either ``fFort`` or ``compile``. The recommended way
+There are two ways to load Fortran code into Python:
+``fFort`` or ``compile``. The recommended way
 is via ``fFort`` for interfacing with existing code,
 while ``compile`` is more suitable for wrapping short snippets of Fortran code
 
@@ -68,7 +68,7 @@ gfortran -shared -o libfile.dll file.f90
 ````
 
 If the shared library needs other
-shared libraries you may need to set the ``LD_LIBRARY_PATH`` environment variable, and it is also recommended to run chrpath on the shared 
+shared libraries you may need to set the ``LD_LIBRARY_PATH`` environment variable, and it is also recommended to run ``chrpath`` on the shared
 libraries so you can access them from anywhere.
 
 #### Python side
@@ -117,23 +117,24 @@ x  = gf.compile(file='my_fortran_file.f90')
 
 ````
 
-In either casee the code will be compilied into a
-Fortran module and then into a shared library. Any Fortran code is valid as long as it can be inserted into a Fortran Module (Its optional whether you need to wrap things in ``module``/``end module``, if you do not then that is done automatically for you).
+In either case the code will be compiled into a
+Fortran module and then into a shared library. Any Fortran code is valid as long as it can be inserted into a Fortran Module. This code MUST NOT be inside
+a module.
 
 Additional options available for ``compile``:
 
-- FC: str Path to gfortran compilier
+- FC: str Path to gfortran compiler
 - FFLAGS: str Additional Fortran compile options. This defaults to -O2.
 - LDLIBS: str Any additional libraries needed to be linked in (-l)
-- LDFLAGS: str Locations of addtional libraries (-L)
-- ouput: str Location to save intermediate files to. Defaults to ``None`` which saves files in a temporary location. Otherwise save to the location specified.
+- LDFLAGS: str Locations of additional libraries (-L)
+
 
 > **_NOTE:_** The interface to compile is currently considered unstable and may change.
 
 ### Interface
 
 
-``x`` now contains all variables, parameters and procedures from the module (tab completable), and is independant on how the Fortran code was loaded.
+``x`` now contains all variables, parameters and procedures from the module (tab completable), and is independent of how the Fortran code was loaded.
 
 
 ### Functions
@@ -143,7 +144,7 @@ y = x.func_name(a,b,c)
 
 Will call the Fortran function with variables ``a,b,c`` and returns the result in ``y``.
 
-``y`` will be  named tuple which contains (result, args). Where ``result`` is a python object for the return value (0 if a subroutine) and where args is a dict containing all arguments passed to the procedure (both those with intent (in) which will be unchanged and intent(inout/out) which may have changed).
+``y`` will be a named tuple containing ``(result, args)``. ``result`` is a Python object for the return value (0 if a subroutine), and ``args`` is a dict containing all arguments passed to the procedure (both those with ``intent(in)``, which are unchanged, and those with ``intent(inout/out)``, which may change).
 
 
 ### Variables
@@ -174,6 +175,51 @@ is 0-based.
 
 
 If a procedure expects an unallocated array, then pass None as the argument, otherwise pass an array of the correct shape.
+
+For CHARACTER arrays, use NumPy string dtypes that match the Fortran kind:
+
+- ``character(kind=1, len=N)``: pass a byte-string array (for example ``dtype="S10"``).
+- ``character(kind=4, len=N)``: pass a unicode array (for example ``dtype=np.str_``).
+
+For fixed-length CHARACTER arrays, values are truncated or space-padded to the declared Fortran length.
+
+### Unicode CHARACTER support
+
+Unicode CHARACTER values using ``selected_char_kind('ISO_10646')`` are supported for:
+
+- Module variables and parameters
+- Scalar procedure arguments and function return values
+- Explicit-size CHARACTER arrays
+- Allocatable module CHARACTER arrays
+
+Example Fortran declarations:
+
+````fortran
+integer, parameter :: CK = selected_char_kind('ISO_10646')
+character(kind=CK, len=100) :: uni_set
+character(kind=CK, len=100), dimension(3) :: uni_arr
+character(kind=CK, len=100), dimension(:), allocatable :: uni_alloc_arr
+````
+
+Example Python usage:
+
+````python
+import numpy as np
+import gfort2py as gf
+
+x = gf.fFort("./tests/build/unicode." + gf.lib_ext(), "./tests/build/unicode.mod")
+
+x.uni_set = "漢字Ω"
+print(x.uni_set.strip())
+
+x.uni_arr = np.array(["🚀🚀🚀", "🌍🌍🌍", "✨✨✨"], dtype=np.str_)
+print(x.uni_arr)
+
+x.alloc_uni_alloc_arr()
+print(x.uni_alloc_arr)
+````
+
+Current limitation: unicode CHARACTER dummy arguments with ``dimension(:)`` (assumed-shape) or ``dimension(..)`` (assumed-rank) are not considered stable yet.
 
 ### Derived types
 
@@ -231,7 +277,7 @@ python -m pip install pyquadp
 or from a git checkout:
 
 ````bash
-python -m pip install .[qaud]
+python -m pip install .[quad]
 ````
 
 For more details see pyQuadp's documentation, but briefly you can create a 
@@ -314,6 +360,9 @@ To run unit tests
 - [x] Allocatable strings (partial)
 - [x] Explicit Arrays of strings
 - [x] Allocatable arrays of strings
+- [x] Unicode strings (kind=4)
+- [x] Explicit Arrays of unicode strings (kind=4)
+- [x] Allocatable arrays of unicode strings (kind=4)
 - [ ] Classes
 - [ ] Abstract interfaces
 - [ ] Common blocks
@@ -338,6 +387,10 @@ To run unit tests
 - [x] Allocatable strings (Only for things that do not get altered inside the procedure)
 - [x] Explicit arrays of strings
 - [x] Allocatable arrays of strings
+- [x] Argument passing (unicode strings, kind=4)
+- [x] Explicit arrays of unicode strings (kind=4)
+- [ ] Assumed-shape arrays of unicode strings (kind=4)
+- [ ] Assumed-rank arrays of unicode strings (kind=4)
 - [x] Pointer arguments 
 - [x] Optional arguments
 - [x] Value arguments

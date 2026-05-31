@@ -1,12 +1,9 @@
+# SPDX-License-Identifier: GPL-2.0+
 import string
 import textwrap
-import random
-import numpy as np
-
 from dataclasses import dataclass
 
-import builtins
-import contextlib
+import numpy as np
 
 INDENT = " " * 4
 
@@ -30,9 +27,6 @@ py_proc_arg_array_check = string.Template(textwrap.dedent("""
             assert np.array_equal(result.args['${name}'], ${value})
             """).strip())
 
-py_proc_stdout = string.Template(textwrap.dedent("""
-            def test_${function}(self,capfd):
-            """).strip())
 
 py_capture_stdout = string.Template(textwrap.dedent("""
             out, err = capfd.readouterr()
@@ -223,8 +217,8 @@ import gfort2py as gf
 
 import pytest
 
-SO = f"./tests/${libname}.{gf.lib_ext()}"
-MOD = "./tests/${modname}.mod"
+SO = f"./tests/build/${libname}.{gf.lib_ext()}"
+MOD = "./tests/build/${modname}.mod"
 
 x = gf.fFort(SO, MOD)
 

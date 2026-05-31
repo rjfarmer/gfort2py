@@ -8,21 +8,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04]    
-        python-version: ['3.9', '3.10', '3.11', '3.12']    
+        os: [ubuntu-latest, ubuntu-24.04-arm]    
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']    
         toolchain:
-          - {compiler: gcc, version: 9}
-          - {compiler: gcc, version: 10}
-          - {compiler: gcc, version: 11}
-          - {compiler: gcc, version: 12}
           - {compiler: gcc, version: 13}
+          - {compiler: gcc, version: 14}
+          - {compiler: gcc, version: 15}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           persist-credentials: false
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
@@ -32,7 +30,7 @@ jobs:
           python -m pip install --upgrade pip==25.2
           python -m pip install build wheel pytest
 
-      - uses: fortran-lang/setup-fortran@v1
+      - uses: fortran-lang/setup-fortran@2a1b9c55897d827a9dfeb114408f3615e53b2b72 # v1
         id: setup-fortran
         with:
           compiler: ${{ matrix.toolchain.compiler }}
@@ -44,4 +42,10 @@ jobs:
   
       - name: Test
         run: python -m pytest -v
+        env:
+          PYTHONFAULTHANDLER: 1
+          PYTHONMALLOC: debug
+          MALLOC_CHECK_: 3
+          MALLOC_PERTURB_: 153
+          GFORT2PY_DT_INDEX_DEBUG: 1
 

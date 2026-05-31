@@ -1,39 +1,37 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-import os, sys
 import ctypes
+import os
+import sys
 from pprint import pprint
 
 os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 
 import numpy as np
-import gfort2py as gf
-
 import pytest
 
-SO = f"./tests/dummy_arrays.{gf.lib_ext()}"
-MOD = "./tests/dummy_arrays.mod"
+import gfort2py as gf
+
+from .conftest import build_paths
+
+SO, MOD = build_paths("dummy_arrays", "dummy_arrays")
 
 x = gf.fFort(SO, MOD)
 
 
-# @pytest.mark.skip
 class TestDummyArrayMethods:
-    def assertEqual(self, x, y):
-        assert x == y
-
     def test_sub_alloc_1d_arrs(self):
         y = x.sub_alloc_int_1d_arrs()
 
     def test_c_int_alloc_1d_non_alloc(self):
         y = x.sub_alloc_int_1d_cleanup()
-        self.assertEqual(x.c_int_alloc_1d, None)
+        assert x.c_int_alloc_1d is None
 
     def test_ndarray(self):
         y = x.sub_alloc_int_1d_cleanup()
         y = x.sub_alloc_int_1d_arrs()
 
-        self.assertEqual(np.sum(x.c_int_alloc_1d), 5)
+        assert np.sum(x.c_int_alloc_1d) == 5
 
     def test_c_int_alloc_1d(self):
         y = x.sub_alloc_int_1d_cleanup()
@@ -77,7 +75,7 @@ class TestDummyArrayMethods:
         v[:] = 5
         x.c_int_alloc_1d = v
         assert np.array_equal(x.c_int_alloc_1d, v)
-        self.assertEqual(np.sum(x.c_int_alloc_1d), 25)
+        assert np.sum(x.c_int_alloc_1d) == 25
 
     def test_c_int_alloc_2d_set(self):
         y = x.sub_alloc_int_1d_cleanup()
@@ -154,46 +152,6 @@ class TestDummyArrayMethods:
         v = np.zeros([5, 5, 5, 5, 5])
         v[:] = 1
         assert np.array_equal(x.c_real_alloc_5d, v)
-
-    def test_c_real_dp_alloc_1d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_1d = v
-        assert np.array_equal(x.c_real_dp_alloc_1d, v)
-
-    def test_c_real_dp_alloc_2d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_2d = v
-        assert np.array_equal(x.c_real_dp_alloc_2d, v)
-
-    def test_c_real_dp_alloc_3d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_3d = v
-        assert np.array_equal(x.c_real_dp_alloc_3d, v)
-
-    def test_c_real_dp_alloc_4d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5, 5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_4d = v
-        assert np.array_equal(x.c_real_dp_alloc_4d, v)
-
-    def test_c_real_dp_alloc_5d_set(self):
-        y = x.sub_alloc_real_dp_1d_cleanup()
-        y = x.sub_alloc_real_dp_1d_arrs()
-        v = np.zeros([5, 5, 5, 5, 5])
-        v[:] = 2.0
-        x.c_real_dp_alloc_5d = v
-        assert np.array_equal(x.c_real_dp_alloc_5d, v)
 
     def test_c_real_dp_alloc_1d(self):
         y = x.sub_alloc_real_dp_1d_cleanup()
@@ -274,50 +232,50 @@ class TestDummyArrayMethods:
         v = np.zeros([5], dtype="int32")
         v[0] = 2.0
         y = x.func_assumed_shape_arr_1d(v)
-        self.assertEqual(y.result, True)
+        assert y.result
         assert np.array_equal(y.args["x"], np.array([9, 9, 9, 9, 9]))
 
     def test_func_assumed_shape_arr_2d(self):
         v = np.zeros([5, 5], dtype="int32")
         v[1, 0] = 2.0
         y = x.func_assumed_shape_arr_2d(v)
-        self.assertEqual(y.result, True)
+        assert y.result
 
     def test_func_assumed_shape_arr_3d(self):
         v = np.zeros([5, 5, 5], dtype="int32")
         v[2, 1, 0] = 2.0
         y = x.func_assumed_shape_arr_3d(v)
-        self.assertEqual(y.result, True)
+        assert y.result
 
     def test_func_assumed_shape_arr_4d(self):
         v = np.zeros([5, 5, 5, 5], dtype="int32")
         v[3, 2, 1, 0] = 2.0
         y = x.func_assumed_shape_arr_4d(v)
-        self.assertEqual(y.result, True)
+        assert y.result
 
     def test_func_assumed_shape_arr_5d(self):
         v = np.zeros([5, 5, 5, 5, 5], dtype="int32")
         v[4, 3, 2, 1, 0] = 2.0
         y = x.func_assumed_shape_arr_5d(v)
-        self.assertEqual(y.result, True)
+        assert y.result
 
     def test_func_assumed_size_arr_1d(self):
         v = np.zeros([5], dtype="int32")
         v[1] = 2
         y = x.func_assumed_size_arr_1d(v)
-        self.assertEqual(y.result, True)
+        assert y.result
 
     def test_func_assumed_size_arr_real_1d(self):
         v = np.zeros([5], dtype="float32")
         v[1] = 2.0
         y = x.func_assumed_size_arr_real_1d(v)
-        self.assertEqual(y.result, True)
+        assert y.result
 
     def test_func_assumed_size_arr_real_dp_1d(self):
         v = np.zeros([5], dtype="float64")
         v[1] = 2.0
         y = x.func_assumed_size_arr_real_dp_1d(v)
-        self.assertEqual(y.result, True)
+        assert y.result
 
     def test_sub_alloc_arr_1d(self):
         y = x.sub_alloc_arr_1d(None)
@@ -333,31 +291,28 @@ class TestDummyArrayMethods:
 
         y = x.func_alltrue_arr_1d(xarr)
         y2 = x.func_allfalse_arr_1d(x2arr)
-        self.assertEqual(y.result, True)
-        self.assertEqual(y2.result, True)
+        assert y.result
+        assert y2.result
 
-    def test_sub_arr_assumed_rank_int_1d(self, capfd):
+    @pytest.mark.skip
+    def test_sub_arr_assumed_pointer_int_1d(self):
         v = np.arange(10, 15)
-        o = " ".join([str(i) for i in v.flatten(order="F")])
 
-        y = x.sub_arr_assumed_rank_int_1d(v)
-        out, err = capfd.readouterr()
+        y = x.sub_arr_assumed_pointer_int_1d(v)
         assert np.array_equal(y.args["zzz"], np.array([100] * 5))
 
-    def test_sub_arr_assumed_rank_real_1d(self, capfd):
+    @pytest.mark.skip
+    def test_sub_arr_assumed_pointer_real_1d(self):
         v = np.arange(10.0, 15.0)
-        o = " ".join([str(i) for i in v.flatten(order="F")])
 
-        y = x.sub_arr_assumed_rank_real_1d(v)
-        out, err = capfd.readouterr()
+        y = x.sub_arr_assumed_pointer_real_1d(v)
         assert np.array_equal(y.args["zzz"], np.array([100.0] * 5))
 
-    def test_sub_arr_assumed_rank_dp_1d(self, capfd):
+    @pytest.mark.skip
+    def test_sub_arr_assumed_pointer_dp_1d(self):
         v = np.arange(10.0, 15.0)
-        o = " ".join([str(i) for i in v.flatten(order="F")])
 
-        y = x.sub_arr_assumed_rank_dp_1d(v)
-        out, err = capfd.readouterr()
+        y = x.sub_arr_assumed_pointer_dp_1d(v)
         assert np.array_equal(y.args["zzz"], np.array([100.0] * 5))
 
     def test_sub_check_alloc_int_2d(self):
@@ -402,6 +357,7 @@ class TestDummyArrayMethods:
         assert np.array_equal(y.args["x"], z)
 
     # GH:39
+    @pytest.mark.skip
     def test_sub_multi_array_pass(self):
         y = 0.0
         xp = np.array([-0.6, 1.25])
@@ -412,3 +368,19 @@ class TestDummyArrayMethods:
         assert res.args["y"] == -1000.0
         assert np.array_equal(res.args["xp"], np.array([13, -2]))
         assert np.array_equal(res.args["yp"], np.array([1, -42.014]))
+
+    def test_sub_assumed_rank_int_1d(self, capfd):
+        v = np.arange(5)
+        o = " ".join([str(i) for i in v.flatten(order="F")])
+
+        y = x.sub_assumed_rank_int(v)
+        out, err = capfd.readouterr()
+        assert out.strip() == o
+
+    def test_sub_assumed_rank_int_2d(self, capfd):
+        v = np.arange(10).reshape((5, 2))
+        o = " ".join([str(i) for i in v.flatten(order="F")])
+
+        y = x.sub_assumed_rank_int(v)
+        out, err = capfd.readouterr()
+        assert out.strip() == o

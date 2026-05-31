@@ -1,0 +1,19 @@
+name: Run isort
+on: [push, pull_request]
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+      - uses: isort/isort-action@24d8a7a51d33ca7f36c3f23598dafa33f7071326 #v1.1.1
+        with:
+            requirementsFiles: "requirements.txt"

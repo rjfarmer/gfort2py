@@ -1,39 +1,120 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-import os, sys
 import ctypes
+import os
+import sys
 from pprint import pprint
 
 os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 
 import numpy as np
-import gfort2py as gf
-
 import pytest
 
-SO = f"./tests/dt.{gf.lib_ext()}"
-MOD = "./tests/dt.mod"
+import gfort2py as gf
+
+from .conftest import build_paths
+
+SO, MOD = build_paths("dt", "dt")
 
 x = gf.fFort(SO, MOD)
 
 
-# @pytest.mark.skip
+class TestDTRuntimeKinds:
+
+    def test_scalar_dt_set_get(self):
+        x.g_struct["a_int"] = 42
+        assert x.g_struct["a_int"] == 42
+
+    def test_explicit_dt_array_set_get(self):
+        x.g_struct_exp_1d[0]["a_int"] = 5
+        x.g_struct_exp_1d[1]["a_int"] = 9
+
+        assert x.g_struct_exp_1d[0]["a_int"] == 5
+        assert x.g_struct_exp_1d[1]["a_int"] == 9
+
+    def test_allocatable_dt_array_1d_set_get(self):
+        x.g_struct_alloc_1d = [{"a_int": 7}, {"a_int": 8}, {"a_int": 9}]
+
+        assert x.g_struct_alloc_1d[0]["a_int"] == 7
+        assert x.g_struct_alloc_1d[1]["a_int"] == 8
+        assert x.g_struct_alloc_1d[2]["a_int"] == 9
+
+    def test_allocatable_dt_array_1d_alloc_component_set_get(self):
+        x.g_struct_alloc_1d = [
+            {"a_int": 7, "c_int_alloc_1d": np.array([1, 2], dtype="int32")},
+            {"a_int": 8, "c_int_alloc_1d": np.array([3, 4, 5], dtype="int32")},
+            {"a_int": 9, "c_int_alloc_1d": np.array([6], dtype="int32")},
+        ]
+
+        assert x.g_struct_alloc_1d[0]["a_int"] == 7
+        assert np.array_equal(
+            x.g_struct_alloc_1d[0]["c_int_alloc_1d"], np.array([1, 2], dtype="int32")
+        )
+        assert x.g_struct_alloc_1d[1]["a_int"] == 8
+        assert np.array_equal(
+            x.g_struct_alloc_1d[1]["c_int_alloc_1d"],
+            np.array([3, 4, 5], dtype="int32"),
+        )
+        assert x.g_struct_alloc_1d[2]["a_int"] == 9
+        assert np.array_equal(
+            x.g_struct_alloc_1d[2]["c_int_alloc_1d"], np.array([6], dtype="int32")
+        )
+
+    def test_allocatable_dt_array_2d_set_get(self):
+        x.g_struct_alloc_2d = [
+            [{"a_int": 1}, {"a_int": 2}],
+            [{"a_int": 3}, {"a_int": 4}],
+        ]
+
+        assert x.g_struct_alloc_2d[0, 0]["a_int"] == 1
+        assert x.g_struct_alloc_2d[1, 0]["a_int"] == 3
+        assert x.g_struct_alloc_2d[0, 1]["a_int"] == 2
+        assert x.g_struct_alloc_2d[1, 1]["a_int"] == 4
+
+    def test_allocatable_dt_array_2d_alloc_component_realloc(self):
+        x.g_struct_alloc_2d = [
+            [
+                {"a_int": 1, "c_int_alloc_1d": np.array([10], dtype="int32")},
+                {"a_int": 2, "c_int_alloc_1d": np.array([20, 21], dtype="int32")},
+            ],
+            [
+                {"a_int": 3, "c_int_alloc_1d": np.array([30, 31, 32], dtype="int32")},
+                {"a_int": 4, "c_int_alloc_1d": np.array([40], dtype="int32")},
+            ],
+        ]
+
+        x.g_struct_alloc_2d[1, 0]["c_int_alloc_1d"] = np.array([99, 98], dtype="int32")
+
+        assert np.array_equal(
+            x.g_struct_alloc_2d[0, 0]["c_int_alloc_1d"], np.array([10], dtype="int32")
+        )
+        assert np.array_equal(
+            x.g_struct_alloc_2d[0, 1]["c_int_alloc_1d"],
+            np.array([20, 21], dtype="int32"),
+        )
+        assert np.array_equal(
+            x.g_struct_alloc_2d[1, 0]["c_int_alloc_1d"],
+            np.array([99, 98], dtype="int32"),
+        )
+        assert np.array_equal(
+            x.g_struct_alloc_2d[1, 1]["c_int_alloc_1d"], np.array([40], dtype="int32")
+        )
+
+
 class TestDTMethods:
-    def assertEqual(self, x, y):
-        assert x == y
 
     def test_dt_set_value(self):
         x.f_struct_simple["x"] = 1
         x.f_struct_simple["y"] = 0
         y = x.f_struct_simple
-        self.assertEqual(y["x"], 1)
-        self.assertEqual(y["y"], 0)
+        assert y["x"] == 1
+        assert y["y"] == 0
 
     def test_dt_set_dict(self):
         x.f_struct_simple = {"x": 5, "y": 5}
         y = x.f_struct_simple
-        self.assertEqual(y["x"], 5)
-        self.assertEqual(y["y"], 5)
+        assert y["x"] == 5
+        assert y["y"] == 5
 
     def test_dt_bad_dict(self):
         with pytest.raises(KeyError) as cm:
@@ -43,53 +124,52 @@ class TestDTMethods:
         with pytest.raises(TypeError) as cm:
             x.f_struct_simple["x"] = "asde"
 
-    def test_sub_dt_in_s_simple(self, capfd):
-        y = x.sub_f_simple_in({"x": 1, "y": 10})
-        out, err = capfd.readouterr()
+    def test_sub_dt_in_s_simple(self, fortran_output):
+        with fortran_output() as get_output:
+            y = x.sub_f_simple_in({"x": 1, "y": 10})
         o = " ".join([str(i) for i in [1, 10]])
-        self.assertEqual(out.strip(), o)
+        assert get_output().strip() == o
 
-    def test_sub_dt_out_s_simple(self, capfd):
+    def test_sub_dt_out_s_simple(self):
         y = x.sub_f_simple_out({})
-        out, err = capfd.readouterr()
-        self.assertEqual(y.args["x"]["x"], 1)
-        self.assertEqual(y.args["x"]["y"], 10)
+        assert y.args["x"]["x"] == 1
+        assert y.args["x"]["y"] == 10
 
-    def test_sub_dt_inout_s_simple(self, capfd):
-        y = x.sub_f_simple_inout({"x": 5, "y": 3})
-        out, err = capfd.readouterr()
+    def test_sub_dt_inout_s_simple(self, fortran_output):
+        with fortran_output() as get_output:
+            y = x.sub_f_simple_inout({"x": 5, "y": 3})
         o = "  ".join([str(i) for i in [5, 3]])
-        self.assertEqual(out.strip(), o)
-        self.assertEqual(y.args["zzz"]["x"], 1)
-        self.assertEqual(y.args["zzz"]["y"], 10)
+        assert get_output().strip() == o
+        assert y.args["zzz"]["x"] == 1
+        assert y.args["zzz"]["y"] == 10
 
-    def test_sub_dt_inoutp_s_simple(self, capfd):
-        y = x.sub_f_simple_inoutp({"x": 5, "y": 3})
-        out, err = capfd.readouterr()
+    def test_sub_dt_inoutp_s_simple(self, fortran_output):
+        with fortran_output() as get_output:
+            y = x.sub_f_simple_inoutp({"x": 5, "y": 3})
         o = "  ".join([str(i) for i in [5, 3]])
-        self.assertEqual(out.strip(), o)
-        self.assertEqual(y.args["zzz"]["x"], 1)
-        self.assertEqual(y.args["zzz"]["y"], 10)
+        assert get_output().strip() == o
+        assert y.args["zzz"]["x"] == 1
+        assert y.args["zzz"]["y"] == 10
 
     def test_nested_dts(self):
         x.g_struct["a_int"] = 10
-        self.assertEqual(x.g_struct["a_int"], 10)
+        assert x.g_struct["a_int"] == 10
         x.g_struct = {"a_int": 10, "f_struct": {"a_int": 3}}
-        self.assertEqual(x.g_struct["f_struct"]["a_int"], 3)
+        assert x.g_struct["f_struct"]["a_int"] == 3
         x.g_struct["f_struct"]["a_int"] = 8
-        self.assertEqual(x.g_struct["f_struct"]["a_int"], 8)
+        assert x.g_struct["f_struct"]["a_int"] == 8
         y = x.func_check_nested_dt()
-        self.assertEqual(y.result, True)
+        assert y.result == True
 
     def test_func_set_f_struct(self):
         y = x.func_set_f_struct()
-        self.assertEqual(y.result, True)
+        assert y.result == True
 
-        self.assertEqual(x.f_struct["a_int"], 5)
-        self.assertEqual(x.f_struct["a_int_lp"], 6)
-        self.assertEqual(x.f_struct["a_real"], 7.0)
-        self.assertEqual(x.f_struct["a_real_dp"], 8.0)
-        self.assertEqual(x.f_struct["a_str"], "9999999999")
+        assert x.f_struct["a_int"] == 5
+        assert x.f_struct["a_int_lp"] == 6
+        assert x.f_struct["a_real"] == 7.0
+        assert x.f_struct["a_real_dp"] == 8.0
+        assert x.f_struct["a_str"] == "9999999999"
 
         v = np.array([9, 10, 11, 12, 13], dtype="int32")
         assert np.array_equal(x.f_struct["b_int_exp_1d"], v)
@@ -99,20 +179,35 @@ class TestDTMethods:
 
     def test_func_set_f_struct2(self):
         y = x.func_set_f_struct()
-        self.assertEqual(y.result, True)
+        assert y.result == True
 
         x.f_struct["a_str"] = "a"
 
-        self.assertEqual(x.f_struct["a_str"], "a         ")
+        assert x.f_struct["a_str"] == "a         "
 
         x.f_struct["a_str"] = "         a"
 
-        self.assertEqual(x.f_struct["a_str"], "         a")
+        assert x.f_struct["a_str"] == "         a"
 
     def test_func_set_f_struct_array_alloc(self):
         y = x.func_set_f_struct()
 
         v = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], dtype="int32")
+        assert np.array_equal(x.f_struct["c_int_alloc_1d"], v)
+
+    def test_func_set_f_struct_array_alloc_set(self):
+        v = np.array([10, 20, 30, 40], dtype="int32")
+
+        x.f_struct["c_int_alloc_1d"] = v
+
+        assert np.array_equal(x.f_struct["c_int_alloc_1d"], v)
+
+    def test_func_set_f_struct_array_alloc_realloc_set(self):
+        x.f_struct["c_int_alloc_1d"] = np.array([10, 20, 30, 40], dtype="int32")
+        v = np.array([1, 2, 3], dtype="int32")
+
+        x.f_struct["c_int_alloc_1d"] = v
+
         assert np.array_equal(x.f_struct["c_int_alloc_1d"], v)
 
     def test_func_set_f_struct_array_ptr(self):
@@ -121,24 +216,44 @@ class TestDTMethods:
         v = np.array([9, 10, 11, 12, 13], dtype="int32")
         assert np.array_equal(x.f_struct["d_int_point_1d"], v)
 
-    # @pytest.mark.skip
-    def test_recur_dt(self):  # Skip for now
-        with pytest.raises(NotImplementedError) as cm:
-            x.r_recur["a_int"] = 9
-            self.assertEqual(x.r_recur["a_int"], 9)
-            x.r_recur["s_recur"]["a_int"] = 9
-            self.assertEqual(x.r_recur["s_recur"]["a_int"], 9)
-            x.r_recur["s_recur"]["s_recur"]["a_int"] = 9
-            self.assertEqual(x.r_recur["s_recur"]["s_recur"]["a_int"], 9)
+    def test_recur_dt(self):
+        x.r_recur["a_int"] = 9
+        assert x.r_recur["a_int"] == 9
+
+        x.r_recur["s_recur"]["a_int"] = 9
+        assert x.r_recur["s_recur"]["a_int"] == 9
+
+        x.r_recur["s_recur"]["s_recur"]["a_int"] = 9
+        assert x.r_recur["s_recur"]["s_recur"]["a_int"] == 9
+
+        y = x.check_recur()
+        assert y.result is True
+
+    def test_mutual_recur_dt(self):
+        x.r_recur_1["a_int"] = 11
+        assert x.r_recur_1["a_int"] == 11
+
+        x.r_recur_1["s_recur"]["a_int"] = 22
+        assert x.r_recur_1["s_recur"]["a_int"] == 22
+
+        x.r_recur_1["s_recur"]["s_recur"]["a_int"] = 33
+        assert x.r_recur_1["s_recur"]["s_recur"]["a_int"] == 33
+
+        x.r_recur_2["a_int"] = 44
+        assert x.r_recur_2["a_int"] == 44
+
+        x.r_recur_2["s_recur"]["a_int"] = 55
+        assert x.r_recur_2["s_recur"]["a_int"] == 55
+
+        x.r_recur_2["s_recur"]["s_recur"]["a_int"] = 66
+        assert x.r_recur_2["s_recur"]["s_recur"]["a_int"] == 66
 
     def test_arr_dt_exp_1d_set(self):
         x.g_struct_exp_1d[0]["a_int"] = 5
-        self.assertEqual(x.g_struct_exp_1d[0]["a_int"], 5)
+        assert x.g_struct_exp_1d[0]["a_int"] == 5
         x.g_struct_exp_1d[1]["a_int"] = 9
-        self.assertEqual(x.g_struct_exp_1d[1]["a_int"], 9)
-        self.assertEqual(
-            x.g_struct_exp_1d[0]["a_int"], 5
-        )  # recheck we didnt corrupt things
+        assert x.g_struct_exp_1d[1]["a_int"] == 9
+        assert x.g_struct_exp_1d[0]["a_int"] == 5  # recheck we didnt corrupt things
 
         with pytest.raises(IndexError) as cm:
             y = x.g_struct_exp_1d[10]
@@ -153,51 +268,133 @@ class TestDTMethods:
         x.g_struct_exp_2d[0, 1]["a_int"] = 3
         x.g_struct_exp_2d[1, 1]["a_int"] = 4
 
-        self.assertEqual(x.g_struct_exp_2d[0, 0]["a_int"], 1)
-        self.assertEqual(x.g_struct_exp_2d[1, 0]["a_int"], 2)
-        self.assertEqual(x.g_struct_exp_2d[0, 1]["a_int"], 3)
-        self.assertEqual(x.g_struct_exp_2d[1, 1]["a_int"], 4)
+        assert x.g_struct_exp_2d[0, 0]["a_int"] == 1
+        assert x.g_struct_exp_2d[1, 0]["a_int"] == 2
+        assert x.g_struct_exp_2d[0, 1]["a_int"] == 3
+        assert x.g_struct_exp_2d[1, 1]["a_int"] == 4
 
         y = x.check_g_struct_exp_2d()
-        self.assertEqual(y.result, True)
+        assert y.result == True
 
     def test_sub_struct_exp_1d(self):
         y = x.sub_struct_exp_1d({})
 
         s = y.args["x"]
 
-        self.assertEqual(s[0]["a_int"], 5)
-        self.assertEqual(s[1]["a_int"], 9)
+        assert s[0]["a_int"] == 5
+        assert s[1]["a_int"] == 9
 
         assert np.array_equal(s[0]["b_int_exp_1d"], np.array([66, 66, 66, 66, 66]))
         assert np.array_equal(s[1]["b_int_exp_1d"], np.array([77, 77, 77, 77, 77]))
 
-    def test_fvar_as_arg(self, capfd):
+    def test_fvar_as_arg(self, fortran_output):
         y = x.f_struct_simple
         y["x"] = 99
         y["y"] = 98
 
-        z = x.sub_f_simple_in(y)
-        out, err = capfd.readouterr()
+        with fortran_output() as get_output:
+            z = x.sub_f_simple_in(y)
         o = "99 98"
-        self.assertEqual(out.strip(), o)
+        assert get_output().strip() == o
 
-        z2 = x.sub_f_simple_in(z.args["x"])
-        out, err = capfd.readouterr()
+        with fortran_output() as get_output:
+            z2 = x.sub_f_simple_in(z.args["x"])
         o = "99 98"
-        self.assertEqual(out.strip(), o)
+        assert get_output().strip() == o
 
     def test_func_return_s_struct_nested_2(self):
         y = x.func_return_s_struct_nested_2()
-        self.assertEqual(y.result["a_int"], 123)
-        self.assertEqual(y.result["f_nested"]["a_int"], 234)
-        self.assertEqual(y.result["f_nested"]["f_struct"]["a_int"], 345)
+        assert y.result["a_int"] == 123
+        assert y.result["f_nested"]["a_int"] == 234
+        assert y.result["f_nested"]["f_struct"]["a_int"] == 345
 
-    def test_derived_type_intent_out(self, capfd):
+    def test_func_return_s_struct_nested_2_no_hidden_start_args(self):
+        # Regression guard: scalar DT function returns should not be passed via
+        # hidden start arguments (platform-sensitive ABI path on macOS).
+        proc = x.func_return_s_struct_nested_2
+        y = proc()
+
+        assert proc._args_start is None
+        assert y.result["a_int"] == 123
+        assert y.result["f_nested"]["a_int"] == 234
+        assert y.result["f_nested"]["f_struct"]["a_int"] == 345
+
+    def test_func_return_s_struct_basic_exp_1d(self):
+        y = x.func_return_s_struct_basic_exp_1d()
+        s = y.result
+
+        assert s[0]["a_int"] == 11
+        assert s[1]["a_int"] == 22
+        assert np.array_equal(s[0]["b_int_exp_1d"], np.array([1, 2, 3, 4, 5]))
+        assert np.array_equal(s[1]["b_int_exp_1d"], np.array([6, 7, 8, 9, 10]))
+
+    def test_func_return_s_struct_basic_exp_2d(self):
+        y = x.func_return_s_struct_basic_exp_2d()
+        s = y.result
+
+        assert s[0, 0]["a_int"] == 101
+        assert s[1, 0]["a_int"] == 102
+        assert s[0, 1]["a_int"] == 103
+        assert s[1, 1]["a_int"] == 104
+
+    def test_func_return_s_struct_basic_alloc_1d(self):
+        y = x.func_return_s_struct_basic_alloc_1d()
+        s = y.result
+
+        assert s[0]["a_int"] == 31
+        assert s[1]["a_int"] == 32
+        assert s[2]["a_int"] == 33
+
+    def test_func_return_s_struct_basic_alloc_2d(self):
+        y = x.func_return_s_struct_basic_alloc_2d()
+        s = y.result
+
+        assert s[0, 0]["a_int"] == 41
+        assert s[1, 0]["a_int"] == 42
+        assert s[0, 1]["a_int"] == 43
+        assert s[1, 1]["a_int"] == 44
+
+    def test_func_return_s_struct_nested_2_exp_1d(self):
+        y = x.func_return_s_struct_nested_2_exp_1d()
+        s = y.result
+
+        assert s[0]["a_int"] == 1001
+        assert s[1]["a_int"] == 1002
+        assert s[0]["f_nested"]["a_int"] == 2001
+        assert s[1]["f_nested"]["a_int"] == 2002
+        assert s[0]["f_nested"]["f_struct"]["a_int"] == 3001
+        assert s[1]["f_nested"]["f_struct"]["a_int"] == 3002
+
+    def test_func_return_s_struct_nested_2_alloc_1d(self):
+        y = x.func_return_s_struct_nested_2_alloc_1d()
+        s = y.result
+
+        assert s[0]["a_int"] == 4001
+        assert s[1]["a_int"] == 4002
+        assert s[0]["f_nested"]["a_int"] == 5001
+        assert s[1]["f_nested"]["a_int"] == 5002
+        assert s[0]["f_nested"]["f_struct"]["a_int"] == 6001
+        assert s[1]["f_nested"]["f_struct"]["a_int"] == 6002
+
+    def test_func_return_s_struct_nested_2_alloc_2d(self):
+        y = x.func_return_s_struct_nested_2_alloc_2d()
+        s = y.result
+
+        assert s[0, 0]["a_int"] == 7001
+        assert s[1, 0]["a_int"] == 7002
+        assert s[0, 1]["a_int"] == 7003
+        assert s[1, 1]["a_int"] == 7004
+
+        assert s[0, 0]["f_nested"]["a_int"] == 8001
+        assert s[1, 0]["f_nested"]["a_int"] == 8002
+        assert s[0, 1]["f_nested"]["a_int"] == 8003
+        assert s[1, 1]["f_nested"]["a_int"] == 8004
+
+    def test_derived_type_intent_out(self, fortran_output):
         # GH: #32
         p = {}
-        y = x.derived_structure(p)
-        out, err = capfd.readouterr()
-        self.assertEqual(out.strip(), "10 20 30 40")
+        with fortran_output() as get_output:
+            y = x.derived_structure(p)
+        assert get_output().strip() == "10 20 30 40"
 
         assert np.all(y.args["p"]["iq"] == np.array([10, 20, 30, 40]))

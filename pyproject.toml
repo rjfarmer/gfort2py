@@ -1,6 +1,5 @@
 [build-system]
 requires = ["setuptools>=64", "wheel", "setuptools_scm[toml]>=7.1.0"]
-# Python 3.7 doesnt go above 7.1.0
 
 build-backend = "setuptools.build_meta"
 
@@ -8,6 +7,11 @@ build-backend = "setuptools.build_meta"
 testpaths = [
     "tests",
 ]
+
+markers = [
+    "skipIfWindows: Windows tests can be flaky",
+]
+
 addopts = "-s"
 
 [tool.setuptools_scm]
@@ -22,32 +26,43 @@ authors = [
 ]
 description = "Python bindings for Fortran"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = "GPL-2.0-or-later"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Code Generators",
 ]
 
 dependencies = [
-    "numpy >=1.13.0",
+    "numpy >=2.0.0",
     "platformdirs >=3",
-    "dataclasses_json >=0.6",
+    "gfModParser >= 1.2.1"
 ]
 
 dynamic = ["version"]
 
-[tool.setuptools]
-packages = ["gfort2py"]
-
-
 [project.optional-dependencies]
 test = ['pytest']
-quad = ['pyquadp']
+quad = ['pyquadp >= 2.0.2']
 dev = ['pre-commit','black']
+types = ["mypy","types-setuptools", "types-toml"]
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+exclude = ["gfort2py/old"]
+ignore_missing_imports = true
+
+[tool.setuptools.packages.find]
+where = ["gfort2py"]
+
+[tool.bandit]
+exclude_dirs = ["tests", "gfort2py/old", ".venv", ".github"]
+skips = ["B603", "B404"]

@@ -1,18 +1,20 @@
 # SPDX-License-Identifier: GPL-2.0+
 # This file is auto generated do not edit by hand
 
-import os, sys
 import ctypes
+import os
+import sys
 
 os.environ["_GFORT2PY_TEST_FLAG"] = "1"
 
 import numpy as np
-import gfort2py as gf
-
 import pytest
 
-SO = f"./tests/t_vars_modules.{gf.lib_ext()}"
-MOD = "./tests/vars_modules.mod"
+import gfort2py as gf
+
+from .conftest import build_paths
+
+SO, MOD = build_paths("t_vars_modules", "vars_modules")
 
 x = gf.fFort(SO, MOD)
 

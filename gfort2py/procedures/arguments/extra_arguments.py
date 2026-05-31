@@ -1,0 +1,69 @@
+# SPDX-License-Identifier: GPL-2.0+
+
+import ctypes
+from typing import Any
+
+import gfModParser as gf
+import numpy as np
+
+from ...utils import strlen_ctype
+from .arguments import fArguments
+
+
+class fArgumentsExtra(fArguments):
+    def __init__(
+        self,
+        procedure: gf.Symbol,
+        module: gf.Module,
+        values: tuple[tuple[Any, ...], dict[str, Any]],
+        arguments: fArguments,
+    ):
+        super().__init__(procedure=procedure, module=module, values=values)
+        self._ctypes: list[Any] = []
+        self._arguments = arguments
+
+    def _string_length(self, value: Any) -> int:
+        if value is None:
+            return 0
+        if isinstance(value, np.ndarray):
+            if np.issubdtype(value.dtype, np.str_):
+                flat = np.asfortranarray(value).ravel(order="F")
+                if flat.size == 0:
+                    return 0
+                return max(len(str(item).encode("utf-8")) for item in flat)
+            return int(value.dtype.itemsize)
+        if isinstance(value, bytes):
+            return len(value)
+        if isinstance(value, str):
+            return len(value.encode("utf-8"))
+        try:
+            return len(value)
+        except TypeError:
+            return 0
+
+    def set_values(self):
+        """Resolve hidden trailing arguments expected by gfortran ABI."""
+        self._ctypes = []
+
+        for key in self.procedure.properties.formal_argument:
+            symbol = self.module[key]
+            name = symbol.name
+            arg = self._arguments.args[name]
+            is_character = symbol.type.lower() == "character"
+            is_allocatable_character = (
+                is_character and symbol.properties.attributes.allocatable
+            )
+
+            if is_character and not is_allocatable_character:
+                length = self._string_length(arg.value)
+                self._ctypes.append(strlen_ctype()(length))
+
+            if symbol.properties.attributes.optional and not is_character:
+                marker = 1 if arg.set and arg.value is not None else 0
+                self._ctypes.append(ctypes.c_byte(marker))
+
+    def get_ctypes(self) -> list[Any]:
+        return self._ctypes
+
+    def get_values(self) -> dict[str, Any]:
+        return {}

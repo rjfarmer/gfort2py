@@ -2,19 +2,23 @@
 
 import ctypes
 import itertools
-from pprint import pprint
-import platform
 import os
+import platform
 import subprocess
 import sys
-from typing import List
+from pprint import pprint
+from typing import Type
 
-from .fUnary import run_unary
+from packaging.version import Version
+
+from .compilation.platform import PlatformError, factory_platform
+
+# from .fUnary import run_unary
 
 _TEST_FLAG = os.environ.get("_GFORT2PY_TEST_FLAG") is not None
 
 
-def copy_array(src, dst, length, size):
+def copy_array(src: int, dst: int, length: int, size: int):
     ctypes.memmove(
         dst,
         src,
@@ -22,85 +26,95 @@ def copy_array(src, dst, length, size):
     )
 
 
-def resolve_other_args(obj, other_args, module, lib, fProc):
-    """
-    We want to iterate over the components of obj
-    and if they are symbol_refs look them up in other_args.
-
-    This way we can resolve attributes that are runtime set,
-    for instance dimension(n) arrays, where n is a dummy argument
-
-    For now limit to array bounds
-
-    fProc is needed in case we have to call a user function. We can't
-    import it as utils.py is imported by fProc.py itself
-    """
-
-    if obj.is_array():
-        for i in itertools.chain(obj.sym.array_spec.lower, obj.sym.array_spec.upper):
-            i = _resolve_arg(i, other_args, module, lib, fProc)
-
-    if obj.is_char():
-        obj.sym.ts.charlen = _resolve_arg(
-            obj.sym.ts.charlen, other_args, module, lib, fProc
-        )
-
-    return obj
+def get_c_runtime() -> ctypes.CDLL:
+    if os.name == "nt":
+        try:
+            return ctypes.CDLL("ucrtbase.dll")
+        except OSError:
+            return ctypes.CDLL("msvcrt.dll")
+    return ctypes.CDLL(None)
 
 
-def _resolve_arg(arg, other_args, module, lib, fProc):
-    if not hasattr(arg, "exp_type"):
-        return arg
-
-    if arg.exp_type == "CONSTANT":
-        return arg
-    elif arg.exp_type == "VARIABLE":
-        # Sometimes we try re-resolving already resolved arguments
-        # so skip if value is not a symbol_ref
-        if hasattr(arg._saved_value, "ref"):
-            ref = arg._saved_value.ref
-            for j in other_args:
-                if ref == j.symbol_ref:
-                    arg.value = j.value
-    elif arg.exp_type == "OP":
-        # Unary operator
-        op = arg.unary_op
-        arg1 = _resolve_arg(arg.unary_args[0], other_args, module, lib, fProc)
-        arg2 = _resolve_arg(arg.unary_args[1], other_args, module, lib, fProc)
-        arg.value = run_unary(op, arg1.value, arg2.value)
-    elif arg.exp_type == "FUNCTION":
-        # User supplied function
-        func_ref = arg.value.ref
-        # Lookup function
-        func_sym = module[func_ref]
-        func = fProc(lib, func_sym, module)
-        # Lookup args
-        # TODO: Only works for single argument functions for now
-        arg = _resolve_arg(module[arg.args.value.ref], other_args, module, lib, fProc)
-        for a in other_args:
-            if a.symbol_ref == arg.head.id:
-                func_arg = a.value
-                break
-
-        arg.value = func(func_arg).result
-
-    return arg
+def strlen_ctype():
+    """Return the ABI integer ctype used for hidden string-length arguments."""
+    if ctypes.sizeof(ctypes.c_void_p) == 8:
+        return ctypes.c_int64
+    return ctypes.c_int32
 
 
-def library_ext():
+# def resolve_other_args(obj, other_args, module, lib, fProc):
+#     """
+#     We want to iterate over the components of obj
+#     and if they are symbol_refs look them up in other_args.
+
+#     This way we can resolve attributes that are runtime set,
+#     for instance dimension(n) arrays, where n is a dummy argument
+
+#     For now limit to array bounds
+
+#     fProc is needed in case we have to call a user function. We can't
+#     import it as utils.py is imported by fProc.py itself
+#     """
+
+#     if obj.is_array():
+#         for i in itertools.chain(obj.sym.array_spec.lower, obj.sym.array_spec.upper):
+#             i = _resolve_arg(i, other_args, module, lib, fProc)
+
+#     if obj.is_char():
+#         obj.sym.ts.charlen = _resolve_arg(
+#             obj.sym.ts.charlen, other_args, module, lib, fProc
+#         )
+
+#     return obj
+
+
+# def _resolve_arg(arg, other_args, module, lib, fProc):
+#     if not hasattr(arg, "exp_type"):
+#         return arg
+
+#     if arg.exp_type == "CONSTANT":
+#         return arg
+#     elif arg.exp_type == "VARIABLE":
+#         # Sometimes we try re-resolving already resolved arguments
+#         # so skip if value is not a symbol_ref
+#         if hasattr(arg._saved_value, "ref"):
+#             ref = arg._saved_value.ref
+#             for j in other_args:
+#                 if ref == j.symbol_ref:
+#                     arg.value = j.value
+#     elif arg.exp_type == "OP":
+#         # Unary operator
+#         op = arg.unary_op
+#         arg1 = _resolve_arg(arg.unary_args[0], other_args, module, lib, fProc)
+#         arg2 = _resolve_arg(arg.unary_args[1], other_args, module, lib, fProc)
+#         arg.value = run_unary(op, arg1.value, arg2.value)
+#     elif arg.exp_type == "FUNCTION":
+#         # User supplied function
+#         func_ref = arg.value.ref
+#         # Lookup function
+#         func_sym = module[func_ref]
+#         func = fProc(lib, func_sym, module)
+#         # Lookup args
+#         # TODO: Only works for single argument functions for now
+#         arg = _resolve_arg(module[arg.args.value.ref], other_args, module, lib, fProc)
+#         for a in other_args:
+#             if a.symbol_ref == arg.head.id:
+#                 func_arg = a.value
+#                 break
+
+#         arg.value = func(func_arg).result
+
+#     return arg
+
+
+def lib_ext() -> str:
     """
     Determine shared library extension for a current os_platform
     """
-    os_platform = platform.system()
-    if os_platform == "Darwin":
-        return "dylib"
-    elif os_platform == "Windows" or "CYGWIN" in os_platform:
-        return "dll"
-    else:
-        return "so"
+    return factory_platform().library_ext
 
 
-def fc_path():
+def fc_path() -> str:
     """
     Guess location of gfortran compiler
     """
@@ -113,80 +127,37 @@ def fc_path():
         if os.path.exists("/usr/local/bin/gfortran"):
             return "/usr/local/bin/gfortran"
 
-    cmd = "where" if os_platform == "Windows" else "which"
-    x = os.path.normpath(
-        subprocess.run([cmd, "gfortran"], capture_output=True).stdout.decode().strip()
-    )
-
-    x = x.split()
-
-    fc = None
     if _TEST_FLAG and os_platform == "Windows":
-        for i in x:
-            if "Chocolatey" in i:
-                # Hardcode the choice for testing
-                fc = i.strip()
-                break
-    else:
-        fc = x[0].strip()
+        # Keep deterministic test behavior when where.exe returns multiple paths.
+        result = subprocess.run(["where", "gfortran"], capture_output=True, check=False)
+        parts = result.stdout.decode().split()
+        for item in parts:
+            if "Chocolatey" in item:
+                return item.strip()
 
-    if fc is None:
-        raise ValueError("Did not find a gfortran compilier")
-
-    # Windows may return several possible paths
-    return fc
+    try:
+        return str(factory_platform().fcpath())
+    except (PlatformError, FileNotFoundError, OSError) as exc:
+        raise ValueError("Did not find a gfortran compiler") from exc
 
 
-def is_64bit():
+def is_64bit() -> bool:
     return platform.architecture()[0] == "64bit"
 
 
-def is_big_endian():
+def is_big_endian() -> bool:
     return sys.byteorder == "big"
 
 
-def is_ppc64le():
+def is_ppc64le() -> bool:
     return platform.machine() == "ppc64le"
 
 
-def load_lib(libname):
-    kwargs = {}
-    if platform.system() == "Windows":
-        libname = os.path.realpath(libname)
-        if sys.version_info.major >= 3:
-            if sys.version_info.minor >= 8:
-                os.add_dll_directory(os.path.dirname(libname))
-                kwargs["winmode"] = 0
-
-    if not os.path.exists(libname):
-        raise FileNotFoundError(f"Can't find {libname}")
-
-    return ctypes.CDLL(libname, **kwargs)
-
-
-def bracket_split(string) -> List[str]:
-    def _helper(substring):
-        items = []
-        tmp = []
-        for item in substring:
-            if item == "(":
-                result, closeparen = _helper(substring)
-                if not closeparen:
-                    raise ValueError("Unbalanced parentheses")
-                items.append(result)
-            elif item == ")":
-                t = "".join(tmp).strip()
-                if len(t):
-                    items.append(t)
-                return items, True
-            else:
-                if item != " ":
-                    tmp.append(item)
-                else:
-                    t = "".join(tmp).strip()
-                    if len(t):
-                        items.append(t)
-                        tmp = []
-        return items, False
-
-    return _helper(iter(string))[0]
+def gfortran_version(fc_path: str) -> Version:
+    """
+    Get gfortran version as a Version object
+    """
+    output = subprocess.run(
+        [fc_path, "-dumpversion"], capture_output=True
+    ).stdout.decode()
+    return Version(output.strip())
