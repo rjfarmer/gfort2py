@@ -27,6 +27,10 @@ module dt
     TYPE s_simple
         integer           :: x,y
     END TYPE s_simple
+
+    TYPE s_struct_cmplx
+        complex, dimension(3) :: a_cmplx_exp_1d
+    END TYPE s_struct_cmplx
     
     
     TYPE s_struct_nested
@@ -40,6 +44,7 @@ module dt
     END TYPE s_struct_nested_2
     
     TYPE(s_simple) :: f_struct_simple
+    TYPE(s_struct_cmplx) :: f_struct_cmplx
     
     TYPE s_recursive
         integer           :: a_int

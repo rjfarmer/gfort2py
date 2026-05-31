@@ -14,6 +14,7 @@ from ..compilation import Compile, CompileArgs, Modulise
 from ..utils import copy_array, is_64bit
 from .base import AllocStrategy, f_type
 from .module import get_module
+from .numpy_convert import to_numpy_array_with_dtype
 
 __all__ = [
     "ftype_dt",
@@ -562,7 +563,7 @@ class ftype_dt(_DTModuleResolutionMixin, f_type):
         if comp.array.is_explicit:
             shape = self._component_shape(comp)
             arr = np.ctypeslib.as_array(value).reshape(shape, order="F")
-            return arr.astype(dtype)
+            return to_numpy_array_with_dtype(arr, dtype)
 
         if value.base_addr is None:
             return None

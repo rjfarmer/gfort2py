@@ -18,6 +18,7 @@ from ..compilation import Compile, CompileArgs, Modulise
 from ..utils import copy_array, is_64bit
 from .base import AllocStrategy, f_type
 from .character import ftype_character
+from .numpy_convert import to_numpy_array_with_dtype
 
 
 class AllocationError(Exception):
@@ -27,18 +28,6 @@ class AllocationError(Exception):
 # Cache compiled allocator entry points by (generated module name, compile args)
 # so repeated array marshaling avoids spawning the compiler each call.
 _ALLOCATOR_CACHE: dict[tuple[str, str], tuple[Any, Any, Any]] = {}
-
-
-def _to_numpy_array_with_dtype(array: np.ndarray, dtype: np.dtype) -> np.ndarray:
-    """Convert array to dtype, handling ctypes structured complex scalars."""
-    if (
-        array.dtype.fields is not None
-        and "real" in array.dtype.fields
-        and "imag" in array.dtype.fields
-    ):
-        return (array["real"] + 1j * array["imag"]).astype(dtype, copy=False)
-
-    return array.astype(dtype, copy=False)
 
 
 class ftype_explicit_array(f_type, metaclass=ABCMeta):
@@ -173,7 +162,7 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
             )
             return self._value
 
-        self._value = _to_numpy_array_with_dtype(
+        self._value = to_numpy_array_with_dtype(
             np.ctypeslib.as_array(self._ctype).reshape(self.shape, order="F"),
             self._array_dtype(),
         )
@@ -437,7 +426,7 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
                 arr = arr.reshape(self._shape, order="F")
             return arr
 
-        arr = _to_numpy_array_with_dtype(
+        arr = to_numpy_array_with_dtype(
             np.ctypeslib.as_array(self._ctype),
             self._array_dtype(),
         )
