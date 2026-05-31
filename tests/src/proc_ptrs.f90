@@ -13,6 +13,8 @@ module proc_ptrs
           
     procedure(func_func_run), pointer:: p_func_func_run_ptr => NULL()
     procedure(func_func_run), pointer:: p_func_func_run_ptr2 => func_func_run
+    procedure(proc_proc_func_arg), pointer:: p_proc_proc_func_arg_ptr => proc_proc_func_arg
+    procedure(sub_null_proc_ptr), pointer:: p_sub_null_proc_ptr => sub_null_proc_ptr
     
     procedure(func_func_run_dp), pointer:: p_func_func_run_dp_ptr => NULL()
 

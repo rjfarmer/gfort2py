@@ -38,11 +38,18 @@ class TestProcPtrsMethods:
 
     def test_proc_ptr_ffunc2(self):
         x.sub_null_proc_ptr()
-        y = x.p_func_func_run_ptr2(1)  # Allready set
+        y = x.p_func_func_run_ptr2(1)  # Already set
 
         x.p_func_func_run_ptr2 = x.func_func_run
         y = x.p_func_func_run_ptr2(10)
         assert y.result == 100
+
+    def test_proc_pointer_bind_from_proc_pointer(self):
+        x.p_func_func_run_ptr2 = x.func_func_run2
+        x.p_func_func_run_ptr = x.p_func_func_run_ptr2
+
+        y = x.p_func_func_run_ptr(7)
+        assert y.result == 14
 
     def test_proc_update(self):
         x.sub_null_proc_ptr()
@@ -85,4 +92,11 @@ class TestProcPtrsMethods:
         x.p_func_func_run_ptr = x.func_func_run
 
         y = x.proc_proc_func_arg(x.p_func_func_run_ptr)
+        assert y.result == 90
+
+    def test_proc_pointer_proc_pointer_dummy(self):
+        x.sub_null_proc_ptr()
+        x.p_func_func_run_ptr = x.func_func_run
+
+        y = x.p_proc_proc_func_arg_ptr(x.p_func_func_run_ptr)
         assert y.result == 90

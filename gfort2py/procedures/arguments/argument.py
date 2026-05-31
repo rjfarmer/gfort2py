@@ -129,7 +129,7 @@ class fArg(metaclass=ABCMeta):
                     slot = ctypes.c_void_p(addr)
 
                 self._procedure_pointer_slot = slot
-                self._ctype = ctypes.byref(slot)
+                self._ctype = ctypes.pointer(slot)
             else:
                 self._procedure_pointer_slot = None
                 self._ctype = cproc

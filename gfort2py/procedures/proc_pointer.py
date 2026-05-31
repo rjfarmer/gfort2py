@@ -25,6 +25,13 @@ class fProcPointer(fFunc):
         interface_definition = module[interface_ref]
         super().__init__(lib, interface_definition, module)
 
+    def _set_return(self):
+        if self.definition.is_subroutine:
+            self._proc.argtypes = None
+            return
+
+        super()._set_return()
+
     def _pointer_slot(self) -> ctypes.c_void_p:
         return ctypes.c_void_p.in_dll(self._lib, self.pointer_definition.mangled_name)
 
@@ -36,6 +43,11 @@ class fProcPointer(fFunc):
         """Bind this pointer to another callable procedure-like object."""
         if value is None:
             self._pointer_slot().value = None
+            return
+
+        source_addr = getattr(value, "address", None)
+        if source_addr is not None:
+            self._pointer_slot().value = source_addr
             return
 
         ctype = getattr(value, "ctype", None)
@@ -128,6 +140,24 @@ class fProcPointer(fFunc):
             self._cleanup_return_arguments()
 
     @property
+    def result(self):
+        if self.definition.is_subroutine:
+            return None
+
+        return super().result
+
+    @result.setter
+    def result(self, value):
+        if self.definition.is_subroutine:
+            self._result = None
+            return
+
+        fFunc.result.fset(self, value)
+
+    @property
     def __doc__(self):
-        ftype = f"{str(self.return_var)} function {self.pointer_definition.name}"
+        if self.definition.is_subroutine:
+            ftype = f"subroutine {self.pointer_definition.name}"
+        else:
+            ftype = f"{str(self.return_var)} function {self.pointer_definition.name}"
         return f"{ftype} ({self._doc_args()})"
