@@ -138,22 +138,43 @@ class fReturnArrayArguments(fReturnArguments):
 
         return ctx
 
-    def _resolve_bound(self, expr: Any, ctx: dict[str, Any]) -> int:
+    def _apply_interface_op(self, op_name: str, left: Any, right: Any) -> Any:
+        if op_name == "PARENTHESES":
+            return left
+
+        op = self.module.interface.op(op_name)
+        if op is None:
+            raise NotImplementedError(f"Operator {op_name} is not supported")
+
+        return op(left, right)
+
+    def _resolve_expression(self, expr: Any, ctx: dict[str, Any]) -> int:
+        exp_type = getattr(expr, "type", None)
+
+        if exp_type is not None and hasattr(exp_type, "unary_op"):
+            left_expr, right_expr = exp_type.unary_args
+            left = self._resolve_expression(left_expr, ctx)
+            right = self._resolve_expression(right_expr, ctx)
+            return int(self._apply_interface_op(exp_type.unary_op, left, right))
+
         value = getattr(expr, "value", expr)
 
-        if isinstance(value, (int, np.integer)):
+        if isinstance(value, (int, np.integer, bool, np.bool_)):
             return int(value)
 
         if isinstance(value, str):
             if value in ctx:
                 return int(ctx[value])
-            if value.isdigit():
-                return int(value)
+
+            raise ValueError(f"Array bound variable {value!r} is unresolved at runtime")
 
         if value is None:
             raise ValueError("Array bound is unresolved at runtime")
 
         return int(value)
+
+    def _resolve_bound(self, expr: Any, ctx: dict[str, Any]) -> int:
+        return self._resolve_expression(expr, ctx)
 
     def _resolve_shape(self) -> tuple[int, ...]:
         try:

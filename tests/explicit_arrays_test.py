@@ -11,8 +11,7 @@ import numpy as np
 import pytest
 
 import gfort2py as gf
-
-from .conftest import build_paths
+from tests.conftest import build_paths
 
 SO, MOD = build_paths("explicit_arrays", "explicit_arrays")
 
@@ -254,28 +253,24 @@ class TestExplicitArrayMethods:
         y = x.func_logical_multi(1.0, 2.0, xarr, 3.0, 4.0)
         assert y.result
 
-    @pytest.mark.skip
     def test_mesh_exp(self):
         # Github issue #13
         i = 5
         y = x.func_mesh_exp(i)
-        assert np.array_equal(y.result, np.arange(0, i + 1 + 1))
+        assert np.array_equal(y.result, np.arange(1, i + 1 + 1))
 
-    @pytest.mark.skip
     def test_mesh_exp2(self):
         i = 5
         z = np.zeros(i + 1)
         y = x.func_mesh_exp2(z, i)
         assert np.array_equal(y.args["x"], np.arange(1, i + 1 + 1))
 
-    @pytest.mark.skip
     def test_mesh_exp3(self):
         i = 5
         z = np.zeros((i * 2) + 1)
         y = x.func_mesh_exp3(z, i)
         assert np.array_equal(y.args["x"], np.arange(1, (i * 2) + 1 + 1))
 
-    @pytest.mark.skip
     def test_mesh_exp4(self):
         i = 5
         z = np.zeros(((i + 3) * 2) + 1)
