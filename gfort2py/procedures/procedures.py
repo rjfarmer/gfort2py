@@ -41,7 +41,7 @@ class fProcedure(metaclass=abc.ABCMeta):
         if callable(release):
             try:
                 release()
-            except Exception:
+            except (AttributeError, TypeError, ValueError, ctypes.ArgumentError):
                 pass
 
     def __init__(

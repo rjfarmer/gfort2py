@@ -180,6 +180,6 @@ class fArg(metaclass=ABCMeta):
         if callable(release):
             try:
                 release()
-            except Exception:
+            except (AttributeError, TypeError, ValueError, ctypes.ArgumentError):
                 # Cleanup is best-effort and should not mask call results.
                 pass

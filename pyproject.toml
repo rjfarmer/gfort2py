@@ -62,3 +62,7 @@ ignore_missing_imports = true
 
 [tool.setuptools.packages.find]
 where = ["gfort2py"]
+
+[tool.bandit]
+exclude_dirs = ["tests", "gfort2py/old", ".venv", ".github"]
+skips = ["B603", "B404"]
