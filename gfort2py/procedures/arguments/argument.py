@@ -23,6 +23,8 @@ class fArg(metaclass=ABCMeta):
         type(c).__init__(c)  # type: ignore[misc]
         self.base = c
         self._ctype = None
+        self._procedure_value = None
+        self._procedure_pointer_slot = None
         self._alloc_char_input_buf = None
         self._alloc_char_data = None
         self._alloc_char_data_ptr = None
@@ -83,6 +85,10 @@ class fArg(metaclass=ABCMeta):
         return self.definition.type.lower() == "character"
 
     @property
+    def is_procedure(self) -> bool:
+        return self.definition.is_procedure
+
+    @property
     def needs_resolving_late(self) -> bool:
         return False
 
@@ -92,6 +98,43 @@ class fArg(metaclass=ABCMeta):
 
     @ctype.setter
     def ctype(self, value):
+        if self.is_procedure:
+            if value is None and self.is_optional:
+                self._procedure_value = None
+                self._procedure_pointer_slot = None
+                self._ctype = None
+                return
+
+            is_proc_pointer = self.definition.properties.attributes.proc_pointer
+            cproc = getattr(value, "ctype", None)
+            if cproc is None:
+                raise TypeError(
+                    f"Expected a procedure-like value for {self.definition.name}"
+                )
+
+            self._procedure_value = value
+
+            if is_proc_pointer:
+                # gfortran lowers dummy procedure pointers as a pointer to the
+                # procedure-pointer slot, not as a bare function address.
+                pointer_definition = getattr(value, "pointer_definition", None)
+                proc_lib = getattr(value, "_lib", None)
+
+                if pointer_definition is not None and proc_lib is not None:
+                    slot = ctypes.c_void_p.in_dll(
+                        proc_lib, pointer_definition.mangled_name
+                    )
+                else:
+                    addr = ctypes.cast(cproc, ctypes.c_void_p).value
+                    slot = ctypes.c_void_p(addr)
+
+                self._procedure_pointer_slot = slot
+                self._ctype = ctypes.byref(slot)
+            else:
+                self._procedure_pointer_slot = None
+                self._ctype = cproc
+            return
+
         if self._uses_scalar_allocatable_character_abi():
             self._setup_allocatable_character()
 
@@ -136,6 +179,9 @@ class fArg(metaclass=ABCMeta):
             self._ctype = self.base.pointer()
 
     def value(self):
+        if self.is_procedure:
+            return self._procedure_value
+
         if self._uses_scalar_allocatable_character_abi():
             self._setup_allocatable_character()
 
