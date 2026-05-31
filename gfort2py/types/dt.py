@@ -152,11 +152,18 @@ class _BoundTypeProcedure:
 
         if pass_pos < len(args):
             candidate = args[pass_pos]
-            explicit_self = (
-                hasattr(candidate, "_ctype")
-                and callable(getattr(candidate, "pointer", None))
-                and callable(getattr(candidate, "pointer2", None))
-            )
+            explicit_self = candidate is self._owner
+            if (
+                not explicit_self
+                and hasattr(candidate, "_ctype")
+                and hasattr(self._owner, "_ctype")
+            ):
+                try:
+                    explicit_self = ctypes.addressof(
+                        candidate._ctype
+                    ) == ctypes.addressof(self._owner._ctype)
+                except TypeError:
+                    explicit_self = False
             if explicit_self:
                 raise ValueError(
                     "PASS object is implicit and must not be passed explicitly"
@@ -756,8 +763,8 @@ class ftype_class(_DTModuleResolutionMixin, f_type):
             self._module_name = self._sym.module
             self._class_id = int(self._sym.properties.typespec.class_ref)
         super().__init__()
-        self.value = value
         self._vptr_owner = None
+        self.value = value
 
     @property
     def ftype(self):
@@ -814,6 +821,12 @@ class ftype_class(_DTModuleResolutionMixin, f_type):
     @value.setter
     def value(self, value):
         if value is None:
+            return
+
+        if isinstance(value, ftype_class):
+            self._ctype._data = value._ctype._data
+            self._ctype._vptr = value._ctype._vptr
+            self._vptr_owner = getattr(value, "_vptr_owner", None)
             return
 
         is_wrapper = (
