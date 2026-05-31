@@ -70,6 +70,12 @@ class TestStringMethods:
 
         assert y.result == "10"
 
+    def test_func_str_op_len(self):
+        y = x.func_str_op_len(10)
+
+        assert len(y.result) == 21
+        assert y.result.strip() == "10"
+
     def test_str_alloc(self):
         assert x.str_alloc is None  # Empty at start
 

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0+
 
+import ctypes
 from typing import Any
 
 import gfModParser as gf
@@ -17,7 +18,7 @@ from .return_arguments import (
 def factory_return(
     procedure: gf.Symbol,
     module: gf.Module,
-    lib,
+    lib: ctypes.CDLL,
     values: tuple[tuple[Any, ...], dict[str, Any]],
 ) -> fReturnArguments | None:
 

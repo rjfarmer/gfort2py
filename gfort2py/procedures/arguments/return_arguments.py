@@ -37,28 +37,6 @@ class fReturnArguments:
     def get_values(self) -> list[Any]:
         return []
 
-
-class fReturnCharArguments(fReturnArguments):
-    def __init__(
-        self,
-        procedure: gf.Symbol,
-        module: gf.Module,
-        lib: ctypes.CDLL,
-        values: tuple[tuple[Any, ...], dict[str, Any]],
-        return_symbol: gf.Symbol,
-    ):
-        super().__init__(procedure, module, lib, values, return_symbol)
-        self._buffer = None
-        self._result_type = None
-        self._runtime_strlen: int | None = None
-
-    def _build_return_type(self):
-        cls = factory(self.return_symbol)
-        c = cls.__new__(cls)
-        c._symbol = self.return_symbol
-        type(c).__init__(c)  # type: ignore[misc]
-        return c
-
     def _arg_context(self) -> dict[str, Any]:
         ctx: dict[str, Any] = {}
         refs = self.procedure.properties.formal_argument
@@ -88,75 +66,121 @@ class fReturnCharArguments(fReturnArguments):
 
         raise KeyError(key)
 
-    def _resolve_runtime_strlen(self) -> int:
-        expr = self.return_symbol.properties.typespec.charlen
-        value = expr.value
-        ctx = self._arg_context()
+    def _apply_interface_op(self, op_name: str, left: Any, right: Any) -> Any:
+        if op_name == "PARENTHESES":
+            return left
 
-        exp_type = getattr(expr, "type", None)
-        if exp_type is not None and type(exp_type).__name__ == "ExpFunction":
-            raw = getattr(exp_type, "_args", None)
-            if not isinstance(raw, list) or len(raw) < 5:
-                raise ValueError("Character length FUNCTION payload is malformed")
+        op = self.module.interface.op(op_name)
+        if op is None:
+            raise NotImplementedError(f"Operator {op_name} is not supported")
 
-            func_ref = str(raw[3]) if len(raw) > 3 else ""
-            func_name = ""
-            for idx in (7, 5):
-                if idx < len(raw):
-                    candidate = str(raw[idx]).strip("'\"").lower()
-                    if candidate and not candidate.isdigit():
-                        func_name = candidate
-                        break
+        return op(left, right)
 
+    def _resolve_function_expression(self, exp_type: Any, ctx: dict[str, Any]) -> int:
+        raw = getattr(exp_type, "_args", None)
+        if not isinstance(raw, list) or len(raw) < 5:
+            raise ValueError("Function expression payload is malformed")
+
+        func_ref = str(raw[3]) if len(raw) > 3 else ""
+        func_name = ""
+        for idx in (7, 5):
+            if idx < len(raw):
+                candidate = str(raw[idx]).strip("'\"").lower()
+                if candidate and not candidate.isdigit():
+                    func_name = candidate
+                    break
+
+        try:
+            actual_args = raw[4]
+            resolved_args: list[Any] = []
+            expr_cls = type(exp_type)
+            version = getattr(exp_type, "version", None)
+
+            for item in actual_args:
+                if len(item) < 2 or not item[1]:
+                    continue
+
+                arg_raw = item[1]
+                if not isinstance(arg_raw, list) or not arg_raw:
+                    continue
+
+                if arg_raw[0] == "VARIABLE":
+                    resolved_args.append(
+                        self._lookup_context_value(str(arg_raw[3]), ctx)
+                    )
+                elif arg_raw[0] == "CONSTANT":
+                    resolved_args.append(int(str(arg_raw[3]).strip("'\"")))
+                else:
+                    arg_expr = expr_cls(arg_raw, version=version)
+                    resolved_args.append(self._resolve_expression(arg_expr, ctx))
+        except (IndexError, KeyError, TypeError, ValueError) as exc:
+            raise ValueError(
+                "Function expression argument payload is malformed"
+            ) from exc
+
+        if func_ref.isdigit() and self._lib is not None:
+            ref = int(func_ref)
             try:
-                actual_args = raw[4]
-                resolved_args: list[Any] = []
-                for item in actual_args:
-                    if len(item) < 2 or not item[1]:
-                        continue
+                sym = self.module[ref]
+            except KeyError:
+                sym = None
 
-                    arg_raw = item[1]
-                    if isinstance(arg_raw, list) and len(arg_raw):
-                        if arg_raw[0] == "VARIABLE":
-                            resolved_args.append(
-                                self._lookup_context_value(str(arg_raw[3]), ctx)
-                            )
-                        elif arg_raw[0] == "CONSTANT":
-                            resolved_args.append(int(str(arg_raw[3]).strip("'\"")))
-                        else:
-                            arg_expr = type(expr)(arg_raw, version=expr.version)
-                            arg_val = arg_expr.value
-                            if isinstance(arg_val, str):
-                                arg_val = self._lookup_context_value(arg_val, ctx)
-                            resolved_args.append(arg_val)
-            except (IndexError, KeyError, TypeError, ValueError) as exc:
-                raise ValueError(
-                    "Character length FUNCTION argument payload is malformed"
-                ) from exc
+            if (
+                sym is not None
+                and sym.is_procedure
+                and hasattr(self._lib, sym.mangled_name)
+            ):
+                from ...procedures import factory as proc_factory
 
-            if func_ref.isdigit():
-                ref = int(func_ref)
-                try:
-                    sym = self.module[ref]
-                except KeyError:
-                    sym = None
+                proc = proc_factory(sym)(self._lib, sym, self.module)
+                return int(proc(*resolved_args).result)
 
-                if sym is not None and sym.is_procedure and self._lib:
-                    from ...procedures import factory as proc_factory
+        if func_name == "size":
+            if not resolved_args:
+                raise ValueError("SIZE requires at least one argument")
+            return int(np.size(resolved_args[0]))
 
-                    proc = proc_factory(sym)(self._lib, sym, self.module)
-                    return int(proc(*resolved_args).result)
+        raise NotImplementedError(f"Unsupported function {func_name!r}")
 
-            if func_name == "size":
-                if not resolved_args:
-                    raise ValueError("SIZE requires at least one argument")
-                return int(np.size(resolved_args[0]))
+    def _resolve_expression(self, expr: Any, ctx: dict[str, Any]) -> int:
+        exp_type = getattr(expr, "type", None)
 
-            raise NotImplementedError(
-                f"Unsupported runtime character length function {func_name!r}"
-            )
+        if exp_type is not None and hasattr(exp_type, "unary_op"):
+            op_name = exp_type.unary_op
+            try:
+                left_expr, right_expr = exp_type.unary_args
+            except (AttributeError, IndexError, TypeError, ValueError):
+                raw = getattr(exp_type, "_args", None)
+                if not isinstance(raw, list) or len(raw) < 5:
+                    raise ValueError("Operator expression payload is malformed")
 
-        if isinstance(value, (int, np.integer)):
+                expr_cls = type(expr)
+                version = expr.version
+                left_raw = raw[4]
+                if not left_raw:
+                    raise ValueError("Operator expression left operand is missing")
+
+                left_expr = expr_cls(left_raw, version=version)
+
+                if op_name == "PARENTHESES":
+                    return self._resolve_expression(left_expr, ctx)
+
+                right_raw = raw[5] if len(raw) > 5 else None
+                if not right_raw:
+                    raise ValueError("Operator expression right operand is missing")
+
+                right_expr = expr_cls(right_raw, version=version)
+
+            left = self._resolve_expression(left_expr, ctx)
+            right = self._resolve_expression(right_expr, ctx)
+            return int(self._apply_interface_op(op_name, left, right))
+
+        if exp_type is not None and type(exp_type).__name__ == "ExpFunction":
+            return self._resolve_function_expression(exp_type, ctx)
+
+        value = getattr(expr, "value", expr)
+
+        if isinstance(value, (int, np.integer, bool, np.bool_)):
             return int(value)
 
         if isinstance(value, str):
@@ -164,8 +188,39 @@ class fReturnCharArguments(fReturnArguments):
                 return int(self._lookup_context_value(value, ctx))
             except KeyError:
                 pass
+            raise ValueError(f"Expression variable {value!r} is unresolved at runtime")
 
-        raise ValueError("Character length is unresolved at runtime")
+        if value is None:
+            raise ValueError("Expression is unresolved at runtime")
+
+        return int(value)
+
+
+class fReturnCharArguments(fReturnArguments):
+    def __init__(
+        self,
+        procedure: gf.Symbol,
+        module: gf.Module,
+        lib: ctypes.CDLL,
+        values: tuple[tuple[Any, ...], dict[str, Any]],
+        return_symbol: gf.Symbol,
+    ):
+        super().__init__(procedure, module, lib, values, return_symbol)
+        self._buffer = None
+        self._result_type = None
+        self._runtime_strlen: int | None = None
+
+    def _build_return_type(self):
+        cls = factory(self.return_symbol)
+        c = cls.__new__(cls)
+        c._symbol = self.return_symbol
+        type(c).__init__(c)  # type: ignore[misc]
+        return c
+
+    def _resolve_runtime_strlen(self) -> int:
+        expr = self.return_symbol.properties.typespec.charlen
+        ctx = self._arg_context()
+        return self._resolve_expression(expr, ctx)
 
     def set_values(self):
         self._ctypes = []
@@ -242,162 +297,6 @@ class fReturnArrayArguments(fReturnArguments):
             c._module_obj = self.module
         type(c).__init__(c)  # type: ignore[misc]
         return c
-
-    def _arg_context(self) -> dict[str, Any]:
-        ctx: dict[str, Any] = {}
-        refs = self.procedure.properties.formal_argument
-        names = [self.module[i].name for i in refs]
-
-        for key, value in zip(names, self.values[0]):
-            ctx[key] = value
-
-        for key, value in self.values[1].items():
-            ctx[key] = value
-
-        for ref in refs:
-            name = self.module[ref].name
-            if name in ctx:
-                ctx[str(ref)] = ctx[name]
-
-        return ctx
-
-    def _apply_interface_op(self, op_name: str, left: Any, right: Any) -> Any:
-        if op_name == "PARENTHESES":
-            return left
-
-        op = self.module.interface.op(op_name)
-        if op is None:
-            raise NotImplementedError(f"Operator {op_name} is not supported")
-
-        return op(left, right)
-
-    def _lookup_context_value(self, key: str, ctx: dict[str, Any]) -> Any:
-        if key in ctx:
-            return ctx[key]
-
-        if key.isdigit():
-            symbol = self.module[int(key)]
-            if symbol.name in ctx:
-                return ctx[symbol.name]
-
-        raise KeyError(key)
-
-    def _resolve_size_function(self, exp_type: Any, ctx: dict[str, Any]) -> int:
-        raw = getattr(exp_type, "_args", None)
-        if not isinstance(raw, list) or len(raw) < 5:
-            raise ValueError("SIZE expression payload is malformed")
-
-        func_ref = str(raw[3]) if len(raw) > 3 else ""
-        func_name = ""
-        for idx in (7, 5):
-            if idx < len(raw):
-                candidate = str(raw[idx]).strip("'\"").lower()
-                if candidate and not candidate.isdigit():
-                    func_name = candidate
-                    break
-
-        try:
-            actual_args = raw[4]
-            resolved_args: list[Any] = []
-            for item in actual_args:
-                if len(item) < 2 or not item[1]:
-                    continue
-
-                arg_raw = item[1]
-                if isinstance(arg_raw, list) and len(arg_raw):
-                    if arg_raw[0] == "VARIABLE":
-                        resolved_args.append(
-                            self._lookup_context_value(str(arg_raw[3]), ctx)
-                        )
-                    elif arg_raw[0] == "CONSTANT":
-                        resolved_args.append(int(str(arg_raw[3]).strip("'\"")))
-                    else:
-                        raise ValueError(
-                            "Unsupported function argument expression payload"
-                        )
-        except (IndexError, KeyError, TypeError, ValueError) as exc:
-            raise ValueError(
-                "Function expression argument payload is malformed"
-            ) from exc
-
-        if func_ref.isdigit():
-            ref = int(func_ref)
-            try:
-                sym = self.module[ref]
-            except KeyError:
-                sym = None
-
-            if sym is not None and sym.is_procedure and self._lib:
-                from ...procedures import factory as proc_factory
-
-                try:
-                    proc = proc_factory(sym)(self._lib, sym, self.module)
-                    return int(proc(*resolved_args).result)
-                except AttributeError:
-                    # Intrinsic-like helper symbols may exist in mod metadata but
-                    # have no callable symbol in the shared library.
-                    pass
-
-        if func_name == "size":
-            if not resolved_args:
-                raise ValueError("SIZE requires at least one argument")
-            return int(np.size(resolved_args[0]))
-
-        raise NotImplementedError(f"Unsupported bound function {func_name!r}")
-
-    def _resolve_expression(self, expr: Any, ctx: dict[str, Any]) -> int:
-        exp_type = getattr(expr, "type", None)
-
-        if exp_type is not None and hasattr(exp_type, "unary_op"):
-            op_name = exp_type.unary_op
-            try:
-                left_expr, right_expr = exp_type.unary_args
-            except (AttributeError, IndexError, TypeError, ValueError):
-                raw = getattr(exp_type, "_args", None)
-                if not isinstance(raw, list) or len(raw) < 5:
-                    raise ValueError("Operator expression payload is malformed")
-
-                expr_cls = type(expr)
-                version = expr.version
-                left_raw = raw[4]
-                if not left_raw:
-                    raise ValueError("Operator expression left operand is missing")
-
-                left_expr = expr_cls(left_raw, version=version)
-
-                if op_name == "PARENTHESES":
-                    return self._resolve_expression(left_expr, ctx)
-
-                right_raw = raw[5] if len(raw) > 5 else None
-                if not right_raw:
-                    raise ValueError("Operator expression right operand is missing")
-
-                right_expr = expr_cls(right_raw, version=version)
-
-            left = self._resolve_expression(left_expr, ctx)
-            right = self._resolve_expression(right_expr, ctx)
-            return int(self._apply_interface_op(op_name, left, right))
-
-        if exp_type is not None and type(exp_type).__name__ == "ExpFunction":
-            return self._resolve_size_function(exp_type, ctx)
-
-        value = getattr(expr, "value", expr)
-
-        if isinstance(value, (int, np.integer, bool, np.bool_)):
-            return int(value)
-
-        if isinstance(value, str):
-            try:
-                return int(self._lookup_context_value(value, ctx))
-            except KeyError:
-                pass
-
-            raise ValueError(f"Array bound variable {value!r} is unresolved at runtime")
-
-        if value is None:
-            raise ValueError("Array bound is unresolved at runtime")
-
-        return int(value)
 
     def _resolve_bound(self, expr: Any, ctx: dict[str, Any]) -> int:
         return self._resolve_expression(expr, ctx)
