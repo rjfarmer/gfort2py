@@ -29,6 +29,18 @@ class AllocationError(Exception):
 _ALLOCATOR_CACHE: dict[tuple[str, str], tuple[Any, Any, Any]] = {}
 
 
+def _to_numpy_array_with_dtype(array: np.ndarray, dtype: np.dtype) -> np.ndarray:
+    """Convert array to dtype, handling ctypes structured complex scalars."""
+    if (
+        array.dtype.fields is not None
+        and "real" in array.dtype.fields
+        and "imag" in array.dtype.fields
+    ):
+        return (array["real"] + 1j * array["imag"]).astype(dtype, copy=False)
+
+    return array.astype(dtype, copy=False)
+
+
 class ftype_explicit_array(f_type, metaclass=ABCMeta):
     dtype = None  # type: ignore[assignment]
     ftype = None  # type: ignore[assignment]
@@ -161,10 +173,9 @@ class ftype_explicit_array(f_type, metaclass=ABCMeta):
             )
             return self._value
 
-        self._value = (
-            np.ctypeslib.as_array(self._ctype)
-            .reshape(self.shape, order="F")
-            .astype(self._array_dtype())
+        self._value = _to_numpy_array_with_dtype(
+            np.ctypeslib.as_array(self._ctype).reshape(self.shape, order="F"),
+            self._array_dtype(),
         )
         return self._value
 
@@ -426,7 +437,10 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
                 arr = arr.reshape(self._shape, order="F")
             return arr
 
-        arr = np.ctypeslib.as_array(self._ctype).astype(self._array_dtype())
+        arr = _to_numpy_array_with_dtype(
+            np.ctypeslib.as_array(self._ctype),
+            self._array_dtype(),
+        )
         if self._shape is not None:
             arr = arr.reshape(self._shape, order="F")
 
