@@ -17,11 +17,13 @@ class fReturnArguments:
         self,
         procedure: gf.Symbol,
         module: gf.Module,
+        lib: ctypes.CDLL,
         values: tuple[tuple[Any, ...], dict[str, Any]],
         return_symbol: gf.Symbol,
     ):
         self.procedure = procedure
         self.module = module
+        self._lib = lib
         self.values = values
         self.return_symbol = return_symbol
         self._ctypes: list[Any] = []
@@ -41,12 +43,14 @@ class fReturnCharArguments(fReturnArguments):
         self,
         procedure: gf.Symbol,
         module: gf.Module,
+        lib: ctypes.CDLL,
         values: tuple[tuple[Any, ...], dict[str, Any]],
         return_symbol: gf.Symbol,
     ):
-        super().__init__(procedure, module, values, return_symbol)
+        super().__init__(procedure, module, lib, values, return_symbol)
         self._buffer = None
         self._result_type = None
+        self._runtime_strlen: int | None = None
 
     def _build_return_type(self):
         cls = factory(self.return_symbol)
@@ -55,13 +59,122 @@ class fReturnCharArguments(fReturnArguments):
         type(c).__init__(c)  # type: ignore[misc]
         return c
 
+    def _arg_context(self) -> dict[str, Any]:
+        ctx: dict[str, Any] = {}
+        refs = self.procedure.properties.formal_argument
+        names = [self.module[i].name for i in refs]
+
+        for key, value in zip(names, self.values[0]):
+            ctx[key] = value
+
+        for key, value in self.values[1].items():
+            ctx[key] = value
+
+        for ref in refs:
+            name = self.module[ref].name
+            if name in ctx:
+                ctx[str(ref)] = ctx[name]
+
+        return ctx
+
+    def _lookup_context_value(self, key: str, ctx: dict[str, Any]) -> Any:
+        if key in ctx:
+            return ctx[key]
+
+        if key.isdigit():
+            symbol = self.module[int(key)]
+            if symbol.name in ctx:
+                return ctx[symbol.name]
+
+        raise KeyError(key)
+
+    def _resolve_runtime_strlen(self) -> int:
+        expr = self.return_symbol.properties.typespec.charlen
+        value = expr.value
+        ctx = self._arg_context()
+
+        exp_type = getattr(expr, "type", None)
+        if exp_type is not None and type(exp_type).__name__ == "ExpFunction":
+            raw = getattr(exp_type, "_args", None)
+            if not isinstance(raw, list) or len(raw) < 5:
+                raise ValueError("Character length FUNCTION payload is malformed")
+
+            func_ref = str(raw[3]) if len(raw) > 3 else ""
+            func_name = ""
+            for idx in (7, 5):
+                if idx < len(raw):
+                    candidate = str(raw[idx]).strip("'\"").lower()
+                    if candidate and not candidate.isdigit():
+                        func_name = candidate
+                        break
+
+            try:
+                actual_args = raw[4]
+                resolved_args: list[Any] = []
+                for item in actual_args:
+                    if len(item) < 2 or not item[1]:
+                        continue
+
+                    arg_raw = item[1]
+                    if isinstance(arg_raw, list) and len(arg_raw):
+                        if arg_raw[0] == "VARIABLE":
+                            resolved_args.append(
+                                self._lookup_context_value(str(arg_raw[3]), ctx)
+                            )
+                        elif arg_raw[0] == "CONSTANT":
+                            resolved_args.append(int(str(arg_raw[3]).strip("'\"")))
+                        else:
+                            arg_expr = type(expr)(arg_raw, version=expr.version)
+                            arg_val = arg_expr.value
+                            if isinstance(arg_val, str):
+                                arg_val = self._lookup_context_value(arg_val, ctx)
+                            resolved_args.append(arg_val)
+            except (IndexError, KeyError, TypeError, ValueError) as exc:
+                raise ValueError(
+                    "Character length FUNCTION argument payload is malformed"
+                ) from exc
+
+            if func_ref.isdigit():
+                ref = int(func_ref)
+                try:
+                    sym = self.module[ref]
+                except KeyError:
+                    sym = None
+
+                if sym is not None and sym.is_procedure and self._lib:
+                    from ...procedures import factory as proc_factory
+
+                    proc = proc_factory(sym)(self._lib, sym, self.module)
+                    return int(proc(*resolved_args).result)
+
+            if func_name == "size":
+                if not resolved_args:
+                    raise ValueError("SIZE requires at least one argument")
+                return int(np.size(resolved_args[0]))
+
+            raise NotImplementedError(
+                f"Unsupported runtime character length function {func_name!r}"
+            )
+
+        if isinstance(value, (int, np.integer)):
+            return int(value)
+
+        if isinstance(value, str):
+            try:
+                return int(self._lookup_context_value(value, ctx))
+            except KeyError:
+                pass
+
+        raise ValueError("Character length is unresolved at runtime")
+
     def set_values(self):
         self._ctypes = []
         self._result_type = self._build_return_type()
 
-        length = self.return_symbol.properties.typespec.charlen.value
+        length = self._resolve_runtime_strlen()
         if length <= 0:
             length = 1
+        self._runtime_strlen = length
 
         self._result_type.value = " " * length
         self._buffer = self._result_type._ctype
@@ -76,6 +189,10 @@ class fReturnCharArguments(fReturnArguments):
         value = self._result_type.from_ctype(
             self._buffer, symbol=self.return_symbol
         ).value
+
+        if isinstance(value, str) and self._runtime_strlen is not None:
+            value = value[: self._runtime_strlen]
+
         return [value]
 
 
@@ -84,10 +201,11 @@ class fReturnArrayArguments(fReturnArguments):
         self,
         procedure: gf.Symbol,
         module: gf.Module,
+        lib: ctypes.CDLL,
         values: tuple[tuple[Any, ...], dict[str, Any]],
         return_symbol: gf.Symbol,
     ):
-        super().__init__(procedure, module, values, return_symbol)
+        super().__init__(procedure, module, lib, values, return_symbol)
         self._buffer = None
         self._result_type = None
 
@@ -166,28 +284,66 @@ class fReturnArrayArguments(fReturnArguments):
 
     def _resolve_size_function(self, exp_type: Any, ctx: dict[str, Any]) -> int:
         raw = getattr(exp_type, "_args", None)
-        if not isinstance(raw, list) or len(raw) < 8:
+        if not isinstance(raw, list) or len(raw) < 5:
             raise ValueError("SIZE expression payload is malformed")
 
-        func_name = str(raw[7]).strip("'\"").lower()
-        if func_name != "size":
-            raise NotImplementedError(f"Unsupported bound function {func_name!r}")
+        func_ref = str(raw[3]) if len(raw) > 3 else ""
+        func_name = ""
+        for idx in (7, 5):
+            if idx < len(raw):
+                candidate = str(raw[idx]).strip("'\"").lower()
+                if candidate and not candidate.isdigit():
+                    func_name = candidate
+                    break
 
         try:
             actual_args = raw[4]
-            first_arg = actual_args[0][1]
-            ref = str(first_arg[3])
-        except (IndexError, KeyError, TypeError, ValueError) as exc:
-            raise ValueError("SIZE expression argument payload is malformed") from exc
+            resolved_args: list[Any] = []
+            for item in actual_args:
+                if len(item) < 2 or not item[1]:
+                    continue
 
-        try:
-            arg_value = self._lookup_context_value(ref, ctx)
-        except KeyError as exc:
+                arg_raw = item[1]
+                if isinstance(arg_raw, list) and len(arg_raw):
+                    if arg_raw[0] == "VARIABLE":
+                        resolved_args.append(
+                            self._lookup_context_value(str(arg_raw[3]), ctx)
+                        )
+                    elif arg_raw[0] == "CONSTANT":
+                        resolved_args.append(int(str(arg_raw[3]).strip("'\"")))
+                    else:
+                        raise ValueError(
+                            "Unsupported function argument expression payload"
+                        )
+        except (IndexError, KeyError, TypeError, ValueError) as exc:
             raise ValueError(
-                f"SIZE argument symbol {ref!r} is unresolved at runtime"
+                "Function expression argument payload is malformed"
             ) from exc
 
-        return int(np.size(arg_value))
+        if func_ref.isdigit():
+            ref = int(func_ref)
+            try:
+                sym = self.module[ref]
+            except KeyError:
+                sym = None
+
+            if sym is not None and sym.is_procedure and self._lib:
+                from ...procedures import factory as proc_factory
+
+                try:
+                    proc = proc_factory(sym)(self._lib, sym, self.module)
+                    return int(proc(*resolved_args).result)
+                except AttributeError:
+                    # Intrinsic-like helper symbols may exist in mod metadata but
+                    # have no callable symbol in the shared library.
+                    pass
+
+        if func_name == "size":
+            if not resolved_args:
+                raise ValueError("SIZE requires at least one argument")
+            return int(np.size(resolved_args[0]))
+
+        raise NotImplementedError(f"Unsupported bound function {func_name!r}")
 
     def _resolve_expression(self, expr: Any, ctx: dict[str, Any]) -> int:
         exp_type = getattr(expr, "type", None)
@@ -305,10 +461,11 @@ class fReturnDTArguments(fReturnArguments):
         self,
         procedure: gf.Symbol,
         module: gf.Module,
+        lib: ctypes.CDLL,
         values: tuple[tuple[Any, ...], dict[str, Any]],
         return_symbol: gf.Symbol,
     ):
-        super().__init__(procedure, module, values, return_symbol)
+        super().__init__(procedure, module, lib, values, return_symbol)
         self._buffer = None
         self._result_type = None
 

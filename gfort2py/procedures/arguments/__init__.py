@@ -17,6 +17,7 @@ from .return_arguments import (
 def factory_return(
     procedure: gf.Symbol,
     module: gf.Module,
+    lib,
     values: tuple[tuple[Any, ...], dict[str, Any]],
 ) -> fReturnArguments | None:
 
@@ -27,8 +28,8 @@ def factory_return(
     rt = module[key]
 
     if rt.is_array:
-        return fReturnArrayArguments(procedure, module, values, rt)
+        return fReturnArrayArguments(procedure, module, lib, values, rt)
     elif rt.type.lower() == "character":
-        return fReturnCharArguments(procedure, module, values, rt)
+        return fReturnCharArguments(procedure, module, lib, values, rt)
     else:
         return None

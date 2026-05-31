@@ -64,7 +64,6 @@ class TestStringMethods:
         y = x.func_ret_str("abcde")
         assert y.result == "Abcde"
 
-    @pytest.mark.skip
     # We need to call a func on the argument before passing it to func_str_int_len
     def test_func_str_int_len(self):
         y = x.func_str_int_len(10)

@@ -94,6 +94,7 @@ class fProcPointer(fFunc):
         self._args_start = factory_return(
             procedure=self.definition,
             module=self._module,
+            lib=self._lib,
             values=(args, kwargs),
         )
 
