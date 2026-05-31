@@ -19,7 +19,6 @@ SO, MOD = build_paths("gh55", "gh55")
 x = gf.fFort(SO, MOD)
 
 
-@pytest.mark.skip("Currently broken needs array descriptor for strings")
 class Testgh55Methods:
     def test_func_str_return_array(self):
 
@@ -28,5 +27,5 @@ class Testgh55Methods:
 
         return_str = res.result
 
-        assert np.size(np.shape(return_str)) == ((2**size) - 1)
-        assert return_str[-1] == "abcdefghij"
+        assert return_str.shape == ((2**size) - 1,)
+        assert return_str[-1] == b"abcdefghil"

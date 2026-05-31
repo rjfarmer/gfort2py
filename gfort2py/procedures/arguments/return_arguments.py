@@ -103,7 +103,12 @@ class fReturnArrayArguments(fReturnArguments):
                 kind = self.return_symbol.kind
 
                 def _base(self):
-                    return find_ftype(ftype, kind)()
+                    base_cls = find_ftype(ftype, kind)
+                    base = base_cls.__new__(base_cls)
+                    base._symbol = getattr(self, "_symbol", None)
+                    base._module_obj = getattr(self, "_module_obj", None)
+                    type(base).__init__(base)  # type: ignore[misc]
+                    return base
 
                 cls = type(
                     "ftype_return_always_explicit",
@@ -188,10 +193,34 @@ class fReturnArrayArguments(fReturnArguments):
         exp_type = getattr(expr, "type", None)
 
         if exp_type is not None and hasattr(exp_type, "unary_op"):
-            left_expr, right_expr = exp_type.unary_args
+            op_name = exp_type.unary_op
+            try:
+                left_expr, right_expr = exp_type.unary_args
+            except (AttributeError, IndexError, TypeError, ValueError):
+                raw = getattr(exp_type, "_args", None)
+                if not isinstance(raw, list) or len(raw) < 5:
+                    raise ValueError("Operator expression payload is malformed")
+
+                expr_cls = type(expr)
+                version = expr.version
+                left_raw = raw[4]
+                if not left_raw:
+                    raise ValueError("Operator expression left operand is missing")
+
+                left_expr = expr_cls(left_raw, version=version)
+
+                if op_name == "PARENTHESES":
+                    return self._resolve_expression(left_expr, ctx)
+
+                right_raw = raw[5] if len(raw) > 5 else None
+                if not right_raw:
+                    raise ValueError("Operator expression right operand is missing")
+
+                right_expr = expr_cls(right_raw, version=version)
+
             left = self._resolve_expression(left_expr, ctx)
             right = self._resolve_expression(right_expr, ctx)
-            return int(self._apply_interface_op(exp_type.unary_op, left, right))
+            return int(self._apply_interface_op(op_name, left, right))
 
         if exp_type is not None and type(exp_type).__name__ == "ExpFunction":
             return self._resolve_size_function(exp_type, ctx)
@@ -257,6 +286,12 @@ class fReturnArrayArguments(fReturnArguments):
 
         self._buffer = self._result_type.pointer()
         self._ctypes.append(self._buffer)
+
+        if self.return_symbol.type.lower() == "character":
+            length = int(self.return_symbol.properties.typespec.charlen.value)
+            if length <= 0:
+                length = 1
+            self._ctypes.append(strlen_ctype()(length))
 
     def get_values(self) -> list[Any]:
         if self._result_type is None:

@@ -26,11 +26,9 @@ def factory_return(
     key = procedure.properties.symbol_reference
     rt = module[key]
 
-    if rt.type.lower() == "character":
-        return fReturnCharArguments(procedure, module, values, rt)
-    elif rt.is_array:
+    if rt.is_array:
         return fReturnArrayArguments(procedure, module, values, rt)
-    elif rt.is_dt and rt.is_array:
-        return fReturnDTArguments(procedure, module, values, rt)
+    elif rt.type.lower() == "character":
+        return fReturnCharArguments(procedure, module, values, rt)
     else:
         return None
