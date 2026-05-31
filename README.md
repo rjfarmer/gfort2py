@@ -3,12 +3,12 @@
 [![PyPI version](https://badge.fury.io/py/gfort2py.svg)](https://badge.fury.io/py/gfort2py)
 [![DOI](https://zenodo.org/badge/72889348.svg)](https://zenodo.org/badge/latestdoi/72889348)
 [![Python versions](https://img.shields.io/pypi/pyversions/gfort2py.svg)](https://img.shields.io/pypi/pyversions/gfort2py.svg)
-[![gfortran versions](https://img.shields.io/badge/gfortran-8%7C9%7C10%7C11%7C12%7C13-blue)](https://img.shields.io/badge/gfortran-8%7C9%7C10%7C11%7C12%7C13-blue)
+[![gfortran versions](https://img.shields.io/badge/gfortran-8%7C9%7C10%7C11%7C12%7C13%7C14%7C15-blue)](https://img.shields.io/badge/gfortran-8%7C9%7C10%7C11%7C12%7C13%7C14%7C15-blue)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/gfort2py)
 
 
 # gfort2py
-Library to allow calling Fortran code from Python. Requires gfortran>=8.0, Works with python >= 3.8
+Library to allow calling Fortran code from Python. Requires gfortran>=8.0, Works with python >= 3.10
 
 ## Build
 Installing locally:
@@ -83,11 +83,6 @@ x=gf.fFort(SHARED_LIB_NAME,MOD_FILE_NAME)
 
 ````
 
-> **_NOTE:_** The mod data is cached to speed up re-reading the data. To control this pass cache_folder to ``fFort``.
-A value of False disables caching, a string sets the folder location, while leaving the argument as None defaults to platformdirs ``user_cache_dir``
-
-
-
 ### compile
 
 ````python
@@ -124,9 +119,10 @@ a module.
 Additional options available for ``compile``:
 
 - FC: str Path to gfortran compiler
-- FFLAGS: str Additional Fortran compile options. This defaults to -O2.
+- FFLAGS: str Additional Fortran compile options.
 - LDLIBS: str Any additional libraries needed to be linked in (-l)
 - LDFLAGS: str Locations of additional libraries (-L)
+- INCLUDE_FLAGS: str Include directory flags (-I)
 
 
 > **_NOTE:_** The interface to compile is currently considered unstable and may change.
@@ -144,7 +140,7 @@ y = x.func_name(a,b,c)
 
 Will call the Fortran function with variables ``a,b,c`` and returns the result in ``y``.
 
-``y`` will be a named tuple containing ``(result, args)``. ``result`` is a Python object for the return value (0 if a subroutine), and ``args`` is a dict containing all arguments passed to the procedure (both those with ``intent(in)``, which are unchanged, and those with ``intent(inout/out)``, which may change).
+``y`` will be a named tuple containing ``(result, args)``. ``result`` is a Python object for the return value (``None`` for subroutines), and ``args`` is a dict containing all arguments passed to the procedure (both those with ``intent(in)``, which are unchanged, and those with ``intent(inout/out)``, which may change).
 
 
 ### Variables
@@ -257,7 +253,7 @@ x.my_dt[0]['x']
 x.my_dt2[0,0]['x']
 ````
 
-You can only access one component at a time (i.e no striding [:]). Allocatable derived types are not yet supported.
+You can only access one component at a time (i.e no striding [:]).
 
 Derived types that are dummy arguments to a procedure are returned as a ``fDT`` type. This is a dict-like object where the components
 can only be accessed via the item interface ``['x']`` and not as attributes ``.x``.  This was done so that we do not have a name collision
@@ -319,12 +315,13 @@ python -m pip install .[quad]
 For more details see pyQuadp's documentation, but briefly you can create a 
 quad precision variable from an ``int``, ``float``, or ``string``. On return you will receive a ``qfloat`` type. This ``qfloat`` type acts like a Python Number, so you can do things like add, multiply, subtract etc this Number with other Numbers (including non-``qfloat`` types).
 
-We currently only support scalar Quad's and scalar complex Quad's. Arrays of
-quad precision values is planned but not yet supported. Quad values can also not be returned as a function result (this is a limitation in ``ctypes`` which we have no control over). Thus a quad precision value can only occur in:
+Guaranteed support currently includes:
 
 - Module variables
 - Parameters
-- Procedure arguments
+- Procedure arguments (including array arguments)
+
+Quad function return values are not guaranteed and should be avoided for portable behavior.
 
 ``pyQuadp`` is currently an optional requirement, you must manually install it, it does not get auto-installed when ``gfort2py`` is installed. If you try to access a quad precision variable without ``pyQuadp`` you should get a ``TypeError``.
 
@@ -344,7 +341,7 @@ y = x.another_function(x.callback_function)
 Currently only Fortran functions can be passed. No checking is done to ensure that the callback function has the 
 correct signature to be a callback to the second function.
 
-The callback and also be created in Python at runtime (but must be valid Fortran):
+The callback can also be created in Python at runtime (but must be valid Fortran):
 
 ````python
 
@@ -375,99 +372,47 @@ pytest -v
 
 To run unit tests
 
-## Things that work
+## Guaranteed features
 
-### Module variables
+The items below are the currently guaranteed, test-covered behavior.
 
-- [x] Scalars
-- [x] Parameters
-- [x] Characters
-- [x] Explicit size arrays
-- [X] Complex numbers (Scalar and parameters)
-- [x] Getting a pointer
-- [x] Getting the value of a pointer
-- [x] Allocatable arrays
-- [x] Derived types
-- [x] Nested derived types
-- [X] Explicit Arrays of derived types
-- [ ] Allocatable Arrays of derived types
-- [ ] Procedure pointers inside derived types
-- [x] Derived types with dimension(:) array components (pointer, allocatable, target)
-- [x] Allocatable strings (partial)
-- [x] Explicit Arrays of strings
-- [x] Allocatable arrays of strings
-- [x] Unicode strings (kind=4)
-- [x] Explicit Arrays of unicode strings (kind=4)
-- [x] Allocatable arrays of unicode strings (kind=4)
-- [ ] Classes
-- [ ] Abstract interfaces
-- [ ] Common blocks
-- [ ] Equivalences 
-- [ ] Namelists
-- [ ] Quad precision variables
-- [ ] function overloading 
+### Module symbols
 
-### Procedures
+- Scalars, parameters, and characters
+- Explicit-size and allocatable arrays
+- Derived types, including nested derived types
+- Explicit and allocatable arrays of derived types
+- Strings and unicode strings (kind=4), including allocatable arrays
+- Quad module symbols and arguments when ``pyquadp`` is installed and compiler support is available
+- Polymorphic class values used via the documented object wrappers
 
-- [X] Basic calling (no arguments)
-- [x] Argument passing (scalars)
-- [x] Argument passing (strings)
-- [X] Argument passing (explicit arrays)
-- [x] Argument passing (assumed size arrays)
-- [x] Argument passing (assumed shape arrays)
-- [x] Argument passing (allocatable arrays)
-- [x] Argument passing (derived types)
-- [x] Argument intents (in, out, inout and none)
-- [x] Passing characters of fixed size (len=10 or len=* etc)
-- [x] Functions that return a character as their result
-- [x] Allocatable strings (Only for things that do not get altered inside the procedure)
-- [x] Explicit arrays of strings
-- [x] Allocatable arrays of strings
-- [x] Argument passing (unicode strings, kind=4)
-- [x] Explicit arrays of unicode strings (kind=4)
-- [ ] Assumed-shape arrays of unicode strings (kind=4)
-- [ ] Assumed-rank arrays of unicode strings (kind=4)
-- [x] Pointer arguments 
-- [x] Optional arguments
-- [x] Value arguments
-- [x] Keyword arguments
-- [ ] Generic/Elemental functions
-- [ ] Functions as an argument
-- [x] Unary operations (arguments that involve an expression to evaluate like dimension(n+1) or dimension((2*n)+1))
-- [x] Functions returning an explicit array as their result 
+### Procedure calls
 
-### Common block elements
+- Scalar, string, explicit-array, assumed-size, assumed-shape, and allocatable-array arguments
+- Derived type arguments and returns
+- Pointer, optional, value, and keyword arguments
+- Functions passed as callback arguments
+- Type-bound procedures (including ``pass``/``nopass``)
+- Unary expression-based shape resolution (for example ``dimension(n+1)``)
 
-There is no way currently to access components of a common block.
+### Known non-guaranteed areas
+
+- Unicode assumed-shape/assumed-rank character dummy arrays
+- Elemental/generic procedure behavior
+- Common blocks
 
 
 ## Accessing module file data
 
-For those wanting to explore the module file format, there is a routine ``mod_info`` available from the top-level ``gfort2py`` module:
+For direct parsing and inspection of ``.mod`` files, use ``gfModParser``.
 
 ````python
-module = gf.mod_info('file.mod')
+import gfModParser as gp
+
+module = gp.Module("file.mod")
+print(module.keys())
+print(module["a_variable"])
 ````
-
-That will parse the mod file and convert it into an intermediate format inside ``module``.
-
-Variables or procedures can be looked up via the item interface (I also recommend using pprint for easier viewing):
-
-````
-from pprint import pprint
-
-pprint(module['a_variable'])
-````
-
-Accessing the list of all available components can be had via ``module.keys()``.
-
-You can also do:
-````python
-module = gf.mod_info('file.mod',json=True)
-module['a_variable']
-````
-
-Then when you access each component the return value will be JSON-formatted. Note you can currently only access each component as JSON not the whole module file as JSON at the moment.
 
 
 ## Contributing
