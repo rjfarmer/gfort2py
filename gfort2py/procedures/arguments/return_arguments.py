@@ -148,6 +148,42 @@ class fReturnArrayArguments(fReturnArguments):
 
         return op(left, right)
 
+    def _lookup_context_value(self, key: str, ctx: dict[str, Any]) -> Any:
+        if key in ctx:
+            return ctx[key]
+
+        if key.isdigit():
+            symbol = self.module[int(key)]
+            if symbol.name in ctx:
+                return ctx[symbol.name]
+
+        raise KeyError(key)
+
+    def _resolve_size_function(self, exp_type: Any, ctx: dict[str, Any]) -> int:
+        raw = getattr(exp_type, "_args", None)
+        if not isinstance(raw, list) or len(raw) < 8:
+            raise ValueError("SIZE expression payload is malformed")
+
+        func_name = str(raw[7]).strip("'\"").lower()
+        if func_name != "size":
+            raise NotImplementedError(f"Unsupported bound function {func_name!r}")
+
+        try:
+            actual_args = raw[4]
+            first_arg = actual_args[0][1]
+            ref = str(first_arg[3])
+        except (IndexError, KeyError, TypeError, ValueError) as exc:
+            raise ValueError("SIZE expression argument payload is malformed") from exc
+
+        try:
+            arg_value = self._lookup_context_value(ref, ctx)
+        except KeyError as exc:
+            raise ValueError(
+                f"SIZE argument symbol {ref!r} is unresolved at runtime"
+            ) from exc
+
+        return int(np.size(arg_value))
+
     def _resolve_expression(self, expr: Any, ctx: dict[str, Any]) -> int:
         exp_type = getattr(expr, "type", None)
 
@@ -157,14 +193,19 @@ class fReturnArrayArguments(fReturnArguments):
             right = self._resolve_expression(right_expr, ctx)
             return int(self._apply_interface_op(exp_type.unary_op, left, right))
 
+        if exp_type is not None and type(exp_type).__name__ == "ExpFunction":
+            return self._resolve_size_function(exp_type, ctx)
+
         value = getattr(expr, "value", expr)
 
         if isinstance(value, (int, np.integer, bool, np.bool_)):
             return int(value)
 
         if isinstance(value, str):
-            if value in ctx:
-                return int(ctx[value])
+            try:
+                return int(self._lookup_context_value(value, ctx))
+            except KeyError:
+                pass
 
             raise ValueError(f"Array bound variable {value!r} is unresolved at runtime")
 
