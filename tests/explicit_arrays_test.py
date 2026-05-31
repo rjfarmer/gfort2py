@@ -120,7 +120,6 @@ class TestExplicitArrayMethods:
         x.b_real_dp_exp_5d = v
         np.testing.assert_allclose(x.b_real_dp_exp_5d, v)
 
-    @pytest.mark.skip
     def test_sub_array_n_int_1d(self, fortran_output):
         v = np.arange(0, 5)
         o = " ".join([str(i) for i in v.flatten(order="F")])
@@ -129,7 +128,6 @@ class TestExplicitArrayMethods:
             y = x.sub_array_n_int_1d(np.size(v), v)
         assert get_output().strip() == o.strip()
 
-    @pytest.mark.skip
     def test_sub_array_n_int_2d(self, fortran_output):
         v = [0, 1, 2, 3, 4] * 5
         v = np.array(v).reshape(5, 5)
