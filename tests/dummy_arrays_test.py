@@ -354,7 +354,6 @@ class TestDummyArrayMethods:
         assert np.array_equal(y.args["x"], z)
 
     # GH:39
-    @pytest.mark.skip
     def test_sub_multi_array_pass(self):
         y = 0.0
         xp = np.array([-0.6, 1.25])
