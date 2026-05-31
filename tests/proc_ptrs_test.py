@@ -21,7 +21,6 @@ x = gf.fFort(SO, MOD)
 
 class TestProcPtrsMethods:
 
-    @pytest.mark.skip
     def test_proc_ptr_ffunc(self):
         x.sub_null_proc_ptr()
         with pytest.raises(AttributeError) as cm:
@@ -37,17 +36,21 @@ class TestProcPtrsMethods:
         y2 = x.p_func_func_run_ptr(5)
         assert y.result == y2.result
 
-    @pytest.mark.skip
     def test_proc_ptr_ffunc2(self):
         x.sub_null_proc_ptr()
-        with pytest.raises(AttributeError) as cm:
-            y = x.p_func_func_run_ptr2(1)  # Allready set
+        y = x.p_func_func_run_ptr2(1)  # Already set
 
         x.p_func_func_run_ptr2 = x.func_func_run
         y = x.p_func_func_run_ptr2(10)
         assert y.result == 100
 
-    @pytest.mark.skip
+    def test_proc_pointer_bind_from_proc_pointer(self):
+        x.p_func_func_run_ptr2 = x.func_func_run2
+        x.p_func_func_run_ptr = x.p_func_func_run_ptr2
+
+        y = x.p_func_func_run_ptr(7)
+        assert y.result == 14
+
     def test_proc_update(self):
         x.sub_null_proc_ptr()
         x.p_func_func_run_ptr = x.func_func_run
@@ -59,7 +62,6 @@ class TestProcPtrsMethods:
         assert y.result == 2
 
     @pytest.mark.skipif(gf.utils.is_big_endian(), reason="Skip on big endian systems")
-    @pytest.mark.skip
     def test_proc_func_arg(self):
         y = x.func_func_arg_dp(5, x.func_real)
         assert y.result == 500
@@ -70,7 +72,6 @@ class TestProcPtrsMethods:
         y = x.func_func_arg(func=x.func_func_run)
         assert y.result == 10
 
-    @pytest.mark.skip
     def test_proc_func_arg_compile(self):
         fstr = """
                 integer function test(x)
@@ -86,10 +87,16 @@ class TestProcPtrsMethods:
         y = x.func_func_arg(f.test)
         assert y.result == 3
 
-    @pytest.mark.skip
     def test_proc_proc_func_arg(self):
         x.sub_null_proc_ptr()
         x.p_func_func_run_ptr = x.func_func_run
 
         y = x.proc_proc_func_arg(x.p_func_func_run_ptr)
+        assert y.result == 90
+
+    def test_proc_pointer_proc_pointer_dummy(self):
+        x.sub_null_proc_ptr()
+        x.p_func_func_run_ptr = x.func_func_run
+
+        y = x.p_proc_proc_func_arg_ptr(x.p_func_func_run_ptr)
         assert y.result == 90

@@ -9,6 +9,7 @@ import gfModParser as gf
 
 from .compilation import Compile, CompileArgs, Modulise, factory_platform
 from .procedures import factory as proc_factory
+from .procedures.proc_pointer import fProcPointer
 from .types import factory as type_factory
 from .types import fParam, get_module
 from .types.module import register_module_alias
@@ -47,6 +48,12 @@ class fFort:
         self._saved_parameters = gf.Parameters(module)
         self._saved_variables = gf.Variables(module)
         self._saved_procedures = gf.Procedures(module)
+        self._saved_proc_pointers = {
+            key
+            for key in module.keys()
+            if key in self._saved_procedures
+            and self._module[key].properties.attributes.proc_pointer
+        }
         self._initialized = True
 
     @classmethod
@@ -116,6 +123,13 @@ class fFort:
                         .value
                     )
 
+                if key in self._saved_proc_pointers:
+                    if self._lib is None:
+                        raise RuntimeError(
+                            "No shared library loaded; pass libname= to from_mod_string()."
+                        )
+                    return fProcPointer(self._lib, self._module[key], self._module)
+
                 if key in self._saved_procedures:
                     if self._lib is None:
                         raise RuntimeError(
@@ -146,6 +160,14 @@ class fFort:
                         symbol=self._module[key],
                     ).value = value
 
+                    return
+
+                if key in self._saved_proc_pointers:
+                    if self._lib is None:
+                        raise RuntimeError(
+                            "No shared library loaded; pass libname= to from_mod_string()."
+                        )
+                    fProcPointer(self._lib, self._module[key], self._module).bind(value)
                     return
             raise AttributeError(f"Can't find symbol {key}")
 
