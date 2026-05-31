@@ -22,12 +22,16 @@ class TestOOMethods:
 
         assert y.result == y2.result
 
-    def test_proc_pass_polymorphic_not_supported_yet(self):
-        with pytest.raises(NotImplementedError):
-            x.p_proc.proc_pass(9)
+    def test_proc_pass_updates_underlying_object(self):
+        x.sub_set_p_proc(2)
+
+        out = x.p_proc.proc_pass(9)
+
+        assert out.result is None
+        assert x.func_get_p_proc().result == 45
 
     def test_proc_pass_rejects_explicit_self(self):
-        with pytest.raises((ValueError, NotImplementedError)):
+        with pytest.raises(ValueError):
             x.p_proc.proc_pass(x.p_proc, 9)
 
     def test_typebound_methods_available_on_extended_type(self):
@@ -36,5 +40,6 @@ class TestOOMethods:
         y = x.p_proc_extend.proc_no_pass(4)
 
         assert y.result == 20
-        with pytest.raises(NotImplementedError):
-            x.p_proc_extend.proc_pass(6)
+        x.p_proc_extend.proc_pass(6)
+        vals = x.sub_get_p_proc_extend(0, 0.0).args
+        assert vals["ai"] == 30

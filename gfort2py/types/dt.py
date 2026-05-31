@@ -144,15 +144,6 @@ class _BoundTypeProcedure:
             return proc(*args, **kwargs)
 
         pass_pos = max(self._info.pass_arg_num - 1, 0)
-        try:
-            pass_ref = proc.definition.properties.formal_argument[pass_pos]
-            pass_symbol = proc._module[pass_ref]
-            if pass_symbol.type.lower() == "class":
-                raise NotImplementedError(
-                    "Type-bound PASS with polymorphic CLASS dummy is not supported yet"
-                )
-        except (AttributeError, IndexError, KeyError, TypeError):
-            pass
 
         if self._info.pass_arg and self._info.pass_arg in kwargs:
             raise ValueError(
@@ -811,14 +802,10 @@ class ftype_class(_DTModuleResolutionMixin, f_type):
         if vtab_symbol is None:
             return
 
-        vtab_ctype = ftype_dt._build_ctype(
-            self._module_name,
-            int(vtab_symbol.properties.typespec.class_ref),
-            module_obj=module_obj,
-        )
-        vtab_obj = vtab_ctype.in_dll(lib, vtab_symbol.mangled_name)
-        self._vptr_owner = vtab_obj
-        self._ctype._vptr = ctypes.c_void_p(ctypes.addressof(vtab_obj))
+        # For polymorphic CLASS dummies, gfortran expects the address of the
+        # module-level vtab variable, not the address of a copied struct.
+        self._vptr_owner = ctypes.c_void_p.in_dll(lib, vtab_symbol.mangled_name)
+        self._ctype._vptr = ctypes.c_void_p(ctypes.addressof(self._vptr_owner))
 
     @property
     def value(self):

@@ -170,7 +170,8 @@ class fArg(metaclass=ABCMeta):
                 self._ctype = None
             return
 
-        is_dt_like = self.definition.is_dt or self.definition.type.lower() == "class"
+        is_dt_like = self.definition.is_dt
+        is_class_like = self.definition.type.lower() == "class"
         is_wrapper = (
             hasattr(value, "_ctype")
             and callable(getattr(value, "pointer", None))
@@ -178,6 +179,16 @@ class fArg(metaclass=ABCMeta):
         )
         if is_dt_like and is_wrapper:
             self.base = value
+            if self.is_value:
+                self._ctype = self.base._ctype
+            elif self.is_pointer:
+                self._ctype = self.base.pointer2()
+            else:
+                self._ctype = self.base.pointer()
+            return
+
+        if is_class_like and is_wrapper:
+            self.base.value = value
             if self.is_value:
                 self._ctype = self.base._ctype
             elif self.is_pointer:
