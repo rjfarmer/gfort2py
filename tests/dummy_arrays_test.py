@@ -294,21 +294,18 @@ class TestDummyArrayMethods:
         assert y.result
         assert y2.result
 
-    @pytest.mark.skip
     def test_sub_arr_assumed_pointer_int_1d(self):
         v = np.arange(10, 15)
 
         y = x.sub_arr_assumed_pointer_int_1d(v)
         assert np.array_equal(y.args["zzz"], np.array([100] * 5))
 
-    @pytest.mark.skip
     def test_sub_arr_assumed_pointer_real_1d(self):
         v = np.arange(10.0, 15.0)
 
         y = x.sub_arr_assumed_pointer_real_1d(v)
         assert np.array_equal(y.args["zzz"], np.array([100.0] * 5))
 
-    @pytest.mark.skip
     def test_sub_arr_assumed_pointer_dp_1d(self):
         v = np.arange(10.0, 15.0)
 
