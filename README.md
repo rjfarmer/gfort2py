@@ -266,6 +266,42 @@ between Python functions (``keys``, ``items`` etc) and any Fortran-derived type 
 You can pass a ``fDT`` as an argument to a procedure.
 
 
+### Type-bound procedures
+
+Type-bound procedures declared inside a Fortran derived type are available as
+Python callables on derived-type objects.
+
+For ``nopass`` bindings, call the method with its declared arguments:
+
+````python
+y = x.p_proc.proc_no_pass(3)
+assert y.result == 15
+````
+
+For ``pass(this)`` bindings, the passed object is inserted automatically.
+Do not pass ``this`` explicitly:
+
+````python
+x.p_proc.proc_pass(9)
+assert x.func_get_p_proc().result == 45
+````
+
+Type-bound methods are also resolved on extended types:
+
+````python
+x.p_proc_extend.proc_no_pass(4)
+x.p_proc_extend.proc_pass(6)
+````
+
+Polymorphic ``CLASS(...)`` passed-object dummies are supported for
+type-bound ``PASS`` calls.
+
+Current limitation: procedures with polymorphic ``CLASS(...)`` array dummy
+arguments (for example ``class(t), dimension(:)``) still require class-wrapper
+objects produced by gfort2py. Passing plain Python placeholders (like ``[]``)
+for these dummies raises ``TypeError``.
+
+
 ### Quad precision variables
 
 Quad precision (REAL128) variables are not natively supported by Python thus we need a different way to handle them. For now that is the [pyQuadp library](https://github.com/rjfarmer/pyQuadp) which can be installed from PyPi with:

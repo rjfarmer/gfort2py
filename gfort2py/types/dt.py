@@ -2,7 +2,9 @@
 
 import ctypes
 import os
+import re
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -13,7 +15,12 @@ from ..utils import copy_array, is_64bit
 from .base import AllocStrategy, f_type
 from .module import get_module
 
-__all__ = ["ftype_dt", "ftype_dt_explicit", "ftype_dt_assumed_shape"]
+__all__ = [
+    "ftype_dt",
+    "ftype_class",
+    "ftype_dt_explicit",
+    "ftype_dt_assumed_shape",
+]
 
 
 _all_dts: dict[tuple[str, int], type[ctypes.Structure]] = {}
@@ -103,6 +110,75 @@ def _shape_from_descriptor(desc: ctypes.Structure, ndims: int) -> tuple[int, ...
     return tuple(int(i) for i in shape)
 
 
+@dataclass(frozen=True)
+class _TypeBoundProcedureInfo:
+    name: str
+    proc_ref: int
+    nopass: bool
+    pass_arg: str
+    pass_arg_num: int
+
+
+class _BoundTypeProcedure:
+    def __init__(self, owner: "ftype_dt", info: _TypeBoundProcedureInfo) -> None:
+        self._owner = owner
+        self._info = info
+
+    def _procedure(self):
+        from ..procedures import factory as proc_factory
+
+        lib = getattr(self._owner, "_lib", None)
+        if lib is None:
+            raise RuntimeError("No shared library handle bound for type-bound call")
+
+        module_obj = getattr(self._owner, "_module_obj", None)
+        if module_obj is None:
+            module_obj = get_module(self._owner._resolved_use_module_name())
+
+        symbol = module_obj[self._info.proc_ref]
+        return proc_factory(symbol)(lib, symbol, module_obj)
+
+    def __call__(self, *args, **kwargs):
+        proc = self._procedure()
+        if self._info.nopass:
+            return proc(*args, **kwargs)
+
+        pass_pos = max(self._info.pass_arg_num - 1, 0)
+
+        if self._info.pass_arg and self._info.pass_arg in kwargs:
+            raise ValueError(
+                f"Type-bound PASS argument '{self._info.pass_arg}' is implicit"
+            )
+
+        if pass_pos < len(args):
+            candidate = args[pass_pos]
+            explicit_self = candidate is self._owner
+            if (
+                not explicit_self
+                and hasattr(candidate, "_ctype")
+                and hasattr(self._owner, "_ctype")
+            ):
+                try:
+                    explicit_self = ctypes.addressof(
+                        candidate._ctype
+                    ) == ctypes.addressof(self._owner._ctype)
+                except TypeError:
+                    explicit_self = False
+            if explicit_self:
+                raise ValueError(
+                    "PASS object is implicit and must not be passed explicitly"
+                )
+
+        if pass_pos > len(args):
+            raise ValueError(
+                f"Invalid PASS position {pass_pos + 1} for {self._info.name}"
+            )
+
+        new_args = list(args)
+        new_args.insert(pass_pos, self._owner)
+        return proc(*new_args, **kwargs)
+
+
 class _DTModuleResolutionMixin:
     def _resolved_symbol_module(self) -> str:
         # Access bound symbol directly from instance state; touching the
@@ -153,7 +229,7 @@ class ftype_dt(_DTModuleResolutionMixin, f_type):
     dtype = np.dtype(object)
 
     def __init__(self, value=None):
-        if not hasattr(self, "_module_name") or not hasattr(self, "_type_id"):
+        if "_module_name" not in self.__dict__ or "_type_id" not in self.__dict__:
             self._module_name, self._type_id = self._type_info_from_symbol(self._sym)
         super().__init__()
         self.value = value
@@ -263,6 +339,110 @@ class ftype_dt(_DTModuleResolutionMixin, f_type):
         )
         return definition.properties.components
 
+    @staticmethod
+    def _parse_type_bound_from_raw(raw: str) -> dict[str, _TypeBoundProcedureInfo]:
+        res: dict[str, _TypeBoundProcedureInfo] = {}
+        for match in re.finditer(r"\(\s*'([^']+)'\s+\(([^()]*)\)\)", raw):
+            name = match.group(1)
+            meta = match.group(2)
+            parsed = re.search(
+                r"\b(NOPASS|PASS)\b.*?'([^']*)'\s+(\d+)\s+(\d+)\s*$",
+                meta,
+            )
+            if parsed is None:
+                continue
+
+            mode = parsed.group(1)
+            pass_arg = parsed.group(2)
+            pass_arg_num = int(parsed.group(3))
+            proc_ref = int(parsed.group(4))
+            if proc_ref <= 0:
+                continue
+
+            res[name] = _TypeBoundProcedureInfo(
+                name=name,
+                proc_ref=proc_ref,
+                nopass=mode == "NOPASS",
+                pass_arg=pass_arg,
+                pass_arg_num=pass_arg_num,
+            )
+
+        return res
+
+    @classmethod
+    def _type_bound_procedures_for(
+        cls,
+        module_name: str,
+        type_id: int,
+        module_obj,
+        visited: set[int],
+    ) -> dict[str, _TypeBoundProcedureInfo]:
+        if type_id in visited:
+            return {}
+        visited.add(type_id)
+
+        definition = cls._dt_definition(module_name, type_id, module_obj=module_obj)
+        components = definition.properties.components
+        local: dict[str, _TypeBoundProcedureInfo] = {}
+
+        for key in components.keys():
+            comp = components[key]
+            proc_meta = getattr(comp, "proc_pointer", None)
+            if proc_meta is None:
+                continue
+
+            proc_ref = int(getattr(proc_meta, "proc_ref", 0))
+            if proc_ref <= 0:
+                continue
+
+            info = _TypeBoundProcedureInfo(
+                name=comp.name,
+                proc_ref=proc_ref,
+                nopass=bool(getattr(proc_meta, "nopass", False)),
+                pass_arg=str(getattr(proc_meta, "pass_arg", "")),
+                pass_arg_num=int(getattr(proc_meta, "pass_arg_num", 0)),
+            )
+            local[info.name] = info
+
+        if len(local) == 0:
+            raw = str(getattr(definition.properties, "_raw", ""))
+            local = cls._parse_type_bound_from_raw(raw)
+
+        inherited: dict[str, _TypeBoundProcedureInfo] = {}
+        for key in components.keys():
+            comp = components[key]
+            if comp.array.is_array:
+                continue
+            if not getattr(comp.typespec, "is_dt", False):
+                continue
+
+            parent_id = int(comp.typespec.class_ref)
+            if parent_id <= 0 or parent_id == type_id:
+                continue
+
+            parent_definition = cls._dt_definition(
+                module_name, parent_id, module_obj=module_obj
+            )
+            if comp.name.lower() != parent_definition.name.lower():
+                continue
+
+            inherited.update(
+                cls._type_bound_procedures_for(
+                    module_name, parent_id, module_obj, visited
+                )
+            )
+
+        inherited.update(local)
+        return inherited
+
+    def _type_bound_procedures(self) -> dict[str, _TypeBoundProcedureInfo]:
+        return self._type_bound_procedures_for(
+            self._module_name,
+            self._type_id,
+            getattr(self, "_module_obj", None),
+            set(),
+        )
+
     @property
     def ftype(self):
         definition = self._dt_definition(
@@ -282,12 +462,13 @@ class ftype_dt(_DTModuleResolutionMixin, f_type):
 
     @classmethod
     def from_existing_ctype(
-        cls, module_name: str, type_id: int, ctype_obj, module_obj=None
+        cls, module_name: str, type_id: int, ctype_obj, module_obj=None, lib=None
     ) -> "ftype_dt":
         c = cls.__new__(cls)
         c._module_name = module_name
         c._type_id = type_id
         c._module_obj = module_obj
+        c._lib = lib
         c._symbol = None
         c.__init__()  # type: ignore[misc]
         c._ctype = ctype_obj
@@ -473,6 +654,7 @@ class ftype_dt(_DTModuleResolutionMixin, f_type):
                     int(comp.typespec.class_ref),
                     value.contents,
                     module_obj=getattr(self, "_module_obj", None),
+                    lib=getattr(self, "_lib", None),
                 )
 
             return ftype_dt.from_existing_ctype(
@@ -480,6 +662,7 @@ class ftype_dt(_DTModuleResolutionMixin, f_type):
                 int(comp.typespec.class_ref),
                 value,
                 module_obj=getattr(self, "_module_obj", None),
+                lib=getattr(self, "_lib", None),
             )
 
         if comp.array.is_array:
@@ -512,6 +695,7 @@ class ftype_dt(_DTModuleResolutionMixin, f_type):
                     int(comp.typespec.class_ref),
                     cur,
                     module_obj=getattr(self, "_module_obj", None),
+                    lib=getattr(self, "_lib", None),
                 )
             nested.value = value
             return
@@ -556,11 +740,107 @@ class ftype_dt(_DTModuleResolutionMixin, f_type):
     def __contains__(self, key):
         return key in self.keys()
 
+    def __getattr__(self, key: str):
+        procs = self._type_bound_procedures()
+        if key in procs:
+            return _BoundTypeProcedure(self, procs[key])
+
+        raise AttributeError(f"{key} not present in {self.ftype}")
+
     def __dir__(self):
-        return list(self.keys())
+        return sorted(set([*self.keys(), *self._type_bound_procedures().keys()]))
 
     def __repr__(self):
         return f"type({self.ftype})"
+
+
+class ftype_class(_DTModuleResolutionMixin, f_type):
+    kind = -1
+    dtype = np.dtype(object)
+
+    def __init__(self, value=None):
+        if "_module_name" not in self.__dict__ or "_class_id" not in self.__dict__:
+            self._module_name = self._sym.module
+            self._class_id = int(self._sym.properties.typespec.class_ref)
+        super().__init__()
+        self._vptr_owner = None
+        self.value = value
+
+    @property
+    def ftype(self):
+        return "class"
+
+    @property
+    def ctype(self):
+        class _ClassDescriptor(ctypes.Structure):
+            _fields_ = [("_data", ctypes.c_void_p), ("_vptr", ctypes.c_void_p)]
+
+        return _ClassDescriptor
+
+    def _set_data_pointer(self, value) -> None:
+        self._ctype._data = ctypes.c_void_p(ctypes.addressof(value._ctype))
+
+    def _set_vptr(self, value) -> None:
+        if not hasattr(self._ctype, "_vptr"):
+            return
+
+        lib = getattr(value, "_lib", None)
+        if lib is None:
+            return
+
+        module_obj = getattr(self, "_module_obj", None)
+        if module_obj is None:
+            return
+
+        module_name = value._resolved_use_module_name().lower()
+        type_name = value.ftype
+        candidates = [
+            f"__vtab_{module_name}_{type_name}",
+            f"__vtab_{module_name}_{type_name.lower()}",
+        ]
+
+        vtab_symbol = None
+        for key in module_obj.keys():
+            sym = module_obj[key]
+            if sym.name in candidates:
+                vtab_symbol = sym
+                break
+
+        if vtab_symbol is None:
+            return
+
+        # For polymorphic CLASS dummies, gfortran expects the address of the
+        # module-level vtab variable, not the address of a copied struct.
+        self._vptr_owner = ctypes.c_void_p.in_dll(lib, vtab_symbol.mangled_name)
+        self._ctype._vptr = ctypes.c_void_p(ctypes.addressof(self._vptr_owner))
+
+    @property
+    def value(self):
+        return self
+
+    @value.setter
+    def value(self, value):
+        if value is None:
+            return
+
+        if isinstance(value, ftype_class):
+            self._ctype._data = value._ctype._data
+            self._ctype._vptr = value._ctype._vptr
+            self._vptr_owner = getattr(value, "_vptr_owner", None)
+            return
+
+        is_wrapper = (
+            hasattr(value, "_ctype")
+            and callable(getattr(value, "pointer", None))
+            and callable(getattr(value, "pointer2", None))
+        )
+        if not is_wrapper:
+            raise TypeError(
+                "Polymorphic CLASS arguments require a derived-type wrapper"
+            )
+
+        self._set_data_pointer(value)
+        self._set_vptr(value)
 
 
 class ftype_dt_array(f_type):
@@ -640,6 +920,7 @@ class ftype_dt_array(f_type):
             self._type_id,
             ctype_obj,
             module_obj=getattr(self, "_module_obj", None),
+            lib=getattr(self, "_lib", None),
         )
 
     def __setitem__(self, key, value):
