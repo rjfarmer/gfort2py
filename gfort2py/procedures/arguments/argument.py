@@ -182,7 +182,10 @@ class fArg(metaclass=ABCMeta):
             if self.is_value:
                 self._ctype = self.base._ctype
             elif self.is_pointer:
-                self._ctype = self.base.pointer2()
+                if self.definition.is_array:
+                    self._ctype = self.base.pointer()
+                else:
+                    self._ctype = self.base.pointer2()
             else:
                 self._ctype = self.base.pointer()
             return
@@ -192,7 +195,10 @@ class fArg(metaclass=ABCMeta):
             if self.is_value:
                 self._ctype = self.base._ctype
             elif self.is_pointer:
-                self._ctype = self.base.pointer2()
+                if self.definition.is_array:
+                    self._ctype = self.base.pointer()
+                else:
+                    self._ctype = self.base.pointer2()
             else:
                 self._ctype = self.base.pointer()
             return
@@ -201,7 +207,10 @@ class fArg(metaclass=ABCMeta):
         if self.is_value:
             self._ctype = self.base._ctype
         elif self.is_pointer:
-            self._ctype = self.base.pointer2()
+            if self.definition.is_array:
+                self._ctype = self.base.pointer()
+            else:
+                self._ctype = self.base.pointer2()
         else:
             self._ctype = self.base.pointer()
 
@@ -237,7 +246,10 @@ class fArg(metaclass=ABCMeta):
             c = self._ctype
         elif self.is_pointer:
             p = cast(Any, self._ctype)
-            c = p.contents.contents
+            if self.definition.is_array:
+                c = p.contents
+            else:
+                c = p.contents.contents
         else:
             p = cast(Any, self._ctype)
             c = p.contents

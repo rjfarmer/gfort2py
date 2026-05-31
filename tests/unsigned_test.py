@@ -126,7 +126,6 @@ class TestUnsigned:
         assert y.result == 0
 
     # --- function: add_unsigned_arrays ---
-    @pytest.mark.skip(reason="runtime-sized explicit return arrays not resolved yet")
     def test_add_unsigned_arrays(self):
         lhs = np.array([1, 2, 3, 4, 5], dtype=np.uintc)
         rhs = np.array([5, 4, 3, 2, 1], dtype=np.uintc)
@@ -135,7 +134,6 @@ class TestUnsigned:
         assert np.array_equal(y.result, expected)
 
     # --- function: shift_unsigned_array ---
-    @pytest.mark.skip(reason="runtime-sized explicit return arrays not resolved yet")
     def test_shift_unsigned_array(self):
         arr = np.array([10, 20, 30, 40, 50], dtype=np.uintc)
         y = x.shift_unsigned_array(arr, 5)

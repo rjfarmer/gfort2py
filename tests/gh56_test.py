@@ -19,7 +19,6 @@ SO, MOD = build_paths("gh56", "gh56")
 x = gf.fFort(SO, MOD)
 
 
-@pytest.mark.skip
 class Testgh56Methods:
     def test_gh56(self):
         y1 = x.get_array(10).result

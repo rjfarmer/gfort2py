@@ -11,8 +11,7 @@ import numpy as np
 import pytest
 
 import gfort2py as gf
-
-from .conftest import build_paths
+from tests.conftest import build_paths
 
 SO, MOD = build_paths("explicit_arrays", "explicit_arrays")
 
@@ -121,7 +120,6 @@ class TestExplicitArrayMethods:
         x.b_real_dp_exp_5d = v
         np.testing.assert_allclose(x.b_real_dp_exp_5d, v)
 
-    @pytest.mark.skip
     def test_sub_array_n_int_1d(self, fortran_output):
         v = np.arange(0, 5)
         o = " ".join([str(i) for i in v.flatten(order="F")])
@@ -130,7 +128,6 @@ class TestExplicitArrayMethods:
             y = x.sub_array_n_int_1d(np.size(v), v)
         assert get_output().strip() == o.strip()
 
-    @pytest.mark.skip
     def test_sub_array_n_int_2d(self, fortran_output):
         v = [0, 1, 2, 3, 4] * 5
         v = np.array(v).reshape(5, 5)
@@ -247,7 +244,6 @@ class TestExplicitArrayMethods:
             y = x.sub_exp_array_int_1d(v)
         assert get_output().strip() == o.strip()
 
-    @pytest.mark.skip
     def test_logical_arr_multi(self):
         xarr = np.zeros(5)
         xarr[:] = True
@@ -255,28 +251,24 @@ class TestExplicitArrayMethods:
         y = x.func_logical_multi(1.0, 2.0, xarr, 3.0, 4.0)
         assert y.result
 
-    @pytest.mark.skip
     def test_mesh_exp(self):
         # Github issue #13
         i = 5
         y = x.func_mesh_exp(i)
-        assert np.array_equal(y.result, np.arange(0, i + 1 + 1))
+        assert np.array_equal(y.result, np.arange(1, i + 1 + 1))
 
-    @pytest.mark.skip
     def test_mesh_exp2(self):
         i = 5
         z = np.zeros(i + 1)
         y = x.func_mesh_exp2(z, i)
         assert np.array_equal(y.args["x"], np.arange(1, i + 1 + 1))
 
-    @pytest.mark.skip
     def test_mesh_exp3(self):
         i = 5
         z = np.zeros((i * 2) + 1)
         y = x.func_mesh_exp3(z, i)
         assert np.array_equal(y.args["x"], np.arange(1, (i * 2) + 1 + 1))
 
-    @pytest.mark.skip
     def test_mesh_exp4(self):
         i = 5
         z = np.zeros(((i + 3) * 2) + 1)

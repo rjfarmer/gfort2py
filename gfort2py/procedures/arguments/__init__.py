@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0+
 
+import ctypes
 from typing import Any
 
 import gfModParser as gf
@@ -17,6 +18,7 @@ from .return_arguments import (
 def factory_return(
     procedure: gf.Symbol,
     module: gf.Module,
+    lib: ctypes.CDLL,
     values: tuple[tuple[Any, ...], dict[str, Any]],
 ) -> fReturnArguments | None:
 
@@ -26,11 +28,9 @@ def factory_return(
     key = procedure.properties.symbol_reference
     rt = module[key]
 
-    if rt.type.lower() == "character":
-        return fReturnCharArguments(procedure, module, values, rt)
-    elif rt.is_array:
-        return fReturnArrayArguments(procedure, module, values, rt)
-    elif rt.is_dt and rt.is_array:
-        return fReturnDTArguments(procedure, module, values, rt)
+    if rt.is_array:
+        return fReturnArrayArguments(procedure, module, lib, values, rt)
+    elif rt.type.lower() == "character":
+        return fReturnCharArguments(procedure, module, lib, values, rt)
     else:
         return None

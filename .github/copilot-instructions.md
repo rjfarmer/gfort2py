@@ -6,6 +6,13 @@ gfort2py is a Python library for reading Fortran module files. It parses `.mod` 
 
 ## Change Philosophy
 
+When the following principles conflict, prioritize in this order:
+1. Correctness and comprehensive test coverage
+2. Readability and maintainability
+3. Reuse of existing code over creating new classes
+4. Factory patterns for object construction
+5. Minimal change size and scope
+
 Prefer minimal, focused changes. Every change should have a corresponding test case added or updated.
 
 Prefer clean designs that avoid explicit type checking where practical. Favor class-level properties and polymorphism over branching on type names.
@@ -19,8 +26,6 @@ Code should always be written with the expectation that it will be read by other
 Code should have comments where necessary to explain non-obvious logic, but avoid redundant comments that simply restate what the code does.
 
 Follow PEP 8 style guidelines for Python code, and use consistent formatting throughout the codebase.
-
-Add mypy types to all functions and methods, and fix any type errors reported by mypy.
 
 ## Testing
 
@@ -47,5 +52,7 @@ Use mypy to enforce type checking:
 ```sh
 mypy gfort2py
 ```
+
+Add mypy type annotations to all functions and methods in the gfort2py package. Test files are excluded from mypy enforcement but should still use type annotations where practical.
 
 Run mypy after making code changes and fix any type errors before considering a change complete.

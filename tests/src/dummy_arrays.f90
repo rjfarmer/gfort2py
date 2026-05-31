@@ -259,21 +259,18 @@ module dummy_arrays
 	subroutine sub_arr_assumed_pointer_int_1d(zzz)
 		integer,dimension(:),pointer, intent(inout) :: zzz
 		
-		write(output_unit,*) zzz(1:5)
 		zzz(1:5) = 100
 	end subroutine sub_arr_assumed_pointer_int_1d
 	
 	subroutine sub_arr_assumed_pointer_real_1d(zzz)
 		real,dimension(:),pointer, intent(inout) :: zzz
 		
-		write(output_unit,*) zzz(1:5)
 		zzz(1:5) = 100.0
 	end subroutine sub_arr_assumed_pointer_real_1d
 	
 	subroutine sub_arr_assumed_pointer_dp_1d(zzz)
 		real(dp),dimension(:),pointer, intent(inout) :: zzz
 		
-		write(output_unit,*) zzz(1:5),lbound(zzz),ubound(zzz),size(zzz)
 		zzz(1:4) = 100.0_dp
 		zzz(5) = 100_dp
 	end subroutine sub_arr_assumed_pointer_dp_1d

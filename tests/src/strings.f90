@@ -144,6 +144,12 @@ module strings
         character(len=str_int_len(i)) :: s
         write(s, '(i0)') i
     end function func_str_int_len
+
+    function func_str_op_len(i) result(s)
+        integer, intent(in) :: i
+        character(len=2*i+1) :: s
+        write(s, '(i0)') i
+    end function func_str_op_len
         
     pure integer function str_int_len(i) result(sz)
         ! Returns the length of the string representation of 'i'
