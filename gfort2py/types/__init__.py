@@ -98,6 +98,17 @@ def factory(obj: gf.Symbol) -> type[f_type]:
                 raise TypeError("Can't match object")
         else:
             res = ftype_dt
+    elif ftype == "class":
+        if is_array:
+            # CLASS arrays currently share descriptor layout with DT arrays.
+            if is_explicit:
+                res = ftype_dt_explicit
+            elif is_assumed_shape:
+                res = ftype_dt_assumed_shape
+            else:
+                raise TypeError("Can't match object")
+        else:
+            res = ftype_class
     elif is_array:
         base_arr_cls: Any
         if is_explicit:

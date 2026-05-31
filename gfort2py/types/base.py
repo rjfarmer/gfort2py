@@ -67,6 +67,7 @@ class f_type(metaclass=ABCMeta):
     extra_fflags: str = ""
     _symbol: gf.Symbol | None = None
     _module_obj: gf.Module | None = None
+    _lib: ctypes.CDLL | None = None
 
     def __init__(self, value=None):
         self._ctype = self.ctype()
@@ -163,6 +164,7 @@ class f_type(metaclass=ABCMeta):
     ) -> "f_type":
         c = cls.__new__(cls)
         c._symbol = symbol
+        c._lib = lib
         c.__init__()  # type: ignore[misc]
         c._ctype = c.ctype.in_dll(lib, name)
         return c
