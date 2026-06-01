@@ -261,6 +261,15 @@ between Python functions (``keys``, ``items`` etc) and any Fortran-derived type 
 
 You can pass a ``fDT`` as an argument to a procedure.
 
+Arrays of derived types can be set (or allocatad) with a list of dicts:
+
+````python
+x.my_dt= [
+            [{"a_int": 1}, {"a_int": 2}],
+            [{"a_int": 3}, {"a_int": 4}],
+        ]
+````
+
 
 ### Type-bound procedures
 
@@ -271,7 +280,6 @@ For ``nopass`` bindings, call the method with its declared arguments:
 
 ````python
 y = x.p_proc.proc_no_pass(3)
-assert y.result == 15
 ````
 
 For ``pass(this)`` bindings, the passed object is inserted automatically.
@@ -279,7 +287,6 @@ Do not pass ``this`` explicitly:
 
 ````python
 x.p_proc.proc_pass(9)
-assert x.func_get_p_proc().result == 45
 ````
 
 Type-bound methods are also resolved on extended types:
@@ -321,7 +328,8 @@ Guaranteed support currently includes:
 - Parameters
 - Procedure arguments (including array arguments)
 
-Quad function return values are not guaranteed and should be avoided for portable behavior.
+Quad functions returning a scalar are not supported. Either 
+return a 1-element quad array, return the value as a dummy argument, or set a module variable with the return value.
 
 ``pyQuadp`` is currently an optional requirement, you must manually install it, it does not get auto-installed when ``gfort2py`` is installed. If you try to access a quad precision variable without ``pyQuadp`` you should get a ``TypeError``.
 
@@ -380,6 +388,7 @@ The items below are the currently guaranteed, test-covered behavior.
 
 - Scalars, parameters, and characters
 - Explicit-size and allocatable arrays
+- Assumed shape arrays
 - Derived types, including nested derived types
 - Explicit and allocatable arrays of derived types
 - Strings and unicode strings (kind=4), including allocatable arrays

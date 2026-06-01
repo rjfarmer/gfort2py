@@ -199,6 +199,83 @@ module quad
 
 		end function  func_test_quad_ret
 
+		function func_qp_return_array() result(res)
+			real(qp), dimension(4) :: res
+
+			res = [1.0_qp, 2.0_qp, 3.0_qp, 4.0_qp]
+
+		end function func_qp_return_array
+
+		function func_qp_return_alloc_array(n) result(res)
+			integer, intent(in) :: n
+			real(qp), allocatable, dimension(:) :: res
+			integer :: i
+
+			allocate(res(n))
+			do i = 1, n
+				res(i) = real(10 * i, kind=qp)
+			end do
+
+		end function func_qp_return_alloc_array
+
+		function func_qp_return_from_assumed_shape(x) result(res)
+			real(qp), dimension(:), intent(in) :: x
+			real(qp), dimension(size(x)) :: res
+
+			res = x + 5.0_qp
+
+		end function func_qp_return_from_assumed_shape
+
+		function func_qp_return_from_assumed_size(x, n) result(res)
+			real(qp), intent(in) :: x(*)
+			integer, intent(in) :: n
+			real(qp), dimension(n) :: res
+
+			res = x(1:n) + 7.0_qp
+
+		end function func_qp_return_from_assumed_size
+
+		function func_qcmplx_qp_return_array() result(res)
+			complex(qp), dimension(4) :: res
+
+			res = [ &
+				cmplx(1.0_qp, -1.0_qp, kind=qp), &
+				cmplx(2.0_qp, -2.0_qp, kind=qp), &
+				cmplx(3.0_qp, -3.0_qp, kind=qp), &
+				cmplx(4.0_qp, -4.0_qp, kind=qp)  &
+			]
+
+		end function func_qcmplx_qp_return_array
+
+		function func_qcmplx_qp_return_alloc_array(n) result(res)
+			integer, intent(in) :: n
+			complex(qp), allocatable, dimension(:) :: res
+			integer :: i
+
+			allocate(res(n))
+			do i = 1, n
+				res(i) = cmplx(real(10 * i, kind=qp), real(-10 * i, kind=qp), kind=qp)
+			end do
+
+		end function func_qcmplx_qp_return_alloc_array
+
+		function func_qcmplx_qp_return_from_assumed_shape(x) result(res)
+			complex(qp), dimension(:), intent(in) :: x
+			complex(qp), dimension(size(x)) :: res
+
+			res = x + cmplx(5.0_qp, -5.0_qp, kind=qp)
+
+		end function func_qcmplx_qp_return_from_assumed_shape
+
+		function func_qcmplx_qp_return_from_assumed_size(x, n) result(res)
+			complex(qp), intent(in) :: x(*)
+			integer, intent(in) :: n
+			complex(qp), dimension(n) :: res
+
+			res = x(1:n) + cmplx(7.0_qp, -7.0_qp, kind=qp)
+
+		end function func_qcmplx_qp_return_from_assumed_size
+
 #endif
 
 end module quad
