@@ -186,3 +186,89 @@ class TestQuadMethods:
         )
         y = x.func_qcmplx_qp_assumed_rank_arr(arr)
         assert y.result
+
+    def test_func_qp_return_array(self):
+        y = x.func_qp_return_array()
+        expected = pyq.qarray.from_list([1.0, 2.0, 3.0, 4.0])
+        assert np.array_equal(y.result, expected)
+
+    def test_func_qp_return_alloc_array(self):
+        y = x.func_qp_return_alloc_array(4)
+        expected = pyq.qarray.from_list([10.0, 20.0, 30.0, 40.0])
+        assert np.array_equal(y.result, expected)
+
+    def test_func_qp_return_from_assumed_shape(self):
+        arr = pyq.qarray.from_list([1.0, 2.0, 3.0, 4.0])
+        y = x.func_qp_return_from_assumed_shape(arr)
+        expected = pyq.qarray.from_list([6.0, 7.0, 8.0, 9.0])
+        assert np.array_equal(y.result, expected)
+
+    def test_func_qp_return_from_assumed_size(self):
+        arr = pyq.qarray.from_list([1.0, 2.0, 3.0, 4.0])
+        y = x.func_qp_return_from_assumed_size(arr, arr.size)
+        expected = pyq.qarray.from_list([8.0, 9.0, 10.0, 11.0])
+        assert np.array_equal(y.result, expected)
+
+    def test_func_qcmplx_qp_return_array(self):
+        y = x.func_qcmplx_qp_return_array()
+        expected = pyq.qcarray.from_list(
+            [
+                complex(1.0, -1.0),
+                complex(2.0, -2.0),
+                complex(3.0, -3.0),
+                complex(4.0, -4.0),
+            ]
+        )
+        assert np.array_equal(y.result, expected)
+
+    def test_func_qcmplx_qp_return_alloc_array(self):
+        y = x.func_qcmplx_qp_return_alloc_array(4)
+        expected = pyq.qcarray.from_list(
+            [
+                complex(10.0, -10.0),
+                complex(20.0, -20.0),
+                complex(30.0, -30.0),
+                complex(40.0, -40.0),
+            ]
+        )
+        assert np.array_equal(y.result, expected)
+
+    def test_func_qcmplx_qp_return_from_assumed_shape(self):
+        arr = pyq.qcarray.from_list(
+            [
+                complex(1.0, -1.0),
+                complex(2.0, -2.0),
+                complex(3.0, -3.0),
+                complex(4.0, -4.0),
+            ]
+        )
+        y = x.func_qcmplx_qp_return_from_assumed_shape(arr)
+        expected = pyq.qcarray.from_list(
+            [
+                complex(6.0, -6.0),
+                complex(7.0, -7.0),
+                complex(8.0, -8.0),
+                complex(9.0, -9.0),
+            ]
+        )
+        assert np.array_equal(y.result, expected)
+
+    def test_func_qcmplx_qp_return_from_assumed_size(self):
+        arr = pyq.qcarray.from_list(
+            [
+                complex(1.0, -1.0),
+                complex(2.0, -2.0),
+                complex(3.0, -3.0),
+                complex(4.0, -4.0),
+            ]
+        )
+        y = x.func_qcmplx_qp_return_from_assumed_size(arr, arr.size)
+        expected = pyq.qcarray.from_list(
+            [
+                complex(8.0, -8.0),
+                complex(9.0, -9.0),
+                complex(10.0, -10.0),
+                complex(11.0, -11.0),
+            ]
+        )
+        assert np.array_equal(y.result, expected)

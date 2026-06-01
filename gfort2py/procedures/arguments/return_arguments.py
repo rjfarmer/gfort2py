@@ -6,6 +6,13 @@ from typing import Any
 import gfModParser as gf
 import numpy as np
 
+try:
+    import pyquadp as pyq  # type: ignore[import-not-found]
+
+    PYQ_IMPORTED = True
+except ImportError:
+    PYQ_IMPORTED = False
+
 from ...types import factory, find_ftype
 from ...types.arrays import ftype_assumed_shape
 from ...types.dt import ftype_dt_assumed_shape
@@ -330,7 +337,31 @@ class fReturnArrayArguments(fReturnArguments):
             and not self.return_symbol.is_dt
         ):
             shape = self._resolve_shape()
-            initial = np.zeros(shape, dtype=self._result_type.base.dtype, order="F")
+            is_quad_real = (
+                self.return_symbol.type.lower() == "real"
+                and self.return_symbol.kind == 16
+            )
+            is_quad_complex = (
+                self.return_symbol.type.lower() == "complex"
+                and self.return_symbol.kind == 16
+            )
+
+            if is_quad_real:
+                if not PYQ_IMPORTED:
+                    raise ValueError(
+                        "Please install pyQuadp to handle quad precision numbers"
+                    )
+                initial = np.empty(shape, dtype=object, order="F")
+                initial[:] = pyq.qfloat(0)
+            elif is_quad_complex:
+                if not PYQ_IMPORTED:
+                    raise ValueError(
+                        "Please install pyQuadp to handle quad precision numbers"
+                    )
+                initial = np.empty(shape, dtype=object, order="F")
+                initial[:] = pyq.qcmplx(0)
+            else:
+                initial = np.zeros(shape, dtype=self._result_type.base.dtype, order="F")
             self._result_type.value = initial
         elif (
             self.return_symbol.properties.array_spec.is_explicit
