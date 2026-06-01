@@ -36,7 +36,7 @@ We achieve this by tightly coupling the code to the gfortran compiler, by doing 
 gfort2py uses the gfortran ``mod`` files to translate your Fortran code's ABI to Python-compatible types using Python's ``ctypes`` library.
 By using the ``mod`` file we can determine the call signature of all procedures, components of derived types, and the size and shapes of all module-level variables. As long as your code is inside a Fortran module, no other changes are needed to your Fortran code.
 
-The downside to this approach is that we are tightly tied to gfortran's ABI, which means we cannot support other non-gfortran compilers and we do not support all versions of gfortran. When gfortran next breaks its ABI (which happens rarely, the last break was gfortran 8) we will re-evaluate our supported gfortran versions.
+The downside to this approach is that we are tightly tied to gfortran's ABI, which means we cannot support other non-gfortran compilers and we do not support all versions of gfortran. When gfortran next breaks its ABI (which happens rarely, the last break was gfortran 15, before that was 8) we will re-evaluate our supported gfortran versions.
 
 ## Using
 
@@ -380,9 +380,9 @@ pytest -v
 
 To run unit tests
 
-## Guaranteed features
+## Supported features
 
-The items below are the currently guaranteed, test-covered behavior.
+The items below are the currently supported with test-covered behavior.
 
 ### Module symbols
 
@@ -397,23 +397,25 @@ The items below are the currently guaranteed, test-covered behavior.
 
 ### Procedure calls
 
-- Scalar, string, explicit-array, assumed-size, assumed-shape, and allocatable-array arguments
+- Scalar, string, explicit-array, assumed-size, assumed-shape, assumed-rank, and allocatable-array arguments
 - Derived type arguments and returns
 - Pointer, optional, value, and keyword arguments
 - Functions passed as callback arguments
 - Type-bound procedures (including ``pass``/``nopass``)
 - Unary expression-based shape resolution (for example ``dimension(n+1)``)
 
-### Known non-guaranteed areas
+### Known issues/missing features
 
 - Unicode assumed-shape/assumed-rank character dummy arrays
 - Elemental/generic procedure behavior
 - Common blocks
+- Operator overload and procedure overloading
+- Paramterised derived types
 
 
 ## Accessing module file data
 
-For direct parsing and inspection of ``.mod`` files, use ``gfModParser``.
+For direct parsing and inspection of ``.mod`` files, use [https://github.com/rjfarmer/gfModParser](gfModParser).
 
 ````python
 import gfModParser as gp
@@ -431,6 +433,8 @@ Bug reports are of course welcome and PR's should target the main branch.
 For those wanting to get more involved, adding Fortran examples to the test suite of currently untested or unsupported features would be helpful. Bonus points if you also provide a Python test case (that can be marked ``@pytest.mark.skip`` if it does not work) that demonstrates the proposed interface to the new Fortran feature. Features with test cases will move higher in the order of things I add to the code.
 
 See [how to write a test case](docs/test_suite.md) for details on how to write test cases.
+
+AI contributions are welcome, though please disclose if you did use an AI. Keep changes minimal and focused and remember to add test cases.
 
 For those wanting to go further and add the new feature themselves open a bug report and we can chat about what needs doing.
 
