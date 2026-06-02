@@ -23,6 +23,12 @@ class TestOOMethods:
 
         assert y.result == y2.result
 
+    def test_proc_pass_alternate_location(self):
+        y = x.p_proc.proc_pass(3)
+        y2 = x.p_proc.proc_pass2(3)
+
+        assert y.result == y2.result
+
     def test_proc_pass_updates_underlying_object(self):
         x.sub_set_p_proc(2)
 

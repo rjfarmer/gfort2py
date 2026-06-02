@@ -19,8 +19,9 @@ module oo
         
         procedure, nopass :: proc_no_pass => func_dt_no_pass
         procedure, pass(this) :: proc_pass => sub_dt_pass
+        procedure, pass(this) :: proc_pass2 => sub_dt_pass2
     
-    end type s_proc
+        end type s_proc
     
     
     type, extends(s_proc) :: s_proc_extend
@@ -51,6 +52,14 @@ module oo
         this%a_int = 5*x
         
     end subroutine sub_dt_pass
+
+    subroutine sub_dt_pass2(x,this)
+        class(s_proc), intent(inout) :: this
+        integer :: x
+        
+        this%a_int = 5*x
+        
+    end subroutine sub_dt_pass2
 
     subroutine sub_set_p_proc(x)
         integer, intent(in) :: x
