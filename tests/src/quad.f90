@@ -8,18 +8,23 @@ module quad
 	     ! Parameters
 		integer, parameter :: dp = selected_real_kind(p=15)
 		integer, parameter :: qp = selected_real_kind(p=30)
-		integer, parameter :: lp = selected_int_kind(16)
-		
+		integer, parameter :: lp = selected_int_kind(32)
+
 #ifdef __GFC_REAL_16__
     
 		real(qp), parameter :: const_real_qp=1.0_qp
+		integer(lp), parameter :: const_int_lp = 1_lp
 
 		real(qp)          :: a_real_qp
 		real(qp), dimension(4) :: a_real_qp_arr = [1.0_qp, 2.0_qp, 3.0_qp, 4.0_qp]
 		real(qp), allocatable, dimension(:) :: a_real_qp_alloc_arr
+		integer(lp)       :: a_int_lp
+		integer(lp), dimension(4) :: a_int_lp_arr = [1_lp, 2_lp, 3_lp, 4_lp]
+		integer(lp), allocatable, dimension(:) :: a_int_lp_alloc_arr
 		
 		! Set variables
 		real(qp)          :: a_real_qp_set=9.0_qp
+		integer(lp)       :: a_int_lp_set=6_lp
 
 		complex(qp), parameter  :: const_cmplx_qp=(1.0_qp,1.0_qp)
 		complex(qp)       :: a_cmplx_qp
@@ -69,6 +74,14 @@ module quad
 		end subroutine sub_qp_scalar_inout
 
 
+		subroutine sub_int_lp_scalar_inout(x)
+			integer(lp), intent(inout) :: x
+
+			x = x * 2_lp
+
+		end subroutine sub_int_lp_scalar_inout
+
+
 		subroutine sub_qcmplx_qp_scalar_inout(x)
 			complex(qp), intent(inout) :: x
 
@@ -86,6 +99,17 @@ module quad
 			a_real_qp_alloc_arr = val
 
 		end subroutine sub_alloc_qp_module_arr
+
+
+		subroutine sub_alloc_int_lp_module_arr(n, val)
+			integer, intent(in) :: n
+			integer(lp), intent(in) :: val
+
+			if (allocated(a_int_lp_alloc_arr)) deallocate(a_int_lp_alloc_arr)
+			allocate(a_int_lp_alloc_arr(n))
+			a_int_lp_alloc_arr = val
+
+		end subroutine sub_alloc_int_lp_module_arr
 
 
 		subroutine sub_alloc_qcmplx_qp_module_arr(n, val)
@@ -107,6 +131,16 @@ module quad
 			x = x + 1.0_qp
 
 		end function func_qp_explicit_arr_1d
+
+
+		logical function func_int_lp_explicit_arr_1d(x) result(res)
+			integer(lp), dimension(4), intent(inout) :: x
+
+			res = .false.
+			if (x(2) == 2_lp) res = .true.
+			x = x + 1_lp
+
+		end function func_int_lp_explicit_arr_1d
 
 
 		logical function func_qp_assumed_shape_arr_1d(x) result(res)
@@ -198,6 +232,48 @@ module quad
 			func_test_quad_ret = 3.14_qp
 
 		end function  func_test_quad_ret
+
+		integer(lp) function func_int_lp_ret()
+
+			func_int_lp_ret = 42_lp
+
+		end function func_int_lp_ret
+
+		function func_int_lp_return_array() result(res)
+			integer(lp), dimension(4) :: res
+
+			res = [1_lp, 2_lp, 3_lp, 4_lp]
+
+		end function func_int_lp_return_array
+
+		function func_int_lp_return_alloc_array(n) result(res)
+			integer, intent(in) :: n
+			integer(lp), allocatable, dimension(:) :: res
+			integer :: i
+
+			allocate(res(n))
+			do i = 1, n
+				res(i) = int(10 * i, kind=lp)
+			end do
+
+		end function func_int_lp_return_alloc_array
+
+		function func_int_lp_return_from_assumed_shape(x) result(res)
+			integer(lp), dimension(:), intent(in) :: x
+			integer(lp), dimension(size(x)) :: res
+
+			res = x + 5_lp
+
+		end function func_int_lp_return_from_assumed_shape
+
+		function func_int_lp_return_from_assumed_size(x, n) result(res)
+			integer(lp), intent(in) :: x(*)
+			integer, intent(in) :: n
+			integer(lp), dimension(n) :: res
+
+			res = x(1:n) + 7_lp
+
+		end function func_int_lp_return_from_assumed_size
 
 		function func_qp_return_array() result(res)
 			real(qp), dimension(4) :: res

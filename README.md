@@ -307,7 +307,7 @@ for these dummies raises ``TypeError``.
 
 ### Quad precision variables
 
-Quad precision (REAL128) variables are not natively supported by Python thus we need a different way to handle them. For now that is the [pyQuadp library](https://github.com/rjfarmer/pyQuadp) which can be installed from PyPi with:
+Quad precision (INT128, REAL128, and COMPLEX128) variables are not natively supported by Python thus we need a different way to handle them. For now that is the [pyQuadp library](https://github.com/rjfarmer/pyQuadp) which can be installed from PyPi with:
 
 ````bash
 python -m pip install pyquadp
@@ -319,8 +319,8 @@ or from a git checkout:
 python -m pip install .[quad]
 ````
 
-For more details see pyQuadp's documentation, but briefly you can create a 
-quad precision variable from an ``int``, ``float``, or ``string``. On return you will receive a ``qfloat`` type. This ``qfloat`` type acts like a Python Number, so you can do things like add, multiply, subtract etc this Number with other Numbers (including non-``qfloat`` types).
+For more details see pyQuadp's documentation, but briefly you can create a 128 bit variable with either ``qint``, ``qfloat``, or ``qcmplx``. These act like a Python Number, so you can do things like add, multiply, subtract etc this Number with other Numbers (including non-128 bit types).
+There are also array versions ``qiarray``, ``qarray``, ``qcarray`` that support many of Numpy array features.
 
 Guaranteed support currently includes:
 

@@ -4,6 +4,13 @@ import ctypes
 
 import numpy as np
 
+try:
+    import pyquadp as pyq  # type: ignore[import-not-found]
+
+    PYQ_IMPORTED = True
+except ImportError:
+    PYQ_IMPORTED = False
+
 from .base import f_type
 
 
@@ -34,3 +41,36 @@ class ftype_integer_8(ftype_integer):
     kind = 8
     ctype = ctypes.c_int64
     dtype = np.dtype("i8")
+
+
+class ftype_integer_16(ftype_integer):
+    kind = 16
+
+    @property
+    def dtype(self):
+        if not PYQ_IMPORTED:
+            raise ValueError("Please install pyQuadp to handle quad precision numbers")
+        return pyq.qiarray.dtype  # TODO: Fix once pyQuadp updates
+
+    @property
+    def ctype(self):
+        if not PYQ_IMPORTED:
+            raise ValueError("Please install pyQuadp to handle quad precision numbers")
+        return pyq.c_qfloat  # TODO: Fix once pyQuadp updates
+
+    @property
+    def value(self) -> "pyq.qint":
+        return pyq.qint.from_bytes(bytes(self._ctype))
+
+    @value.setter
+    def value(self, value: "pyq.qint"):
+        if value is None:
+            return
+
+        self._value = pyq.qint(value)
+        raw = self._value.to_bytes()
+        ctypes.memmove(ctypes.addressof(self._ctype), raw, len(raw))
+
+    @property
+    def _as_parameter_(self):
+        return self._ctype
