@@ -37,6 +37,7 @@ _ftype_registry: dict[tuple[str, int | None], type[Any]] = {
     ("integer", 2): ftype_integer_2,
     ("integer", 4): ftype_integer_4,
     ("integer", 8): ftype_integer_8,
+    ("integer", 16): ftype_integer_16,
     ("real", 4): ftype_real_4,
     ("real", 8): ftype_real_8,
     ("real", 16): ftype_real_16,

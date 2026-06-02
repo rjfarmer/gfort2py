@@ -22,6 +22,9 @@ if not hasattr(x, "const_real_qp"):
     pytest.skip("Requires gfortran REAL128 support", allow_module_level=True)
 
 
+LP_INT128_TEST_VALUE = pyq.qint((1 << 100) + 12345)
+
+
 def _q(v):
     return pyq.qfloat(v)
 
@@ -30,7 +33,108 @@ def _qc(v):
     return pyq.qcmplx(v)
 
 
+def _qi(v):
+    return pyq.qint(v)
+
+
 class TestQuadMethods:
+    def test_lp_kind_parameter_access(self):
+        assert int(x.lp) >= 8
+
+    def test_const_int_lp(self):
+        assert x.const_int_lp == 1
+
+    def test_lp_parameters_are_read_only(self):
+        with pytest.raises(AttributeError):
+            x.lp = 8
+
+        with pytest.raises(AttributeError):
+            x.const_int_lp = 2
+
+    def test_a_int_lp_set_get(self):
+        x.a_int_lp = 5
+        assert x.a_int_lp == 5
+        assert x.a_int_lp_set == 6
+
+    def test_a_int_lp_default_array_get(self):
+        expected = np.array([1, 2, 3, 4], dtype=np.int64)
+        assert np.array_equal(x.a_int_lp_arr, expected)
+
+    def test_sub_int_lp_scalar_inout(self):
+        y = x.sub_int_lp_scalar_inout(3)
+        assert y.args["x"] == 6
+
+    def test_module_explicit_int_lp_array_set_get(self):
+        arr = np.array([4, 3, 2, 1], dtype=np.int64)
+        x.a_int_lp_arr = arr
+        assert np.array_equal(x.a_int_lp_arr, arr)
+
+    def test_module_explicit_int_lp_array_set_get_int128(self):
+        arr = pyq.qiarray.from_list(
+            [
+                _qi((1 << 96) + 1),
+                _qi((1 << 96) + 2),
+                _qi((1 << 96) + 3),
+                _qi((1 << 96) + 4),
+            ]
+        )
+        x.a_int_lp_arr = arr
+        actual = np.asarray(x.a_int_lp_arr, dtype=object)
+        assert [v for v in actual.tolist()] == [v for v in arr.tolist()]
+
+    def test_module_alloc_int_lp_array_get(self):
+        x.sub_alloc_int_lp_module_arr(4, 8)
+        expected = np.full(4, 8, dtype=np.int64)
+        assert np.array_equal(x.a_int_lp_alloc_arr, expected)
+
+    def test_module_alloc_int_lp_array_get_int128(self):
+        val = _qi((1 << 100) + 99)
+        x.sub_alloc_int_lp_module_arr(4, val)
+        expected = pyq.qiarray.full(4, val)
+        actual = np.asarray(x.a_int_lp_alloc_arr, dtype=object)
+        assert [v for v in actual.tolist()] == [v for v in expected.tolist()]
+
+    def test_int_lp_explicit_array_argument(self):
+        arr = np.array([1, 2, 3, 4], dtype=np.int64)
+        y = x.func_int_lp_explicit_arr_1d(arr)
+        assert y.result
+        assert np.array_equal(y.args["x"], np.array([2, 3, 4, 5], dtype=np.int64))
+
+    @pytest.mark.skip(reason="Needs quad return support in ctypes")
+    def test_func_int_lp_ret(self):
+        y = x.func_int_lp_ret()
+        assert y.result == 42
+
+    def test_func_int_lp_return_array(self):
+        y = x.func_int_lp_return_array()
+        expected = np.array([1, 2, 3, 4], dtype=object)
+        assert np.array_equal(np.asarray(y.result, dtype=object), expected)
+
+    def test_func_int_lp_return_alloc_array(self):
+        y = x.func_int_lp_return_alloc_array(4)
+        expected = np.array([10, 20, 30, 40], dtype=object)
+        assert np.array_equal(np.asarray(y.result, dtype=object), expected)
+
+    def test_func_int_lp_return_from_assumed_shape(self):
+        arr = np.array([1, 2, 3, 4], dtype=np.int64)
+        y = x.func_int_lp_return_from_assumed_shape(arr)
+        expected = np.array([6, 7, 8, 9], dtype=object)
+        assert np.array_equal(np.asarray(y.result, dtype=object), expected)
+
+    def test_func_int_lp_return_from_assumed_size(self):
+        arr = np.array([1, 2, 3, 4], dtype=np.int64)
+        y = x.func_int_lp_return_from_assumed_size(arr, arr.size)
+        expected = np.array([8, 9, 10, 11], dtype=object)
+        assert np.array_equal(np.asarray(y.result, dtype=object), expected)
+
+    def test_a_int_lp_set_get_int128(self):
+        x.a_int_lp = LP_INT128_TEST_VALUE
+        assert x.a_int_lp == pyq.qint(LP_INT128_TEST_VALUE)
+
+    def test_sub_int_lp_scalar_inout_int128(self):
+        y = x.sub_int_lp_scalar_inout(LP_INT128_TEST_VALUE)
+        assert y.args["x"] == LP_INT128_TEST_VALUE * 2
+
     def test_const_real_qp(self):
         assert x.const_real_qp == _q(1.0)
 
