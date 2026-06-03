@@ -1,3 +1,4 @@
+import utils
 from utils import *
 
 modname = "vars_modules"
@@ -79,23 +80,25 @@ def create_reals():
 
 
 with open(filename_f90, "w") as file_f90, open(filename_py, "w") as file_py:
-    write_line(file_f90, fort_module_start.substitute(name=modname), 0)
-    write_line(file_py, py_module_start.substitute(modname=modname, libname=libname), 0)
+    utils.write_line(file_f90, utils.fort_module_start.substitute(name=modname), 0)
+    utils.write_line(
+        file_py, utils.py_module_start.substitute(modname=modname, libname=libname), 0
+    )
 
     f_ints, ffuncs_ints, py_ints = create_ints()
-    write_lines(file_f90, f_ints, 1)
-    write_line(file_py, py_proc.substitute(function="check_ints"), 1)
-    write_lines(file_py, py_ints, 2)
+    utils.write_lines(file_f90, f_ints, 1)
+    utils.write_line(file_py, utils.py_proc.substitute(function="check_ints"), 1)
+    utils.write_lines(file_py, py_ints, 2)
 
     f_reals, ffuncs_reals, py_reals = create_reals()
-    write_lines(file_f90, f_reals, 1)
-    write_line(file_py, py_proc.substitute(function="check_reals"), 1)
-    write_lines(file_py, py_reals, 2)
+    utils.write_lines(file_f90, f_reals, 1)
+    utils.write_line(file_py, utils.py_proc.substitute(function="check_reals"), 1)
+    utils.write_lines(file_py, py_reals, 2)
 
-    write_line(file_f90, fort_module_mid.substitute(), 1)
+    utils.write_line(file_f90, utils.fort_module_mid.substitute(), 1)
 
-    write_lines(file_f90, ffuncs_ints, 1)
-    write_lines(file_f90, ffuncs_reals, 1)
+    utils.write_lines(file_f90, ffuncs_ints, 1)
+    utils.write_lines(file_f90, ffuncs_reals, 1)
 
     # print(fort_module_mid.substitute(),file=file_f90)
-    write_line(file_f90, fort_module_end.substitute(name=modname), 0)
+    utils.write_line(file_f90, utils.fort_module_end.substitute(name=modname), 0)

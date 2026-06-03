@@ -1,3 +1,4 @@
+import utils
 from utils import *
 
 modname = "params_modules"
@@ -288,8 +289,10 @@ def make_tests(file_f90, file_py, name, func):
 
 
 with open(filename_f90, "w") as file_f90, open(filename_py, "w") as file_py:
-    write_line(file_f90, fort_module_start.substitute(name=modname), 0)
-    write_line(file_py, py_module_start.substitute(modname=modname, libname=libname), 0)
+    utils.write_line(file_f90, utils.fort_module_start.substitute(name=modname), 0)
+    utils.write_line(
+        file_py, utils.py_module_start.substitute(modname=modname, libname=libname), 0
+    )
 
     make_tests(file_f90, file_py, "check_ints", create_ints)
     make_tests(file_f90, file_py, "check_reals", create_reals)
@@ -308,4 +311,4 @@ with open(filename_f90, "w") as file_f90, open(filename_py, "w") as file_py:
     make_tests(file_f90, file_py, "check_cmplx_2d", create_cmplx_array_2d)
 
     # print(fort_module_mid.substitute(),file=file_f90)
-    write_line(file_f90, fort_module_end.substitute(name=modname), 0)
+    utils.write_line(file_f90, utils.fort_module_end.substitute(name=modname), 0)
