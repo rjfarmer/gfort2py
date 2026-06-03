@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0+
 import string
 import textwrap
-from dataclasses import dataclass
 
 import numpy as np
 
