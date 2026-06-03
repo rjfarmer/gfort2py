@@ -57,12 +57,12 @@ types = ["mypy","types-setuptools", "types-toml"]
 profile = "black"
 
 [tool.mypy]
-exclude = ["gfort2py/old"]
+exclude = ["gfort2py/old", "gfort2py/tests/templates"]
 ignore_missing_imports = true
 
 [tool.setuptools.packages.find]
 where = ["gfort2py"]
 
 [tool.bandit]
-exclude_dirs = ["tests", "gfort2py/old", ".venv", ".github"]
+exclude_dirs = ["tests", "gfort2py/old", "gfort2py/tests/templates", ".venv", ".github"]
 skips = ["B603", "B404"]
