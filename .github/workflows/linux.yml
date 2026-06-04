@@ -40,7 +40,9 @@ jobs:
 
   
       - name: Test
-        run: python -m pytest -v
+        run: |
+          python -c "import gfort2py; print(gfort2py.__version__)"
+          python -m pytest -v
         env:
           PYTHONFAULTHANDLER: 1
           PYTHONMALLOC: debug
