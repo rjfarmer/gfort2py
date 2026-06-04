@@ -1,6 +1,4 @@
-include requirements.txt
 include README.md
 include COPYING.txt
 include setup.py
-include setup.cfg
 include pyproject.toml
