@@ -99,3 +99,7 @@ class ftype_complex_16(ftype_complex):
     @property
     def _as_parameter_(self):
         return self._ctype
+
+    @property
+    def pytype(self):
+        return pyq.qcmplx

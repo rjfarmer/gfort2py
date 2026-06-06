@@ -62,3 +62,7 @@ class ftype_real_16(ftype_real):
     @property
     def _as_parameter_(self):
         return self._ctype
+
+    @property
+    def pytype(self):
+        return pyq.qfloat

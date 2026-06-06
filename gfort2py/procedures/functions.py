@@ -29,7 +29,7 @@ class fFunc(fProcedure):
         # Quad's cant currently be returned
         if ftype == "real" and kind == 16:
             raise TypeError(
-                "Can not return a quad from a procedure, it must be an argument or module variable"
+                "Can not return a quad from a procedure, it must be an argument, module variable, or returned as an array"
             )
 
         self._proc.restype = self.return_var.ctype

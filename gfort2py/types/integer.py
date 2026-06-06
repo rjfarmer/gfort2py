@@ -74,3 +74,7 @@ class ftype_integer_16(ftype_integer):
     @property
     def _as_parameter_(self):
         return self._ctype
+
+    @property
+    def pytype(self):
+        return pyq.qint
