@@ -94,6 +94,6 @@ def test_strlen_ctype_matches_pointer_size():
 
 
 def test_compile_args_preserve_windows_backslashes(monkeypatch):
-    monkeypatch.setattr("gfort2py.compilation.compile.os.name", "nt")
+    monkeypatch.setattr("platform.system", lambda: "Windows")
     args = CompileArgs(INCLUDE_FLAGS="-Itests\\build")
     assert "-Itests\\build" in args.argv()
