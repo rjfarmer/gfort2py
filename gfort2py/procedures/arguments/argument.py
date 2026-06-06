@@ -117,31 +117,20 @@ class fArg(metaclass=ABCMeta):
         if self.is_wrapper(value):
             if self.is_dt_like:
                 self.base = value
-            elif self.is_class_like:
-                self.base.value = value
+            # Class-like dont need special handling
 
         self.base.value = value
-        self._set_value(value)
+        self._set_value()
 
     def value(self):
+        if self._ctype is None:
+            return None
+
         if self.is_procedure:
             return self._procedure_value
 
         if self._uses_scalar_allocatable_character_abi():
-            self._setup_allocatable_character()
-
-            if self._alloc_char_data.value is None:
-                return None
-
-            length = int(self._alloc_char_len.value)
-            if length <= 0:
-                return ""
-
-            data = ctypes.string_at(self._alloc_char_data.value, length)
-            return data.decode(self.base._char.encoding)
-
-        if self._ctype is None:
-            return None
+            return self._get_allocatable_character_value()
 
         if (
             self.is_optional
@@ -151,23 +140,7 @@ class fArg(metaclass=ABCMeta):
         ):
             return None
 
-        if self.is_value:
-            c = self._ctype
-        elif self.is_pointer:
-            p = cast(Any, self._ctype)
-            if self.definition.is_array:
-                c = p.contents
-            else:
-                c = p.contents.contents
-        else:
-            p = cast(Any, self._ctype)
-            c = p.contents
-
-        if self.definition.is_array or self.definition.is_dt:
-            self.base._ctype = c
-            return self.base.value
-
-        return self.base.from_ctype(c, symbol=self.definition).value
+        return self._get_value()
 
     def cleanup(self) -> None:
         release = getattr(self.base, "release", None)
@@ -262,7 +235,7 @@ class fArg(metaclass=ABCMeta):
             and callable(getattr(value, "pointer2", None))
         )
 
-    def _set_value(self, value):
+    def _set_value(self):
         if self.is_value:
             self._ctype = self.base._ctype
         elif self.is_pointer:
@@ -272,3 +245,35 @@ class fArg(metaclass=ABCMeta):
                 self._ctype = self.base.pointer2()
         else:
             self._ctype = self.base.pointer()
+
+    def _get_allocatable_character_value(self):
+        self._setup_allocatable_character()
+
+        if self._alloc_char_data.value is None:
+            return None
+
+        length = int(self._alloc_char_len.value)
+        if length <= 0:
+            return ""
+
+        data = ctypes.string_at(self._alloc_char_data.value, length)
+        return data.decode(self.base._char.encoding)
+
+    def _get_value(self):
+        if self.is_value:
+            c = self._ctype
+        elif self.is_pointer:
+            p = cast(Any, self._ctype)
+            if self.definition.is_array:
+                c = p.contents
+            else:
+                c = p.contents.contents
+        else:
+            p = cast(Any, self._ctype)
+            c = p.contents
+
+        if self.definition.is_array or self.definition.is_dt:
+            self.base._ctype = c
+            return self.base.value
+
+        return self.base.from_ctype(c, symbol=self.definition).value

@@ -332,43 +332,14 @@ class fReturnArrayArguments(fReturnArguments):
         self._ctypes = []
         self._result_type = self._build_return_type()
 
-        if (
-            self.return_symbol.properties.array_spec.is_explicit
-            and not self.return_symbol.is_dt
-        ):
+        if self.return_symbol.properties.array_spec.is_explicit:
             shape = self._resolve_shape()
-            is_quad_real = (
-                self.return_symbol.type.lower() == "real"
-                and self.return_symbol.kind == 16
-            )
-            is_quad_complex = (
-                self.return_symbol.type.lower() == "complex"
-                and self.return_symbol.kind == 16
-            )
-
-            if is_quad_real:
-                if not PYQ_IMPORTED:
-                    raise ValueError(
-                        "Please install pyQuadp to handle quad precision numbers"
-                    )
-                initial = np.empty(shape, dtype=object, order="F")
-                initial[:] = pyq.qfloat(0)
-            elif is_quad_complex:
-                if not PYQ_IMPORTED:
-                    raise ValueError(
-                        "Please install pyQuadp to handle quad precision numbers"
-                    )
-                initial = np.empty(shape, dtype=object, order="F")
-                initial[:] = pyq.qcmplx(0)
+            if self.return_symbol.is_dt:
+                self._result_type._ensure_shape(shape)
             else:
-                initial = np.zeros(shape, dtype=self._result_type.base.dtype, order="F")
-            self._result_type.value = initial
-        elif (
-            self.return_symbol.properties.array_spec.is_explicit
-            and self.return_symbol.is_dt
-        ):
-            shape = self._resolve_shape()
-            self._result_type._ensure_shape(shape)
+                dtype = self._result_type.base.dtype
+                initial = np.zeros(shape, dtype=dtype, order="F")
+                self._result_type.value = initial
 
         self._buffer = self._result_type.pointer()
         self._ctypes.append(self._buffer)

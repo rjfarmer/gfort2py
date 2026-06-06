@@ -47,16 +47,16 @@ class ftype_integer_16(ftype_integer):
     kind = 16
 
     @property
-    def dtype(self):
+    def dtype(self) -> np.dtype:
         if not PYQ_IMPORTED:
             raise ValueError("Please install pyQuadp to handle quad precision numbers")
-        return pyq.qiarray.dtype  # TODO: Fix once pyQuadp updates
+        return pyq.qiarray.dtype
 
     @property
     def ctype(self):
         if not PYQ_IMPORTED:
             raise ValueError("Please install pyQuadp to handle quad precision numbers")
-        return pyq.c_qfloat  # TODO: Fix once pyQuadp updates
+        return pyq.c_qint
 
     @property
     def value(self) -> "pyq.qint":
