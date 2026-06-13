@@ -117,6 +117,8 @@ class fArg(metaclass=ABCMeta):
         if self.is_wrapper(value):
             if self.is_dt_like:
                 self.base = value
+                self._set_value()
+                return
             # Class-like dont need special handling
 
         self.base.value = value

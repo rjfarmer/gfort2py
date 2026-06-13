@@ -72,7 +72,7 @@ class ftype_complex_16(ftype_complex):
         return pyq.qcarray.dtype
 
     @property
-    def base_ctype(self) -> np.dtype:
+    def base_ctype(self):
         if not PYQ_IMPORTED:
             raise ValueError("Please install pyQuadp to handle quad precision numbers")
         return pyq.c_qfloat
