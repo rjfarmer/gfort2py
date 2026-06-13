@@ -64,7 +64,12 @@ class ftype_complex_8(ftype_complex):
 
 class ftype_complex_16(ftype_complex):
     kind = 16
-    dtype = np.dtype("S32")
+
+    @property
+    def dtype(self) -> np.dtype:
+        if not PYQ_IMPORTED:
+            raise ValueError("Please install pyQuadp to handle quad precision numbers")
+        return pyq.qcarray.dtype
 
     @property
     def base_ctype(self):
@@ -94,3 +99,7 @@ class ftype_complex_16(ftype_complex):
     @property
     def _as_parameter_(self):
         return self._ctype
+
+    @property
+    def pytype(self):
+        return pyq.qcmplx

@@ -35,10 +35,10 @@ class ftype_real_16(ftype_real):
     kind = 16
 
     @property
-    def dtype(self):
+    def dtype(self) -> np.dtype:
         if not PYQ_IMPORTED:
             raise ValueError("Please install pyQuadp to handle quad precision numbers")
-        return np.dtype(pyq.c_qfloat)
+        return pyq.qarray.dtype
 
     @property
     def ctype(self):
@@ -62,3 +62,7 @@ class ftype_real_16(ftype_real):
     @property
     def _as_parameter_(self):
         return self._ctype
+
+    @property
+    def pytype(self):
+        return pyq.qfloat

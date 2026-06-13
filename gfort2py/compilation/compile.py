@@ -8,7 +8,7 @@ import uuid
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-from .platform import factory_platform
+from .platform import factory_platform, is_windows
 from .utils import output_folder
 
 
@@ -28,7 +28,7 @@ class CompileArgs:
         for value in asdict(self).values():
             if value:
                 split_value = value
-                if os.name == "nt":
+                if is_windows():
                     # In POSIX splitting mode, backslashes are escape characters.
                     # Doubling preserves literal Windows path separators.
                     split_value = value.replace("\\", "\\\\")
