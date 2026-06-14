@@ -409,5 +409,10 @@ module strings
     end function check_str_opt
 
 
+    function func_return_alloc_str() result(x)
+        character(:), allocatable :: x
+        x = '12345678'
+    end function func_return_alloc_str
+
 
 end module strings

@@ -322,3 +322,7 @@ class TestStringMethods:
 
         res = x.check_str_opt("abcd", 4)
         assert res.result == 4
+
+    def test_func_return_alloc_str(self):
+        y = x.func_return_alloc_str()
+        assert y.result == "12345678"

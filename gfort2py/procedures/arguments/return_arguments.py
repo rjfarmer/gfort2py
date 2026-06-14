@@ -16,7 +16,7 @@ except ImportError:
 from ...types import factory, find_ftype
 from ...types.arrays import ftype_assumed_shape
 from ...types.dt import ftype_dt_assumed_shape
-from ...utils import strlen_ctype
+from ...utils import get_c_runtime, strlen_ctype
 
 
 class fReturnArguments:
@@ -216,6 +216,23 @@ class fReturnCharArguments(fReturnArguments):
         self._buffer = None
         self._result_type = None
         self._runtime_strlen: int | None = None
+        self._alloc_char_data: ctypes.c_void_p | None = None
+        self._alloc_char_data_ptr: Any = None
+        self._alloc_char_len: Any = None
+        self._alloc_char_len_ptr: Any = None
+
+    def _uses_scalar_allocatable_character_abi(self) -> bool:
+        if not self.return_symbol.properties.attributes.allocatable:
+            return False
+        if self.return_symbol.is_array:
+            return False
+
+        try:
+            declared_len = int(self.return_symbol.properties.typespec.charlen.value)
+        except (TypeError, ValueError):
+            declared_len = None
+
+        return declared_len is None or declared_len <= 0
 
     def _build_return_type(self):
         cls = factory(self.return_symbol)
@@ -233,6 +250,15 @@ class fReturnCharArguments(fReturnArguments):
         self._ctypes = []
         self._result_type = self._build_return_type()
 
+        if self._uses_scalar_allocatable_character_abi():
+            self._alloc_char_data = ctypes.c_void_p(0)
+            self._alloc_char_data_ptr = ctypes.pointer(self._alloc_char_data)
+            self._alloc_char_len = strlen_ctype()(0)
+            self._alloc_char_len_ptr = ctypes.pointer(self._alloc_char_len)
+            self._ctypes.append(self._alloc_char_data_ptr)
+            self._ctypes.append(self._alloc_char_len_ptr)
+            return
+
         length = self._resolve_runtime_strlen()
         if length <= 0:
             length = 1
@@ -245,6 +271,34 @@ class fReturnCharArguments(fReturnArguments):
         self._ctypes.append(strlen_ctype()(length))
 
     def get_values(self) -> list[Any]:
+        if self._uses_scalar_allocatable_character_abi():
+            if self._alloc_char_data is None:
+                return []
+
+            ptr = self._alloc_char_data.value
+            if ptr is None:
+                return [None]
+
+            length = int(self._alloc_char_len.value)
+            if length <= 0:
+                return [""]
+
+            kind = int(self.return_symbol.kind)
+            if kind == 1:
+                raw = ctypes.string_at(ptr, length)
+                return [raw.decode("ascii")]
+
+            if kind == 4:
+                raw = ctypes.string_at(ptr, length * 4)
+                # gfortran character(kind=4) values in this codebase are
+                # represented as UTF-8 bytes expanded into 4-byte slots.
+                data = bytes(raw[i] for i in range(0, len(raw), 4))
+                return [data.decode("utf-8")]
+
+            raise NotImplementedError(
+                f"Unsupported character kind {kind} for allocatable return"
+            )
+
         if self._result_type is None or self._buffer is None:
             return []
 
@@ -256,6 +310,20 @@ class fReturnCharArguments(fReturnArguments):
             value = value[: self._runtime_strlen]
 
         return [value]
+
+    def release(self) -> None:
+        if self._alloc_char_data is None:
+            return
+
+        ptr = self._alloc_char_data.value
+        if ptr is None:
+            return
+
+        libc = get_c_runtime()
+        libc.free.argtypes = [ctypes.c_void_p]
+        libc.free.restype = None
+        libc.free(ptr)
+        self._alloc_char_data.value = None
 
 
 class fReturnArrayArguments(fReturnArguments):

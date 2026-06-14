@@ -90,3 +90,7 @@ class TestUnicodeMethods:
         values = np.array([["🚀🚀🚀", "✨✨✨"], ["🌍🌍🌍", "漢字Ω"]], dtype=np.str_)
         y = x.func_uni_assumed_rank_ok(values)
         assert y.result
+
+    def test_unicode_allocatable_return(self):
+        y = x.func_return_alloc_unicode()
+        assert y.result.strip() == "🚀🚀🚀"

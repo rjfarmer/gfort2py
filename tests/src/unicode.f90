@@ -81,4 +81,10 @@ contains
         end select
     end function func_uni_assumed_rank_ok
 
+
+    function func_return_alloc_unicode() result(x)
+        character(kind=ck,len=:), allocatable :: x
+        x = ck_'🚀🚀🚀'
+    end function func_return_alloc_unicode
+
 end module unicode

@@ -33,6 +33,13 @@ class fProcedure(metaclass=abc.ABCMeta):
                 cleanup()
 
     def _cleanup_return_arguments(self) -> None:
+        release_args_start = getattr(self._args_start, "release", None)
+        if callable(release_args_start):
+            try:
+                release_args_start()
+            except (AttributeError, TypeError, ValueError, ctypes.ArgumentError):
+                pass
+
         if self._args_start is None:
             return
 
