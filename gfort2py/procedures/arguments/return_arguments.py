@@ -224,6 +224,7 @@ class fReturnCharArguments(fReturnArguments):
         self._alloc_char_len: Any = None
         self._alloc_char_len_ptr: Any = None
         self._dealloc_cache_key: tuple[str, str] | None = None
+        self._dealloc_sub: Any = None
 
     def _uses_scalar_allocatable_character_abi(self) -> bool:
         if not self.return_symbol.properties.attributes.allocatable:
@@ -259,10 +260,7 @@ class fReturnCharArguments(fReturnArguments):
         end subroutine dealloc_char
         """
 
-    def _deallocate_via_fortran(self) -> None:
-        if self._alloc_char_data_ptr is None or self._alloc_char_len_ptr is None:
-            return
-
+    def _load_fortran_deallocator(self) -> Any:
         code = Modulise(self._deallocate_subroutine_text())
         args = CompileArgs()
         cache_key = (code.strhash(), str(args))
@@ -282,7 +280,16 @@ class fReturnCharArguments(fReturnArguments):
             dealloc_sub = getattr(lib, dealloc_name)
             _RETURN_ALLOC_CHAR_DEALLOC_CACHE[cache_key] = (lib, dealloc_sub)
 
-        dealloc_sub(self._alloc_char_data_ptr, self._alloc_char_len_ptr)
+        return dealloc_sub
+
+    def _deallocate_via_fortran(self) -> None:
+        if self._alloc_char_data_ptr is None or self._alloc_char_len_ptr is None:
+            return
+
+        if self._dealloc_sub is None:
+            self._dealloc_sub = self._load_fortran_deallocator()
+
+        self._dealloc_sub(self._alloc_char_data_ptr, self._alloc_char_len_ptr)
 
     def set_values(self):
         self._ctypes = []
@@ -293,6 +300,7 @@ class fReturnCharArguments(fReturnArguments):
             self._alloc_char_data_ptr = ctypes.pointer(self._alloc_char_data)
             self._alloc_char_len = strlen_ctype()(0)
             self._alloc_char_len_ptr = ctypes.pointer(self._alloc_char_len)
+            self._dealloc_sub = self._load_fortran_deallocator()
             self._ctypes.append(self._alloc_char_data_ptr)
             self._ctypes.append(self._alloc_char_len_ptr)
             return
