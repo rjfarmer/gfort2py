@@ -319,10 +319,14 @@ class fReturnCharArguments(fReturnArguments):
         if ptr is None:
             return
 
-        libc = get_c_runtime()
-        libc.free.argtypes = [ctypes.c_void_p]
-        libc.free.restype = None
-        libc.free(ptr)
+        try:
+            libc = get_c_runtime()
+            free = libc.free
+        except (OSError, AttributeError):
+            return
+        free.argtypes = [ctypes.c_void_p]
+        free.restype = None
+        free(ptr)
         self._alloc_char_data.value = None
 
 

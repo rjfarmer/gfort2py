@@ -37,7 +37,13 @@ class fProcedure(metaclass=abc.ABCMeta):
         if callable(release_args_start):
             try:
                 release_args_start()
-            except (AttributeError, TypeError, ValueError, ctypes.ArgumentError):
+            except (
+                AttributeError,
+                TypeError,
+                ValueError,
+                OSError,
+                ctypes.ArgumentError,
+            ):
                 pass
 
         if self._args_start is None:
