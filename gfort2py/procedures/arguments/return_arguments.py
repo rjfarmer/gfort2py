@@ -13,10 +13,13 @@ try:
 except ImportError:
     PYQ_IMPORTED = False
 
+from ...compilation import Compile, CompileArgs, Modulise
 from ...types import factory, find_ftype
 from ...types.arrays import ftype_assumed_shape
 from ...types.dt import ftype_dt_assumed_shape
-from ...utils import get_c_runtime, strlen_ctype
+from ...utils import strlen_ctype
+
+_RETURN_ALLOC_CHAR_DEALLOC_CACHE: dict[tuple[str, str], tuple[Any, Any]] = {}
 
 
 class fReturnArguments:
@@ -220,6 +223,7 @@ class fReturnCharArguments(fReturnArguments):
         self._alloc_char_data_ptr: Any = None
         self._alloc_char_len: Any = None
         self._alloc_char_len_ptr: Any = None
+        self._dealloc_cache_key: tuple[str, str] | None = None
 
     def _uses_scalar_allocatable_character_abi(self) -> bool:
         if not self.return_symbol.properties.attributes.allocatable:
@@ -245,6 +249,40 @@ class fReturnCharArguments(fReturnArguments):
         expr = self.return_symbol.properties.typespec.charlen
         ctx = self._arg_context()
         return self._resolve_expression(expr, ctx)
+
+    def _deallocate_subroutine_text(self) -> str:
+        kind = int(self.return_symbol.kind)
+        return f"""
+        subroutine dealloc_char(x)
+        character(kind={kind},len=:), allocatable, intent(inout) :: x
+        if(allocated(x)) deallocate(x)
+        end subroutine dealloc_char
+        """
+
+    def _deallocate_via_fortran(self) -> None:
+        if self._alloc_char_data_ptr is None or self._alloc_char_len_ptr is None:
+            return
+
+        code = Modulise(self._deallocate_subroutine_text())
+        args = CompileArgs()
+        cache_key = (code.strhash(), str(args))
+        self._dealloc_cache_key = cache_key
+
+        if cache_key in _RETURN_ALLOC_CHAR_DEALLOC_CACHE:
+            _lib, dealloc_sub = _RETURN_ALLOC_CHAR_DEALLOC_CACHE[cache_key]
+        else:
+            comp = Compile(code.as_module(), name=code.strhash())
+            if not comp.compile(args=args):
+                raise RuntimeError(
+                    "Failed to compile allocatable character deallocator"
+                )
+
+            lib = comp.platform.load_library(comp.library_filename)
+            dealloc_name = f"__{comp.name}_MOD_dealloc_char"
+            dealloc_sub = getattr(lib, dealloc_name)
+            _RETURN_ALLOC_CHAR_DEALLOC_CACHE[cache_key] = (lib, dealloc_sub)
+
+        dealloc_sub(self._alloc_char_data_ptr, self._alloc_char_len_ptr)
 
     def set_values(self):
         self._ctypes = []
@@ -319,15 +357,10 @@ class fReturnCharArguments(fReturnArguments):
         if ptr is None:
             return
 
-        try:
-            libc = get_c_runtime()
-            free = libc.free
-        except (OSError, AttributeError):
-            return
-        free.argtypes = [ctypes.c_void_p]
-        free.restype = None
-        free(ptr)
+        self._deallocate_via_fortran()
         self._alloc_char_data.value = None
+        if self._alloc_char_len is not None:
+            self._alloc_char_len.value = 0
 
 
 class fReturnArrayArguments(fReturnArguments):
