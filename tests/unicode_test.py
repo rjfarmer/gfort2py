@@ -54,9 +54,8 @@ class TestUnicodeMethods:
         y = x.sub_uni_arr_inout(values)
         assert np.all(y.args["x"] == np.array(["😀😎😩", "漢字", "aΩβ"], dtype=np.str_))
 
-    @pytest.mark.xfail(
+    @pytest.mark.skip(
         reason="Unicode assumed-shape character arrays are not stable yet",
-        run=False,
     )
     def test_unicode_assumed_shape_array_argument(self):
         values = np.array(["🚀🚀🚀", "🌍🌍🌍", "✨✨✨"], dtype=np.str_)
@@ -73,18 +72,16 @@ class TestUnicodeMethods:
         x.uni_alloc_arr = values
         assert np.all(x.uni_alloc_arr == values)
 
-    @pytest.mark.xfail(
+    @pytest.mark.skip(
         reason="Unicode assumed-rank character arrays are not stable yet",
-        run=False,
     )
     def test_unicode_assumed_rank_array_argument_1d(self):
         values = np.array(["🚀🚀🚀", "🌍🌍🌍", "✨✨✨"], dtype=np.str_)
         y = x.func_uni_assumed_rank_ok(values)
         assert y.result
 
-    @pytest.mark.xfail(
+    @pytest.mark.skip(
         reason="Unicode assumed-rank character arrays are not stable yet",
-        run=False,
     )
     def test_unicode_assumed_rank_array_argument_2d(self):
         values = np.array([["🚀🚀🚀", "✨✨✨"], ["🌍🌍🌍", "漢字Ω"]], dtype=np.str_)

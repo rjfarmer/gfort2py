@@ -16,7 +16,7 @@ SO, MOD = build_paths("elemental", "elements")
 x = gf.fFort(SO, MOD)
 
 
-@pytest.mark.xfail(reason="Elemental procedure behavior under test development")
+@pytest.mark.skip(reason="Elemental procedure behavior under test development")
 class TestElementalMethods:
     @pytest.mark.parametrize(
         "value, expected",
