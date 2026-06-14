@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 import ctypes
+import platform
 from typing import Any
 
 import gfModParser as gf
@@ -275,7 +276,10 @@ class fReturnCharArguments(fReturnArguments):
                     "Failed to compile allocatable character deallocator"
                 )
 
-            lib = comp.platform.load_library(comp.library_filename)
+            if platform.system() == "Windows":
+                lib = ctypes.CDLL(str(comp.library_filename), winmode=0)  # type: ignore[call-arg]
+            else:
+                lib = comp.platform.load_library(comp.library_filename)
             dealloc_name = f"__{comp.name}_MOD_dealloc_char"
             dealloc_sub = getattr(lib, dealloc_name)
             _RETURN_ALLOC_CHAR_DEALLOC_CACHE[cache_key] = (lib, dealloc_sub)
