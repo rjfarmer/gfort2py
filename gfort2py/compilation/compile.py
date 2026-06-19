@@ -50,6 +50,22 @@ class Compile:
     def compile(self, *, args: CompileArgs | None = None) -> bool:
         # Compile code, reading from stdin
         compile_args = CompileArgs() if args is None else args
+        print(f"Compiling {self.name} with args: {compile_args}")
+        print(f"Output library: {self.library_filename}")
+        print(
+            [
+                str(self.platform.fcpath(self._fc)),
+                "-o",
+                str(self.library_filename),
+                "-x",
+                "f95",
+                *compile_args.argv(),
+                *self.platform.library_flags,
+                "-J",
+                str(output_folder()),
+                "-",
+            ],
+        )
         p = subprocess.run(
             [
                 str(self.platform.fcpath(self._fc)),
@@ -67,7 +83,9 @@ class Compile:
             capture_output=True,
             check=False,
         )
-
+        print(f"Compiler stdout: {p.stdout.decode()}")
+        print(f"Compiler stderr: {p.stderr.decode()}")
+        print(f"Compiler return code: {p.returncode}")
         if p.returncode != 0:
             raise subprocess.CalledProcessError(
                 p.returncode,
@@ -76,6 +94,7 @@ class Compile:
                 stderr=p.stderr,
             )
 
+        print(f"Compilation of {self.name} succeeded. {self.library_filename.exists()}")
         return self.library_filename.exists()
 
     @property
