@@ -270,6 +270,11 @@ x.my_dt= [
         ]
 ````
 
+### Allocatable characters
+
+On Windows deallocation of allocatable characters can be flaky and crash. Thus we skip cleaning
+up the memory when a function returns an allocatable character. Rather than returning it, pass
+a allocatable character as an argument or a module variable to avoid this memory leak.
 
 ### Type-bound procedures
 

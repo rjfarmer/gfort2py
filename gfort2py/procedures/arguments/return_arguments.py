@@ -7,6 +7,8 @@ from typing import Any
 import gfModParser as gf
 import numpy as np
 
+from .platform import is_windows
+
 try:
     import pyquadp as pyq  # type: ignore[import-not-found]
 
@@ -361,6 +363,10 @@ class fReturnAllocCharArguments(fReturnArguments):
     def release(self) -> None:
         ptr = self._result_data.value
         if ptr is None:
+            return
+
+        if is_windows():
+            # Windows deallocate is flaky and sometimes crashes, so leak instead of freeing memory.
             return
 
         dealloc = _alloc_char_deallocator(int(self.return_symbol.kind))

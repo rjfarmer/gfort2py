@@ -7,7 +7,14 @@ import platform
 import subprocess
 from pathlib import Path
 
-__all__ = ["factory_platform", "PlatformABC", "PlatformError"]
+__all__ = [
+    "factory_platform",
+    "PlatformABC",
+    "PlatformError",
+    "is_windows",
+    "is_linux",
+    "is_mac",
+]
 
 
 WINDOWS_DEFAULT_GFORTRAN_PATHS = [
