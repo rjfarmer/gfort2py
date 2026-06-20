@@ -45,6 +45,11 @@ There are two ways to load Fortran code into Python:
 is via ``fFort`` for interfacing with existing code,
 while ``compile`` is more suitable for wrapping short snippets of Fortran code
 
+
+## FC
+
+For certain features we need a gfortran compiler to compile helper routines. There is a search mechanism to find an installed gfortran, but if your gfortran is in a non-standard location or you have several installed then you should set the ``FC`` environment variable with a full path to your chosen gfortran compiler.
+
 ### fFort
 
 Your Fortran code must be inside a module and then compiled as a shared library.
