@@ -36,6 +36,13 @@ class fProcedure(metaclass=abc.ABCMeta):
         if self._args_start is None:
             return
 
+        release_args = getattr(self._args_start, "release", None)
+        if callable(release_args):
+            try:
+                release_args()
+            except (AttributeError, TypeError, ValueError, ctypes.ArgumentError):
+                pass
+
         result_type = getattr(self._args_start, "_result_type", None)
         release = getattr(result_type, "release", None)
         if callable(release):

@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: GPL-2.0+
 
 import ctypes
+import sys
 from typing import Any
 
 import gfModParser as gf
 import numpy as np
+
+from ...compilation.platform import is_windows
 
 try:
     import pyquadp as pyq  # type: ignore[import-not-found]
@@ -13,10 +16,34 @@ try:
 except ImportError:
     PYQ_IMPORTED = False
 
+from ...compilation import Compile, Modulise
 from ...types import factory, find_ftype
 from ...types.arrays import ftype_assumed_shape
 from ...types.dt import ftype_dt_assumed_shape
 from ...utils import strlen_ctype
+
+_ALLOC_CHAR_DEALLOCATOR: dict[int, tuple[ctypes.CDLL, Any]] = {}
+
+
+def _alloc_char_deallocator(kind: int) -> Any:
+    if kind in _ALLOC_CHAR_DEALLOCATOR:
+        _lib, sub = _ALLOC_CHAR_DEALLOCATOR[kind]
+        return sub
+
+    code = Modulise(f"""
+        subroutine dealloc_char(x)
+            character(kind={kind},len=:), allocatable, intent(inout) :: x
+            if (allocated(x)) deallocate(x)
+        end subroutine dealloc_char
+        """)
+    comp = Compile(code.as_module(), name=code.strhash())
+    if not comp.compile():
+        raise RuntimeError("Failed to compile deferred character deallocator")
+
+    lib = comp.platform.load_library(comp.library_filename)
+    sub = getattr(lib, f"__{comp.name}_MOD_dealloc_char")
+    _ALLOC_CHAR_DEALLOCATOR[kind] = (lib, sub)
+    return sub
 
 
 class fReturnArguments:
@@ -256,6 +283,96 @@ class fReturnCharArguments(fReturnArguments):
             value = value[: self._runtime_strlen]
 
         return [value]
+
+
+class fReturnAllocCharArguments(fReturnArguments):
+    def __init__(
+        self,
+        procedure: gf.Symbol,
+        module: gf.Module,
+        lib: ctypes.CDLL,
+        values: tuple[tuple[Any, ...], dict[str, Any]],
+        return_symbol: gf.Symbol,
+    ):
+        super().__init__(procedure, module, lib, values, return_symbol)
+        self._result_type: Any = None
+        self._result_data = ctypes.c_void_p(None)
+        self._result_len = strlen_ctype()(0)
+
+    def _build_return_type(self):
+        cls = factory(self.return_symbol)
+        c = cls.__new__(cls)
+        c._symbol = self.return_symbol
+        type(c).__init__(c)  # type: ignore[misc]
+        return c
+
+    def set_values(self):
+        self._ctypes = []
+        self._result_type = self._build_return_type()
+        self._result_data = ctypes.c_void_p(None)
+        self._result_len = strlen_ctype()(0)
+        self._ctypes.append(ctypes.pointer(self._result_data))
+        self._ctypes.append(ctypes.pointer(self._result_len))
+
+    def get_values(self) -> list[Any]:
+        ptr = self._result_data.value
+        if ptr is None:
+            return [None]
+
+        strlen = int(self._result_len.value)
+        if strlen <= 0:
+            return [""]
+
+        kind = int(self.return_symbol.kind)
+        if kind == 4:
+            raw = ctypes.string_at(ptr, strlen * 4)
+            units = [
+                int.from_bytes(raw[i * 4 : (i + 1) * 4], byteorder=sys.byteorder)
+                for i in range(strlen)
+            ]
+
+            # Some runtimes lower kind=4 deferred strings as UTF-8 bytes packed
+            # into 4-byte elements (low byte carries data). Detect and decode.
+            if all(0 <= unit <= 0xFF for unit in units):
+                lane_bytes = bytes(unit for unit in units if unit != 0)
+                try:
+                    return [lane_bytes.decode("utf-8")]
+                except UnicodeDecodeError:
+                    return [lane_bytes.decode("latin-1")]
+
+            valid_scalar = all(
+                0 <= unit <= 0x10FFFF and not (0xD800 <= unit <= 0xDFFF)
+                for unit in units
+            )
+            if valid_scalar:
+                return ["".join(chr(unit) for unit in units if unit != 0)]
+
+            # Last-resort: some compilers report byte length even for kind=4.
+            try:
+                return [ctypes.string_at(ptr, strlen).decode("utf-8")]
+            except UnicodeDecodeError:
+                return [ctypes.string_at(ptr, strlen).decode("latin-1")]
+
+        encoding = self._result_type._char.encoding
+        data = ctypes.string_at(ptr, strlen)
+        try:
+            return [data.decode(encoding)]
+        except UnicodeDecodeError:
+            return [data.decode("utf-8")]
+
+    def release(self) -> None:
+        ptr = self._result_data.value
+        if ptr is None:
+            return
+
+        if is_windows():
+            # Windows deallocate is flaky and sometimes crashes, so leak instead of freeing memory.
+            return
+
+        dealloc = _alloc_char_deallocator(int(self.return_symbol.kind))
+        dealloc(ctypes.pointer(self._result_data), ctypes.pointer(self._result_len))
+        self._result_data.value = None
+        self._result_len.value = 0
 
 
 class fReturnArrayArguments(fReturnArguments):

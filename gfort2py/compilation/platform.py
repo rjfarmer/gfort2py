@@ -7,7 +7,14 @@ import platform
 import subprocess
 from pathlib import Path
 
-__all__ = ["factory_platform", "PlatformABC", "PlatformError"]
+__all__ = [
+    "factory_platform",
+    "PlatformABC",
+    "PlatformError",
+    "is_windows",
+    "is_linux",
+    "is_mac",
+]
 
 
 WINDOWS_DEFAULT_GFORTRAN_PATHS = [
@@ -161,7 +168,7 @@ class PlatformWindows(PlatformABC):
         if not libname.exists():
             raise FileNotFoundError(f"Can't find {libname}")
 
-        os.add_dll_directory(libname.parent)  # type: ignore[attr-defined]
+        os.add_dll_directory(str(libname.parent))  # type: ignore[attr-defined]
         return ctypes.CDLL(str(libname), winmode=0)  # type: ignore[call-arg]
 
     @property

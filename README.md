@@ -270,6 +270,10 @@ x.my_dt= [
         ]
 ````
 
+### Allocatable characters
+
+On Windows deallocation of allocatable characters can be flaky and crash. Thus we raise a NotImplementedError if we find one. Rather than returning it, pass
+an allocatable character as an argument or a module variable to avoid this.
 
 ### Type-bound procedures
 

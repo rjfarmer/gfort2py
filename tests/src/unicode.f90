@@ -27,6 +27,22 @@ contains
         y = ck_'🌍🚀'
     end function func_uni_ret
 
+    function func_uni_ret_alloc() result(y)
+        character(kind=ck,len=:), allocatable :: y
+        y = ck_'🌍🚀'
+    end function func_uni_ret_alloc
+
+    function func_uni_ret_alloc_n(n) result(y)
+        integer, intent(in) :: n
+        character(kind=ck,len=:), allocatable :: y
+
+        if (n <= 0) then
+            y = ck_''
+        else
+            y = repeat(ck_'🌍', n)
+        end if
+    end function func_uni_ret_alloc_n
+
     subroutine sub_uni_arr_inout(x)
         character(kind=ck,len=*), dimension(3), intent(inout) :: x
 

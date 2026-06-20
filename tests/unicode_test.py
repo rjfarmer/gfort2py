@@ -35,9 +35,41 @@ class TestUnicodeMethods:
         y = x.sub_uni_echo("🌍🚀")
         assert y.args["y"].strip() == "🌍🚀"
 
+    @pytest.mark.skipIfWindows(
+        reason="Soemtimes casues heap crashes on Windows, needs investigation"
+    )
     def test_unicode_function_return(self):
         y = x.func_uni_ret()
         assert y.result.strip() == "🌍🚀"
+
+    @pytest.mark.skipIfWindows(
+        reason="Soemtimes casues heap crashes on Windows, needs investigation"
+    )
+    def test_unicode_function_return_allocatable(self):
+        y = x.func_uni_ret_alloc()
+        assert y.result.strip() == "🌍🚀"
+
+    @pytest.mark.skipIfWindows(
+        reason="Soemtimes casues heap crashes on Windows, needs investigation"
+    )
+    def test_unicode_function_return_allocatable_repeat_calls(self):
+        assert x.func_uni_ret_alloc().result.strip() == "🌍🚀"
+        assert x.func_uni_ret_alloc().result.strip() == "🌍🚀"
+
+    @pytest.mark.skipIfWindows(
+        reason="Soemtimes casues heap crashes on Windows, needs investigation"
+    )
+    @pytest.mark.parametrize("n", [1, 2, 5, 16])
+    def test_unicode_function_return_allocatable_n(self, n):
+        y = x.func_uni_ret_alloc_n(n)
+        assert y.result == ("🌍" * n)
+
+    @pytest.mark.skipIfWindows(
+        reason="Soemtimes casues heap crashes on Windows, needs investigation"
+    )
+    def test_unicode_function_return_allocatable_n_nonpositive(self):
+        assert x.func_uni_ret_alloc_n(0).result == ""
+        assert x.func_uni_ret_alloc_n(-3).result == ""
 
     def test_unicode_array_get(self):
         assert np.all(

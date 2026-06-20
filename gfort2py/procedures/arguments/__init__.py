@@ -5,9 +5,11 @@ from typing import Any
 
 import gfModParser as gf
 
+from ...compilation.platform import is_windows
 from .arguments import fArguments
 from .extra_arguments import fArgumentsExtra
 from .return_arguments import (
+    fReturnAllocCharArguments,
     fReturnArguments,
     fReturnArrayArguments,
     fReturnCharArguments,
@@ -31,6 +33,16 @@ def factory_return(
     if rt.is_array:
         return fReturnArrayArguments(procedure, module, lib, values, rt)
     elif rt.type.lower() == "character":
+        if (
+            rt.properties.attributes.allocatable
+            and int(rt.properties.typespec.charlen.value) <= 0
+        ):
+            if is_windows():
+                raise NotImplementedError(
+                    "Support for allocatable character return values is unstable on Windows"
+                )
+
+            return fReturnAllocCharArguments(procedure, module, lib, values, rt)
         return fReturnCharArguments(procedure, module, lib, values, rt)
     else:
         return None
