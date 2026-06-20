@@ -14,8 +14,8 @@ try:
 except ImportError:
     PYQ_IMPORTED = False
 
-from ...types import factory, find_ftype
 from ...compilation import Compile, Modulise
+from ...types import factory, find_ftype
 from ...types.arrays import ftype_assumed_shape
 from ...types.dt import ftype_dt_assumed_shape
 from ...utils import strlen_ctype
