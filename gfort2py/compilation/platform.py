@@ -7,7 +7,17 @@ import platform
 import subprocess
 from pathlib import Path
 
-__all__ = ["factory_platform", "PlatformABC"]
+__all__ = ["factory_platform", "PlatformABC", "PlatformError"]
+
+
+WINDOWS_DEFAULT_GFORTRAN_PATHS = [
+    r"C:\msys64\ucrt64\bin\gfortran.exe",
+    r"C:\msys64\mingw64\bin\gfortran.exe",
+    r"C:\msys64\clang64\bin\gfortran.exe",
+    r"C:\msys64\clangarm64\bin\gfortran.exe",
+    r"C:\msys64\mingw32\bin\gfortran.exe",
+    r"C:\msys64\usr\bin\gfortran.exe",
+]
 
 
 class PlatformError(Exception):
@@ -77,11 +87,12 @@ class PlatformABC(metaclass=abc.ABCMeta):
         result = subprocess.run(
             [self.which, "gfortran"], capture_output=True, check=False
         )
+        for candidate in result.stdout.decode().splitlines():
+            fc = Path(candidate.strip())
+            if fc.exists():
+                return fc.resolve()
 
-        if result.returncode != 0:
-            raise PlatformError("Could not find a gfortran compiler")
-
-        return Path(result.stdout.decode().strip()).resolve()
+        raise PlatformError("Could not find a gfortran compiler")
 
     def fcpath(self, path=None) -> Path:
         """Return the platform dependant path to a gfortran compiler.
@@ -106,7 +117,9 @@ class PlatformABC(metaclass=abc.ABCMeta):
 
 
 class PlatformLinux(PlatformABC):
-    which = "which"
+    @property
+    def which(self) -> str:
+        return "which"
 
     def load_library(self, libname: Path) -> ctypes.CDLL:
         return self._load_posix_library(libname)
@@ -121,7 +134,9 @@ class PlatformLinux(PlatformABC):
 
 
 class PlatformMac(PlatformABC):
-    which = "which"
+    @property
+    def which(self) -> str:
+        return "which"
 
     def load_library(self, libname: Path) -> ctypes.CDLL:
         return self._load_posix_library(libname)
@@ -136,7 +151,10 @@ class PlatformMac(PlatformABC):
 
 
 class PlatformWindows(PlatformABC):
-    which = "where"
+
+    @property
+    def which(self) -> str:
+        return "where"
 
     def load_library(self, libname: Path) -> ctypes.CDLL:
         libname = Path(libname).resolve()
@@ -153,6 +171,20 @@ class PlatformWindows(PlatformABC):
     @property
     def library_flags(self) -> list[str]:
         return ["-shared"]
+    
+    def _find(self) -> Path:
+        try:
+            super()._find()
+        except PlatformError:
+            pass
+
+        for candidate in WINDOWS_DEFAULT_GFORTRAN_PATHS:
+            fc = Path(candidate)
+            if fc.exists():
+                return fc.resolve()
+
+        raise PlatformError("Could not find a gfortran compiler")
+
 
 
 def factory_platform() -> PlatformABC:
