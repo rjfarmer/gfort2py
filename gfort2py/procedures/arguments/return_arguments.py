@@ -7,7 +7,7 @@ from typing import Any
 import gfModParser as gf
 import numpy as np
 
-from .platform import is_windows
+from ...compilation.platform import is_windows
 
 try:
     import pyquadp as pyq  # type: ignore[import-not-found]
