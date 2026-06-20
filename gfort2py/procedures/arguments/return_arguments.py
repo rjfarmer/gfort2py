@@ -296,7 +296,7 @@ class fReturnAllocCharArguments(fReturnArguments):
         return_symbol: gf.Symbol,
     ):
         super().__init__(procedure, module, lib, values, return_symbol)
-        self._result_type = None
+        self._result_type: Any = None
         self._result_data = ctypes.c_void_p(None)
         self._result_len = strlen_ctype()(0)
 
