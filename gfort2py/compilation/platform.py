@@ -171,7 +171,7 @@ class PlatformWindows(PlatformABC):
     @property
     def library_flags(self) -> list[str]:
         return ["-shared"]
-    
+
     def _find(self) -> Path:
         try:
             super()._find()
@@ -184,7 +184,6 @@ class PlatformWindows(PlatformABC):
                 return fc.resolve()
 
         raise PlatformError("Could not find a gfortran compiler")
-
 
 
 def factory_platform() -> PlatformABC:

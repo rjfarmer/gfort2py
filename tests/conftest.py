@@ -14,7 +14,6 @@ import pytest
 import gfort2py as gf
 from gfort2py.compilation.platform import factory_platform
 
-
 ROOT = Path(__file__).resolve().parent
 BUILD_DIR = ROOT / "build"
 
@@ -36,7 +35,9 @@ def _ensure_toolchain_on_path(fc: str) -> None:
         os.environ["PATH"] = os.pathsep.join([fc_bin, *path_parts])
 
 
-def _compile_sources(fc: str, source_dir: Path, extra_flags: list[str] | None = None) -> None:
+def _compile_sources(
+    fc: str, source_dir: Path, extra_flags: list[str] | None = None
+) -> None:
     flags = [
         "-ggdb",
         "-fdump-tree-original",
@@ -115,6 +116,7 @@ def pytest_configure(config):
         ) from exc
     except RuntimeError as exc:
         raise pytest.UsageError(str(exc)) from exc
+
 
 def is_windows() -> bool:
     return platform.system() == "Windows"
