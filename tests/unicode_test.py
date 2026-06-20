@@ -39,6 +39,23 @@ class TestUnicodeMethods:
         y = x.func_uni_ret()
         assert y.result.strip() == "🌍🚀"
 
+    def test_unicode_function_return_allocatable(self):
+        y = x.func_uni_ret_alloc()
+        assert y.result.strip() == "🌍🚀"
+
+    def test_unicode_function_return_allocatable_repeat_calls(self):
+        assert x.func_uni_ret_alloc().result.strip() == "🌍🚀"
+        assert x.func_uni_ret_alloc().result.strip() == "🌍🚀"
+
+    @pytest.mark.parametrize("n", [1, 2, 5, 16])
+    def test_unicode_function_return_allocatable_n(self, n):
+        y = x.func_uni_ret_alloc_n(n)
+        assert y.result == ("🌍" * n)
+
+    def test_unicode_function_return_allocatable_n_nonpositive(self):
+        assert x.func_uni_ret_alloc_n(0).result == ""
+        assert x.func_uni_ret_alloc_n(-3).result == ""
+
     def test_unicode_array_get(self):
         assert np.all(
             x.uni_arr == np.array(["😀😀😀", "😎😎😎", "😩😩😩"], dtype=np.str_)
