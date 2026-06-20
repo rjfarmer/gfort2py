@@ -16,10 +16,12 @@ from .conftest import build_paths
 
 SO, MOD = build_paths("pdt", "pdt")
 
-x = gf.fFort(SO, MOD)
-
 
 @pytest.mark.skip
 class TestOOMethods:
+    # Move loading here sometthing is wierd on Windows and we cant looad the module
+    # Looks like an issue with captialisation of PDT names.
+    x = gf.fFort(SO, MOD)
+
     def test_p_proc_call(self):
         pass
