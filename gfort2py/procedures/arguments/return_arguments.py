@@ -20,7 +20,6 @@ from ...types.arrays import ftype_assumed_shape
 from ...types.dt import ftype_dt_assumed_shape
 from ...utils import strlen_ctype
 
-
 _ALLOC_CHAR_DEALLOCATOR: dict[int, tuple[ctypes.CDLL, Any]] = {}
 
 
@@ -29,14 +28,12 @@ def _alloc_char_deallocator(kind: int) -> Any:
         _lib, sub = _ALLOC_CHAR_DEALLOCATOR[kind]
         return sub
 
-    code = Modulise(
-        f"""
+    code = Modulise(f"""
         subroutine dealloc_char(x)
             character(kind={kind},len=:), allocatable, intent(inout) :: x
             if (allocated(x)) deallocate(x)
         end subroutine dealloc_char
-        """
-    )
+        """)
     comp = Compile(code.as_module(), name=code.strhash())
     if not comp.compile():
         raise RuntimeError("Failed to compile deferred character deallocator")
