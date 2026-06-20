@@ -8,6 +8,7 @@ import gfModParser as gf
 from .arguments import fArguments
 from .extra_arguments import fArgumentsExtra
 from .return_arguments import (
+    fReturnAllocCharArguments,
     fReturnArguments,
     fReturnArrayArguments,
     fReturnCharArguments,
@@ -31,6 +32,11 @@ def factory_return(
     if rt.is_array:
         return fReturnArrayArguments(procedure, module, lib, values, rt)
     elif rt.type.lower() == "character":
+        if (
+            rt.properties.attributes.allocatable
+            and int(rt.properties.typespec.charlen.value) <= 0
+        ):
+            return fReturnAllocCharArguments(procedure, module, lib, values, rt)
         return fReturnCharArguments(procedure, module, lib, values, rt)
     else:
         return None

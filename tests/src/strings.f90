@@ -408,6 +408,26 @@ module strings
 
     end function check_str_opt
 
+    function func_return_alloc_string() result(x)
+        character(len=:), allocatable :: x
+        x = '1234567890'
+    end function func_return_alloc_string
+
+    function func_return_alloc_empty() result(x)
+        character(len=:), allocatable :: x
+        x = ''
+    end function func_return_alloc_empty
+
+    function func_return_alloc_n(n) result(x)
+        integer, intent(in) :: n
+        character(len=:), allocatable :: x
+
+        if (n <= 0) then
+            x = ''
+        else
+            x = repeat('Z', n)
+        end if
+    end function func_return_alloc_n
 
 
 end module strings

@@ -322,3 +322,22 @@ class TestStringMethods:
 
         res = x.check_str_opt("abcd", 4)
         assert res.result == 4
+
+    def test_func_return_alloc_str(self):
+        assert x.func_return_alloc_string().result == "1234567890"
+
+    def test_func_return_alloc_str_repeat_calls(self):
+        assert x.func_return_alloc_string().result == "1234567890"
+        assert x.func_return_alloc_string().result == "1234567890"
+
+    def test_func_return_alloc_empty(self):
+        assert x.func_return_alloc_empty().result == ""
+
+    @pytest.mark.parametrize("n", [1, 2, 7, 19, 64])
+    def test_func_return_alloc_n(self, n):
+        res = x.func_return_alloc_n(n)
+        assert res.result == ("Z" * n)
+
+    def test_func_return_alloc_n_nonpositive(self):
+        assert x.func_return_alloc_n(0).result == ""
+        assert x.func_return_alloc_n(-3).result == ""

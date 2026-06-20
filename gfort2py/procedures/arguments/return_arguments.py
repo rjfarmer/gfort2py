@@ -16,7 +16,7 @@ except ImportError:
 from ...types import factory, find_ftype
 from ...types.arrays import ftype_assumed_shape
 from ...types.dt import ftype_dt_assumed_shape
-from ...utils import strlen_ctype
+from ...utils import get_c_runtime, strlen_ctype
 
 
 class fReturnArguments:
@@ -256,6 +256,60 @@ class fReturnCharArguments(fReturnArguments):
             value = value[: self._runtime_strlen]
 
         return [value]
+
+
+class fReturnAllocCharArguments(fReturnArguments):
+    def __init__(
+        self,
+        procedure: gf.Symbol,
+        module: gf.Module,
+        lib: ctypes.CDLL,
+        values: tuple[tuple[Any, ...], dict[str, Any]],
+        return_symbol: gf.Symbol,
+    ):
+        super().__init__(procedure, module, lib, values, return_symbol)
+        self._result_type = None
+        self._result_data = ctypes.c_void_p(None)
+        self._result_len = strlen_ctype()(0)
+
+    def _build_return_type(self):
+        cls = factory(self.return_symbol)
+        c = cls.__new__(cls)
+        c._symbol = self.return_symbol
+        type(c).__init__(c)  # type: ignore[misc]
+        return c
+
+    def set_values(self):
+        self._ctypes = []
+        self._result_type = self._build_return_type()
+        self._result_data = ctypes.c_void_p(None)
+        self._result_len = strlen_ctype()(0)
+        self._ctypes.append(ctypes.pointer(self._result_data))
+        self._ctypes.append(ctypes.pointer(self._result_len))
+
+    def get_values(self) -> list[Any]:
+        ptr = self._result_data.value
+        if ptr is None:
+            return [None]
+
+        strlen = int(self._result_len.value)
+        if strlen <= 0:
+            return [""]
+
+        encoding = self._result_type._char.encoding
+        return [ctypes.string_at(ptr, strlen).decode(encoding)]
+
+    def release(self) -> None:
+        ptr = self._result_data.value
+        if ptr is None:
+            return
+
+        libc = get_c_runtime()
+        libc.free.argtypes = [ctypes.c_void_p]
+        libc.free.restype = None
+        libc.free(ptr)
+        self._result_data.value = None
+        self._result_len.value = 0
 
 
 class fReturnArrayArguments(fReturnArguments):
