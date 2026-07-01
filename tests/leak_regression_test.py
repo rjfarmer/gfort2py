@@ -9,6 +9,7 @@ descriptor class is now cached per ``(ndims, is_64bit())``; this test asserts
 that repeated calls do not create an unbounded number of ``Structure``
 subclasses.
 """
+
 import ctypes
 import gc
 import os
