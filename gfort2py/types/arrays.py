@@ -486,6 +486,13 @@ class ftype_assumed_size_array(f_type, metaclass=ABCMeta):
         return self._sym.properties.array_spec.rank
 
 
+# Cache of the GFortran array-descriptor ctypes.Structure subclass, keyed by
+# (ndims, is_64bit()). The descriptor layout depends only on these two things,
+# so it can be built once and reused. Rebuilding a fresh Structure subclass on
+# every call leaks memory: CPython's ctypes never frees Structure subclasses.
+_ASSUMED_SHAPE_CTYPE_CACHE: dict = {}
+
+
 class ftype_assumed_shape(f_type, metaclass=ABCMeta):
     dtype = None  # type: ignore[assignment]
     ftype = None  # type: ignore[assignment]
@@ -529,6 +536,11 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
 
     @property
     def ctype(self):
+        _key = (self.ndims, is_64bit())
+        _cached = _ASSUMED_SHAPE_CTYPE_CACHE.get(_key)
+        if _cached is not None:
+            return _cached
+
         if is_64bit():
             _index_t = ctypes.c_int64
             _size_t = ctypes.c_int64
@@ -561,6 +573,7 @@ class ftype_assumed_shape(f_type, metaclass=ABCMeta):
                 ("dims", _bounds14 * self.ndims),
             ]
 
+        _ASSUMED_SHAPE_CTYPE_CACHE[_key] = _fAllocArray
         return _fAllocArray
 
     def __repr__(self):
