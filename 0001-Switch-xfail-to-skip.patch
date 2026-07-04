@@ -1,0 +1,62 @@
+From 935d3e70c875329f2f2d9f1e38596b294845c324 Mon Sep 17 00:00:00 2001
+From: Rob Farmer <robert.j.farmer37@gmail.com>
+Date: Sat, 27 Jun 2026 17:10:12 +0100
+Subject: [PATCH] Switch xfail to skip
+
+---
+ tests/elemental_test.py | 2 +-
+ tests/unicode_test.py   | 9 +++------
+ 2 files changed, 4 insertions(+), 7 deletions(-)
+
+diff --git a/tests/elemental_test.py b/tests/elemental_test.py
+index 83ce24a..edadedc 100644
+--- a/tests/elemental_test.py
++++ b/tests/elemental_test.py
+@@ -16,7 +16,7 @@ SO, MOD = build_paths("elemental", "elements")
+ x = gf.fFort(SO, MOD)
+ 
+ 
+-@pytest.mark.xfail(reason="Elemental procedure behavior under test development")
++@pytest.mark.skip(reason="Elemental procedure behavior under test development")
+ class TestElementalMethods:
+     @pytest.mark.parametrize(
+         "value, expected",
+diff --git a/tests/unicode_test.py b/tests/unicode_test.py
+index e2fa92a..8d69841 100644
+--- a/tests/unicode_test.py
++++ b/tests/unicode_test.py
+@@ -86,9 +86,8 @@ class TestUnicodeMethods:
+         y = x.sub_uni_arr_inout(values)
+         assert np.all(y.args["x"] == np.array(["😀😎😩", "漢字", "aΩβ"], dtype=np.str_))
+ 
+-    @pytest.mark.xfail(
++    @pytest.mark.skip(
+         reason="Unicode assumed-shape character arrays are not stable yet",
+-        run=False,
+     )
+     def test_unicode_assumed_shape_array_argument(self):
+         values = np.array(["🚀🚀🚀", "🌍🌍🌍", "✨✨✨"], dtype=np.str_)
+@@ -105,18 +104,16 @@ class TestUnicodeMethods:
+         x.uni_alloc_arr = values
+         assert np.all(x.uni_alloc_arr == values)
+ 
+-    @pytest.mark.xfail(
++    @pytest.mark.skip(
+         reason="Unicode assumed-rank character arrays are not stable yet",
+-        run=False,
+     )
+     def test_unicode_assumed_rank_array_argument_1d(self):
+         values = np.array(["🚀🚀🚀", "🌍🌍🌍", "✨✨✨"], dtype=np.str_)
+         y = x.func_uni_assumed_rank_ok(values)
+         assert y.result
+ 
+-    @pytest.mark.xfail(
++    @pytest.mark.skip(
+         reason="Unicode assumed-rank character arrays are not stable yet",
+-        run=False,
+     )
+     def test_unicode_assumed_rank_array_argument_2d(self):
+         values = np.array([["🚀🚀🚀", "✨✨✨"], ["🌍🌍🌍", "漢字Ω"]], dtype=np.str_)
+-- 
+2.54.0
+

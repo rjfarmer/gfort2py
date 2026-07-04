@@ -9,6 +9,7 @@ repos:
     rev: v1.26.1
     hooks:
       - id: zizmor
+        args: [--no-progress, --fix]
   - repo: https://github.com/rhysd/actionlint
     rev: v1.7.12
     hooks:
