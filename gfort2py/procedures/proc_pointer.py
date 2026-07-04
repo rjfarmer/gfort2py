@@ -7,6 +7,7 @@ import gfModParser as gf
 
 from .arguments import factory_return, fArguments, fArgumentsExtra
 from .functions import fFunc
+from .marshal import resolve_procedure_address
 from .procedures import Result
 
 
@@ -45,18 +46,7 @@ class fProcPointer(fFunc):
             self._pointer_slot().value = None
             return
 
-        source_addr = getattr(value, "address", None)
-        if source_addr is not None:
-            self._pointer_slot().value = source_addr
-            return
-
-        ctype = getattr(value, "ctype", None)
-        if ctype is None:
-            raise TypeError(
-                f"Can not bind non-procedure value to {self.pointer_definition.name}"
-            )
-
-        addr = ctypes.cast(ctype, ctypes.c_void_p).value
+        addr = resolve_procedure_address(value, name=self.pointer_definition.name)
         self._pointer_slot().value = addr
 
     def _make_proc(self, addr: int, all_args: list[Any]):
