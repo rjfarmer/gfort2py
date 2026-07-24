@@ -6,7 +6,7 @@ repos:
       - id: black
         language_version: python3 # Should be a command that runs python3.6+
   - repo: https://github.com/woodruffw/zizmor-pre-commit
-    rev: v1.26.1
+    rev: v1.27.0
     hooks:
       - id: zizmor
         args: [--no-progress, --fix]
@@ -15,11 +15,11 @@ repos:
     hooks:
       - id: actionlint
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.1.0
+    rev: v2.3.0
     hooks:
     -   id: mypy
   - repo: https://github.com/pycqa/isort
-    rev: 9.0.0a3
+    rev: 9.0.0b1
     hooks:
       - id: isort
         args: ["--profile", "black", "--filter-files"]
