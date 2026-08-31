@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 #  SPDX-License-Identifier: GPL-2.0+
 import sys
+from pathlib import Path
 
 
-def make_test_case(name):
+def make_test_case(name: str) -> None:
+    test_dir = Path(__file__).resolve().parent
 
-    with open(f"{name}_test.py", "w") as f:
+    with open(test_dir / f"{name}_test.py", "w") as f:
         str = f"""
 # SPDX-License-Identifier: GPL-2.0+
 
@@ -22,7 +24,7 @@ import pytest
 
 from .conftest import build_paths
 
-SO, MOD = build_paths("XXX", "XXX")
+SO, MOD = build_paths("{name}")
 
 x = gf.fFort(SO,MOD)
 
@@ -34,7 +36,7 @@ class Test{name}Methods:
 
         print(str, file=f)
 
-    with open(f"src/{name}.f90", "w") as f:
+    with open(test_dir / "src" / f"{name}.f90", "w") as f:
         str = f"""! SPDX-License-Identifier: GPL-2.0+
 
 module {name}
