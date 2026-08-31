@@ -20,8 +20,9 @@ import gfort2py as gf
 
 import pytest
 
-SO = f"./tests/build/{name}.{{gf.lib_ext()}}"
-MOD = "./tests/build/{name}.mod"
+from .conftest import build_paths
+
+SO, MOD = build_paths("XXX", "XXX")
 
 x = gf.fFort(SO,MOD)
 
@@ -33,10 +34,8 @@ class Test{name}Methods:
 
         print(str, file=f)
 
-    with open(f"{name}.f90", "w") as f:
-        str = f"""   
-
-! SPDX-License-Identifier: GPL-2.0+
+    with open(f"src/{name}.f90", "w") as f:
+        str = f"""! SPDX-License-Identifier: GPL-2.0+
 
 module {name}
 

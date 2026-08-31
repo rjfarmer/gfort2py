@@ -11,9 +11,9 @@ When the following principles conflict, prioritize in this order:
 2. Readability and maintainability
 3. Reuse of existing code over creating new classes
 4. Factory patterns for object construction
-5. Minimal change size and scope
+5. Minimal change size and scope (only when it does not compromise items 1-4)
 
-Prefer minimal, focused changes. Every change should have a corresponding test case added or updated.
+Every change should have a corresponding test case added or updated.
 
 Prefer clean designs that avoid explicit type checking where practical. Favor class-level properties and polymorphism over branching on type names.
 
@@ -53,6 +53,8 @@ Use mypy to enforce type checking:
 mypy gfort2py
 ```
 
-Add mypy type annotations to all functions and methods in the gfort2py package. Test files are excluded from mypy enforcement but should still use type annotations where practical.
+Add mypy type annotations to all functions and methods you create or modify. Do not leave any function or method you touch without complete type annotations. Test files are excluded from mypy enforcement but should still use type annotations where practical.
 
 Run mypy after making code changes and fix any type errors before considering a change complete.
+
+If pytest, lint.sh, or mypy report errors after your changes, you must resolve all errors before presenting the change as complete. If you cannot resolve an error, explain the remaining issue and the attempted fix clearly before stopping.

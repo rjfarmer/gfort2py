@@ -3,7 +3,7 @@
 import ctypes
 from abc import ABC, ABCMeta, abstractmethod
 from enum import Enum, auto
-from typing import Any, Protocol, Type, runtime_checkable
+from typing import Any, Protocol, Type, cast, runtime_checkable
 
 import gfModParser as gf
 import numpy as np
@@ -202,6 +202,41 @@ class f_type(metaclass=ABCMeta):
             _ = self.pointer()
         self._p2 = ctypes.pointer(self._p1)
         return self._p2
+
+    def ctype_for_argument(self, symbol: gf.Symbol) -> Any:
+        """Return the ctypes object to pass for a dummy argument symbol."""
+        attrs = symbol.properties.attributes
+        if attrs.value:
+            return self._ctype
+
+        if attrs.pointer:
+            if symbol.is_array:
+                return self.pointer()
+            return self.pointer2()
+
+        return self.pointer()
+
+    def value_from_argument_ctype(self, arg_ctype: Any, *, symbol: gf.Symbol) -> Any:
+        """Decode a dummy argument ctypes value back to a Python value."""
+        attrs = symbol.properties.attributes
+
+        if attrs.value:
+            c = arg_ctype
+        elif attrs.pointer:
+            p = cast(Any, arg_ctype)
+            if symbol.is_array:
+                c = p.contents
+            else:
+                c = p.contents.contents
+        else:
+            p = cast(Any, arg_ctype)
+            c = p.contents
+
+        if symbol.is_array or symbol.is_dt:
+            self._ctype = c
+            return self.value
+
+        return type(self).from_ctype(c, symbol=symbol).value
 
     def allocate(self, shape) -> Modulise:
         dims = ",".join([":"] * len(shape))

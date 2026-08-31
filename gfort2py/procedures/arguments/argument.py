@@ -2,12 +2,13 @@
 
 import ctypes
 from abc import ABCMeta
-from typing import Any, cast
+from typing import Any
 
 import gfModParser as gf
 
 from ...types import factory
 from ...utils import get_c_runtime, strlen_ctype
+from ..marshal import marshal_dummy_procedure_argument
 
 
 class fArg(metaclass=ABCMeta):
@@ -117,12 +118,12 @@ class fArg(metaclass=ABCMeta):
         if self.is_wrapper(value):
             if self.is_dt_like:
                 self.base = value
-                self._set_value()
+                self._ctype = self.base.ctype_for_argument(self.definition)
                 return
             # Class-like dont need special handling
 
         self.base.value = value
-        self._set_value()
+        self._ctype = self.base.ctype_for_argument(self.definition)
 
     def value(self):
         if self._ctype is None:
@@ -142,7 +143,7 @@ class fArg(metaclass=ABCMeta):
         ):
             return None
 
-        return self._get_value()
+        return self.base.value_from_argument_ctype(self._ctype, symbol=self.definition)
 
     def cleanup(self) -> None:
         release = getattr(self.base, "release", None)
@@ -154,37 +155,15 @@ class fArg(metaclass=ABCMeta):
                 pass
 
     def _set_procedure(self, value):
-        if value is None and self.is_optional:
-            self._procedure_value = None
-            self._procedure_pointer_slot = None
-            self._ctype = None
-            return
-
-        cproc = getattr(value, "ctype", None)
-        if cproc is None:
-            raise TypeError(
-                f"Expected a procedure-like value for {self.definition.name}"
-            )
-
-        self._procedure_value = value
-
-        if self.is_proc_pointer:
-            # gfortran lowers dummy procedure pointers as a pointer to the
-            # procedure-pointer slot, not as a bare function address.
-            pointer_definition = getattr(value, "pointer_definition", None)
-            proc_lib = getattr(value, "_lib", None)
-
-            if pointer_definition is not None and proc_lib is not None:
-                slot = ctypes.c_void_p.in_dll(proc_lib, pointer_definition.mangled_name)
-            else:
-                addr = ctypes.cast(cproc, ctypes.c_void_p).value
-                slot = ctypes.c_void_p(addr)
-
-            self._procedure_pointer_slot = slot
-            self._ctype = ctypes.pointer(slot)
-        else:
-            self._procedure_pointer_slot = None
-            self._ctype = cproc
+        ctype, procedure_value, slot = marshal_dummy_procedure_argument(
+            value,
+            name=self.definition.name,
+            is_proc_pointer=self.is_proc_pointer,
+            is_optional=self.is_optional,
+        )
+        self._ctype = ctype
+        self._procedure_value = procedure_value
+        self._procedure_pointer_slot = slot
         return
 
     def _set_allocatable_character(self, value):
@@ -237,17 +216,6 @@ class fArg(metaclass=ABCMeta):
             and callable(getattr(value, "pointer2", None))
         )
 
-    def _set_value(self):
-        if self.is_value:
-            self._ctype = self.base._ctype
-        elif self.is_pointer:
-            if self.definition.is_array:
-                self._ctype = self.base.pointer()
-            else:
-                self._ctype = self.base.pointer2()
-        else:
-            self._ctype = self.base.pointer()
-
     def _get_allocatable_character_value(self):
         self._setup_allocatable_character()
 
@@ -260,22 +228,3 @@ class fArg(metaclass=ABCMeta):
 
         data = ctypes.string_at(self._alloc_char_data.value, length)
         return data.decode(self.base._char.encoding)
-
-    def _get_value(self):
-        if self.is_value:
-            c = self._ctype
-        elif self.is_pointer:
-            p = cast(Any, self._ctype)
-            if self.definition.is_array:
-                c = p.contents
-            else:
-                c = p.contents.contents
-        else:
-            p = cast(Any, self._ctype)
-            c = p.contents
-
-        if self.definition.is_array or self.definition.is_dt:
-            self.base._ctype = c
-            return self.base.value
-
-        return self.base.from_ctype(c, symbol=self.definition).value
